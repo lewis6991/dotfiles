@@ -11,7 +11,7 @@ set nowrap        "Turn off text wrapping
 set autochdir     "Automatically change to directory of current buffer
 set wildmenu
 
-colorscheme desert
+colorscheme slate
 
 "History {{{
    set history=500                "keep a lot of history
