@@ -9,6 +9,7 @@ set autoread      "Automatically read file when it is modified outside of vim
 set hidden        "Allows buffers to exist in background
 set nowrap        "Turn off text wrapping
 set autochdir     "Automatically change to directory of current buffer
+set backspace=indent,eol,start "Make backspace work
 set wildmenu
 
 colorscheme slate
