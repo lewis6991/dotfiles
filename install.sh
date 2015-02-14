@@ -20,6 +20,9 @@ if ! check_cmd rsync; then
    exit
 fi
 
+# Clean ~/.vim
+rm -rf ~/.vim
+
 # Set up systemverilog suport for vim
 git clone https://github.com/nachumk/systemverilog.vim.git sv_vim_temp
 rsync -r sv_vim_temp/ftdetect ~/.vim/
