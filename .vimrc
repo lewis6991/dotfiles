@@ -14,6 +14,12 @@ set wildmenu
 
 colorscheme slate
 
+"Tabular align for brackets, useful for systemverilog
+vmap q :Tab /(/l0<Enter>
+nmap q :Tab /(/l0<Enter>
+vmap Q :Tab /)/l0<Enter>
+nmap Q :Tab /)/l0<Enter>
+
 "History {{{
    set history=500                "keep a lot of history
    set viminfo+=:100              "keep lots of cmd history
