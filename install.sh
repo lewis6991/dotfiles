@@ -38,8 +38,20 @@ rsync -r tabular_temp/plugin       ~/.vim/
 rsync -rv tabular_temp/after/plugin ~/.vim/
 rm -rf tabular_temp
 
+# Set up mips syntax
+git clone https://github.com/vim-scripts/mips.vim.git mips_temp
+rsync -r mips_temp/syntax ~/.vim
+rm -rf mips_temp
+
+# Set up bash syntax
+wget http://www.panix.com/~elflord/vim/syntax/bash.vim
+wget http://ftp.vim.org/vim/runtime/syntax/awk.vim
+mv bash.vim ~/.vim/syntax/
+mv awk.vim ~/.vim/syntax/
+
 # Set up vimrc
 git clone https://github.com/lewis6991/vimrc.git vimrc_temp
 cp -r vimrc_temp/.vimrc ~/
+cp -r vimrc_temp/ftdetect/ ~/.vim/
 rm -rf vimrc_temp
 
