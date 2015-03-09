@@ -55,3 +55,7 @@ cp -r vimrc_temp/.vimrc ~/
 cp -r vimrc_temp/ftdetect/ ~/.vim/
 rm -rf vimrc_temp
 
+# Set up git config
+if hash git 2>/dev/null; then
+    source gitconfig
+fi
