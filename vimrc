@@ -1,4 +1,15 @@
 set nocp
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'gmarik/Vundle.vim'
+Plugin 'bling/vim-airline'
+Plugin 'nachumk/systemverilog.vim'
+Plugin 'godlygeek/tabular'
+Plugin 'vim-scripts/mips'
+
+call vundle#end()
 filetype plugin indent on
 
 set number
@@ -19,6 +30,9 @@ vmap q :Tab /(/l0<Enter>
 nmap q :Tab /(/l0<Enter>
 vmap Q :Tab /)/l0<Enter>
 nmap Q :Tab /)/l0<Enter>
+
+set laststatus=2
+let g:airline_powerline_fonts=1
 
 "History {{{
    set history=500                "keep a lot of history

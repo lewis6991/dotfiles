@@ -23,20 +23,8 @@ fi
 # Clean ~/.vim
 rm -rf ~/.vim
 
-# Set up systemverilog suport for vim
-git clone https://github.com/nachumk/systemverilog.vim.git sv_vim_temp
-rsync -r sv_vim_temp/ftdetect ~/.vim/
-rsync -r sv_vim_temp/syntax   ~/.vim/
-rsync -r sv_vim_temp/indent   ~/.vim/
-rm -rf sv_vim_temp
-
-# Set up tabular
-git clone https://github.com/godlygeek/tabular.git tabular_temp
-rsync -r tabular_temp/autoload     ~/.vim/
-rsync -r tabular_temp/doc          ~/.vim/
-rsync -r tabular_temp/plugin       ~/.vim/
-rsync -rv tabular_temp/after/plugin ~/.vim/
-rm -rf tabular_temp
+#Set up vundle
+git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 
 # Set up mips syntax
 git clone https://github.com/vim-scripts/mips.vim.git mips_temp
@@ -51,7 +39,7 @@ mv awk.vim ~/.vim/syntax/
 
 # Set up vimrc
 git clone https://github.com/lewis6991/vimrc.git vimrc_temp
-cp -r vimrc_temp/.vimrc ~/
+cp -r vimrc_temp/vimrc ~/.vimrc
 cp -r vimrc_temp/ftdetect/ ~/.vim/
 rm -rf vimrc_temp
 
