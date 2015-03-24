@@ -7,6 +7,7 @@ Plugin 'gmarik/Vundle.vim'
 Plugin 'bling/vim-airline'
 Plugin 'nachumk/systemverilog.vim'
 Plugin 'godlygeek/tabular'
+Plugin 'tpope/vim-fugitive'
 Plugin 'vim-scripts/mips'
 
 call vundle#end()
