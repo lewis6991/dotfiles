@@ -38,6 +38,8 @@ nmap :wQ :wq
 nmap :WQ :wq
 nmap :Wq :wq
 
+set mouse=a
+
 set laststatus=2
 let g:airline_powerline_fonts=1
 
