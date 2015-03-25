@@ -32,6 +32,12 @@ nmap q :Tab /(/l0<Enter>
 vmap Q :Tab /)/l0<Enter>
 nmap Q :Tab /)/l0<Enter>
 
+nmap :W :w
+nmap :Q :q
+nmap :wQ :wq
+nmap :WQ :wq
+nmap :Wq :wq
+
 set laststatus=2
 let g:airline_powerline_fonts=1
 
