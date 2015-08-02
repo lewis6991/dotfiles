@@ -20,16 +20,17 @@ if ! check_cmd rsync; then
    exit
 fi
 
+# Set up git config
+source gitconfig
+
+# Set up ag
+mv agignore ~/.agignore
+
 # Clean ~/.vim
 rm -rf ~/.vim
 
 #Set up vundle
 git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-
-# Set up mips syntax
-git clone https://github.com/vim-scripts/mips.vim.git mips_temp
-rsync -r mips_temp/syntax ~/.vim
-rm -rf mips_temp
 
 # Set up bash syntax
 wget http://www.panix.com/~elflord/vim/syntax/bash.vim
@@ -43,9 +44,3 @@ cp -r vimrc_temp/vimrc ~/.vimrc
 cp -r vimrc_temp/ftdetect/ ~/.vim/
 rm -rf vimrc_temp
 
-# Set up git config
-if hash git 2>/dev/null; then
-    source gitconfig
-fi
-# Set up ag
-mv agignore ~/.agignore
