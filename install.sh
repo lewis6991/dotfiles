@@ -47,3 +47,5 @@ rm -rf vimrc_temp
 if hash git 2>/dev/null; then
     source gitconfig
 fi
+# Set up ag
+mv agignore ~/.agignore
