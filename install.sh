@@ -19,12 +19,15 @@ fi
 if ! check_cmd rsync; then
    exit
 fi
+if ! check_cmd wget; then
+   exit
+fi
 
 # Set up git config
 source gitconfig
 
 # Set up ag
-mv agignore ~/.agignore
+cp -v agignore ~/.agignore
 
 # Clean ~/.vim
 rm -rf ~/.vim
@@ -35,12 +38,10 @@ git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 # Set up bash syntax
 wget http://www.panix.com/~elflord/vim/syntax/bash.vim
 wget http://ftp.vim.org/vim/runtime/syntax/awk.vim
+mkdir ~/.vim/syntax
 mv bash.vim ~/.vim/syntax/
 mv awk.vim ~/.vim/syntax/
 
 # Set up vimrc
-git clone https://github.com/lewis6991/vimrc.git vimrc_temp
-cp -r vimrc_temp/vimrc ~/.vimrc
-cp -r vimrc_temp/ftdetect/ ~/.vim/
-rm -rf vimrc_temp
+cp -r vimrc ~/.vimrc
 
