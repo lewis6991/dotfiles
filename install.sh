@@ -5,11 +5,17 @@ check_cmd() {
    if which $1 >/dev/null; then
       echo OK
       return 0
-   else
+  else
       echo No
-      echo Error: $1 is not installed.
-      return 1
-   fi
+      if which brew >/dev/null; then
+          echo Attempting to install $1 using brew...
+          brew install $1
+          return 0
+      else
+          echo Error: $1 is not installed.
+          return 1
+      fi
+  fi
 }
 
 # Check that required commands are installed
@@ -28,6 +34,9 @@ source gitconfig
 
 # Set up ag
 cp -v agignore ~/.agignore
+
+# Set up bash
+cp -v bashrc ~/.bashrc
 
 # Clean ~/.vim
 rm -rf ~/.vim
