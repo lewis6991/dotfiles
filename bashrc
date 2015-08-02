@@ -10,5 +10,5 @@ if [ -f "$(brew --prefix bash-git-prompt)/share/gitprompt.sh" ]; then
     source "$(brew --prefix bash-git-prompt)/share/gitprompt.sh"
 fi
 
-bind '"\eOA": history-search-backward'
-bind '"\eOB": history-search-forward'
+bind '"\e[A": history-search-backward'
+bind '"\e[B": history-search-forward'
