@@ -28,6 +28,9 @@ fi
 if ! check_cmd wget; then
    exit
 fi
+if ! check_cmd curl; then
+   exit
+fi
 
 # Set up git config
 source gitconfig
@@ -41,8 +44,15 @@ cp -v bashrc ~/.bashrc
 # Clean ~/.vim
 rm -rf ~/.vim
 
+#Set up pathogen
+mkdir -p ~/.vim/autoload ~/.vim/bundle
+curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+
 #Set up vundle
 git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+
+# Set up SystemVerilog/UVM syntax
+git clone git://github.com/WeiChungWu/vim-SystemVerilog.git ~/.vim/bundle/vim-SystemVerilog.git
 
 # Set up bash syntax
 wget http://www.panix.com/~elflord/vim/syntax/bash.vim

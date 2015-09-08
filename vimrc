@@ -1,6 +1,7 @@
 set nocp
 filetype off
 set rtp+=~/.vim/bundle/Vundle.vim
+execute pathogen#infect()
 call vundle#begin()
 
 Plugin 'gmarik/Vundle.vim'
