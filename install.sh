@@ -35,6 +35,9 @@ fi
 # Set up git config
 source gitconfig
 
+# Set up ctags
+cp -v ctags ~/.ctags
+
 # Set up ag
 cp -v agignore ~/.agignore
 
