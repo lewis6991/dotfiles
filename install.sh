@@ -57,6 +57,9 @@ git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 # Set up SystemVerilog/UVM syntax
 git clone git://github.com/WeiChungWu/vim-SystemVerilog.git ~/.vim/bundle/vim-SystemVerilog.git
 
+# Set up supertab (tab completion)
+git clone https://github.com/ervandew/supertab.git ~/.vim/bundle/supertab
+
 # Set up bash syntax
 wget http://www.panix.com/~elflord/vim/syntax/bash.vim
 wget http://ftp.vim.org/vim/runtime/syntax/awk.vim
