@@ -19,18 +19,10 @@ check_cmd() {
 }
 
 # Check that required commands are installed
-if ! check_cmd git; then
-   exit
-fi
-if ! check_cmd rsync; then
-   exit
-fi
-if ! check_cmd wget; then
-   exit
-fi
-if ! check_cmd curl; then
-   exit
-fi
+if ! check_cmd git; then exit fi
+if ! check_cmd rsync; then exit fi
+if ! check_cmd wget; then exit fi
+if ! check_cmd curl; then exit fi
 
 # Set up git config
 source gitconfig
@@ -51,23 +43,14 @@ rm -rf ~/.vim
 mkdir -p ~/.vim/autoload ~/.vim/bundle
 curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 
-#Set up vundle
-git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-
-# Set up SystemVerilog/UVM syntax
-git clone git://github.com/WeiChungWu/vim-SystemVerilog.git ~/.vim/bundle/vim-SystemVerilog
-
-# Set up supertab (tab completion)
-git clone https://github.com/ervandew/supertab.git ~/.vim/bundle/supertab
-
-# Set up tabular
-git clone git://github.com/godlygeek/tabular.git ~/.vim/bundle/tabular
-
-# Set up vim-fugitive
-git clone git://github.com/tpope/vim-fugitive.git ~/.vim/bundle/vim-fugitive
-
-# Set up vim airline
-git clone https://github.com/bling/vim-airline ~/.vim/bundle/vim-airline
+pushd ~/.vim/bundle
+git clone git://github.com/WeiChungWu/vim-SystemVerilog.git
+git clone https://github.com/ervandew/supertab.git
+git clone git://github.com/godlygeek/tabular.git
+git clone git://github.com/tpope/vim-fugitive.git
+git clone https://github.com/bling/vim-airline
+git clone https://github.com/tpope/vim-commentary.git
+popd
 
 # Set up bash syntax
 wget http://www.panix.com/~elflord/vim/syntax/bash.vim
