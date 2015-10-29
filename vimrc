@@ -243,12 +243,12 @@ augroup END
         au!
         au Filetype verilog_systemverilog setlocal sw=2 sts=2
         au Filetype verilog_systemverilog setlocal commentstring=//%s
-        au Filetype verilog_systemverilog setlocal foldmethod=syntax
+        au Filetype verilog_systemverilog setlocal foldmethod=syntax foldlevel=1
 
         "Tabular macro to allign class fields and variable assignments
         au Filetype verilog_systemverilog nnoremap <silent> <leader>c :Tab /\s[/l0<enter>:Tab /\s[a-z]/l0<enter>:Tab /;/l0<enter>:Tab /=<enter>
     augroup END
-    let g:verilog_syntax_fold = "function,task,comment"
+    let g:verilog_syntax_fold = "class,function,task,comment"
     com! -buffer RenameFunction call RenameFunction()
 "}}}
 "Example vimscript {{{
