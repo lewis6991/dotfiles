@@ -4,6 +4,10 @@
 git config --global user.name "lewis6991"
 git config --global user.email "lewis6991@gmail.com"
 #-------------------------------------------------------------------------------
+# Editor
+#-------------------------------------------------------------------------------
+git config --global core.editor vim
+#-------------------------------------------------------------------------------
 # Difftool
 #-------------------------------------------------------------------------------
 git config --global diff.tool vimdiff
@@ -11,12 +15,11 @@ git config --global difftool.prompt false
 #-------------------------------------------------------------------------------
 # Aliases
 #-------------------------------------------------------------------------------
-git config --global alias.d difftool
+git config --global alias.d  difftool
 git config --global alias.st status
 git config --global alias.ci commit
 git config --global alias.co checkout
 git config --global alias.br branch
-
 git config --global alias.lg "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit"
 #-------------------------------------------------------------------------------
 # Automatically rebase pulls
@@ -24,9 +27,7 @@ git config --global alias.lg "log --graph --pretty=format:'%Cred%h%Creset -%C(ye
 # You can avoid having messy "Merge branch 'master' into..." commits by rebasing
 # every time you pull. This configuration item essentially performs a
 # git pull --rebase every time you do git pull
-
-#git config --global branch.autosetuprebase always
-
+git config --global branch.autosetuprebase always
 #-------------------------------------------------------------------------------
 # Other
 #-------------------------------------------------------------------------------
