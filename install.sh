@@ -1,20 +1,20 @@
 #!/bin/bash
 
 function check_cmd {
-   echo -n Checking $1 is installed...
-   if which $1 >/dev/null; then
-      echo OK
-      return 0
-   else
-      echo No
-      if which brew >/dev/null; then
-          echo Attempting to install $1 using brew...
-          brew install $1
-          return 0
-      else
-          echo Error: $1 is not installed.
-          return 1
-      fi
+    echo -n Checking $1 is installed...
+    if which $1 >/dev/null; then
+        echo OK
+        return 0
+    else
+        echo No
+        if which brew >/dev/null; then
+            echo Attempting to install $1 using brew...
+            brew install $1
+            return 0
+        else
+            echo Error: $1 is not installed.
+            return 1
+        fi
     fi
 }
 
