@@ -1,8 +1,11 @@
-vimrc
+unix setup
 =====
 
-My personal vimrc file and set up script.
+My personal script to set up a unix environment.
 
 Includes:
-* SystemVerilog Syntax and Indent scripts.
-* Tabular plugin.
+* VIM config.
+* Git config.
+* Dot files.
+* Shell preferences.
+
