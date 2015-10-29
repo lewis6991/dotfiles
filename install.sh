@@ -24,37 +24,13 @@ if ! check_cmd rsync; then exit; fi
 if ! check_cmd wget ; then exit; fi
 if ! check_cmd curl ; then exit; fi
 
-# Set up git config
-source gitconfig
+source git_config
+source vim_config
 
 # Set up config files
-cp -v ctags ~/.ctags
+cp -v ctags    ~/.ctags
 cp -v agignore ~/.agignore
-cp -v bashrc ~/.bashrc
-
-# Clean ~/.vim
-rm -rf ~/.vim
-
-# Set up pathogen
-mkdir -p ~/.vim/autoload ~/.vim/bundle
-curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
-
-pushd ~/.vim/bundle
-# # git clone git://github.com/WeiChungWu/vim-SystemVerilog.git
-git clone https://github.com/vhda/verilog_systemverilog.vim.git
-git clone https://github.com/ervandew/supertab.git
-git clone git://github.com/godlygeek/tabular.git
-git clone git://github.com/tpope/vim-fugitive.git
-git clone https://github.com/bling/vim-airline
-git clone https://github.com/tpope/vim-commentary.git
-popd
-
-# # Set up bash syntax
-wget http://www.panix.com/~elflord/vim/syntax/bash.vim
-wget http://ftp.vim.org/vim/runtime/syntax/awk.vim
-mkdir ~/.vim/syntax
-mv bash.vim ~/.vim/syntax/
-mv awk.vim ~/.vim/syntax/
+cp -v bashrc   ~/.bashrc
 
 # # Set up powerline fonts
 pushd ~
@@ -64,7 +40,4 @@ cd fonts
 cd
 rm -rf fonts
 popd
-
-# Set up vimrc
-cp -r vimrc ~/.vimrc
 
