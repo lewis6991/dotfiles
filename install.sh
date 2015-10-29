@@ -27,13 +27,9 @@ if ! check_cmd curl ; then exit; fi
 # Set up git config
 source gitconfig
 
-# Set up ctags
+# Set up config files
 cp -v ctags ~/.ctags
-
-# Set up ag
 cp -v agignore ~/.agignore
-
-# Set up bash
 cp -v bashrc ~/.bashrc
 
 # Clean ~/.vim
