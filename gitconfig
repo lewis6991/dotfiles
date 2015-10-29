@@ -33,3 +33,6 @@ git config --global branch.autosetuprebase always
 #-------------------------------------------------------------------------------
 git config --global color.ui true
 git config --global core.autocrlf input
+if [ "$(uname)" == "Darwin" ]; then
+    git config --global credential.helper osxkeychain
+fi
