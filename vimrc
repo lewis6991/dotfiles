@@ -153,6 +153,9 @@ if has("gui_running")
     set guioptions-=T "Remove toolbar
     set guifont=DejaVu\ \LGC\ Sans\ Mono\ 14
 endif
+if has("mac")
+    let g:airline_powerline_fonts=1
+endif
 "}}}
 "SystemVerilog Mappings {{{
 function! UpdateTags() "{{{
@@ -248,7 +251,7 @@ augroup END
         "Tabular macro to allign class fields and variable assignments
         au Filetype verilog_systemverilog nnoremap <silent> <leader>c :Tab /\s[/l0<enter>:Tab /\s[a-z]/l0<enter>:Tab /;/l0<enter>:Tab /=<enter>
     augroup END
-    let g:verilog_syntax_fold = "class,function,task,comment"
+    let g:verilog_syntax_fold = "all"
     com! -buffer RenameFunction call RenameFunction()
 "}}}
 "Example vimscript {{{
