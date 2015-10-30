@@ -34,9 +34,12 @@ cp -v bashrc   ~/.bashrc
 
 # # Set up powerline fonts
 pushd ~
+rm -rf fonts
+rm -rf .fonts
+rm -rf .fontconfig
 git clone https://github.com/powerline/fonts.git
 cd fonts
-./install
+./install.sh
 cd
 rm -rf fonts
 popd
