@@ -151,10 +151,16 @@ endif
 if has("gui_running")
     set guioptions-=m "Remove menu bar
     set guioptions-=T "Remove toolbar
-    set guifont=DejaVu\ \LGC\ Sans\ Mono\ 14
-endif
-if has("mac")
     let g:airline_powerline_fonts=1
+    if has("mac")
+        set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
+    else
+        set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 12
+    endif
+else
+    if has("mac")
+        let g:airline_powerline_fonts=1
+    endif
 endif
 "}}}
 "SystemVerilog Mappings {{{
