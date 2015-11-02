@@ -28,7 +28,7 @@ source git_config
 source vim_config
 
 # Set up config files
-cp -v ctags    ~/.ctags
+# cp -v ctags    ~/.ctags
 cp -v agignore ~/.agignore
 cp -v bashrc   ~/.bashrc
 
