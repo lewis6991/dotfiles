@@ -7,12 +7,13 @@ curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
 
 pushd ~/.vim/bundle
 # # git clone git://github.com/WeiChungWu/vim-SystemVerilog.git
-git clone https://github.com/vhda/verilog_systemverilog.vim.git
+git clone https://github.com/lewis6991/verilog_systemverilog.vim.git
 git clone https://github.com/ervandew/supertab.git
 git clone git://github.com/godlygeek/tabular.git
 git clone git://github.com/tpope/vim-fugitive.git
 git clone https://github.com/bling/vim-airline
 git clone https://github.com/tpope/vim-commentary.git
+git clone https://github.com/chriskempson/base16-vim.git
 popd
 
 cp -r vimrc ~/.vimrc
