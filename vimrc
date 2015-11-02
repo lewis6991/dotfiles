@@ -23,7 +23,14 @@ if v:version == 704
     set mouse=a                "Enable mouse support
 endif
 
-colorscheme slate
+let base16colorspace=256
+set background=dark
+
+if has("gui_running")
+    colorscheme base16-default
+else
+    colorscheme slate
+endif
 "}}}
 "Mappings {{{
     "VIM Training {{{
@@ -73,7 +80,7 @@ colorscheme slate
     if v:version == 704
         set autochdir "Automatically change to directory to current buffer
     endif
-"}}}
+"j}}}
 "History {{{
    set history=500   "keep a lot of history
    set viminfo+=:100 "keep lots of cmd history
@@ -116,9 +123,9 @@ colorscheme slate
 "}}}
 "Folding{{{
 if v:version == 704
-    set foldmethod=marker
+    set foldmethod=syntax
     set foldnestmax=10
-    set foldlevel=0
+    set foldlevel=1
     set foldenable
     set foldcolumn=0
 
@@ -153,9 +160,11 @@ if has("gui_running")
     set guioptions-=T "Remove toolbar
     let g:airline_powerline_fonts=1
     if has("mac")
-        set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
+        set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
+        " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
     else
-        set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 12
+        set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline\ 12
+        " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 12
     endif
 else
     if has("mac")
@@ -308,7 +317,7 @@ endfunction "}}}
 "Apply .vimrc on save {{{
 augroup sourceConf
    autocmd!
-   autocmd BufWritePost .vimrc so %
-   autocmd FileType vim :au BufEnter setlocal textwidth=0
+   autocmd BufWritePre $MYVIMRC so %
+   autocmd BufRead,BufWritePost $MYVIMRC setlocal fdm=marker foldlevel=0 textwidth=0
 augroup END
 "}}}
