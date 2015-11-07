@@ -1,6 +1,5 @@
 set nocp " VIM is better than VI
 "Plugins {{{
-filetype off " Required in order to use pathogen and vundle.
 call plug#begin()
 Plug 'junegunn/vim-easy-align'
 Plug 'tpope/vim-commentary'
@@ -12,9 +11,9 @@ Plug 'chriskempson/base16-vim'
 Plug 'ervandew/supertab'
 Plug 'bling/vim-airline'
 call plug#end()
-filetype plugin indent on "Can enable now plugins are loaded.
 "}}}
 "General {{{
+filetype plugin indent on
 set nostartofline
 set number
 set numberwidth=1              "Width of number column
