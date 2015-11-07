@@ -1,7 +1,17 @@
 set nocp " VIM is better than VI
-"Pathogen plugins {{{
+"Plugins {{{
 filetype off " Required in order to use pathogen and vundle.
-execute pathogen#infect()
+call plug#begin()
+Plug 'junegunn/vim-easy-align'
+Plug 'tpope/vim-commentary'
+Plug 'easymotion/vim-easymotion'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'tpope/vim-fugitive'
+Plug 'lewis6991/verilog_systemverilog.vim'
+Plug 'chriskempson/base16-vim'
+Plug 'ervandew/supertab'
+Plug 'bling/vim-airline'
+call plug#end()
 filetype plugin indent on "Can enable now plugins are loaded.
 "}}}
 "General {{{
@@ -27,99 +37,96 @@ let base16colorspace=256
 set background=dark
 
 if has("gui_running")
-    colorscheme base16-default
+    colorscheme base16-harmonic16
 else
     colorscheme slate
 endif
 "}}}
 "Mappings {{{
-    "VIM Training {{{
-    noremap <Up>       :echo "Stop being stupid!"<enter>
-    noremap <Down>     :echo "Stop being stupid!"<enter>
-    noremap <Left>     :echo "Stop being stupid!"<enter>
-    noremap <Right>    :echo "Stop being stupid!"<enter>
-    noremap <PageUp>   :echo "Stop being stupid!"<enter>
-    noremap <PageDown> :echo "Stop being stupid!"<enter>
-    inoremap <Up>       <esc>:echo "Stop being stupid!"<enter>
-    inoremap <Down>     <esc>:echo "Stop being stupid!"<enter>
-    inoremap <Left>     <esc>:echo "Stop being stupid!"<enter>
-    inoremap <Right>    <esc>:echo "Stop being stupid!"<enter>
-    inoremap <PageUp>   <esc>:echo "Stop being stupid!"<enter>
-    inoremap <PageDown> <esc>:echo "Stop being stupid!"<enter>
-    "}}}
-    noremap Q :q<enter>
-    nnoremap <leader>ev :vsplit $MYVIMRC<cr>
-    nnoremap :W :w
-    nnoremap :Q :q
-    nnoremap :wQ :wq
-    nnoremap :WQ :wq
-    nnoremap :Wq :wq
-    nnoremap :BD :bd
-    nnoremap :Bd :bd
-    nnoremap :bD :bd
-    inoremap jk <esc>
-    nnoremap ; :
-    nnoremap <space> za
-    " Toggles line number mode.
-    function! g:ToggleNuMode() "{{{
-        if(&rnu == 1)
-            set nornu
-        else
-            set rnu
-        endif
-    endfunc "}}}
-    nnoremap <C-N> :call g:ToggleNuMode()<cr>
+"VIM Training {{{
+noremap <Up>       :echo "Stop being stupid!"<enter>
+noremap <Down>     :echo "Stop being stupid!"<enter>
+noremap <Left>     :echo "Stop being stupid!"<enter>
+noremap <Right>    :echo "Stop being stupid!"<enter>
+noremap <PageUp>   :echo "Stop being stupid!"<enter>
+noremap <PageDown> :echo "Stop being stupid!"<enter>
+inoremap <Up>       <esc>:echo "Stop being stupid!"<enter>
+inoremap <Down>     <esc>:echo "Stop being stupid!"<enter>
+inoremap <Left>     <esc>:echo "Stop being stupid!"<enter>
+inoremap <Right>    <esc>:echo "Stop being stupid!"<enter>
+inoremap <PageUp>   <esc>:echo "Stop being stupid!"<enter>
+inoremap <PageDown> <esc>:echo "Stop being stupid!"<enter>
 "}}}
-"Tabular mappings {{{
-    nnoremap <silent> <leader>q :Tab /=<Enter>
+noremap Q :q<enter>
+nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+nnoremap :W :w
+nnoremap :Q :q
+nnoremap :wQ :wq
+nnoremap :WQ :wq
+nnoremap :Wq :wq
+nnoremap :BD :bd
+nnoremap :Bd :bd
+nnoremap :bD :bd
+inoremap jk <esc>
+nnoremap ; :
+nnoremap <space> za
+" Toggles line number mode.
+function! g:ToggleNuMode() "{{{
+    if(&rnu == 1)
+        set nornu
+    else
+        set rnu
+    endif
+endfunc "}}}
+nnoremap <C-N> :call g:ToggleNuMode()<cr>
 "}}}
 "Buffers {{{
-    set hidden    "Allows buffers to exist in background
-    set autoread  "Automatically read file when it is modified outside of vim
+set hidden    "Allows buffers to exist in background
+set autoread  "Automatically read file when it is modified outside of vim
 
-    if v:version == 704
-        set autochdir "Automatically change to directory to current buffer
-    endif
-"j}}}
+if v:version == 704
+    set autochdir "Automatically change to directory to current buffer
+endif
+"}}}
 "History {{{
-   set history=500   "keep a lot of history
-   set viminfo+=:100 "keep lots of cmd history
-   set viminfo+=/100 "keep lots of search history
+set history=500   "keep a lot of history
+set viminfo+=:100 "keep lots of cmd history
+set viminfo+=/100 "keep lots of search history
 "}}}
 "Backups {{{
-   set nowb
-   set noswapfile
-   set nobackup
+set nowb
+set noswapfile
+set nobackup
 "}}}
 "Whitespace{{{
-   set shiftwidth=4  "Set tab to 3 spaces
-   set softtabstop=4
-   set tabstop=4
-   set expandtab     "Use spaces instead of tabs
+set shiftwidth=4  "Set tab to 3 spaces
+set softtabstop=4
+set tabstop=4
+set expandtab     "Use spaces instead of tabs
 
-   augroup DelTrail
-      autocmd!
-      autocmd BufWrite * :call DeleteTrailingWS()
-   augroup END
+augroup DelTrail
+    autocmd!
+    autocmd BufWrite * :call DeleteTrailingWS()
+augroup END
 
-    " Delete trailing white space on save.
-   func! DeleteTrailingWS()
-      exe "normal mz"
-      %s/\s\+$//ge
-      exe "normal `z"
-   endfunc
+" Delete trailing white space on save.
+func! DeleteTrailingWS()
+    exe "normal mz"
+    %s/\s\+$//ge
+    exe "normal `z"
+endfunc
 "}}}
 "Searching{{{
-   set hlsearch             "Highlight search results.
-   set incsearch            "Move cursor to search occurance.
-   set ignorecase smartcase "Case insensitive search if lowercase.
+set hlsearch             "Highlight search results.
+set incsearch            "Move cursor to search occurance.
+set ignorecase smartcase "Case insensitive search if lowercase.
 "}}}
 "Indentation{{{
-   set autoindent
-   " set smartindent
+set autoindent
+" set smartindent
 "}}}
 "Syntax{{{
-   syntax enable "Enable syntax highlighting
+syntax enable "Enable syntax highlighting
 "}}}
 "Folding{{{
 if v:version == 704
@@ -212,112 +219,119 @@ augroup END
 "}}}
 "SystemVerilog Settings {{{
 
-    function! RenameFunction() "{{{
-       let str = getline('.')
-       let lifetime        = '((automatic|static)\s+)?'
-       let virtual         = '(virtual\s+)?'
-       let static          = '(static\s+)?'
-       let name            = '[a-zA-Z_]\w+\s*'
-       let arguments       = '\(.*\)'
-       let function_syntax = '\v^\s*'.static.virtual.'function\s+'.lifetime.'.*\s+'.name.arguments.';'
-       let task_syntax     = '\v^\s*'.static.virtual.'task\s+'.lifetime.name.arguments.';'
-       let class_syntax    = '\v^\s*'.virtual.'(interface\s+)?class\s+'.name.'(\s+extends\s+.+)?(\s+implements\s+.+)?\s*;'
-       let class_syntax2   = '\v^class\s+'.name.'(\s+extends\s+.+)?(\s+implements\s+.+)?\s*;'
-       if str =~ function_syntax || str =~ task_syntax || str =~ class_syntax
-           "Save starting position
-           execute "normal! mz"
-           let line_type = ''
-           if str =~ function_syntax
-               let line_type = 'function'
-               "Goto name and yank it
-               execute "normal! t(yiw"
-           elseif str =~ task_syntax
-               let line_type = 'task'
-               "Goto name and yank it
-               execute "normal! t(yiw"
-           elseif str =~ class_syntax
-               let line_type = 'class'
-               "Goto name and yank it
-               execute "normal! 0/\\<class\<cr>wyiw"
-           elseif str =~ class_syntax2
-               let line_type = 'class'
-               "Goto name and yank it
-               execute "normal! 0wyiw"
-           endif
-           "Goto closing line
-           execute "normal! /end".line_type."\<cr>"
-           "Navigate to name
-           execute "normal! ww"
-           "Store old name in register a
-           execute "normal! \"ayiw"
-           "Substitute throughout file
-           execute "normal! :%s/\\<\<C-r>a\\>/\<C-r>0/g\<cr>"
-           "Move back to starting position
-           execute "normal! `z"
-       endif
-    endfunction "}}}
+function! RenameFunction() "{{{
+    let str = getline('.')
+    let lifetime        = '((automatic|static)\s+)?'
+    let virtual         = '(virtual\s+)?'
+    let static          = '(static\s+)?'
+    let name            = '[a-zA-Z_]\w+\s*'
+    let arguments       = '\(.*\)'
+    let function_syntax = '\v^\s*'.static.virtual.'function\s+'.lifetime.'.*\s+'.name.arguments.';'
+    let task_syntax     = '\v^\s*'.static.virtual.'task\s+'.lifetime.name.arguments.';'
+    let class_syntax    = '\v^\s*'.virtual.'(interface\s+)?class\s+'.name.'(\s+extends\s+.+)?(\s+implements\s+.+)?\s*;'
+    let class_syntax2   = '\v^class\s+'.name.'(\s+extends\s+.+)?(\s+implements\s+.+)?\s*;'
+    if str =~ function_syntax || str =~ task_syntax || str =~ class_syntax
+        "Save starting position
+        execute "normal! mz"
+        let line_type = ''
+        if str =~ function_syntax
+            let line_type = 'function'
+            "Goto name and yank it
+            execute "normal! t(yiw"
+        elseif str =~ task_syntax
+            let line_type = 'task'
+            "Goto name and yank it
+            execute "normal! t(yiw"
+        elseif str =~ class_syntax
+            let line_type = 'class'
+            "Goto name and yank it
+            execute "normal! 0/\\<class\<cr>wyiw"
+        elseif str =~ class_syntax2
+            let line_type = 'class'
+            "Goto name and yank it
+            execute "normal! 0wyiw"
+        endif
+        "Goto closing line
+        execute "normal! /end".line_type."\<cr>"
+        "Navigate to name
+        execute "normal! ww"
+        "Store old name in register a
+        execute "normal! \"ayiw"
+        "Substitute throughout file
+        execute "normal! :%s/\\<\<C-r>a\\>/\<C-r>0/g\<cr>"
+        "Move back to starting position
+        execute "normal! `z"
+    endif
+endfunction "}}}
 
-    augroup file_prefs
-        au!
-        au Filetype verilog_systemverilog setlocal sw=2 sts=2
-        au Filetype verilog_systemverilog setlocal commentstring=//%s
-        au Filetype verilog_systemverilog setlocal foldmethod=syntax foldlevel=1
-
-        "Tabular macro to allign class fields and variable assignments
-        au Filetype verilog_systemverilog nnoremap <silent> <leader>c :Tab /\s[/l0<enter>:Tab /\s[a-z]/l0<enter>:Tab /;/l0<enter>:Tab /=<enter>
-    augroup END
-    let g:verilog_syntax_fold = "all"
-    com! -buffer RenameFunction call RenameFunction()
+augroup file_prefs
+    au!
+    au Filetype verilog_systemverilog setlocal sw=2 sts=2
+    au Filetype verilog_systemverilog setlocal commentstring=//%s
+    au Filetype verilog_systemverilog setlocal foldmethod=syntax foldlevel=1
+augroup END
+let g:verilog_syntax_fold = "all"
+com! -buffer RenameFunction call RenameFunction()
 "}}}
 "Example vimscript {{{
-function! SVFold(line) "{{{
-   let str = getline(a:line)
-   let fold_open  = [
-               \'^\s*(virtual\s+)?class\s+',
-               \'^\s*(virtual\s+)?function\s+',
-               \'^\s*(virtual\s+)?task\s+',
-               \'^\s*(default\s+)?clocking\s+',
-               \'^\s*module\s+',
-               \'^\s*\(\s*$',
-               \'\s*/\*\s*$'
-               \]
-   let fold_close = [
-               \'^\s*endclass',
-               \'^\s*endfunction',
-               \'^\s*endtask',
-               \'^\s*endclocking',
-               \'^\s*endmodule',
-               \'^\s*\)\s*;\s*$',
-               \'\s*\*/\s*$'
-               \]
-   if str =~ '\v'.join(fold_open, '|')
-      return 'a1'
-   elseif str =~ '\v'.join(fold_close, '|')
-      return 's1'
-   else
-       return '='
-   endif
-endfunction "}}}
+" function! SVFold(line) "{{{
+"    let str = getline(a:line)
+"    let fold_open  = [
+"                \'^\s*(virtual\s+)?class\s+',
+"                \'^\s*(virtual\s+)?function\s+',
+"                \'^\s*(virtual\s+)?task\s+',
+"                \'^\s*(default\s+)?clocking\s+',
+"                \'^\s*module\s+',
+"                \'^\s*\(\s*$',
+"                \'\s*/\*\s*$'
+"                \]
+"    let fold_close = [
+"                \'^\s*endclass',
+"                \'^\s*endfunction',
+"                \'^\s*endtask',
+"                \'^\s*endclocking',
+"                \'^\s*endmodule',
+"                \'^\s*\)\s*;\s*$',
+"                \'\s*\*/\s*$'
+"                \]
+"    if str =~ '\v'.join(fold_open, '|')
+"       return 'a1'
+"    elseif str =~ '\v'.join(fold_close, '|')
+"       return 's1'
+"    else
+"        return '='
+"    endif
+" endfunction "}}}
 " au Filetype systemverilog :au InsertLeave * :call RenameFunction()
-    "au BufWritePost *.sv,*.svh,*.v call UpdateTags()
+"au BufWritePost *.sv,*.svh,*.v call UpdateTags()
 "}}}
 "Abbreviations {{{
-    iabbrev funciton  function
-    iabbrev functiton function
-    iabbrev fucntion  function
-    iabbrev funtion   function
-    iabbrev erturn    return
-    iabbrev retunr    return
-    iabbrev reutrn    return
-    iabbrev reutn     return
-    iabbrev htis      this
-    iabbrev foreahc   foreach
-    iabbrev forech    foreach
+iabbrev funciton  function
+iabbrev functiton function
+iabbrev fucntion  function
+iabbrev funtion   function
+iabbrev erturn    return
+iabbrev retunr    return
+iabbrev reutrn    return
+iabbrev reutn     return
+iabbrev htis      this
+iabbrev foreahc   foreach
+iabbrev forech    foreach
+"}}}
+"Easy Align{{{
+nmap ga <Plug>(EasyAlign)
+xmap ga <Plug>(EasyAlign)
+let g:easy_align_delimiters = {
+            \    ';': {
+            \        'pattern'     : ';',
+            \        'left_margin' : 0
+            \    }
+            \ }
 "}}}
 "Apply .vimrc on save {{{
 augroup sourceConf
-   autocmd!
-   autocmd BufWritePre $MYVIMRC so %
-   autocmd BufRead,BufWritePost $MYVIMRC setlocal fdm=marker foldlevel=0 textwidth=0
+    autocmd!
+    autocmd BufWrite $MYVIMRC so %
+    autocmd BufRead,BufWritePost $MYVIMRC setlocal fdm=marker foldlevel=0 textwidth=0
 augroup END
 "}}}
