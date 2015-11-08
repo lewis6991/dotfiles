@@ -16,6 +16,7 @@ call plug#end()
 filetype plugin indent on
 set nostartofline
 set number
+set autoindent
 set numberwidth=1              "Width of number column
 set showmatch                  "Show matching parenthesis
 set scrolloff=10               "Context while scrolling
@@ -120,10 +121,6 @@ set hlsearch             "Highlight search results.
 set incsearch            "Move cursor to search occurance.
 set ignorecase smartcase "Case insensitive search if lowercase.
 "}}}
-"Indentation{{{
-set autoindent
-" set smartindent
-"}}}
 "Syntax{{{
 syntax enable "Enable syntax highlighting
 "}}}
@@ -169,8 +166,8 @@ if has("gui_running")
         set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
         " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
     else
-        set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline\ 12
-        " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 12
+        set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
+        " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
     endif
 else
     if has("mac")
@@ -179,11 +176,6 @@ else
 endif
 "}}}
 "SystemVerilog Mappings {{{
-function! UpdateTags() "{{{
-    let file = expand("%:p")
-    let cmd = 'ctags -a ' . file
-    let resp = system(cmd)
-endfunction "}}}
 augroup sv_prefs
     au!
     "UVM Report Macros {{{
@@ -271,38 +263,6 @@ augroup file_prefs
 augroup END
 let g:verilog_syntax_fold = "all"
 com! -buffer RenameFunction call RenameFunction()
-"}}}
-"Example vimscript {{{
-" function! SVFold(line) "{{{
-"    let str = getline(a:line)
-"    let fold_open  = [
-"                \'^\s*(virtual\s+)?class\s+',
-"                \'^\s*(virtual\s+)?function\s+',
-"                \'^\s*(virtual\s+)?task\s+',
-"                \'^\s*(default\s+)?clocking\s+',
-"                \'^\s*module\s+',
-"                \'^\s*\(\s*$',
-"                \'\s*/\*\s*$'
-"                \]
-"    let fold_close = [
-"                \'^\s*endclass',
-"                \'^\s*endfunction',
-"                \'^\s*endtask',
-"                \'^\s*endclocking',
-"                \'^\s*endmodule',
-"                \'^\s*\)\s*;\s*$',
-"                \'\s*\*/\s*$'
-"                \]
-"    if str =~ '\v'.join(fold_open, '|')
-"       return 'a1'
-"    elseif str =~ '\v'.join(fold_close, '|')
-"       return 's1'
-"    else
-"        return '='
-"    endif
-" endfunction "}}}
-" au Filetype systemverilog :au InsertLeave * :call RenameFunction()
-"au BufWritePost *.sv,*.svh,*.v call UpdateTags()
 "}}}
 "Abbreviations {{{
 iabbrev funciton  function
