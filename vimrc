@@ -10,10 +10,12 @@ Plug 'lewis6991/verilog_systemverilog.vim'
 Plug 'chriskempson/base16-vim'
 Plug 'ervandew/supertab'
 Plug 'bling/vim-airline'
+" Plug 'nachumk/systemverilog.vim'
 call plug#end()
 "}}}
 "General {{{
 filetype plugin indent on
+syntax enable                  "Enable syntax highlighting
 set nostartofline
 set number
 set autoindent
@@ -121,9 +123,6 @@ set hlsearch             "Highlight search results.
 set incsearch            "Move cursor to search occurance.
 set ignorecase smartcase "Case insensitive search if lowercase.
 "}}}
-"Syntax{{{
-syntax enable "Enable syntax highlighting
-"}}}
 "Folding{{{
 if v:version == 704
     set foldmethod=syntax
@@ -160,14 +159,18 @@ endif
 "GUI Options {{{
 if has("gui_running")
     set guioptions-=m "Remove menu bar
+    set guioptions-=M "Remove menu bar
+    set guioptions-=L "Remove left scroll bar
+    set guioptions-=r "Remove right scroll bar
     set guioptions-=T "Remove toolbar
+    set encoding=utf8
     let g:airline_powerline_fonts=1
     if has("mac")
         set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
         " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
     else
-        set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
-        " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h12
+        set guifont=Hack\ 10
+        " set guifont=DejaVu\ Sans\ Mono\ for\ Powerline:h10
     endif
 else
     if has("mac")
@@ -176,6 +179,42 @@ else
 endif
 "}}}
 "SystemVerilog Mappings {{{
+
+function! InsertSVFunction(type, virtual, doc) "{{{
+    let s:line=line(".")
+    let s:name = substitute(getline('.'), '\s*' , '', 'g')
+    let s:indent = repeat(' ', indent('.'))
+    if a:type == "function"
+        if a:virtual != 0
+            call setline(s:line, s:indent."virtual function void ".s:name."();")
+        else
+            call setline(s:line, s:indent."function void ".s:name."();")
+        endif
+        call append(s:line, s:indent."endfunction : ".s:name)
+    elseif
+        if a:virtual != 0
+            call setline(s:line, s:indent."virtual task ".s:name."();")
+        else
+            call setline(s:line, s:indent."task ".s:name."();")
+        endif
+        call append(s:line, s:indent."endtask : ".s:name)
+    endif
+    call append(s:line+1, "")
+    if a:doc != 0
+        if a:type == "function"
+            call append(s:line-1, s:indent."/* Function: ".s:name)
+        else
+            call append(s:line-1, s:indent."/* Task: ".s:name)
+        endif
+        call append(s:line  , s:indent."*"             )
+        call append(s:line+1, s:indent."*  Parameters:")
+        call append(s:line+2, s:indent."*"             )
+        call append(s:line+3, s:indent."*  Returns:"   )
+        call append(s:line+4, s:indent."*/"            )
+    endif
+    unlet s:line
+endfunction "}}}
+
 augroup sv_prefs
     au!
     "UVM Report Macros {{{
@@ -187,22 +226,23 @@ augroup sv_prefs
     "}}}
     "UVM Class Macros {{{
     au FileType verilog_systemverilog inoremap `newc function new(string name, uvm_component parent);<enter>super.new(name, parent);<enter> endfunction : new<esc>2<up>3==i
-    au FileType verilog_sVystemverilog inoremap `newo function new(string name = "");<enter>super.new(name);<enter> endfunction : new<esc>2<up>3==i
+    au FileType verilog_systemverilog inoremap `newo function new(string name = "");<enter>super.new(name);<enter> endfunction : new<esc>2<up>3==i
     "}}}
     "UVM Phase Macros {{{
     au FileType verilog_systemverilog inoremap `cphase function void connect_phase(uvm_phase phase);<enter>endfunction : connect_phase<esc>1<up>2==i<esc>o
     au FileType verilog_systemverilog inoremap `bphase function void build_phase(uvm_phase phase);<enter>endfunction : build_phase<esc>1<up>2==i<esc>o
     "}}}
     "SystemVerilog Macros {{{
-    au FileType verilog_systemverilog inoremap <leader>f <esc>diwifunction void <esc>pa();<enter>endfunction : <esc>p<up>2==o
-    au FileType verilog_systemverilog inoremap <leader>t <esc>diwitask <esc>pa();<enter>endtask : <esc>p<up>2==o
-    au FileType verilog_systemverilog inoremap <leader>df <esc>diwifunction void <esc>pa();<enter>endfunction : <esc>p<up>O/*<enter>Function: <esc>pa<enter><enter><enter>Parameters:<enter><enter>Returns:<enter><bs>/<esc>jo
-    au FileType verilog_systemverilog inoremap <leader>dt <esc>diwitask <esc>pa();<enter>endtask : <esc>p<up>O/*<enter>Task: <esc>pa<enter><enter><enter>Parameters:<enter><bs>/<esc>j2==
-    au FileType verilog_systemverilog inoremap <leader>vf <esc>diwivirtual function void <esc>pa();<enter>endfunction : <esc>p<up>2==o
-    au FileType verilog_systemverilog inoremap <leader>vt <esc>diwivirtual task <esc>pa();<enter>endtask : <esc>p<up>2==o
-    au FileType verilog_systemverilog noremap  <leader>s <esc>kA begin<esc>jjIend <esc>==ko
+    au FileType verilog_systemverilog inoremap <leader>f   <esc>:call InsertSVFunction("function", 0, 0)<cr>
+    au FileType verilog_systemverilog inoremap <leader>t   <esc>:call InsertSVFunction("task"    , 0, 0)<cr>
+    au FileType verilog_systemverilog inoremap <leader>df  <esc>:call InsertSVFunction("function", 0, 1)<cr>
+    au FileType verilog_systemverilog inoremap <leader>dt  <esc>:call InsertSVFunction("task"    , 0, 1)<cr>
+    au FileType verilog_systemverilog inoremap <leader>vf  <esc>:call InsertSVFunction("function", 1, 0)<cr>
+    au FileType verilog_systemverilog inoremap <leader>vt  <esc>:call InsertSVFunction("task"    , 1, 0)<cr>
+    au FileType verilog_systemverilog inoremap <leader>dvf <esc>:call InsertSVFunction("function", 1, 1)<cr>
+    au FileType verilog_systemverilog inoremap <leader>dvt <esc>:call InsertSVFunction("task"    , 1, 1)<cr>
+    au FileType verilog_systemverilog noremap  <leader>s <esc>kA begin<esc>joend<esc>kO
     "}}}
-    au BufEnter *.log setlocal wrap cursorline
 
     "verilog macro to convert portlist into instantiation list.
     au FileType verilog_systemverilog let @r=':%s/\v(input|output|inout|ref)\s+((\w+|\[.*\])\s+)?([a-z]\w+)\s*(\[.*\]\s*)?=?.*,$/\.\3\(\3\),\\/g'
@@ -257,11 +297,12 @@ endfunction "}}}
 
 augroup file_prefs
     au!
-    au Filetype verilog_systemverilog setlocal sw=2 sts=2
+    au Filetype verilog_systemverilog setlocal shiftwidth=2 tabstop=2
     au Filetype verilog_systemverilog setlocal commentstring=//%s
     au Filetype verilog_systemverilog setlocal foldmethod=syntax foldlevel=1
+    au BufEnter *.log setlocal wrap cursorline
 augroup END
-let g:verilog_syntax_fold = "all"
+let g:verilog_syntax_fold = "comment,function,class,task,clocking"
 com! -buffer RenameFunction call RenameFunction()
 "}}}
 "Abbreviations {{{
@@ -276,21 +317,37 @@ iabbrev reutn     return
 iabbrev htis      this
 iabbrev foreahc   foreach
 iabbrev forech    foreach
+iabbrev wrtie     write
 "}}}
-"Easy Align{{{
+"Easy Align {{{
 nmap ga <Plug>(EasyAlign)
 xmap ga <Plug>(EasyAlign)
-let g:easy_align_delimiters = {
-            \    ';': {
-            \        'pattern'     : ';',
-            \        'left_margin' : 0
-            \    }
+if !exists('g:easy_align_delimiters')
+  let g:easy_align_delimiters = {}
+endif
+let g:easy_align_delimiters[';'] = {
+            \ 'pattern'     : ';',
+            \ 'left_margin' : 0
             \ }
+let g:easy_align_delimiters['d'] = {
+            \ 'pattern'     : '\ze\S\+\s*[;=]',
+            \ 'left_margin' : 1,
+            \ 'right_margin': 0
+            \ }
+let g:easy_align_delimiters['['] = {
+            \ 'pattern'     : '\s\zs\[',
+            \ 'left_margin' : 1,
+            \ 'right_margin': 0
+            \ }
+nmap <leader>c mzgaip[gaipdgaip;`z
+"}}}
+"CtrlP {{{
+let g:ctrlp_root_markers=['.ctrlp']
 "}}}
 "Apply .vimrc on save {{{
 augroup sourceConf
     autocmd!
-    autocmd BufWrite $MYVIMRC so %
-    autocmd BufRead,BufWritePost $MYVIMRC setlocal fdm=marker foldlevel=0 textwidth=0
+    autocmd BufWritePost $MYVIMRC so $MYVIMRC | edit | syntax enable
 augroup END
+" vim: set textwidth=0 fdm=marker foldlevel=0:
 "}}}
