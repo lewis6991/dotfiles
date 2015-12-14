@@ -25,7 +25,9 @@ if ! check_cmd wget ; then exit; fi
 if ! check_cmd curl ; then exit; fi
 
 source git_config
-source vim_config
+
+rm -rf ~/.vim
+cp -r vimrc ~/.vimrc
 
 # Set up config files
 # cp -v ctags    ~/.ctags
