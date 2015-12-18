@@ -1,11 +1,11 @@
-set nocp " VIM is better than VI
+set nocompatible               "VIM is better than VI
 "Plugins {{{
 
 " Install vim-plug if we don't arlready have it
 if empty(glob("~/.vim/autoload/plug.vim"))
-    execute 'mkdir -p ~/.vim/plugged'
-    execute 'mkdir -p ~/.vim/autoload'
-    execute '!curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
+    execute 'silent !mkdir -p ~/.vim/plugged'
+    execute 'silent !mkdir -p ~/.vim/autoload'
+    execute 'silent !curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
 endif
 
 call plug#begin('~/.vim/plugged')
@@ -28,6 +28,8 @@ Plug 'sickill/vim-pasta'
 Plug 'haya14busa/incsearch.vim'
 Plug 'sjl/gundo.vim'
 Plug 'unblevable/quick-scope'
+Plug 'guns/xterm-color-table.vim'
+" Plug 'edkolev/tmuxline.vim'
 " Plug 'nachumk/systemverilog.vim'
 " Plug 'Raimondi/delimitMate'
 " Plug 'easymotion/vim-easymotion'
@@ -65,13 +67,14 @@ if v:version == 704
     set mouse=a                "Enable mouse support
 endif
 
-let base16colorspace=256
 set background=dark
 
 if has("gui_running")
     colorscheme base16-harmonic16
 else
-    colorscheme slate
+    let base16colorspace=256
+    colorscheme base16-harmonic16
+    " colorscheme slate
 endif
 
 "}}}
@@ -105,6 +108,9 @@ nnoremap :bD :bd
 
 " Should this not be default?
 nnoremap Y y$
+
+nnoremap gb :bn<cr>
+nnoremap gp :bp<cr>
 
 " Swap these
 noremap 0 ^
@@ -211,7 +217,7 @@ if has("gui_running")
     else
         " set guifont=Hack\ 13
         " set guifont=Meslo\ LG\ M\ for\ Powerline\ 13
-        set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 13
+        set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 12
     endif
 endif
 "}}}
@@ -453,7 +459,7 @@ iabbrev forn for (int n = 0; n <; ++n)<esc>5hi
                 \ 'right_margin': 0
                 \ }
     let g:easy_align_delimiters['='] = {
-                \ 'pattern'     : '=',
+                \ 'pattern'     : '[^!>]<\?=',
                 \ 'left_margin' : 1,
                 \ 'right_margin': 1
                 \ }
@@ -491,9 +497,27 @@ iabbrev forn for (int n = 0; n <; ++n)<esc>5hi
     " let g:SuperTabDefaultCompletionType = 'context'
     "}}}
     "Airline {{{
+    let g:airline_powerline_fonts=1
     if has("gui_running") || has("mac")
         let g:airline_powerline_fonts=1
     endif
+    let g:airline_mode_map = {
+        \ '__' : '-',
+        \ 'n'  : 'N',
+        \ 'i'  : 'I',
+        \ 'R'  : 'R',
+        \ 'c'  : 'C',
+        \ 'v'  : 'V',
+        \ 'V'  : 'V',
+        \ '' : 'V',
+        \ 's'  : 'S',
+        \ 'S'  : 'S',
+        \ '' : 'S',
+        \ }
+    let g:airline#extensions#default#layout = [
+        \ [ 'a', 'b', 'c' ],
+        \ [ 'z', 'warning' ] ]
+    let g:airline#extensions#tabline#enabled = 1
     "}}}
     "Gitgutter {{{
     if !has("mac")
@@ -527,7 +551,7 @@ iabbrev forn for (int n = 0; n <; ++n)<esc>5hi
     let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
     "}}}
 "}}}
-" Functions {{{
+"Functions {{{
 function! EnableColorColumn() "{{{
     if &tw != 0
         let hl_column = &tw + 2
