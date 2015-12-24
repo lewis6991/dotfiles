@@ -35,6 +35,7 @@ vim +PlugInstall +qall
 # cp -v ctags    ~/.ctags
 cp -v agignore ~/.agignore
 cp -v bashrc   ~/.bashrc
+cp -vr headers ~/
 
 # # Set up powerline fonts
 pushd ~
