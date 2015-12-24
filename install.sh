@@ -29,6 +29,8 @@ source git_config
 rm -rf ~/.vim
 cp -r vimrc ~/.vimrc
 
+vim +PlugInstall +qall
+
 # Set up config files
 # cp -v ctags    ~/.ctags
 cp -v agignore ~/.agignore
