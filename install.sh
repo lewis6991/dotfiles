@@ -33,9 +33,10 @@ vim +PlugInstall +qall
 
 # Set up config files
 # cp -v ctags    ~/.ctags
-cp -v agignore ~/.agignore
-cp -v bashrc   ~/.bashrc
-cp -vr headers ~/
+cp -v  agignore  ~/.agignore
+cp -v  bashrc    ~/.bashrc
+cp -v  tmux.conf ~/.tmux.conf
+cp -vr headers   ~/
 
 # # Set up powerline fonts
 pushd ~
