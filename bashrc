@@ -1,4 +1,18 @@
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
+# Completion                                                                   #
+#––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
+if [ -f $(brew --prefix)/etc/bash_completion ]; then
+    . $(brew --prefix)/etc/bash_completion
+fi
+
+# Ignore case on auto-completion
+# Note: bind used instead of sticking these in .inputrc
+set completion-ignore-case on
+
+# Show auto-completion list automatically, without double tab
+set show-all-if-ambiguous on
+
+#––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Prompt                                                                       #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 
@@ -45,6 +59,8 @@ if which most >/dev/null; then
     export PAGER="most -s"
 fi
 
+export GREP_OPTIONS='--color=auto'
+
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Bindings                                                                     #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
@@ -56,9 +72,9 @@ bind '"\e[B": history-search-forward'
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 if [ "$(uname)" == "Darwin" ]; then
     alias ls='ls --color'
-    alias ll='ls -oAh --group-directories-first'
+    alias ll='ls -goAh --group-directories-first'
 else
-    alias ll='ls -oAh'
+    alias ll='ls -goAh'
 fi
 
 if which nvim >/dev/null; then
@@ -70,10 +86,9 @@ fi
 alias vim='echo "Use 'v' instead"'
 alias re-bashrc='source ~/.bashrc'
 alias edit-bashrc='v ~/.bashrc'
-alias .='cd ..'
-alias ..='cd ../..'
-alias ...='cd ../../..'
-
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
 
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Utilities                                                                    #
