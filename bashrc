@@ -49,7 +49,7 @@ function __prompt_command() {
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 
 # Mmodify path if coretuils is installed (Mac)
-if [ -d "/usr/local/opt/coreutils/libexec" ]; then
+if brew --prefix coreutils >/dev/null ; then
     export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
     export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
 fi
@@ -70,7 +70,7 @@ bind '"\e[B": history-search-forward'
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Aliases                                                                      #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
-if [ "$(uname)" == "Darwin" ]; then
+if brew --prefix coreutils >/dev/null ; then
     alias ls='ls --color'
     alias ll='ls -goAh --group-directories-first'
 else
@@ -78,12 +78,9 @@ else
 fi
 
 if which nvim >/dev/null; then
-    alias v='nvim'
-else
-    alias v='nvim'
+    alias vim='nvim'
 fi
 
-alias vim='echo "Use 'v' instead"'
 alias re-bashrc='source ~/.bashrc'
 alias edit-bashrc='v ~/.bashrc'
 alias ..='cd ..'

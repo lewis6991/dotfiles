@@ -27,9 +27,16 @@ if ! check_cmd curl ; then exit; fi
 source git_config
 
 rm -rf ~/.vim
+rm -rf ~/.vimrc
+rm -rf ~/.nvim
+rm -rf ~/.nvimrc
+
 cp -r vimrc ~/.vimrc
 
 vim +PlugInstall +qall
+
+ln -sv ~/.vimrc ~/.nvimrc
+ln -sv ~/.vim   ~/.nvim
 
 # Set up config files
 # cp -v ctags       ~/.ctags
@@ -38,6 +45,9 @@ cp -v  bashrc       ~/.bashrc
 cp -v  bash_profile ~/.bash_profile
 cp -v  tmux.conf    ~/.tmux.conf
 cp -vr headers      ~/
+
+mkdir -p ~/.config/fish
+cp -v config.fish ~/.config/fish/
 
 # # Set up powerline fonts
 pushd ~
