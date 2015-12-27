@@ -32,8 +32,9 @@ set nocompatible "VIM is better than VI
     Plug 'unblevable/quick-scope'
     Plug 'guns/xterm-color-table.vim'
     Plug 'edkolev/tmuxline.vim'
-    Plug 'SirVer/ultisnips'
+    Plug 'dag/vim-fish'
     " Unused {{{
+    " Plug 'SirVer/ultisnips'
     " Plug 'Raimondi/delimitMate'
     " Plug 'easymotion/vim-easymotion'
     "}}}
