@@ -18,6 +18,11 @@ function check_cmd {
     fi
 }
 
+function link_file {
+    rm -rf $2
+    ln -srv $1 $2
+}
+
 # Check that required commands are installed
 if ! check_cmd git  ; then exit; fi
 if ! check_cmd rsync; then exit; fi
@@ -27,29 +32,25 @@ if ! check_cmd curl ; then exit; fi
 source git_config
 
 rm -rf ~/.vim
-rm -rf ~/.vimrc
-rm -rf ~/.nvim
-rm -rf ~/.nvimrc
 
-cp -r vimrc ~/.vimrc
+link_file vimrc ~/.vimrc
+link_file vimrc ~/.nvimrc
 
 vim +PlugInstall +qall
 
-ln -sv ~/.vimrc ~/.nvimrc
-ln -sv ~/.vim   ~/.nvim
+link_file ~/.vim ~/.nvim
 
-# Set up config files
-# cp -v ctags       ~/.ctags
-cp -v  agignore     ~/.agignore
-cp -v  bashrc       ~/.bashrc
-cp -v  bash_profile ~/.bash_profile
-cp -v  tmux.conf    ~/.tmux.conf
-cp -vr headers      ~/
+## Set up config files
+link_file agignore  ~/.agignore
+link_file bashrc    ~/.bashrc
+link_file bashrc    ~/.bash_profile
+link_file tmux.conf ~/.tmux.conf
+link_file headers   ~/headers
 
 mkdir -p ~/.config/fish
-cp -v config.fish ~/.config/fish/
+link_file config.fish ~/.config/fish/config.fish
 
-# # Set up powerline fonts
+# Set up powerline fonts
 pushd ~
 rm -rf fonts
 rm -rf .fonts
