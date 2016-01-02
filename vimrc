@@ -161,7 +161,7 @@ set nocompatible "VIM is better than VI
         autocmd!
         " Delete trailing white space on save.
         autocmd BufWrite * call DeleteTrailingWS()
-        autocmd BufEnter * call matchadd('ColorColumn', '\t')
+        " autocmd BufEnter * call matchadd('ColorColumn', '\t')
         autocmd BufEnter * call matchadd('ColorColumn', '\s\+$')
     augroup END
 "}}}
@@ -537,6 +537,37 @@ set nocompatible "VIM is better than VI
 "}}}
 
 let b:verilog_indent_verbose = 1
+let g:verilog_syntax_fold = "all"
+
+function! GetSyn()
+    return join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'))
+endfunction
+
+function! AppendSyn()
+    let linenr = 0
+
+    while linenr < line("$") - 1
+        let linenr += 1
+        let length=len(getline(linenr))
+        let ws=0
+
+        if length < 80
+            let ws = 80 - length
+        end
+
+        " Goto line
+        execute "normal ".linenr."G"
+
+        " Insert whitespace upto column 80
+        execute "normal ".ws."A "
+
+        " Insert syntax groups
+        execute "normal A// ".GetSyn()
+
+        " Update screen
+        redraw
+    endwhile
+endfunction
 
 "Apply .vimrc on save {{{
 augroup source_vimrc
