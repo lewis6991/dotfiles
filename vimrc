@@ -31,8 +31,10 @@ set nocompatible "VIM is better than VI
     Plug 'sjl/gundo.vim'
     Plug 'unblevable/quick-scope'
     Plug 'guns/xterm-color-table.vim'
-    Plug 'edkolev/tmuxline.vim'
     Plug 'dag/vim-fish'
+    if has("mac")
+        Plug 'edkolev/tmuxline.vim'
+    endif
     " Unused {{{
     " Plug 'SirVer/ultisnips'
     " Plug 'Raimondi/delimitMate'
