@@ -129,7 +129,7 @@ set nocompatible "VIM is better than VI
     inoremap jj <esc>j
 
     " Not sure about this, ';' can be useful
-    nnoremap ; :
+    " nnoremap ; :
 
     " Useful for selecting areas to indent/align
     nnoremap <space> :call SelectIndent()<cr>
@@ -205,7 +205,8 @@ set nocompatible "VIM is better than VI
         if has("mac")
             set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
         else
-            set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 12
+            " set guifont=DejaVu\ Sans\ Mono\ 11
+            set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 11
         endif
     endif
 "}}}
@@ -317,7 +318,7 @@ set nocompatible "VIM is better than VI
 "SystemVerilog Settings {{{
     augroup systemverilog_settings
         au!
-        " au Filetype verilog_systemverilog setlocal shiftwidth=2 tabstop=2
+        au Filetype verilog_systemverilog setlocal shiftwidth=2 tabstop=2
         au Filetype verilog_systemverilog setlocal commentstring=//%s
         au Filetype verilog_systemverilog setlocal foldmethod=syntax foldlevelstart=1
     augroup END
@@ -443,6 +444,11 @@ set nocompatible "VIM is better than VI
             \ [ 'a', 'b', 'c' ],
             \ [ 'z', 'warning' ] ]
         let g:airline#extensions#tabline#enabled = 1
+        let g:airline#extensions#tabline#show_buffers = 0
+        let g:airline#extensions#tabline#show_tab_nr = 0
+        let g:airline#extensions#tabline#formatter = 'unique_tail'
+        let g:airline#extensions#tabline#show_tab_type = 0
+        let g:airline_section_c = '%t'
     "}}}
     "Gitgutter {{{
         if !has("mac")
@@ -514,6 +520,10 @@ set nocompatible "VIM is better than VI
     endfunction "}}}
 
     function! DeleteTrailingWS() "{{{
+        if expand('%:t') =~ 'indent.sv'
+            return
+        endif
+
         normal mz"
         %s/\s\+$//ge
         normal `z"
@@ -539,7 +549,9 @@ set nocompatible "VIM is better than VI
 "}}}
 
 let b:verilog_indent_verbose = 1
-let g:verilog_syntax_fold = "all"
+let b:verilog_indent_modules = 1
+" let g:verilog_syntax_fold = "all"
+" let b:verilog_dont_deindent_eos = 1
 
 function! GetSyn()
     return join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'))
