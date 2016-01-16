@@ -554,6 +554,12 @@ let b:verilog_indent_modules = 1
 " let b:verilog_dont_deindent_eos = 1
 
 function! GetSyn()
+    return join(map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")'))
+endfunction
+function! GetSyn3()
+    return map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")')
+endfunction
+function! GetSyn2()
     return join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'))
 endfunction
 
