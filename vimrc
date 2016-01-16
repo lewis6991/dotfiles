@@ -32,6 +32,7 @@ set nocompatible "VIM is better than VI
     Plug 'unblevable/quick-scope'
     Plug 'guns/xterm-color-table.vim'
     Plug 'dag/vim-fish'
+    Plug 'christoomey/vim-tmux-navigator'
     if has("mac")
         Plug 'edkolev/tmuxline.vim'
     endif
