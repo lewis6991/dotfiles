@@ -77,9 +77,9 @@ else
     alias ll='ls -goAh'
 fi
 
-if which nvim >/dev/null; then
-    alias vim='nvim'
-fi
+# if which nvim >/dev/null; then
+#     alias vim='nvim'
+# fi
 
 alias re-bashrc='source ~/.bashrc'
 alias edit-bashrc='v ~/.bashrc'
