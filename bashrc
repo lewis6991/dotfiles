@@ -1,8 +1,10 @@
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Completion                                                                   #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
-if [ -f $(brew --prefix)/etc/bash_completion ]; then
-    . $(brew --prefix)/etc/bash_completion
+if which brew 2>/dev/null; then
+    if [ -f $(brew --prefix)/etc/bash_completion ]; then
+        . $(brew --prefix)/etc/bash_completion
+    fi
 fi
 
 # Ignore case on auto-completion
@@ -18,10 +20,12 @@ set show-all-if-ambiguous on
 
 export PROMPT_COMMAND=__prompt_command  # Func to gen PS1 after CMDs
 
-if [ -f "$(brew --prefix bash-git-prompt)/share/gitprompt.sh" ]; then
-    GIT_PROMPT_ONLY_IN_REPO=1
-    GIT_PROMPT_THEME=Default
-    source "$(brew --prefix bash-git-prompt)/share/gitprompt.sh"
+if which brew 2>/dev/null; then
+    if [ -f "$(brew --prefix bash-git-prompt)/share/gitprompt.sh" ]; then
+        GIT_PROMPT_ONLY_IN_REPO=1
+        GIT_PROMPT_THEME=Default
+        source "$(brew --prefix bash-git-prompt)/share/gitprompt.sh"
+    fi
 fi
 
 function __prompt_command() {
@@ -48,14 +52,16 @@ function __prompt_command() {
 # Variables                                                                    #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 
-# Mmodify path if coretuils is installed (Mac)
-if brew --prefix coreutils >/dev/null ; then
-    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-    export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+# Modify path if coretuils is installed (Mac)
+if which brew 2>/dev/null; then
+    if brew --prefix coreutils >/dev/null ; then
+        export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+        export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+    fi
 fi
 
 # Colourise man pages
-if which most >/dev/null; then
+if which most 2>/dev/null; then
     export PAGER="most -s"
 fi
 
@@ -70,11 +76,13 @@ bind '"\e[B": history-search-forward'
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Aliases                                                                      #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
-if brew --prefix coreutils >/dev/null ; then
-    alias ls='ls --color'
-    alias ll='ls -goAh --group-directories-first'
-else
-    alias ll='ls -goAh'
+if which brew 2>/dev/null; then
+    if brew --prefix coreutils >/dev/null ; then
+        alias ls='ls --color'
+        alias ll='ls -goAh --group-directories-first'
+    else
+        alias ll='ls -goAh'
+    fi
 fi
 
 # if which nvim >/dev/null; then
