@@ -32,10 +32,19 @@ set nocompatible "VIM is better than VI
     Plug 'unblevable/quick-scope'
     Plug 'guns/xterm-color-table.vim'
     Plug 'dag/vim-fish'
+<<<<<<< ace5ff0e0fb13b02a4a4a55f3ce3a8d38c89da90
     Plug 'christoomey/vim-tmux-navigator'
     if has("mac")
         Plug 'edkolev/tmuxline.vim'
     endif
+=======
+    Plug 'vim-scripts/vcscommand.vim'
+    Plug 'christoomey/vim-tmux-navigator'
+    Plug 'tmux-plugins/vim-tmux'
+    Plug 'tomasr/molokai'
+    " Plug 'wellle/tmux-complete.vim'
+    Plug 'edkolev/tmuxline.vim'
+>>>>>>> Update
     " Unused {{{
     " Plug 'SirVer/ultisnips'
     " Plug 'Raimondi/delimitMate'
@@ -45,6 +54,7 @@ set nocompatible "VIM is better than VI
 
     runtime macros/matchit.vim
 "}}}
+set cursorline
 "General {{{
     syntax enable                  "Enable syntax highlighting
     set nostartofline
@@ -67,6 +77,7 @@ set nocompatible "VIM is better than VI
     " set completeopt=menu,preview,longest
     set diffopt=filler,vertical,context:4
     set encoding=utf8
+    set virtualedit=block
 
     if v:version == 704
         set mouse=a                "Enable mouse support
@@ -81,23 +92,27 @@ set nocompatible "VIM is better than VI
     silent! colorscheme base16-harmonic16
 "}}}
 "Mappings {{{
-    "VIM Training {{{
-        noremap  <Up>            :echo "Stop being stupid!"<cr>
-        noremap  <Down>          :echo "Stop being stupid!"<cr>
-        noremap  <Left>          :echo "Stop being stupid!"<cr>
-        noremap  <Right>         :echo "Stop being stupid!"<cr>
-        noremap  <PageUp>        :echo "Stop being stupid!"<cr>
-        noremap  <PageDown>      :echo "Stop being stupid!"<cr>
-        inoremap <Up>       <esc>l:echo "Stop being stupid!"<cr>
-        inoremap <Down>     <esc>l:echo "Stop being stupid!"<cr>
-        inoremap <Left>     <esc>l:echo "Stop being stupid!"<cr>
-        inoremap <Right>    <esc>l:echo "Stop being stupid!"<cr>
-        inoremap <PageUp>   <esc>l:echo "Stop being stupid!"<cr>
-        inoremap <PageDown> <esc>l:echo "Stop being stupid!"<cr>
-    "}}}
+    ""VIM Training {{{
+    "    noremap  <Up>            :echo "Stop being stupid!"<cr>
+    "    noremap  <Down>          :echo "Stop being stupid!"<cr>
+    "    noremap  <Left>          :echo "Stop being stupid!"<cr>
+    "    noremap  <Right>         :echo "Stop being stupid!"<cr>
+    "    noremap  <PageUp>        :echo "Stop being stupid!"<cr>
+    "    noremap  <PageDown>      :echo "Stop being stupid!"<cr>
+    "    inoremap <Up>       <esc>l:echo "Stop being stupid!"<cr>
+    "    inoremap <Down>     <esc>l:echo "Stop being stupid!"<cr>
+    "    inoremap <Left>     <esc>l:echo "Stop being stupid!"<cr>
+    "    inoremap <Right>    <esc>l:echo "Stop being stupid!"<cr>
+    "    inoremap <PageUp>   <esc>l:echo "Stop being stupid!"<cr>
+    "    inoremap <PageDown> <esc>l:echo "Stop being stupid!"<cr>
+    ""}}}
 
     noremap Q :q<enter>
     nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+
+    " Yank and Paste from systeam clipboard. Very useful.
+    nnoremap <leader>y "+y
+    nnoremap <leader>p "+p
 
     " Correct comman typos
     nnoremap :W  :w
@@ -126,8 +141,8 @@ set nocompatible "VIM is better than VI
     nnoremap <C-L> <C-W>l
 
     " Escape is very inefficient
-    inoremap jk <esc>
-    inoremap jj <esc>j
+    inoremap jk <esc>l
+    inoremap jj <esc>jl
 
     " Not sure about this, ';' can be useful
     " nnoremap ; :
@@ -329,7 +344,8 @@ set nocompatible "VIM is better than VI
 "File Settings {{{
     augroup file_prefs
         au!
-        au Filetype sh setlocal textwidth=0
+        au Filetype sh  setlocal textwidth=0
+        au Filetype map setlocal textwidth=0
         au BufEnter *.log setlocal textwidth=0 wrap cursorline
         au BufEnter * call EnableColorColumn()
     augroup END
@@ -443,17 +459,18 @@ set nocompatible "VIM is better than VI
             \ }
         let g:airline#extensions#default#layout = [
             \ [ 'a', 'b', 'c' ],
-            \ [ 'z', 'warning' ] ]
+            \ [ 'x', 'z', 'warning' ] ]
         let g:airline#extensions#tabline#enabled = 1
         let g:airline#extensions#tabline#show_buffers = 0
         let g:airline#extensions#tabline#show_tab_nr = 0
         let g:airline#extensions#tabline#formatter = 'unique_tail'
         let g:airline#extensions#tabline#show_tab_type = 0
-        let g:airline_section_c = '%t'
+        let g:airline#extensions#tabline#show_close_button = 0
+        " let g:airline_section_c = '%t'
     "}}}
     "Gitgutter {{{
         if !has("mac")
-            let g:gitgutter_enabled = 0
+            " let g:gitgutter_enabled = 0
         endif
         " let g:gitgutter_diff_args = '-w'
     "}}}
@@ -548,9 +565,10 @@ set nocompatible "VIM is better than VI
         return foldLevelStr.line.expansionString.foldSizeStr
     endfunction "}}}
 "}}}
-
+let g:tmuxline_preset='full'
 let b:verilog_indent_verbose = 1
 let b:verilog_indent_modules = 1
+let b:verilog_indent_preproc = 1
 " let g:verilog_syntax_fold = "all"
 " let b:verilog_dont_deindent_eos = 1
 
