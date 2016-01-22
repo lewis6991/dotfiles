@@ -32,19 +32,12 @@ set nocompatible "VIM is better than VI
     Plug 'unblevable/quick-scope'
     Plug 'guns/xterm-color-table.vim'
     Plug 'dag/vim-fish'
-<<<<<<< ace5ff0e0fb13b02a4a4a55f3ce3a8d38c89da90
-    Plug 'christoomey/vim-tmux-navigator'
-    if has("mac")
-        Plug 'edkolev/tmuxline.vim'
-    endif
-=======
     Plug 'vim-scripts/vcscommand.vim'
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'tmux-plugins/vim-tmux'
     Plug 'tomasr/molokai'
     " Plug 'wellle/tmux-complete.vim'
     Plug 'edkolev/tmuxline.vim'
->>>>>>> Update
     " Unused {{{
     " Plug 'SirVer/ultisnips'
     " Plug 'Raimondi/delimitMate'
