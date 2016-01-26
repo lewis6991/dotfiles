@@ -38,16 +38,15 @@ set nocompatible "VIM is better than VI
     Plug 'tomasr/molokai'
     " Plug 'wellle/tmux-complete.vim'
     Plug 'edkolev/tmuxline.vim'
+    Plug 'dietsche/vim-lastplace'
     " Unused {{{
     " Plug 'SirVer/ultisnips'
     " Plug 'Raimondi/delimitMate'
-    " Plug 'easymotion/vim-easymotion'
     "}}}
     call plug#end()
 
     runtime macros/matchit.vim
 "}}}
-set cursorline
 "General {{{
     syntax enable                  "Enable syntax highlighting
     set nostartofline
@@ -55,8 +54,8 @@ set cursorline
     set autoindent
     set numberwidth=1              "Make as small as possible
     set showmatch                  "Show matching parenthesis
-    set scrolloff=10               "Context while scrolling
-    set sidescrolloff=10           "Context while side-scrolling
+    set scrolloff=8                "Context while scrolling
+    set sidescrolloff=8            "Context while side-scrolling
     set nowrap                     "Turn off text wrapping
     set backspace=indent,eol,start "Make backspace work
     set wildmenu
@@ -70,7 +69,8 @@ set cursorline
     " set completeopt=menu,preview,longest
     set diffopt=filler,vertical,context:4
     set encoding=utf8
-    set virtualedit=block
+    set virtualedit=block          "Allow visual block mode to select over any row/column
+    set cursorline
 
     if v:version == 704
         set mouse=a                "Enable mouse support
@@ -127,23 +127,24 @@ set cursorline
     noremap 0 ^
     noremap ^ 0
 
+    vnoremap > >gv
+    vnoremap < <gv
+
     " Easier pane navigation
-    nnoremap <C-H> <C-W>h
-    nnoremap <C-J> <C-W>j
-    nnoremap <C-K> <C-W>k
-    nnoremap <C-L> <C-W>l
+    " Dont think these are needed with tmux-navigator.
+    " nnoremap <C-H> <C-W>h
+    " nnoremap <C-J> <C-W>j
+    " nnoremap <C-K> <C-W>k
+    " nnoremap <C-L> <C-W>l
 
     " Escape is very inefficient
     inoremap jk <esc>l
-    inoremap jj <esc>jl
-
-    " Not sure about this, ';' can be useful
-    " nnoremap ; :
 
     " Useful for selecting areas to indent/align
-    nnoremap <space> :call SelectIndent()<cr>
+    " 26/01/16: Disable for a while
+    " nnoremap <space> :call SelectIndent()<cr>
 
-    " Toggles line number mode.
+    " Toggles line number mode. Very useful.
     nnoremap <C-N> :set relativenumber!<cr>
 "}}}
 "Buffers {{{
@@ -332,7 +333,12 @@ set cursorline
         au Filetype verilog_systemverilog setlocal foldmethod=syntax foldlevelstart=1
     augroup END
 
-    let g:verilog_syntax_fold = "comment,function,class,task,clocking"
+    let b:verilog_indent_verbose = 1
+    let b:verilog_indent_modules = 1
+    let b:verilog_indent_preproc = 1
+    " let b:verilog_dont_deindent_eos = 1
+    " let g:verilog_syntax_fold = "all"
+    " let g:verilog_syntax_fold = "comment,function,class,task,clocking"
 "}}}
 "File Settings {{{
     augroup file_prefs
@@ -505,6 +511,9 @@ set cursorline
     "Quick-Scope {{{
         let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
     "}}}
+    "Tmuxline {{{
+    let g:tmuxline_preset='full'
+    "}}}
 "}}}
 "Functions {{{
     function! EnableColorColumn() "{{{
@@ -558,13 +567,8 @@ set cursorline
         return foldLevelStr.line.expansionString.foldSizeStr
     endfunction "}}}
 "}}}
-let g:tmuxline_preset='full'
-let b:verilog_indent_verbose = 1
-let b:verilog_indent_modules = 1
-let b:verilog_indent_preproc = 1
-" let g:verilog_syntax_fold = "all"
-" let b:verilog_dont_deindent_eos = 1
 
+"Plugin Development {{{
 function! GetSyn()
     return join(map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")'))
 endfunction
@@ -600,6 +604,7 @@ function! AppendSyn()
         redraw
     endwhile
 endfunction
+"}}}
 
 "Apply .vimrc on save {{{
 augroup source_vimrc
