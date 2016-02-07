@@ -95,7 +95,7 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
-./git/base16-shell/base16-harmonic16.dark.sh
+~/git/base16-shell/base16-harmonic16.dark.sh
 
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Utilities                                                                    #

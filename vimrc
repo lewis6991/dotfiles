@@ -19,7 +19,8 @@ set nocompatible "VIM is better than VI
     Plug 'lewis6991/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
     Plug 'chriskempson/base16-vim'
     Plug 'ervandew/supertab'
-    Plug 'bling/vim-airline'
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
     Plug 'vimtaku/hl_matchit.vim'
     Plug 'bkad/CamelCaseMotion'
     Plug 'nathanaelkane/vim-indent-guides'
@@ -101,7 +102,7 @@ set nocompatible "VIM is better than VI
     ""}}}
 
     noremap Q :q<enter>
-    nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+    nnoremap <leader>ev :call EditVimrc()<cr>
 
     " Yank and Paste from systeam clipboard. Very useful.
     nnoremap <leader>y "+y
@@ -516,6 +517,15 @@ set nocompatible "VIM is better than VI
     "}}}
 "}}}
 "Functions {{{
+
+    function! EditVimrc() "{{{
+        if expand('%t') == ''
+            edit $MYVIMRC
+        else
+            vsplit $MYVIMRC
+        endif
+    endfunction "}}}
+
     function! EnableColorColumn() "{{{
         if &tw != 0
             let hl_column = &tw + 2
@@ -568,6 +578,7 @@ set nocompatible "VIM is better than VI
     endfunction "}}}
 "}}}
 
+" let g:airline_theme='base16_harmonic16'
 "Plugin Development {{{
 function! GetSyn()
     return join(map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")'))
