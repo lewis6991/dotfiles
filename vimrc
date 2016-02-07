@@ -10,37 +10,38 @@ set nocompatible "VIM is better than VI
     endif
 
     call plug#begin('~/.vim/plugged')
-    Plug 'junegunn/vim-easy-align'
-    Plug 'ctrlpvim/ctrlp.vim'
     Plug 'tpope/vim-commentary'
     Plug 'tpope/vim-fugitive'
     Plug 'tpope/vim-unimpaired'
     Plug 'tpope/vim-vinegar'
     Plug 'lewis6991/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
+    Plug 'junegunn/vim-easy-align'
+    Plug 'ctrlpvim/ctrlp.vim'
     Plug 'chriskempson/base16-vim'
     Plug 'ervandew/supertab'
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
     Plug 'vimtaku/hl_matchit.vim'
-    Plug 'bkad/CamelCaseMotion'
     Plug 'nathanaelkane/vim-indent-guides'
     Plug 'airblade/vim-gitgutter'
+    " Plug 'mhinz/vim-signify' "For SVN.
     Plug 'rking/ag.vim'
     Plug 'sickill/vim-pasta'
     Plug 'haya14busa/incsearch.vim'
     Plug 'haya14busa/incsearch-fuzzy.vim'
     Plug 'sjl/gundo.vim'
-    Plug 'unblevable/quick-scope'
     Plug 'guns/xterm-color-table.vim'
-    Plug 'dag/vim-fish'
     Plug 'vim-scripts/vcscommand.vim'
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'tmux-plugins/vim-tmux'
-    Plug 'tomasr/molokai'
-    " Plug 'wellle/tmux-complete.vim'
     Plug 'edkolev/tmuxline.vim'
     Plug 'dietsche/vim-lastplace'
     " Unused {{{
+    " Plug 'unblevable/quick-scope'
+    " Plug 'wellle/tmux-complete.vim'
+    " Plug 'tomasr/molokai'
+    " Plug 'bkad/CamelCaseMotion'
+    " Plug 'dag/vim-fish'
     " Plug 'SirVer/ultisnips'
     " Plug 'Raimondi/delimitMate'
     "}}}
@@ -49,9 +50,8 @@ set nocompatible "VIM is better than VI
     runtime macros/matchit.vim
 "}}}
 "General {{{
-    syntax enable                  "Enable syntax highlighting
     set nostartofline
-    set number
+    set number relativenumber
     set autoindent
     set numberwidth=1              "Make as small as possible
     set showmatch                  "Show matching parenthesis
@@ -59,19 +59,18 @@ set nocompatible "VIM is better than VI
     set sidescrolloff=8            "Context while side-scrolling
     set nowrap                     "Turn off text wrapping
     set backspace=indent,eol,start "Make backspace work
-    set wildmenu
-    " set wildmode=list:longest,full
-    set laststatus=2
+    set wildmenu                   "Show completions on command line
+    set laststatus=2               "Always show the status bar
     set textwidth=80
     set t_kb=                    "Fix for backspace issue when using xterm.
     " set tag+=tags;/
     set lazyredraw                 "Don't redraw during macros
-    set relativenumber
-    " set completeopt=menu,preview,longest
-    set diffopt=filler,vertical,context:4
+    set completeopt+=menuone
+    set diffopt+=vertical
     set encoding=utf8
     set virtualedit=block          "Allow visual block mode to select over any row/column
     set cursorline
+    set list listchars=tab:>–      "Show tabs as '>–––'
 
     if v:version == 704
         set mouse=a                "Enable mouse support
@@ -121,6 +120,9 @@ set nocompatible "VIM is better than VI
     " Should this not be default?
     nnoremap Y y$
 
+    " Disable
+    nnoremap K <nop>
+
     nnoremap gb :bn<cr>
     nnoremap gp :bp<cr>
 
@@ -131,14 +133,7 @@ set nocompatible "VIM is better than VI
     vnoremap > >gv
     vnoremap < <gv
 
-    " Easier pane navigation
-    " Dont think these are needed with tmux-navigator.
-    " nnoremap <C-H> <C-W>h
-    " nnoremap <C-J> <C-W>j
-    " nnoremap <C-K> <C-W>k
-    " nnoremap <C-L> <C-W>l
-
-    " Escape is very inefficient
+    " Escape is inefficient
     inoremap jk <esc>l
 
     " Useful for selecting areas to indent/align
@@ -160,27 +155,29 @@ set nocompatible "VIM is better than VI
     set history=1000   "keep a lot of history
     set viminfo+=:500 "keep lots of cmd history
     set viminfo+=/500 "keep lots of search history
-    set nowb
+    set nowritebackup
     set noswapfile
     set nobackup
 "}}}
 "Whitespace{{{
-    set shiftwidth=4  "Set tab to 3 spaces
+    set shiftwidth=4  "Set tab to 4 spaces
     set softtabstop=4
     set tabstop=4
-    set expandtab     "Use spaces instead of tabs
+    set expandtab     "Convert tabs to spaces when typing
 
     augroup WhitespaceGroup
         autocmd!
-        " Delete trailing white space on save.
+        "Delete trailing white space on save.
         autocmd BufWrite * call DeleteTrailingWS()
-        " autocmd BufEnter * call matchadd('ColorColumn', '\t')
+        "Highlight trailing whitespace
         autocmd BufEnter * call matchadd('ColorColumn', '\s\+$')
     augroup END
 "}}}
 "Undo {{{
-    set undofile " Preserve undo tree between sessions.
-    set undodir=$HOME/.vimundo
+    if v:version == 704
+        set undofile " Preserve undo tree between sessions.
+        set undodir=$HOME/.vimundo
+    endif
 "}}}
 "Searching{{{
     set hlsearch             "Highlight search results.
@@ -188,7 +185,7 @@ set nocompatible "VIM is better than VI
     set ignorecase smartcase "Case insensitive search if lowercase.
 
     if executable('ag')
-      " Use ag over grep
+      "Use ag over grep
       set grepprg=ag\ --nogroup\ --nocolor
     endif
 "}}}
@@ -211,7 +208,7 @@ set nocompatible "VIM is better than VI
         set guioptions-=r "Remove right scroll bar
         set guioptions-=T "Remove toolbar
         set guioptions-=e "Always use terminal tab line
-        set guioptions+=b "Include horizontal scroll bar
+        set guioptions-=b "Remove horizontal scroll bar
 
         if has("mac")
             set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
@@ -305,7 +302,7 @@ set nocompatible "VIM is better than VI
             au FileType verilog_systemverilog inoremap `uf `uvm_fatal(BIU_TAG, "")<left><left>
         "}}}
         "UVM Class Macros {{{
-            au FileType verilog_systemverilog inoremap `newc function new(string name, uvm_component parent);<enter>super.new(name, parent);<enter> endfunction : new<esc>2<up>3==i
+            au FileType verilog_systemverilog inoremap `newc function new(string name, uvm_component parent);<enter>super.new(name, parent);<enter>endfunction : new<esc>2<up>3==i
             au FileType verilog_systemverilog inoremap `newo function new(string name = "");<enter>super.new(name);<enter> endfunction : new<esc>2<up>3==i
         "}}}
         "UVM Phase Macros {{{
@@ -344,9 +341,8 @@ set nocompatible "VIM is better than VI
 "File Settings {{{
     augroup file_prefs
         au!
-        au Filetype sh  setlocal textwidth=0
-        au Filetype map setlocal textwidth=0
-        au BufEnter *.log setlocal textwidth=0 wrap cursorline
+        au Filetype sh,map setlocal textwidth=0
+        au BufEnter *.log  setlocal textwidth=0 wrap cursorline
         au BufEnter * call EnableColorColumn()
     augroup END
 "}}}
@@ -419,14 +415,9 @@ set nocompatible "VIM is better than VI
           \ 'link': 'some_bad_symbolic_links',
           \ }
         if executable('ag')
-            " Use ag in CtrlP for listing files. Lightning fast and respects .gitignore
+            " Use ag in CtrlP for listing files. Fast and respects .gitignore
             let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
         endif
-    "}}}
-    "CamelCaseMotion {{{
-        map <S-W> <Plug>CamelCaseMotion_w
-        map <S-B> <Plug>CamelCaseMotion_b
-        map <S-E> <Plug>CamelCaseMotion_e
     "}}}
     "Indent Guides {{{
         if has("gui_running")
@@ -509,9 +500,6 @@ set nocompatible "VIM is better than VI
     "Gundo {{{
         nnoremap <F5> :GundoToggle<CR>
     "}}}
-    "Quick-Scope {{{
-        let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
-    "}}}
     "Tmuxline {{{
     let g:tmuxline_preset='full'
     "}}}
@@ -578,7 +566,6 @@ set nocompatible "VIM is better than VI
     endfunction "}}}
 "}}}
 
-" let g:airline_theme='base16_harmonic16'
 "Plugin Development {{{
 function! GetSyn()
     return join(map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")'))
