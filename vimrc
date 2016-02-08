@@ -12,38 +12,39 @@ set nocompatible "VIM is better than VI
     call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-commentary'
     Plug 'tpope/vim-fugitive'
-    Plug 'tpope/vim-unimpaired'
     Plug 'tpope/vim-vinegar'
+    Plug 'tpope/vim-unimpaired'
+    Plug 'airblade/vim-gitgutter'
+    Plug 'ctrlpvim/ctrlp.vim'
     Plug 'lewis6991/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
     Plug 'junegunn/vim-easy-align'
-    Plug 'ctrlpvim/ctrlp.vim'
     Plug 'chriskempson/base16-vim'
     Plug 'ervandew/supertab'
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
     Plug 'vimtaku/hl_matchit.vim'
     Plug 'nathanaelkane/vim-indent-guides'
-    Plug 'airblade/vim-gitgutter'
     " Plug 'mhinz/vim-signify' "For SVN.
     Plug 'rking/ag.vim'
     Plug 'sickill/vim-pasta'
     Plug 'haya14busa/incsearch.vim'
     Plug 'haya14busa/incsearch-fuzzy.vim'
     Plug 'sjl/gundo.vim'
-    Plug 'guns/xterm-color-table.vim'
-    Plug 'vim-scripts/vcscommand.vim'
+    " Plug 'vim-scripts/vcscommand.vim'
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'tmux-plugins/vim-tmux'
     Plug 'edkolev/tmuxline.vim'
     Plug 'dietsche/vim-lastplace'
+    Plug 'juneedahamed/vc.vim'
+
     " Unused {{{
-    " Plug 'unblevable/quick-scope'
-    " Plug 'wellle/tmux-complete.vim'
-    " Plug 'tomasr/molokai'
-    " Plug 'bkad/CamelCaseMotion'
-    " Plug 'dag/vim-fish'
-    " Plug 'SirVer/ultisnips'
-    " Plug 'Raimondi/delimitMate'
+        " Plug 'unblevable/quick-scope'
+        " Plug 'wellle/tmux-complete.vim'
+        " Plug 'tomasr/molokai'
+        " Plug 'bkad/CamelCaseMotion'
+        " Plug 'dag/vim-fish'
+        " Plug 'guns/xterm-color-table.vim'
+        " Plug 'SirVer/ultisnips'
     "}}}
     call plug#end()
 
@@ -85,27 +86,14 @@ set nocompatible "VIM is better than VI
     silent! colorscheme base16-harmonic16
 "}}}
 "Mappings {{{
-    ""VIM Training {{{
-    "    noremap  <Up>            :echo "Stop being stupid!"<cr>
-    "    noremap  <Down>          :echo "Stop being stupid!"<cr>
-    "    noremap  <Left>          :echo "Stop being stupid!"<cr>
-    "    noremap  <Right>         :echo "Stop being stupid!"<cr>
-    "    noremap  <PageUp>        :echo "Stop being stupid!"<cr>
-    "    noremap  <PageDown>      :echo "Stop being stupid!"<cr>
-    "    inoremap <Up>       <esc>l:echo "Stop being stupid!"<cr>
-    "    inoremap <Down>     <esc>l:echo "Stop being stupid!"<cr>
-    "    inoremap <Left>     <esc>l:echo "Stop being stupid!"<cr>
-    "    inoremap <Right>    <esc>l:echo "Stop being stupid!"<cr>
-    "    inoremap <PageUp>   <esc>l:echo "Stop being stupid!"<cr>
-    "    inoremap <PageDown> <esc>l:echo "Stop being stupid!"<cr>
-    ""}}}
-
     noremap Q :q<enter>
     nnoremap <leader>ev :call EditVimrc()<cr>
 
     " Yank and Paste from systeam clipboard. Very useful.
     nnoremap <leader>y "+y
     nnoremap <leader>p "+p
+
+    nnoremap <leader>d :call RunDiff()<cr>
 
     " Correct comman typos
     nnoremap :W  :w
@@ -320,6 +308,7 @@ set nocompatible "VIM is better than VI
             au FileType verilog_systemverilog inoremap <leader>dvt <esc>:call InsertSVFunction("task"    , 1, 1)<cr>
             au FileType verilog_systemverilog noremap  <leader>s <esc>kA begin<esc>joend<esc>kO
             au FileType verilog_systemverilog noremap  <leader>f <esc>F"i$sformatf(<esc>2f"a)<esc>hi
+            au FileType verilog_systemverilog noremap  <leader>r <esc>A // REVISIT (lewrus01 <C-r>=strftime('%d/%m/%y')<cr>):
         "}}}
     augroup END
 "}}}
@@ -328,7 +317,13 @@ set nocompatible "VIM is better than VI
         au!
         au Filetype verilog_systemverilog setlocal shiftwidth=2 tabstop=2
         au Filetype verilog_systemverilog setlocal commentstring=//%s
-        au Filetype verilog_systemverilog setlocal foldmethod=syntax foldlevelstart=1
+
+        " Enable folding for normal size files. Folding is really slow for large files.
+        au Filetype verilog_systemverilog if line('$') < 2000
+        au Filetype verilog_systemverilog     setlocal foldmethod=syntax foldlevelstart=1
+        au Filetype verilog_systemverilog     let g:verilog_syntax_fold = "comment,function,class,task,clocking"
+        au Filetype verilog_systemverilog     syntax enable "Trigger fold calculation
+        au Filetype verilog_systemverilog endif
     augroup END
 
     let b:verilog_indent_verbose = 1
@@ -336,7 +331,7 @@ set nocompatible "VIM is better than VI
     let b:verilog_indent_preproc = 1
     " let b:verilog_dont_deindent_eos = 1
     " let g:verilog_syntax_fold = "all"
-    " let g:verilog_syntax_fold = "comment,function,class,task,clocking"
+
 "}}}
 "File Settings {{{
     augroup file_prefs
@@ -354,6 +349,7 @@ set nocompatible "VIM is better than VI
     iabbrev erturn      return
     iabbrev retunr      return
     iabbrev reutrn      return
+    iabbrev reutnr      return
     iabbrev reutn       return
     iabbrev htis        this
     iabbrev foreahc     foreach
@@ -373,9 +369,7 @@ set nocompatible "VIM is better than VI
     "Easy Align {{{
         nmap ga <Plug>(EasyAlign)
         xmap ga <Plug>(EasyAlign)
-        if !exists('g:easy_align_delimiters')
-          let g:easy_align_delimiters = {}
-        endif
+        let g:easy_align_delimiters = {}
         let g:easy_align_delimiters[';'] = {
                     \ 'pattern'     : '\(.*function.*\)\@<!\zs;',
                     \ 'left_margin' : 0
@@ -390,6 +384,11 @@ set nocompatible "VIM is better than VI
                     \ 'left_margin' : 1,
                     \ 'right_margin': 0
                     \ }
+        let g:easy_align_delimiters[']'] = {
+                    \ 'pattern'     : ']',
+                    \ 'left_margin' : 0,
+                    \ 'right_margin': 1
+                    \ }
         let g:easy_align_delimiters[','] = {
                     \ 'pattern'     : ',',
                     \ 'left_margin' : 0,
@@ -400,8 +399,18 @@ set nocompatible "VIM is better than VI
                     \ 'left_margin' : 0,
                     \ 'right_margin': 0
                     \ }
+        let g:easy_align_delimiters['('] = {
+                    \ 'pattern'     : '(',
+                    \ 'left_margin' : 0,
+                    \ 'right_margin': 0
+                    \ }
         let g:easy_align_delimiters['='] = {
-                    \ 'pattern'     : '[^!>]<\?=',
+                    \ 'pattern'     : '<\?=',
+                    \ 'left_margin' : 1,
+                    \ 'right_margin': 1
+                    \ }
+        let g:easy_align_delimiters[':'] = {
+                    \ 'pattern'     : ':',
                     \ 'left_margin' : 1,
                     \ 'right_margin': 1
                     \ }
@@ -460,9 +469,6 @@ set nocompatible "VIM is better than VI
         " let g:airline_section_c = '%t'
     "}}}
     "Gitgutter {{{
-        if !has("mac")
-            " let g:gitgutter_enabled = 0
-        endif
         " let g:gitgutter_diff_args = '-w'
     "}}}
     "Ag {{{
@@ -559,11 +565,20 @@ set nocompatible "VIM is better than VI
 
         let w = winwidth(0) - len(line("$")) - 1
         let foldSize = v:foldend - v:foldstart
-        let foldSizeStr = "[" . foldSize . " lines]  "
+        let foldSizeStr = "|".repeat(" ", 4-len(foldSize)).foldSize . "   "
         let foldLevelStr = repeat(" ", &shiftwidth*v:foldlevel)
         let expansionString = repeat(" ", w - strwidth(foldSizeStr.l:line.foldLevelStr))
         return foldLevelStr.line.expansionString.foldSizeStr
     endfunction "}}}
+
+    function! RunDiff() "{{{
+        if exists(':Gdiff')
+            Gdiff
+        else
+            VCSVimDiff
+        endif
+    endfunction "}}}
+
 "}}}
 
 "Plugin Development {{{
