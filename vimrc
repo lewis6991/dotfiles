@@ -11,11 +11,8 @@ set nocompatible "VIM is better than VI
 
     call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-commentary'
-    Plug 'tpope/vim-fugitive'
     Plug 'tpope/vim-vinegar'
     Plug 'tpope/vim-unimpaired'
-    Plug 'airblade/vim-gitgutter'
-    Plug 'ctrlpvim/ctrlp.vim'
     Plug 'lewis6991/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
     Plug 'junegunn/vim-easy-align'
     Plug 'chriskempson/base16-vim'
@@ -24,27 +21,39 @@ set nocompatible "VIM is better than VI
     Plug 'vim-airline/vim-airline-themes'
     Plug 'vimtaku/hl_matchit.vim'
     Plug 'nathanaelkane/vim-indent-guides'
-    " Plug 'mhinz/vim-signify' "For SVN.
-    Plug 'rking/ag.vim'
     Plug 'sickill/vim-pasta'
-    Plug 'haya14busa/incsearch.vim'
-    Plug 'haya14busa/incsearch-fuzzy.vim'
     Plug 'sjl/gundo.vim'
-    " Plug 'vim-scripts/vcscommand.vim'
+    Plug 'dietsche/vim-lastplace'
+
+    "Tmux Integration
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'tmux-plugins/vim-tmux'
     Plug 'edkolev/tmuxline.vim'
-    Plug 'dietsche/vim-lastplace'
-    Plug 'juneedahamed/vc.vim'
+
+    "Search
+    Plug 'ctrlpvim/ctrlp.vim'
+    Plug 'rking/ag.vim'
+    Plug 'haya14busa/incsearch.vim'
+    Plug 'haya14busa/incsearch-fuzzy.vim'
+
+    "Source Control
+    Plug 'tpope/vim-fugitive'
+    Plug 'vim-scripts/vcscommand.vim'
+    " Plug 'juneedahamed/vc.vim'
+    if has("mac")
+        Plug 'airblade/vim-gitgutter'
+    else
+        Plug 'mhinz/vim-signify' "For SVN at work.
+    endif
 
     " Unused {{{
-        " Plug 'unblevable/quick-scope'
-        " Plug 'wellle/tmux-complete.vim'
-        " Plug 'tomasr/molokai'
-        " Plug 'bkad/CamelCaseMotion'
-        " Plug 'dag/vim-fish'
-        " Plug 'guns/xterm-color-table.vim'
-        " Plug 'SirVer/ultisnips'
+    " Plug 'unblevable/quick-scope'
+    " Plug 'wellle/tmux-complete.vim'
+    " Plug 'tomasr/molokai'
+    " Plug 'bkad/CamelCaseMotion'
+    " Plug 'dag/vim-fish'
+    " Plug 'guns/xterm-color-table.vim'
+    " Plug 'SirVer/ultisnips'
     "}}}
     call plug#end()
 
