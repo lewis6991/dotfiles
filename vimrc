@@ -39,7 +39,7 @@ set nocompatible "VIM is better than VI
     "Source Control
     Plug 'tpope/vim-fugitive'
     Plug 'vim-scripts/vcscommand.vim'
-    " Plug 'juneedahamed/vc.vim'
+    Plug 'juneedahamed/vc.vim'
     if has("mac")
         Plug 'airblade/vim-gitgutter'
     else
@@ -631,8 +631,8 @@ endfunction
 "Apply .vimrc on save {{{
 augroup source_vimrc
     autocmd!
-    autocmd BufWrite $MYVIMRC source $MYVIMRC || AirlineRefresh
-    autocmd BufRead,BufWrite $MYVIMRC setlocal textwidth=0 fdm=marker foldlevel=0
+    autocmd BufWritePost $MYVIMRC source $MYVIMRC || AirlineRefresh
+    autocmd BufRead,BufWritePost $MYVIMRC setlocal textwidth=0 fdm=marker foldlevel=0
 augroup END
 " vim: set textwidth=0 fdm=marker foldlevel=0 :
 "}}}
