@@ -31,19 +31,16 @@ set nocompatible "VIM is better than VI
     Plug 'tmux-plugins/vim-tmux-focus-events'
 
     "Search
-    " Plug 'ctrlpvim/ctrlp.vim'
     Plug 'rking/ag.vim', { 'on': 'Ag' }
     Plug 'Chun-Yang/vim-action-ag'
+
     if v:version == 704
         Plug 'haya14busa/incsearch.vim'
-        " Plug 'haya14busa/incsearch-fuzzy.vim'
     endif
 
     "Source Control
     Plug 'tpope/vim-fugitive'
     Plug 'vim-scripts/vcscommand.vim'
-
-    " Plug 'sheerun/vim-polyglot' " Language pack
 
     if has("mac")
         Plug 'airblade/vim-gitgutter'
@@ -52,6 +49,8 @@ set nocompatible "VIM is better than VI
     endif
 
     " Unused {{{
+    " Plug 'ctrlpvim/ctrlp.vim'
+    " Plug 'sheerun/vim-polyglot' " Language pack
     " Plug 'unblevable/quick-scope'
     " Plug 'wellle/tmux-complete.vim'
     " Plug 'tomasr/molokai'
@@ -63,7 +62,7 @@ set nocompatible "VIM is better than VI
     runtime macros/matchit.vim
 "}}}
 "General {{{
-    set nostartofline
+    set nostartofline             "Keep cursor in same column when moving up/down
     set number
     if v:version == 704
         set relativenumber
@@ -78,15 +77,15 @@ set nocompatible "VIM is better than VI
     set wildmenu                   "Show completions on command line
     set laststatus=2               "Always show the status bar
     set textwidth=80
-    set t_kb=                    "Fix for backspace issue when using xterm.
-    " set tag+=tags;/
+    " set t_kb=                    "Fix for backspace issue when using xterm
     set lazyredraw                 "Don't redraw during macros
     set completeopt+=menuone
-    set diffopt+=vertical
+    set diffopt+=vertical          "Show diffs in vertical splits
     set encoding=utf8
     set virtualedit=block          "Allow visual block mode to select over any row/column
-    set cursorline
-    set list listchars=tab:>–      "Show tabs as '>–––'
+    set list listchars=tab:._      "Show tabs as '.___.___'
+    set winwidth=90
+    set winminwidth=40
 
     if v:version == 704
         set mouse=a                "Enable mouse support
@@ -99,6 +98,14 @@ set nocompatible "VIM is better than VI
     endif
 
     silent! colorscheme base16-harmonic16
+
+    " Enable cursorline for active pane. Using this with vim-tmux-focus-events
+    " enables this to work in tmux.
+    augroup dynanmic_cursorline
+        au!
+        au FocusGained,WinEnter,BufEnter,InsertLeave * setlocal cursorline
+        au FocusLost,WinLeave,BufLeave,InsertEnter   * setlocal nocursorline
+    augroup END
 "}}}
 "Mappings {{{
     noremap Q :q<enter>
@@ -116,7 +123,7 @@ set nocompatible "VIM is better than VI
 
     nnoremap <leader>d :call RunDiff()<cr>
 
-    " Correct comman typos
+    " Correct common typos
     nnoremap :W  :w
     nnoremap :Q  :q
     nnoremap :WQ :wq
@@ -203,7 +210,7 @@ set nocompatible "VIM is better than VI
     if v:version == 704
         set foldmethod=syntax
         set foldnestmax=10
-        set foldlevel=1
+        set foldlevel=0
         set foldenable
         set foldcolumn=0
         set foldtext=CustomFoldText()
@@ -614,35 +621,18 @@ set nocompatible "VIM is better than VI
 "    endwhile
 "endfunction
 "}}}
-
-set winwidth=90
-set winminwidth=40
-
+"Bug Fixes {{{
 augroup bug_fixes
     au!
     " Airline colours mess up now and again. This should refresh airline every
-    " so often.
-    au CursorHold * AirlineRefresh
+    " so often. Requires vim-tmux-focus-events.
+    au FocusGained,FocusLost * AirlineRefresh
 
     " When using vim-tmux-navigator and vim-tmux-focus-events, ^[[O gets
     " inserted when switching panes. This is a workaround to prevent that.
     au FocusLost * silent redraw!
 augroup END
-
-" Enable cursorline for active pane. Using this with vim-tmux-focus-events
-" enables this to work in tmux.
-augroup dynanmic_cursorline
-    au!
-    au FocusGained,WinEnter,BufEnter,InsertLeave * setlocal cursorline
-    au FocusLost,WinLeave,BufLeave,InsertEnter   * setlocal nocursorline
-augroup END
-
-
-function! ReHead()
-    execute "normal! gg0"
-    execute "normal! /\\/\\/==\<cr>"
-    " execute "normal! /\/\/[-=]\{60}.*\n\(\/\/.*\n\)\+\/\/[-=]\{60}.*\<cr>"
-endfunction
+"}}}
 
 function! NavFuncCall()
     call searchpair('(', ',', ')')
@@ -667,7 +657,6 @@ function! GetFuncCallArgs(arg_len)
     endwhile
 
     return l:args
-
 endfunction
 
 function! ConvEq(name)
@@ -692,7 +681,6 @@ function! ConvEq2()
     execute "normal! diwv%d"
 
     execute "normal! i".args[0].' == '.l:args[1]
-
 endfunction
 
 function! ProcessGenVerilog()
@@ -715,5 +703,5 @@ augroup source_vimrc
     autocmd BufWritePost $MYVIMRC source $MYVIMRC || AirlineRefresh
     autocmd BufRead,BufWritePost $MYVIMRC setlocal textwidth=0 fdm=marker foldlevel=0
 augroup END
-" vim: set textwidth=0 fdm=marker foldlevel=0 :
+" vim: set textwidth=0 fdm=marker:
 "}}}
