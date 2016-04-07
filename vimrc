@@ -13,33 +13,38 @@ set nocompatible "VIM is better than VI
     Plug 'tpope/vim-commentary'
     Plug 'tpope/vim-vinegar'
     Plug 'tpope/vim-unimpaired'
-    Plug 'lewis6991/verilog_systemverilog.vim', { 'for': 'verilog_systemverilog' }
-    Plug 'junegunn/vim-easy-align'
+    Plug 'vhda/verilog_systemverilog.vim'
+    Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
     Plug 'chriskempson/base16-vim'
     Plug 'ervandew/supertab'
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
     Plug 'vimtaku/hl_matchit.vim'
-    Plug 'nathanaelkane/vim-indent-guides'
     Plug 'sickill/vim-pasta'
-    Plug 'sjl/gundo.vim'
+    Plug 'sjl/gundo.vim', { 'on': 'GundoToggle' }
+    " Plug 'mbbill/undotree' " Gundo alternative
     Plug 'dietsche/vim-lastplace'
 
     "Tmux Integration
     Plug 'christoomey/vim-tmux-navigator'
-    Plug 'tmux-plugins/vim-tmux'
     Plug 'edkolev/tmuxline.vim'
+    Plug 'tmux-plugins/vim-tmux-focus-events'
 
     "Search
-    Plug 'ctrlpvim/ctrlp.vim'
-    Plug 'rking/ag.vim'
-    Plug 'haya14busa/incsearch.vim'
-    Plug 'haya14busa/incsearch-fuzzy.vim'
+    " Plug 'ctrlpvim/ctrlp.vim'
+    Plug 'rking/ag.vim', { 'on': 'Ag' }
+    Plug 'Chun-Yang/vim-action-ag'
+    if v:version == 704
+        Plug 'haya14busa/incsearch.vim'
+        " Plug 'haya14busa/incsearch-fuzzy.vim'
+    endif
 
     "Source Control
     Plug 'tpope/vim-fugitive'
     Plug 'vim-scripts/vcscommand.vim'
-    Plug 'juneedahamed/vc.vim'
+
+    " Plug 'sheerun/vim-polyglot' " Language pack
+
     if has("mac")
         Plug 'airblade/vim-gitgutter'
     else
@@ -50,9 +55,7 @@ set nocompatible "VIM is better than VI
     " Plug 'unblevable/quick-scope'
     " Plug 'wellle/tmux-complete.vim'
     " Plug 'tomasr/molokai'
-    " Plug 'bkad/CamelCaseMotion'
     " Plug 'dag/vim-fish'
-    " Plug 'guns/xterm-color-table.vim'
     " Plug 'SirVer/ultisnips'
     "}}}
     call plug#end()
@@ -61,7 +64,10 @@ set nocompatible "VIM is better than VI
 "}}}
 "General {{{
     set nostartofline
-    set number relativenumber
+    set number
+    if v:version == 704
+        set relativenumber
+    endif
     set autoindent
     set numberwidth=1              "Make as small as possible
     set showmatch                  "Show matching parenthesis
@@ -98,9 +104,15 @@ set nocompatible "VIM is better than VI
     noremap Q :q<enter>
     nnoremap <leader>ev :call EditVimrc()<cr>
 
-    " Yank and Paste from systeam clipboard. Very useful.
-    nnoremap <leader>y "+y
-    nnoremap <leader>p "+p
+    " Yank and Paste from systeam clipboard instead of 0 register. Very useful.
+    set clipboard=unnamed
+
+    " Swap visual and block selection
+    nnoremap v <C-V>
+    vnoremap v <esc>
+    nnoremap <C-V> v
+
+    nnoremap <bs> :nohlsearch<cr>
 
     nnoremap <leader>d :call RunDiff()<cr>
 
@@ -109,16 +121,20 @@ set nocompatible "VIM is better than VI
     nnoremap :Q  :q
     nnoremap :WQ :wq
     nnoremap :Wq :wq
-    nnoremap :wQ :wq
     nnoremap :BD :bd
     nnoremap :Bd :bd
-    nnoremap :bD :bd
+    nnoremap :Vs :vs
+    nnoremap :VS :vs
+
+    nnoremap <M-J> :bnext<cr>
+    nnoremap <M-K> :bprev<cr>
 
     " Should this not be default?
     nnoremap Y y$
 
     " Disable
     nnoremap K <nop>
+    vnoremap K <nop>
 
     nnoremap gb :bn<cr>
     nnoremap gp :bp<cr>
@@ -132,10 +148,6 @@ set nocompatible "VIM is better than VI
 
     " Escape is inefficient
     inoremap jk <esc>l
-
-    " Useful for selecting areas to indent/align
-    " 26/01/16: Disable for a while
-    " nnoremap <space> :call SelectIndent()<cr>
 
     " Toggles line number mode. Very useful.
     nnoremap <C-N> :set relativenumber!<cr>
@@ -171,9 +183,10 @@ set nocompatible "VIM is better than VI
     augroup END
 "}}}
 "Undo {{{
-    if v:version == 704
-        set undofile " Preserve undo tree between sessions.
+    if has('persistent_undo')
+        set undolevels=5000
         set undodir=$HOME/.vimundo
+        set undofile " Preserve undo tree between sessions.
     endif
 "}}}
 "Searching{{{
@@ -218,9 +231,9 @@ set nocompatible "VIM is better than VI
 "File Init{{{
     augroup header_insert
         autocmd!
-        autocmd BufNewFile *.sv*,*.c*,*.h,*.java :0r ~/headers/c_header.txt
-        autocmd BufNewFile *.sv*,*.c*,*.h,*.java %s/\[date\]/\=strftime("%Y")
-        autocmd BufNewFile *.sv*,*.c*,*.h,*.java %s/\[name\]     /Lewis Russell
+        autocmd BufNewFile *.sv*,*.c*,*.h,*.java :0r ~/headers/arm.txt
+        " autocmd BufNewFile *.sv*,*.c*,*.h,*.java %s/\[date\]/\=strftime("%Y")
+        " autocmd BufNewFile *.sv*,*.c*,*.h,*.java %s/\[name\]     /Lewis Russell
         autocmd BufNewFile *.sv*,*.c*,*.h,*.java normal! G
     augroup END
 "}}}
@@ -329,25 +342,31 @@ set nocompatible "VIM is better than VI
 
         " Enable folding for normal size files. Folding is really slow for large files.
         au Filetype verilog_systemverilog if line('$') < 2000
-        au Filetype verilog_systemverilog     setlocal foldmethod=syntax foldlevelstart=1
         au Filetype verilog_systemverilog     let g:verilog_syntax_fold = "comment,function,class,task,clocking"
+        au Filetype verilog_systemverilog     setlocal foldmethod=syntax foldlevelstart=1
         au Filetype verilog_systemverilog     syntax enable "Trigger fold calculation
+        au Filetype verilog_systemverilog else
+        au Filetype verilog_systemverilog     let g:verilog_syntax_fold = ""
         au Filetype verilog_systemverilog endif
+        " au Filetype verilog_systemverilog let b:verilog_indent_verbose = 1
+        au Filetype verilog_systemverilog let b:verilog_indent_modules = 1
+        au Filetype verilog_systemverilog let b:verilog_indent_preproc = 1
     augroup END
 
-    let b:verilog_indent_verbose = 1
-    let b:verilog_indent_modules = 1
-    let b:verilog_indent_preproc = 1
+    " let g:verilog_syntax_fold = "comment,function,class,task,clocking"
+    " let g:verilog_disable_indent = "interface,module"
     " let b:verilog_dont_deindent_eos = 1
-    " let g:verilog_syntax_fold = "all"
 
 "}}}
 "File Settings {{{
+    let g:xml_syntax_folding=1
     augroup file_prefs
         au!
         au Filetype sh,map setlocal textwidth=0
         au BufEnter *.log  setlocal textwidth=0 wrap cursorline
         au BufEnter * call EnableColorColumn()
+        au BufEnter *.sig  setlocal filetype=xml
+        au FileType xml    setlocal foldmethod=syntax
     augroup END
 "}}}
 "Abbreviations {{{
@@ -370,11 +389,56 @@ set nocompatible "VIM is better than VI
     iabbrev sucessful   successful
     iabbrev successfull successful
     iabbrev contiguouse contiguous
+    iabbrev previouse   previous
+    iabbrev seperate    separate
     iabbrev fori for (int i = 0; i <; ++i)<esc>5hi
     iabbrev forj for (int j = 0; j <; ++j)<esc>5hi
     iabbrev forn for (int n = 0; n <; ++n)<esc>5hi
 "}}}
 "Plugin Settings {{{
+"Ag {{{
+    let g:ag_prg='ag --vimgrep'
+    " let g:ag_working_path_mode="r"
+"}}}
+"Airline {{{
+    let g:airline_mode_map = {
+        \ '__' : '-',
+        \ 'n'  : 'N',
+        \ 'i'  : 'I',
+        \ 'R'  : 'R',
+        \ 'c'  : 'C',
+        \ 'v'  : 'V',
+        \ 'V'  : 'V',
+        \ '' : 'V',
+        \ 's'  : 'S',
+        \ 'S'  : 'S',
+        \ '' : 'S',
+        \ }
+
+    let g:airline#extensions#default#layout = [
+        \   [ 'a', 'b', 'c' ],
+        \   [ 'x', 'z', 'warning' ]
+        \ ]
+
+    let g:airline_powerline_fonts=1
+    let g:airline_theme = 'base16'
+    let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace']
+    let g:airline#extensions#branch#use_vcscommand = 1
+    let g:airline_section_c = airline#section#create_left(['file'])
+
+"}}}
+""CtrlP {{{
+"    let g:ctrlp_root_markers=['.ctrlp']
+"    let g:ctrlp_custom_ignore = {
+"      \ 'dir':  '\v[\/]\.(git|hg|svn)$',
+"      \ 'file': '\v((\.(exe|so|dll|pm))|tags)$',
+"      \ 'link': 'some_bad_symbolic_links',
+"      \ }
+"    if executable('ag')
+"        " Use ag in CtrlP for listing files. Fast and respects .gitignore
+"        let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+"    endif
+""}}}
     "Easy Align {{{
         nmap ga <Plug>(EasyAlign)
         xmap ga <Plug>(EasyAlign)
@@ -425,74 +489,20 @@ set nocompatible "VIM is better than VI
                     \ }
         nmap <leader>c mzgaip[gaipdgaip;gaip,`z
     "}}}
-    "CtrlP {{{
-        let g:ctrlp_root_markers=['.ctrlp']
-        let g:ctrlp_custom_ignore = {
-          \ 'dir':  '\v[\/]\.(git|hg|svn)$',
-          \ 'file': '\v((\.(exe|so|dll|pm))|tags)$',
-          \ 'link': 'some_bad_symbolic_links',
-          \ }
-        if executable('ag')
-            " Use ag in CtrlP for listing files. Fast and respects .gitignore
-            let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-        endif
-    "}}}
-    "Indent Guides {{{
-        if has("gui_running")
-            let g:indent_guides_color_change_percent = 2
-            let g:indent_guides_enable_on_vim_startup = 1
-            let g:indent_guides_start_level = 2
-            " let g:indent_guides_guide_size = 1
-        endif
-    "}}}
     "HL Matchit {{{
         let g:hl_matchit_enable_on_vim_startup = 1
     "}}}
-    "Airline {{{
-        let g:airline_powerline_fonts=1
-        if has("gui_running") || has("mac")
-            let g:airline_powerline_fonts=1
-        endif
-        let g:airline_mode_map = {
-            \ '__' : '-',
-            \ 'n'  : 'N',
-            \ 'i'  : 'I',
-            \ 'R'  : 'R',
-            \ 'c'  : 'C',
-            \ 'v'  : 'V',
-            \ 'V'  : 'V',
-            \ '' : 'V',
-            \ 's'  : 'S',
-            \ 'S'  : 'S',
-            \ '' : 'S',
-            \ }
-        let g:airline#extensions#default#layout = [
-            \ [ 'a', 'b', 'c' ],
-            \ [ 'x', 'z', 'warning' ] ]
-        let g:airline#extensions#tabline#enabled = 1
-        let g:airline#extensions#tabline#show_buffers = 0
-        let g:airline#extensions#tabline#show_tab_nr = 0
-        let g:airline#extensions#tabline#formatter = 'unique_tail'
-        let g:airline#extensions#tabline#show_tab_type = 0
-        let g:airline#extensions#tabline#show_close_button = 0
-        " let g:airline_section_c = '%t'
-    "}}}
-    "Gitgutter {{{
-        " let g:gitgutter_diff_args = '-w'
-    "}}}
-    "Ag {{{
-        let g:ag_prg='ag --vimgrep'
-        " let g:ag_working_path_mode="r"
-    "}}}
     "Incsearch {{{
-        let g:incsearch#auto_nohlsearch = 1
+        if v:version != 704
+            let b:noincsearch=1
+        endif
 
         augroup mapincsearch
             au!
-            " Disable insearch for certain filetypes.
-            " Log files can be very large which can cause performance issues.
-            au BufEnter *.log let b:noincsearch=1
-            au BufEnter * call MapIncsearch()
+            " Disable insearch for large files
+            au BufEnter * if line('$') < 10000
+            au BufEnter *     call MapIncsearch()
+            au BufEnter * endif
         augroup END
 
         function! MapIncsearch()
@@ -500,15 +510,6 @@ set nocompatible "VIM is better than VI
                 map <buffer> /  <Plug>(incsearch-forward)
                 map <buffer> ?  <Plug>(incsearch-backward)
                 map <buffer> g/ <Plug>(incsearch-stay)
-                map <buffer> n  <Plug>(incsearch-nohl-n)
-                map <buffer> N  <Plug>(incsearch-nohl-N)
-                map <buffer> *  <Plug>(incsearch-nohl-*)
-                map <buffer> #  <Plug>(incsearch-nohl-#)
-                map <buffer> g* <Plug>(incsearch-nohl-g*)
-                map <buffer> g# <Plug>(incsearch-nohl-g#)
-                map <buffer> z/ <Plug>(incsearch-fuzzy-/)
-                map <buffer> z? <Plug>(incsearch-fuzzy-?)
-                map <buffer> zg/ <Plug>(incsearch-fuzzy-stay)
             endif
         endfunction
     "}}}
@@ -516,7 +517,10 @@ set nocompatible "VIM is better than VI
         nnoremap <F5> :GundoToggle<CR>
     "}}}
     "Tmuxline {{{
-    let g:tmuxline_preset='full'
+        let g:tmuxline_preset='full'
+    "}}}
+    "Vim Action Ag {{{
+        nmap g* <Plug>AgActionWord
     "}}}
 "}}}
 "Functions {{{
@@ -534,22 +538,6 @@ set nocompatible "VIM is better than VI
             let hl_column = &tw + 2
             call matchadd('ColorColumn', '\%'.hl_column.'v', 100)
         endif
-    endfunction "}}}
-
-    function! SelectIndent() "{{{
-        let cur_line = line(".")
-        let cur_ind = indent(cur_line)
-        let line = cur_line
-        while indent(line - 1) >= cur_ind
-            let line = line - 1
-        endwhile
-        execute "normal " . line . "G"
-        execute "normal V"
-        let line = cur_line
-        while indent(line + 1) >= cur_ind
-            let line = line + 1
-        endwhile
-        execute "normal " . line . "G"
     endfunction "}}}
 
     function! DeleteTrailingWS() "{{{
@@ -589,44 +577,137 @@ set nocompatible "VIM is better than VI
     endfunction "}}}
 
 "}}}
-
 "Plugin Development {{{
-function! GetSyn()
-    return join(map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")'))
-endfunction
-function! GetSyn3()
-    return map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")')
-endfunction
-function! GetSyn2()
-    return join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'))
-endfunction
+"function! GetSyn()
+"    return join(map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")'))
+"endfunction
+"function! GetSyn3()
+"    return map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")')
+"endfunction
+"function! GetSyn2()
+"    return join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'))
+"endfunction
 
-function! AppendSyn()
-    let linenr = 0
+"function! AppendSyn()
+"    let linenr = 0
 
-    while linenr < line("$") - 1
-        let linenr += 1
-        let length=len(getline(linenr))
-        let ws=0
+"    while linenr < line("$") - 1
+"        let linenr += 1
+"        let length=len(getline(linenr))
+"        let ws=0
 
-        if length < 80
-            let ws = 80 - length
-        end
+"        if length < 80
+"            let ws = 80 - length
+"        end
 
-        " Goto line
-        execute "normal ".linenr."G"
+"        " Goto line
+"        execute "normal ".linenr."G"
 
-        " Insert whitespace upto column 80
-        execute "normal ".ws."A "
+"        " Insert whitespace upto column 80
+"        execute "normal ".ws."A "
 
-        " Insert syntax groups
-        execute "normal A// ".GetSyn()
+"        " Insert syntax groups
+"        execute "normal A// ".GetSyn()
 
-        " Update screen
-        redraw
-    endwhile
-endfunction
+"        " Update screen
+"        redraw
+"    endwhile
+"endfunction
 "}}}
+
+set winwidth=90
+set winminwidth=40
+
+augroup bug_fixes
+    au!
+    " Airline colours mess up now and again. This should refresh airline every
+    " so often.
+    au CursorHold * AirlineRefresh
+
+    " When using vim-tmux-navigator and vim-tmux-focus-events, ^[[O gets
+    " inserted when switching panes. This is a workaround to prevent that.
+    au FocusLost * silent redraw!
+augroup END
+
+" Enable cursorline for active pane. Using this with vim-tmux-focus-events
+" enables this to work in tmux.
+augroup dynanmic_cursorline
+    au!
+    au FocusGained,WinEnter,BufEnter,InsertLeave * setlocal cursorline
+    au FocusLost,WinLeave,BufLeave,InsertEnter   * setlocal nocursorline
+augroup END
+
+
+function! ReHead()
+    execute "normal! gg0"
+    execute "normal! /\\/\\/==\<cr>"
+    " execute "normal! /\/\/[-=]\{60}.*\n\(\/\/.*\n\)\+\/\/[-=]\{60}.*\<cr>"
+endfunction
+
+function! NavFuncCall()
+    call searchpair('(', ',', ')')
+endfunction
+
+function! GetFuncCallArgs(arg_len)
+
+    execute "normal! f("
+
+    let l:args = []
+
+    let i = 0
+
+    while i < a:arg_len
+        execute "normal! lv"
+        call NavFuncCall()
+        execute "normal! hy"
+        call NavFuncCall()
+        let l:arg = @0
+        call add(l:args, l:arg)
+        let i += 1
+    endwhile
+
+    return l:args
+
+endfunction
+
+function! ConvEq(name)
+    execute "normal! /".a:name."\<cr>"
+    execute "normal! mz"
+    let l:args = GetFuncCallArgs(2)
+    execute "normal! `z"
+
+    "Delete function call
+    execute "normal! dt(v%d"
+
+    execute "normal! i".args[0].' == '.l:args[1]
+
+endfunction
+
+function! ConvEq2()
+    execute "normal! mz"
+    let l:args = GetFuncCallArgs(2)
+    execute "normal! `z"
+
+    "Delete function call
+    execute "normal! diwv%d"
+
+    execute "normal! i".args[0].' == '.l:args[1]
+
+endfunction
+
+function! ProcessGenVerilog()
+    %s/`from_bool//g
+    %s/`__false/1'b0/g
+    %s/`__true/1'b1/g
+    %s/`__boolean/bit/g
+    %s/)\n\s*begin/) begin/g
+    %s/else\n\s*begin/else begin/g
+    %s/end\n\s*else/end else/g
+    %s/`bits(32)/bit [31:0]/g
+    %s/`bits(8)/bit [7:0]/g
+    $s/`ASL_assert//g
+    g/`ASL_assert/d
+endfunction
 
 "Apply .vimrc on save {{{
 augroup source_vimrc

@@ -32,7 +32,7 @@ git config --global branch.autosetuprebase always
 # Other                                                                        #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 git config --global color.ui true
-git config --global core.autocrlf input
+git config --global core.autocrlf input # Convert CRLF to LF.
 if [ "$(uname)" == "Darwin" ]; then
     git config --global credential.helper osxkeychain
 fi
