@@ -40,6 +40,7 @@ set nocompatible "VIM is better than VI
 
     "Source Control
     Plug 'tpope/vim-fugitive'
+    Plug 'junegunn/gv.vim'
     Plug 'vim-scripts/vcscommand.vim'
 
     if has("mac")
@@ -362,7 +363,7 @@ set nocompatible "VIM is better than VI
         au Filetype verilog_systemverilog else
         au Filetype verilog_systemverilog     let g:verilog_syntax_fold = ""
         au Filetype verilog_systemverilog endif
-        " au Filetype verilog_systemverilog let b:verilog_indent_verbose = 1
+        " au Filetype verilog_systemverilog let b:verilog_verbose = 1
         au Filetype verilog_systemverilog let b:verilog_indent_modules = 1
         au Filetype verilog_systemverilog let b:verilog_indent_preproc = 1
     augroup END
@@ -435,7 +436,7 @@ set nocompatible "VIM is better than VI
 
     let g:airline_powerline_fonts=1
     let g:airline_theme = 'base16'
-    let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace']
+    let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace', 'tmuxline']
     let g:airline#extensions#branch#use_vcscommand = 1
     let g:airline_section_c = airline#section#create_left(['file'])
 
