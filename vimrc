@@ -81,7 +81,6 @@ set nocompatible "VIM is better than VI
     set lazyredraw                 "Don't redraw during macros
     set completeopt+=menuone
     set diffopt+=vertical          "Show diffs in vertical splits
-    set encoding=utf8
     set virtualedit=block          "Allow visual block mode to select over any row/column
     set list listchars=tab:._      "Show tabs as '.___.___'
     set winwidth=90
@@ -91,13 +90,11 @@ set nocompatible "VIM is better than VI
         set mouse=a                "Enable mouse support
     endif
 
-    set background=dark
-
-    if !has("gui_running")
-        let base16colorspace=256
+    if !has('nvim')
+        set encoding=utf8
     endif
 
-    silent! colorscheme base16-harmonic16
+    set background=dark
 
     " Enable cursorline for active pane. Using this with vim-tmux-focus-events
     " enables this to work in tmux.
@@ -107,11 +104,22 @@ set nocompatible "VIM is better than VI
         au FocusLost,WinLeave,BufLeave,InsertEnter   * setlocal nocursorline
     augroup END
 "}}}
+"Colours {{{
+    if !has('gui_running') && !has('nvim')
+        let base16colorspace=256
+    endif
+
+    if has('nvim')
+        let $NVIM_TUI_ENABLE_TRUE_COLOR=1 "Enable true colour
+    endif
+
+    silent! colorscheme base16-harmonic16
+"}}}
 "Mappings {{{
     noremap Q :q<enter>
     nnoremap <leader>ev :call EditVimrc()<cr>
 
-    " Yank and Paste from systeam clipboard instead of 0 register. Very useful.
+    " Yank and Paste from system clipboard instead of 0 register. Very useful.
     set clipboard=unnamed
 
     " Swap visual and block selection
@@ -230,7 +238,6 @@ set nocompatible "VIM is better than VI
         if has("mac")
             set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
         else
-            " set guifont=DejaVu\ Sans\ Mono\ 11
             set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 11
         endif
     endif
@@ -363,7 +370,6 @@ set nocompatible "VIM is better than VI
     " let g:verilog_syntax_fold = "comment,function,class,task,clocking"
     " let g:verilog_disable_indent = "interface,module"
     " let b:verilog_dont_deindent_eos = 1
-
 "}}}
 "File Settings {{{
     let g:xml_syntax_folding=1
@@ -500,25 +506,15 @@ set nocompatible "VIM is better than VI
         let g:hl_matchit_enable_on_vim_startup = 1
     "}}}
     "Incsearch {{{
-        if v:version != 704
-            let b:noincsearch=1
-        endif
-
         augroup mapincsearch
             au!
             " Disable insearch for large files
-            au BufEnter * if line('$') < 10000
-            au BufEnter *     call MapIncsearch()
+            au BufEnter * if line('$') < 10000 && v:version >= 704
+            au BufEnter *     map <buffer> /  <Plug>(incsearch-forward)
+            au BufEnter *     map <buffer> ?  <Plug>(incsearch-backward)
+            au BufEnter *     map <buffer> g/ <Plug>(incsearch-stay)
             au BufEnter * endif
         augroup END
-
-        function! MapIncsearch()
-            if !exists('b:noincsearch')
-                map <buffer> /  <Plug>(incsearch-forward)
-                map <buffer> ?  <Plug>(incsearch-backward)
-                map <buffer> g/ <Plug>(incsearch-stay)
-            endif
-        endfunction
     "}}}
     "Gundo {{{
         nnoremap <F5> :GundoToggle<CR>
@@ -634,11 +630,11 @@ augroup bug_fixes
 augroup END
 "}}}
 
-function! NavFuncCall()
+function! NavFuncCall() "{{{
     call searchpair('(', ',', ')')
-endfunction
+endfunction "}}}
 
-function! GetFuncCallArgs(arg_len)
+function! GetFuncCallArgs(arg_len) "{{{
 
     execute "normal! f("
 
@@ -657,9 +653,9 @@ function! GetFuncCallArgs(arg_len)
     endwhile
 
     return l:args
-endfunction
+endfunction "}}}
 
-function! ConvEq(name)
+function! ConvEq(name) "{{{
     execute "normal! /".a:name."\<cr>"
     execute "normal! mz"
     let l:args = GetFuncCallArgs(2)
@@ -670,9 +666,9 @@ function! ConvEq(name)
 
     execute "normal! i".args[0].' == '.l:args[1]
 
-endfunction
+endfunction "}}}
 
-function! ConvEq2()
+function! ConvEq2() "{{{
     execute "normal! mz"
     let l:args = GetFuncCallArgs(2)
     execute "normal! `z"
@@ -681,9 +677,9 @@ function! ConvEq2()
     execute "normal! diwv%d"
 
     execute "normal! i".args[0].' == '.l:args[1]
-endfunction
+endfunction "}}}
 
-function! ProcessGenVerilog()
+function! ProcessGenVerilog() "{{{
     %s/`from_bool//g
     %s/`__false/1'b0/g
     %s/`__true/1'b1/g
@@ -695,7 +691,7 @@ function! ProcessGenVerilog()
     %s/`bits(8)/bit [7:0]/g
     $s/`ASL_assert//g
     g/`ASL_assert/d
-endfunction
+endfunction "}}}
 
 "Apply .vimrc on save {{{
 augroup source_vimrc
