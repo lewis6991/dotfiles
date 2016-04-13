@@ -1,7 +1,10 @@
+if hash brew 2>/dev/null; then
+    HAVE_BREW=1
+fi
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Completion                                                                   #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
-if which brew 2>&1 > /dev/null; then
+if [[ -v $HAVE_BREW ]]; then
     if [ -f $(brew --prefix)/etc/bash_completion ]; then
         . $(brew --prefix)/etc/bash_completion
     fi
@@ -20,7 +23,7 @@ set show-all-if-ambiguous on
 
 export PROMPT_COMMAND=__prompt_command  # Func to gen PS1 after CMDs
 
-if which brew 2>&1 > /dev/null; then
+if [[ -v $HAVE_BREW ]]; then
     if [ -f "$(brew --prefix bash-git-prompt)/share/gitprompt.sh" ]; then
         GIT_PROMPT_ONLY_IN_REPO=1
         GIT_PROMPT_THEME=Default
@@ -53,7 +56,7 @@ function __prompt_command() {
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 
 # Modify path if coretuils is installed (Mac)
-if which brew 2>&1 > /dev/null; then
+if [[ -v $HAVE_BREW ]]; then
     if brew --prefix coreutils >/dev/null ; then
         export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
         export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
@@ -61,7 +64,7 @@ if which brew 2>&1 > /dev/null; then
 fi
 
 # Colourise man pages
-if which most 2>&1 > /dev/null; then
+if hash most 2>/dev/null; then
     export PAGER="most -s"
 fi
 
@@ -76,7 +79,7 @@ bind '"\e[B": history-search-forward'
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
 # Aliases                                                                      #
 #––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––#
-if which brew 2>&1 > /dev/null; then
+if [[ -v $HAVE_BREW ]]; then
     if brew --prefix coreutils >/dev/null ; then
         alias ls='ls --color'
         alias ll='ls -goAh --group-directories-first'
@@ -105,16 +108,16 @@ alias ....='cd ../../..'
 function extract() {
     if [ -f $1 ] ; then
         case $1 in
-            *.tar.bz2)   tar xvjf $1     ;;
-            *.tar.gz)    tar xvzf $1     ;;
-            *.bz2)       bunzip2 $1      ;;
-            *.gz)        gunzip $1       ;;
-            *.tar)       tar xvf $1      ;;
-            *.tbz2)      tar xvjf $1     ;;
-            *.tgz)       tar xvzf $1     ;;
-            *.zip)       unzip $1        ;;
-            *.Z)         uncompress $1   ;;
-            *)           echo "'$1' cannot be extracted via >extract<" ;;
+            *.tar.bz2) tar xvjf   $1 ;;
+            *.tar.gz ) tar xvzf   $1 ;;
+            *.bz2    ) bunzip2    $1 ;;
+            *.gz     ) gunzip     $1 ;;
+            *.tar    ) tar xvf    $1 ;;
+            *.tbz2   ) tar xvjf   $1 ;;
+            *.tgz    ) tar xvzf   $1 ;;
+            *.zip    ) unzip      $1 ;;
+            *.Z      ) uncompress $1 ;;
+            *        ) echo "'$1' cannot be extracted via >extract<" ;;
         esac
     else
         echo "'$1' is not a valid file!"
