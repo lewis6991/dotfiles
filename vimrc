@@ -25,6 +25,8 @@ set nocompatible "VIM is better than VI
     " Plug 'mbbill/undotree' " Gundo alternative
     Plug 'dietsche/vim-lastplace'
 
+    Plug 'Konfekt/FastFold'
+
     "Tmux Integration
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'edkolev/tmuxline.vim'
@@ -367,7 +369,6 @@ set nocompatible "VIM is better than VI
         au Filetype verilog_systemverilog let b:verilog_indent_modules = 1
         au Filetype verilog_systemverilog let b:verilog_indent_preproc = 1
     augroup END
-
     " let g:verilog_syntax_fold = "comment,function,class,task,clocking"
     " let g:verilog_disable_indent = "interface,module"
     " let b:verilog_dont_deindent_eos = 1
@@ -682,6 +683,7 @@ endfunction "}}}
 
 function! ProcessGenVerilog() "{{{
     %s/`from_bool//g
+    %s/`not_bool/!/g
     %s/`__false/1'b0/g
     %s/`__true/1'b1/g
     %s/`__boolean/bit/g
@@ -690,7 +692,6 @@ function! ProcessGenVerilog() "{{{
     %s/end\n\s*else/end else/g
     %s/`bits(32)/bit [31:0]/g
     %s/`bits(8)/bit [7:0]/g
-    $s/`ASL_assert//g
     g/`ASL_assert/d
 endfunction "}}}
 
