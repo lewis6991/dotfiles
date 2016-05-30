@@ -10,6 +10,7 @@ set nocompatible "VIM is better than VI
     endif
 
     call plug#begin('~/.vim/plugged')
+    Plug 'lewis6991/tcl.vim'
     Plug 'tpope/vim-commentary'
     Plug 'tpope/vim-vinegar'
     Plug 'tpope/vim-unimpaired'
@@ -35,6 +36,10 @@ set nocompatible "VIM is better than VI
     "Search
     Plug 'rking/ag.vim', { 'on': 'Ag' }
     Plug 'Chun-Yang/vim-action-ag'
+
+    "Colourschemes
+    Plug 'ajh17/Spacegray.vim'
+    Plug 'whatyouhide/vim-gotham'
 
     if v:version == 704
         Plug 'haya14busa/incsearch.vim'
@@ -437,11 +442,15 @@ set nocompatible "VIM is better than VI
 
     let g:airline_powerline_fonts=1
     let g:airline_theme = 'base16'
-    let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace', 'tmuxline']
+    if !has('nvim')
+        let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace', 'tmuxline']
+    else
+        let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace']
+    endif
     let g:airline#extensions#branch#use_vcscommand = 1
     let g:airline_section_c = airline#section#create_left(['file'])
 
-"}}}
+    "}}}
 ""CtrlP {{{
 "    let g:ctrlp_root_markers=['.ctrlp']
 "    let g:ctrlp_custom_ignore = {
