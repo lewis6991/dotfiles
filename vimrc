@@ -1,80 +1,84 @@
-set nocompatible "VIM is better than VI
 "Plugins {{{
 
-    " Install vim-plug if we don't arlready have it
+    " Install vim-plug if we don't already have it {{{
     if empty(glob("~/.vim/autoload/plug.vim"))
         execute 'silent !mkdir -p ~/.vimundo'
         execute 'silent !mkdir -p ~/.vim/plugged'
         execute 'silent !mkdir -p ~/.vim/autoload'
         execute 'silent !curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
-    endif
-
+    endif "}}}
     call plug#begin('~/.vim/plugged')
-    Plug 'lewis6991/tcl.vim'
-    Plug 'tpope/vim-commentary'
-    Plug 'tpope/vim-vinegar'
-    Plug 'tpope/vim-unimpaired'
-    Plug 'vhda/verilog_systemverilog.vim'
-    Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
-    Plug 'chriskempson/base16-vim'
-    Plug 'ervandew/supertab'
-    Plug 'vim-airline/vim-airline'
-    Plug 'vim-airline/vim-airline-themes'
-    Plug 'vimtaku/hl_matchit.vim'
-    Plug 'sickill/vim-pasta'
-    Plug 'sjl/gundo.vim', { 'on': 'GundoToggle' }
-    " Plug 'mbbill/undotree' " Gundo alternative
-    Plug 'dietsche/vim-lastplace'
 
-    Plug 'Konfekt/FastFold'
+     Plug 'vhda/verilog_systemverilog.vim'
 
-    "Tmux Integration
-    Plug 'christoomey/vim-tmux-navigator'
-    Plug 'edkolev/tmuxline.vim'
-    Plug 'tmux-plugins/vim-tmux-focus-events'
+     "Should be built in
+     Plug 'tpope/vim-commentary'
+     Plug 'tpope/vim-surround'
+     Plug 'tpope/vim-repeat'
+     Plug 'tpope/vim-unimpaired'
+     Plug 'triglav/vim-visual-increment'
+     Plug 'michaeljsmith/vim-indent-object'
+     Plug 'visualrepeat'
 
-    "Search
-    Plug 'rking/ag.vim', { 'on': 'Ag' }
-    Plug 'Chun-Yang/vim-action-ag'
+     Plug 'whatyouhide/vim-lengthmatters'
+     Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
+     Plug 'vim-airline/vim-airline'
+     Plug 'vim-airline/vim-airline-themes'
+     Plug 'vimtaku/hl_matchit.vim'
+     Plug 'sickill/vim-pasta'
+     Plug 'dietsche/vim-lastplace'
+     Plug 'Konfekt/FastFold'
+     Plug 'ervandew/supertab'
+     Plug 'cmdline-completion'
+     Plug 'justinmk/vim-dirvish'
 
-    "Colourschemes
-    Plug 'ajh17/Spacegray.vim'
-    Plug 'whatyouhide/vim-gotham'
+     "Snippets
+     Plug 'MarcWeber/vim-addon-mw-utils' "vim-snipmate dependency
+     Plug 'tomtom/tlib_vim'              "vim-snipmate dependency
+     Plug 'garbas/vim-snipmate'
 
-    if v:version == 704
-        Plug 'haya14busa/incsearch.vim'
-    endif
+     "Syntax
+     Plug 'tmhedberg/SimpylFold'
+     Plug 'derekwyatt/vim-scala'
+
+     "Colourschemes
+     Plug 'chriskempson/base16-vim'
+     Plug 'whatyouhide/vim-gotham'
+     Plug 'tomasr/molokai'
+
+     "Tmux Integration
+     Plug 'christoomey/vim-tmux-navigator'
+     Plug 'tmux-plugins/vim-tmux-focus-events'
+     Plug 'tmux-plugins/vim-tmux'
+
+     "Search
+     Plug 'rking/ag.vim', { 'on': 'Ag' }
+     Plug 'ctrlpvim/ctrlp.vim'
+     Plug 'Chun-Yang/vim-action-ag'
+     if v:version == 704
+         Plug 'haya14busa/incsearch.vim'
+     endif
 
     "Source Control
     Plug 'tpope/vim-fugitive'
-    Plug 'junegunn/gv.vim'
     Plug 'vim-scripts/vcscommand.vim'
+    Plug 'junegunn/gv.vim'
+    Plug 'airblade/vim-gitgutter'
+    Plug 'mhinz/vim-signify' "For SVN
 
-    if has("mac")
-        Plug 'airblade/vim-gitgutter'
-    else
-        Plug 'mhinz/vim-signify' "For SVN at work.
-    endif
-
-    " Unused {{{
-    " Plug 'ctrlpvim/ctrlp.vim'
-    " Plug 'sheerun/vim-polyglot' " Language pack
-    " Plug 'unblevable/quick-scope'
-    " Plug 'wellle/tmux-complete.vim'
-    " Plug 'tomasr/molokai'
-    " Plug 'dag/vim-fish'
-    " Plug 'SirVer/ultisnips'
-    "}}}
     call plug#end()
 
     runtime macros/matchit.vim
 "}}}
 "General {{{
-    set nostartofline             "Keep cursor in same column when moving up/down
+    set nocompatible              "VIM is better than VI
+    set nostartofline             "Keep cursor in same column when moving
+                                  "up/down.
     set number
     if v:version == 704
         set relativenumber
     endif
+
     set autoindent
     set numberwidth=1              "Make as small as possible
     set showmatch                  "Show matching parenthesis
@@ -85,17 +89,21 @@ set nocompatible "VIM is better than VI
     set wildmenu                   "Show completions on command line
     set laststatus=2               "Always show the status bar
     set textwidth=80
-    " set t_kb=                    "Fix for backspace issue when using xterm
     set lazyredraw                 "Don't redraw during macros
     set completeopt+=menuone
     set diffopt+=vertical          "Show diffs in vertical splits
-    set virtualedit=block          "Allow visual block mode to select over any row/column
+    set virtualedit=block          "Allow visual block mode to select over any
+                                   "row/column.
     set list listchars=tab:._      "Show tabs as '.___.___'
-    set winwidth=90
+    set winwidth=40
     set winminwidth=40
+    set spell
+    " au! FileType help wincmd L     "Open help in vertical split.
 
+    set clipboard=unnamed          "Yank and Paste from system clipboard instead
+                                   "of 0 register. Very useful.
     if v:version == 704
-        set mouse=a                "Enable mouse support
+        set mouse=nicr             "Enable mouse support
     endif
 
     if !has('nvim')
@@ -106,36 +114,27 @@ set nocompatible "VIM is better than VI
 
     " Enable cursorline for active pane. Using this with vim-tmux-focus-events
     " enables this to work in tmux.
-    augroup dynanmic_cursorline
-        au!
-        au FocusGained,WinEnter,BufEnter,InsertLeave * setlocal cursorline
-        au FocusLost,WinLeave,BufLeave,InsertEnter   * setlocal nocursorline
-    augroup END
+    au! FocusGained,WinEnter,BufEnter,InsertLeave * setlocal cursorline
+    au! FocusLost,WinLeave,BufLeave,InsertEnter   * setlocal nocursorline
 "}}}
 "Colours {{{
     if !has('gui_running') && !has('nvim')
         let base16colorspace=256
     endif
 
-    if has('nvim')
-        let $NVIM_TUI_ENABLE_TRUE_COLOR=1 "Enable true colour
-    endif
-
-    silent! colorscheme base16-harmonic16
+    silent! colorscheme base16-harmonic16-dark
 "}}}
 "Mappings {{{
-    noremap Q :q<enter>
     nnoremap <leader>ev :call EditVimrc()<cr>
-
-    " Yank and Paste from system clipboard instead of 0 register. Very useful.
-    set clipboard=unnamed
 
     " Swap visual and block selection
     nnoremap v <C-V>
-    vnoremap v <esc>
     nnoremap <C-V> v
+    vnoremap v <esc>
 
     nnoremap <bs> :nohlsearch<cr>
+
+    nnoremap S :%s/<C-R><C-W>//g<left><left>
 
     nnoremap <leader>d :call RunDiff()<cr>
 
@@ -148,6 +147,7 @@ set nocompatible "VIM is better than VI
     nnoremap :Bd :bd
     nnoremap :Vs :vs
     nnoremap :VS :vs
+    nnoremap :Sp :sp
 
     nnoremap <M-J> :bnext<cr>
     nnoremap <M-K> :bprev<cr>
@@ -155,12 +155,19 @@ set nocompatible "VIM is better than VI
     " Should this not be default?
     nnoremap Y y$
 
+    function! ToggleLineHighlight()
+        GitGutterLineHighlightsToggle
+        SignifyToggleHighlight
+    endfunction
+
+    nnoremap <C-S>      :call ToggleLineHighlight()<cr>
+    inoremap <C-S> <C-O>:call ToggleLineHighlight()<cr>
+
     " Disable
+    nnoremap Q <nop>
+    vnoremap Q <nop>
     nnoremap K <nop>
     vnoremap K <nop>
-
-    nnoremap gb :bn<cr>
-    nnoremap gp :bp<cr>
 
     " Swap these
     noremap 0 ^
@@ -178,15 +185,11 @@ set nocompatible "VIM is better than VI
 "Buffers {{{
     set hidden    "Allows buffers to exist in background
     set autoread  "Automatically read file when it is modified outside of vim
-
-    if v:version == 704
-        set autochdir "Automatically change to directory to current buffer
-    endif
 "}}}
 "History & Backup {{{
-    set history=1000   "keep a lot of history
-    set viminfo+=:500 "keep lots of cmd history
-    set viminfo+=/500 "keep lots of search history
+    set history=5000   "keep a lot of history
+    set viminfo+=:1000 "keep lots of cmd history
+    set viminfo+=/1000 "keep lots of search history
     set nowritebackup
     set noswapfile
     set nobackup
@@ -219,17 +222,33 @@ set nocompatible "VIM is better than VI
 
     if executable('ag')
       "Use ag over grep
-      set grepprg=ag\ --nogroup\ --nocolor
+      set grepprg=ag\ --vimgrep
     endif
 "}}}
 "Folding{{{
     if v:version == 704
-        set foldmethod=syntax
         set foldnestmax=10
-        set foldlevel=0
+        set foldlevel=1
+        set foldcolumn=3
         set foldenable
-        set foldcolumn=0
         set foldtext=CustomFoldText()
+
+        " Enable folding for normal size files. Folding is really slow for large files.
+        augroup fold_settings
+            au!
+            au FileType *    if line('$') < 5000
+            au FileType *        setlocal foldmethod=syntax
+            au FileType *        let g:verilog_syntax_fold_lst = "comment,function,class,task,clocking"
+            au FileType *        syntax enable "Trigger fold calculation
+            au FileType *    else
+            au FileType *        setlocal foldmethod=marker
+            au FileType json     setlocal foldmarker={,}
+            au FileType *        let g:verilog_syntax_fold_lst = ""
+            au FileType *     endif
+        augroup END
+
+        " Use SimpylFold for python
+        autocmd! FileType python setlocal foldmethod=expr
     endif
 "}}}
 "GUI Options {{{
@@ -246,147 +265,32 @@ set nocompatible "VIM is better than VI
         if has("mac")
             set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
         else
-            set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 11
+            set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 10
         endif
     endif
-"}}}
-"File Init{{{
-    augroup header_insert
-        autocmd!
-        autocmd BufNewFile *.sv*,*.c*,*.h,*.java :0r ~/headers/arm.txt
-        " autocmd BufNewFile *.sv*,*.c*,*.h,*.java %s/\[date\]/\=strftime("%Y")
-        " autocmd BufNewFile *.sv*,*.c*,*.h,*.java %s/\[name\]     /Lewis Russell
-        autocmd BufNewFile *.sv*,*.c*,*.h,*.java normal! G
-    augroup END
-"}}}
-"SystemVerilog Mappings {{{
-
-    function! InsertSVFunction(type, virtual, doc) "{{{
-        let s:line=line(".")
-        let s:name = substitute(getline('.'), '\s*' , '', 'g')
-        let s:indent = repeat(' ', indent('.'))
-        if a:type == "function"
-            if a:virtual != 0
-                call setline(s:line, s:indent."virtual function void ".s:name."();")
-            else
-                call setline(s:line, s:indent."function void ".s:name."();")
-            endif
-            call append(s:line, s:indent."endfunction : ".s:name)
-        else
-            if a:virtual != 0
-                call setline(s:line, s:indent."virtual task ".s:name."();")
-            else
-                call setline(s:line, s:indent."task ".s:name."();")
-            endif
-            call append(s:line, s:indent."endtask : ".s:name)
-        endif
-        call append(s:line+1, "")
-        if a:doc != 0
-            if a:type == "function"
-                call append(s:line-1, s:indent."/* Function: ".s:name)
-            else
-                call append(s:line-1, s:indent."/* Task: ".s:name)
-            endif
-            call append(s:line  , s:indent."*"             )
-            call append(s:line+1, s:indent."*  Parameters:")
-            call append(s:line+2, s:indent."*"             )
-            call append(s:line+3, s:indent."*  Returns:"   )
-            call append(s:line+4, s:indent."*/"            )
-        endif
-        unlet s:line
-    endfunction "}}}
-
-    function! InsertSVClass(uvm, doc) "{{{
-        let s:line=line(".")
-        let s:name = substitute(getline('.'), '\s*' , '', 'g')
-        if a:uvm != 0
-            call setline(s:line , "class ".s:name." extends uvm_object;")
-            call append(s:line  , "`uvm_object_utils(".s:name.")")
-            call append(s:line+1, "")
-            call append(s:line+2, "function new(string name = \"".s:name."\");")
-            call append(s:line+3, "super.new(name);")
-            call append(s:line+4, "endfunction  : new")
-            call append(s:line+5, "")
-            call append(s:line+6, "endclass : ".s:name)
-        else
-            call setline(s:line , "class ".s:name.";")
-            call append(s:line  , "")
-            call append(s:line+1, "function new();")
-            call append(s:line+2, "endfunction  : new")
-            call append(s:line+3, "")
-            call append(s:line+4, "endclass : ".s:name)
-        endif
-        if a:doc != 0
-            call append(s:line-1, "")
-            call append(s:line  , "/* Class: ".s:name)
-            call append(s:line+1, "*/"            )
-        endif
-        unlet s:line
-    endfunction "}}}
-
-    augroup systemverilog_mappings
-        au!
-        "UVM Report Macros {{{
-            au FileType verilog_systemverilog inoremap `ui `uvm_info(BIU_TAG, "", UVM_NONE)<esc>11<left>i
-            au FileType verilog_systemverilog inoremap `us `uvm_info(BIU_TAG, $sformatf(""), UVM_NONE)<esc>12<left>i
-            au FileType verilog_systemverilog inoremap `ue `uvm_error(BIU_TAG, "")<left><left>
-            au FileType verilog_systemverilog inoremap `uw `uvm_warning(BIU_TAG, "")<left><left>
-            au FileType verilog_systemverilog inoremap `uf `uvm_fatal(BIU_TAG, "")<left><left>
-        "}}}
-        "UVM Class Macros {{{
-            au FileType verilog_systemverilog inoremap `newc function new(string name, uvm_component parent);<enter>super.new(name, parent);<enter>endfunction : new<esc>2<up>3==i
-            au FileType verilog_systemverilog inoremap `newo function new(string name = "");<enter>super.new(name);<enter> endfunction : new<esc>2<up>3==i
-        "}}}
-        "UVM Phase Macros {{{
-            au FileType verilog_systemverilog inoremap `cphase function void connect_phase(uvm_phase phase);<enter>endfunction : connect_phase<esc>1<up>2==i<esc>o
-            au FileType verilog_systemverilog inoremap `bphase function void build_phase(uvm_phase phase);<enter>endfunction : build_phase<esc>1<up>2==i<esc>o
-        "}}}
-        "SystemVerilog Macros {{{
-            au FileType verilog_systemverilog inoremap <leader>f   <esc>:call InsertSVFunction("function", 0, 0)<cr>
-            au FileType verilog_systemverilog inoremap <leader>t   <esc>:call InsertSVFunction("task"    , 0, 0)<cr>
-            au FileType verilog_systemverilog inoremap <leader>df  <esc>:call InsertSVFunction("function", 0, 1)<cr>
-            au FileType verilog_systemverilog inoremap <leader>dt  <esc>:call InsertSVFunction("task"    , 0, 1)<cr>
-            au FileType verilog_systemverilog inoremap <leader>vf  <esc>:call InsertSVFunction("function", 1, 0)<cr>
-            au FileType verilog_systemverilog inoremap <leader>vt  <esc>:call InsertSVFunction("task"    , 1, 0)<cr>
-            au FileType verilog_systemverilog inoremap <leader>dvf <esc>:call InsertSVFunction("function", 1, 1)<cr>
-            au FileType verilog_systemverilog inoremap <leader>dvt <esc>:call InsertSVFunction("task"    , 1, 1)<cr>
-            au FileType verilog_systemverilog noremap  <leader>s <esc>kA begin<esc>joend<esc>kO
-            au FileType verilog_systemverilog noremap  <leader>f <esc>F"i$sformatf(<esc>2f"a)<esc>hi
-            au FileType verilog_systemverilog noremap  <leader>r <esc>A // REVISIT (lewrus01 <C-r>=strftime('%d/%m/%y')<cr>):
-        "}}}
-    augroup END
 "}}}
 "SystemVerilog Settings {{{
     augroup systemverilog_settings
         au!
         au Filetype verilog_systemverilog setlocal shiftwidth=2 tabstop=2
         au Filetype verilog_systemverilog setlocal commentstring=//%s
-
-        " Enable folding for normal size files. Folding is really slow for large files.
-        au Filetype verilog_systemverilog if line('$') < 2000
-        au Filetype verilog_systemverilog     let g:verilog_syntax_fold = "comment,function,class,task,clocking"
-        au Filetype verilog_systemverilog     setlocal foldmethod=syntax foldlevelstart=1
-        au Filetype verilog_systemverilog     syntax enable "Trigger fold calculation
-        au Filetype verilog_systemverilog else
-        au Filetype verilog_systemverilog     let g:verilog_syntax_fold = ""
-        au Filetype verilog_systemverilog endif
-        " au Filetype verilog_systemverilog let b:verilog_verbose = 1
-        au Filetype verilog_systemverilog let b:verilog_indent_modules = 1
-        au Filetype verilog_systemverilog let b:verilog_indent_preproc = 1
     augroup END
-    " let g:verilog_syntax_fold = "comment,function,class,task,clocking"
-    " let g:verilog_disable_indent = "interface,module"
-    " let b:verilog_dont_deindent_eos = 1
 "}}}
 "File Settings {{{
     let g:xml_syntax_folding=1
     augroup file_prefs
         au!
-        au Filetype sh,map setlocal textwidth=0
-        au BufEnter *.log  setlocal textwidth=0 wrap cursorline
-        au BufEnter * call EnableColorColumn()
+        au Filetype map    setlocal textwidth=0
+        au BufEnter *.log  setlocal textwidth=0
         au BufEnter *.sig  setlocal filetype=xml
-        au FileType xml    setlocal foldmethod=syntax
+        au BufEnter *.sig  setlocal filetype=xml
+        au Filetype tcl    setlocal shiftwidth=2
+        au Filetype yaml   setlocal shiftwidth=2
+
+        " Set filetype to asl for txt files in asset-protection
+        autocmd BufRead *.txt if expand('%:p') =~ 'asset-protection'
+        autocmd BufRead *.txt     set filetype=asl
+        autocmd BufRead *.txt endif
     augroup END
 "}}}
 "Abbreviations {{{
@@ -411,58 +315,74 @@ set nocompatible "VIM is better than VI
     iabbrev contiguouse contiguous
     iabbrev previouse   previous
     iabbrev seperate    separate
-    iabbrev fori for (int i = 0; i <; ++i)<esc>5hi
-    iabbrev forj for (int j = 0; j <; ++j)<esc>5hi
-    iabbrev forn for (int n = 0; n <; ++n)<esc>5hi
 "}}}
 "Plugin Settings {{{
-"Ag {{{
-    let g:ag_prg='ag --vimgrep'
-    " let g:ag_working_path_mode="r"
-"}}}
-"Airline {{{
-    let g:airline_mode_map = {
-        \ '__' : '-',
-        \ 'n'  : 'N',
-        \ 'i'  : 'I',
-        \ 'R'  : 'R',
-        \ 'c'  : 'C',
-        \ 'v'  : 'V',
-        \ 'V'  : 'V',
-        \ '' : 'V',
-        \ 's'  : 'S',
-        \ 'S'  : 'S',
-        \ '' : 'S',
-        \ }
+    "Ag {{{
+        let g:ag_prg='ag --vimgrep'
+        "Start searching from project root rather than CWD.
+        let g:ag_working_path_mode="r"
+    "}}}
+    "Airline {{{
+        let g:airline_mode_map = {
+            \ '__' : '-',
+            \ 'n'  : 'N',
+            \ 'i'  : 'I',
+            \ 'R'  : 'R',
+            \ 'c'  : 'C',
+            \ 'v'  : 'V',
+            \ 'V'  : 'V',
+            \ '' : 'V',
+            \ 's'  : 'S',
+            \ 'S'  : 'S',
+            \ '' : 'S',
+            \ }
 
-    let g:airline#extensions#default#layout = [
-        \   [ 'a', 'b', 'c' ],
-        \   [ 'x', 'z', 'warning' ]
-        \ ]
+        let g:airline#extensions#default#layout = [
+            \   [ 'a', 'b', 'c' ], [ 'x', 'z', 'warning' ]
+            \ ]
 
-    let g:airline_powerline_fonts=1
-    let g:airline_theme = 'base16'
-    if !has('nvim')
-        let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace', 'tmuxline']
-    else
+        let g:airline_powerline_fonts=1
+        let g:airline_theme = 'base16'
         let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace']
-    endif
-    let g:airline#extensions#branch#use_vcscommand = 1
-    let g:airline_section_c = airline#section#create_left(['file'])
+        let g:airline#extensions#branch#use_vcscommand = 1
+        let g:airline_section_c = airline#section#create_left(['file'])
 
     "}}}
-""CtrlP {{{
-"    let g:ctrlp_root_markers=['.ctrlp']
-"    let g:ctrlp_custom_ignore = {
-"      \ 'dir':  '\v[\/]\.(git|hg|svn)$',
-"      \ 'file': '\v((\.(exe|so|dll|pm))|tags)$',
-"      \ 'link': 'some_bad_symbolic_links',
-"      \ }
-"    if executable('ag')
-"        " Use ag in CtrlP for listing files. Fast and respects .gitignore
-"        let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-"    endif
-""}}}
+    "CtrlP {{{
+        let g:ctrlp_root_markers=['.ctrlp']
+
+        let g:ctrlp_custom_ignore = {
+            \ 'dir': '\v[\/](teal_autogen|eventdb|hal|lint)$',
+            \ }
+
+       if executable('ag')
+           " Use ag in CtrlP for listing files. Fast and respects .gitignore
+           " let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
+       endif
+    "}}}
+    "Dirvish {{{
+    augroup dirvish_group
+        autocmd!
+
+        " Put directories at top.
+        autocmd FileType dirvish sort r /[^\/]$/
+
+        " Put cursor on current file.
+        autocmd FileType dirvish call Attempt_select_last_file()
+
+        " Disable spell checker
+        autocmd FileType dirvish setlocal nospell
+
+        " Colour certain file types.
+        autocmd FileType dirvish call matchadd('Special'  , ".*\.tcl$")
+        autocmd FileType dirvish call matchadd('Type'     , ".*\.yml$")
+        autocmd FileType dirvish call matchadd('Statement', ".*\.v$"  )
+        autocmd FileType dirvish call matchadd('Statement', ".*\.sv$" )
+        autocmd FileType dirvish call matchadd('Statement', ".*\.hv$" )
+        autocmd FileType dirvish call matchadd('Statement', ".*\.vh$" )
+        autocmd FileType dirvish call matchadd('Statement', ".*\.svh$")
+    augroup END
+    "}}}
     "Easy Align {{{
         nmap ga <Plug>(EasyAlign)
         xmap ga <Plug>(EasyAlign)
@@ -473,43 +393,43 @@ set nocompatible "VIM is better than VI
                     \ }
         let g:easy_align_delimiters['d'] = {
                     \ 'pattern'     : '\ze\S\+\s*[,;=]',
-                    \ 'left_margin' : 1,
-                    \ 'right_margin': 0
+                    \ 'left_margin' : 1, 'right_margin': 0
                     \ }
         let g:easy_align_delimiters['['] = {
                     \ 'pattern'     : '\s\zs\[',
-                    \ 'left_margin' : 1,
-                    \ 'right_margin': 0
+                    \ 'left_margin' : 1, 'right_margin': 0
                     \ }
         let g:easy_align_delimiters[']'] = {
                     \ 'pattern'     : ']',
-                    \ 'left_margin' : 0,
-                    \ 'right_margin': 1
+                    \ 'left_margin' : 0, 'right_margin': 1
                     \ }
         let g:easy_align_delimiters[','] = {
                     \ 'pattern'     : ',',
-                    \ 'left_margin' : 0,
-                    \ 'right_margin': 1
+                    \ 'left_margin' : 0, 'right_margin': 1
                     \ }
         let g:easy_align_delimiters[')'] = {
                     \ 'pattern'     : ')',
-                    \ 'left_margin' : 0,
-                    \ 'right_margin': 0
+                    \ 'left_margin' : 0, 'right_margin': 0
                     \ }
         let g:easy_align_delimiters['('] = {
                     \ 'pattern'     : '(',
-                    \ 'left_margin' : 0,
-                    \ 'right_margin': 0
+                    \ 'left_margin' : 0, 'right_margin': 0
                     \ }
         let g:easy_align_delimiters['='] = {
                     \ 'pattern'     : '<\?=',
-                    \ 'left_margin' : 1,
-                    \ 'right_margin': 1
+                    \ 'left_margin' : 1, 'right_margin': 1
+                    \ }
+        let g:easy_align_delimiters['|'] = {
+                    \ 'pattern'     : '|\?|',
+                    \ 'left_margin' : 1, 'right_margin': 1
+                    \ }
+        let g:easy_align_delimiters['&'] = {
+                    \ 'pattern'     : '&\?&',
+                    \ 'left_margin' : 1, 'right_margin': 1
                     \ }
         let g:easy_align_delimiters[':'] = {
                     \ 'pattern'     : ':',
-                    \ 'left_margin' : 1,
-                    \ 'right_margin': 1
+                    \ 'left_margin' : 1, 'right_margin': 1
                     \ }
         nmap <leader>c mzgaip[gaipdgaip;gaip,`z
     "}}}
@@ -519,22 +439,24 @@ set nocompatible "VIM is better than VI
     "Incsearch {{{
         augroup mapincsearch
             au!
-            " Disable insearch for large files
-            au BufEnter * if line('$') < 10000 && v:version >= 704
+            " Disable incsearch plugin for large files
+            au BufEnter * if line('$') < 30000 && v:version >= 704
             au BufEnter *     map <buffer> /  <Plug>(incsearch-forward)
             au BufEnter *     map <buffer> ?  <Plug>(incsearch-backward)
             au BufEnter *     map <buffer> g/ <Plug>(incsearch-stay)
             au BufEnter * endif
         augroup END
     "}}}
-    "Gundo {{{
-        nnoremap <F5> :GundoToggle<CR>
-    "}}}
-    "Tmuxline {{{
-        let g:tmuxline_preset='full'
+    "Lengthmatters {{{
+        let g:lengthmatters_highlight_one_column=1
     "}}}
     "Vim Action Ag {{{
         nmap g* <Plug>AgActionWord
+    "}}}
+    "Signify {{{
+        let g:signify_vcs_list              = [ 'svn' ]
+        let g:signify_update_on_focusgained = 1
+        let g:signify_sign_delete           = '-'
     "}}}
 "}}}
 "Functions {{{
@@ -544,13 +466,6 @@ set nocompatible "VIM is better than VI
             edit $MYVIMRC
         else
             vsplit $MYVIMRC
-        endif
-    endfunction "}}}
-
-    function! EnableColorColumn() "{{{
-        if &tw != 0
-            let hl_column = &tw + 2
-            call matchadd('ColorColumn', '\%'.hl_column.'v', 100)
         endif
     endfunction "}}}
 
@@ -567,19 +482,35 @@ set nocompatible "VIM is better than VI
     function! CustomFoldText() "{{{
         let l:line = getline(v:foldstart)
         let l:line = substitute(l:line, '//{{{', '', 'g') "Remove marker }}}
+        let l:line = substitute(l:line, '"{{{', '', 'g') "Remove marker }}}
         let l:line = substitute(l:line, '{{{'  , '', 'g') "Remove marker }}}
         let l:line = substitute(l:line, '//'   , '', 'g') "Remove comments
         let l:line = substitute(l:line, '^\s*' , '', 'g') "Remove leading whitespace
         let l:line = substitute(l:line, '^"'   , '', 'g') "Remove comment char (vim files)
-        let l:line = substitute(l:line, '(.*);', '', 'g') "Remove function arguments
+        let l:line = substitute(l:line, '(.\{-})', '', 'g') "Remove function arguments
+        let l:line = substitute(l:line, ';'     , '', 'g') "Remove function semi-colon
         let l:line = substitute(l:line, '/\*\s*\(.*\)', '/* \1 */', 'g') "Make block comments look nicer
 
-        let w = winwidth(0) - len(line("$")) - 1
-        let foldSize = v:foldend - v:foldstart
-        let foldSizeStr = "|".repeat(" ", 4-len(foldSize)).foldSize . "   "
-        let foldLevelStr = repeat(" ", &shiftwidth*v:foldlevel)
-        let expansionString = repeat(" ", w - strwidth(foldSizeStr.l:line.foldLevelStr))
-        return foldLevelStr.line.expansionString.foldSizeStr
+        let right_margin = 1
+        let fold_size    = v:foldend - v:foldstart + 1
+        let fold_level   = &shiftwidth * v:foldlevel
+        let num_col_size = wincol() - virtcol('.')
+
+        let padding =
+                    \ winwidth(0) -
+                    \ num_col_size -
+                    \ len(l:line) -
+                    \ len(fold_size) -
+                    \ fold_level -
+                    \ right_margin
+
+        return
+                    \ repeat(' ', fold_level).
+                    \ l:line.
+                    \ repeat(' ', padding).
+                    \ fold_size.
+                    \ repeat(' ', right_margin)
+
     endfunction "}}}
 
     function! RunDiff() "{{{
@@ -590,125 +521,26 @@ set nocompatible "VIM is better than VI
         endif
     endfunction "}}}
 
-"}}}
-"Plugin Development {{{
-"function! GetSyn()
-"    return join(map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")'))
-"endfunction
-"function! GetSyn3()
-"    return map(synstack(line('.'), col('$')), 'synIDattr(v:val, "name")')
-"endfunction
-"function! GetSyn2()
-"    return join(map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")'))
-"endfunction
+    function! Attempt_select_last_file() abort "{{{
+        let l:previous=expand('#:t')
+        if l:previous != ''
+            call search('\v<' . l:previous . '>')
+        endif
+    endfunction "}}}
 
-"function! AppendSyn()
-"    let linenr = 0
-
-"    while linenr < line("$") - 1
-"        let linenr += 1
-"        let length=len(getline(linenr))
-"        let ws=0
-
-"        if length < 80
-"            let ws = 80 - length
-"        end
-
-"        " Goto line
-"        execute "normal ".linenr."G"
-
-"        " Insert whitespace upto column 80
-"        execute "normal ".ws."A "
-
-"        " Insert syntax groups
-"        execute "normal A// ".GetSyn()
-
-"        " Update screen
-"        redraw
-"    endwhile
-"endfunction
 "}}}
 "Bug Fixes {{{
 augroup bug_fixes
-    au!
     " Airline colours mess up now and again. This should refresh airline every
     " so often. Requires vim-tmux-focus-events.
-    au FocusGained,FocusLost * AirlineRefresh
+    au! FocusGained,FocusLost * AirlineRefresh
 
     " When using vim-tmux-navigator and vim-tmux-focus-events, ^[[O gets
     " inserted when switching panes. This is a workaround to prevent that.
     au FocusLost * silent redraw!
 augroup END
 "}}}
-
-function! NavFuncCall() "{{{
-    call searchpair('(', ',', ')')
-endfunction "}}}
-
-function! GetFuncCallArgs(arg_len) "{{{
-
-    execute "normal! f("
-
-    let l:args = []
-
-    let i = 0
-
-    while i < a:arg_len
-        execute "normal! lv"
-        call NavFuncCall()
-        execute "normal! hy"
-        call NavFuncCall()
-        let l:arg = @0
-        call add(l:args, l:arg)
-        let i += 1
-    endwhile
-
-    return l:args
-endfunction "}}}
-
-function! ConvEq(name) "{{{
-    execute "normal! /".a:name."\<cr>"
-    execute "normal! mz"
-    let l:args = GetFuncCallArgs(2)
-    execute "normal! `z"
-
-    "Delete function call
-    execute "normal! dt(v%d"
-
-    execute "normal! i".args[0].' == '.l:args[1]
-
-endfunction "}}}
-
-function! ConvEq2() "{{{
-    execute "normal! mz"
-    let l:args = GetFuncCallArgs(2)
-    execute "normal! `z"
-
-    "Delete function call
-    execute "normal! diwv%d"
-
-    execute "normal! i".args[0].' == '.l:args[1]
-endfunction "}}}
-
-function! ProcessGenVerilog() "{{{
-    %s/`from_bool//g
-    %s/`not_bool/!/g
-    %s/`__false/1'b0/g
-    %s/`__true/1'b1/g
-    %s/`__boolean/bit/g
-    %s/)\n\s*begin/) begin/g
-    %s/else\n\s*begin/else begin/g
-    %s/end\n\s*else/end else/g
-    %s/`bits(32)/bit [31:0]/g
-    %s/`bits(8)/bit [7:0]/g
-    g/`ASL_assert/d
-endfunction "}}}
-
 "Apply .vimrc on save {{{
-augroup source_vimrc
-    autocmd!
-    autocmd BufWritePost $MYVIMRC source $MYVIMRC || AirlineRefresh
-    autocmd BufRead,BufWritePost $MYVIMRC setlocal textwidth=0 fdm=marker foldlevel=0
-augroup END
-" vim: set textwidth=0 fdm=marker:
+autocmd! BufWritePost $MYVIMRC source $MYVIMRC || AirlineRefresh
 "}}}
+" vim: set textwidth=0 foldmethod=marker foldlevel=0:
