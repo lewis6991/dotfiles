@@ -18,34 +18,9 @@ set show-all-if-ambiguous on
 # Prompt
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
-export PROMPT_COMMAND=__prompt_command  # Func to gen PS1 after CMDs
-
-if hash brew 2>/dev/null; then
-    if [ -f "$(brew --prefix bash-git-prompt)/share/gitprompt.sh" ]; then
-        GIT_PROMPT_ONLY_IN_REPO=1
-        GIT_PROMPT_THEME=Default
-        source "$(brew --prefix bash-git-prompt)/share/gitprompt.sh"
-    fi
-fi
-
 function __prompt_command() {
-    local EXIT=$?             # This needs to be first
-
-    local Col='\[\e[0m\]'
-
-    local Red='\[\e[0;31m\]'
-    local Gre='\[\e[0;32m\]'
-    local Yel='\[\e[1;33m\]'
-    local Blu='\[\e[1;34m\]'
-    local Pur='\[\e[0;35m\]'
-
-    if [ $EXIT -ne 0 ]; then
-        PS1="${Red}\u:${Col}"      # Add red if exit code non 0
-    else
-        PS1="${Gre}\u:${Col}"
-    fi
-
-    PS1+="${Col}${Pur}\W${Yel}> ${Col}"
+    EXIT=$?
+    PS1=`~/git/fancy-prompt/.prompt bash ${EXIT}`
 }
 
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
@@ -85,9 +60,9 @@ if hash brew 2>/dev/null; then
     fi
 fi
 
-if hash nvim 2>/dev/null; then
-    alias vim=nvim
-fi
+# if hash nvim 2>/dev/null; then
+#     alias vim=nvim
+# fi
 
 alias re-bashrc='source ~/.bashrc'
 alias edit-bashrc='v ~/.bashrc'
