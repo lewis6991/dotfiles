@@ -37,26 +37,19 @@ if ! check_cmd rsync; then exit; fi
 if ! check_cmd wget ; then exit; fi
 if ! check_cmd curl ; then exit; fi
 
-# source git_config
+source git_config
 
-# rm -rf ~/.vim
+rm -rf ~/.vim
 
-# link_file vimrc ~/.vimrc
-# link_file vimrc ~/.nvimrc
+link_file vimrc ~/.vimrc
 
-# vim +PlugInstall +qall
+vim +PlugInstall +qall
 
-# link_file ~/.vim ~/.nvim
-
-# ## Set up config files
-# link_file agignore  ~/.agignore
-# link_file bashrc    ~/.bashrc
-# link_file bashrc    ~/.bash_profile
-# link_file tmux.conf ~/.tmux.conf
-# link_file headers   ~/headers
-
-# mkdir -p ~/.config/fish
-# link_file config.fish ~/.config/fish/config.fish
+# Set up config files
+link_file agignore  ~/.agignore
+link_file bashrc    ~/.bashrc
+link_file bashrc    ~/.bash_profile
+link_file tmux.conf ~/.tmux.conf
 
 # Set up powerline fonts
 pushd ~
