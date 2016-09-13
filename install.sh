@@ -31,35 +31,63 @@ function link_file {
     fi
 }
 
-# Check that required commands are installed
-if ! check_cmd git  ; then exit; fi
-if ! check_cmd rsync; then exit; fi
-if ! check_cmd wget ; then exit; fi
-if ! check_cmd curl ; then exit; fi
+function check_dependencies {
+    # Check that required commands are installed
+    if ! check_cmd git  ; then exit; fi
+    if ! check_cmd rsync; then exit; fi
+    if ! check_cmd wget ; then exit; fi
+    if ! check_cmd curl ; then exit; fi
+}
 
+function install_vim {
+    rm -rf ~/.vim
+    link_file vimrc ~/.vimrc
+    vim +PlugInstall +qall
+}
+
+function install_dotfiles {
+    link_file tmux.conf ~/.tmux.conf
+
+    if [ "$(uname)" == "Darwin" ]; then
+        link_file bashrc ~/.bash_profile
+    else
+        link_file bashrc ~/.bashrc
+    fi
+}
+
+function install_powerline_fonts {
+    echo -n "Checking if Powerline fonts are installed..."
+    if [ -d "$HOME/.fonts" ]; then
+        POWERLINE_FONTS=$(ls ~/.fonts | grep Powerline | wc -l)
+        if [ "$POWERLINE_FONTS" -gt "0" ]; then
+            INSTALL_FONTS=0
+        else
+            INSTALL_FONTS=1
+        fi
+    else
+        INSTALL_FONTS=1
+    fi
+
+    if [ $INSTALL_FONTS -eq 1 ]; then
+        echo "No"
+        echo "Installing Powerline fonts..."
+        pushd ~
+        rm -rf fonts
+        rm -rf .fonts
+        rm -rf .fontconfig
+        git clone https://github.com/powerline/fonts.git
+        cd fonts
+        ./install.sh
+        cd
+        rm -rf fonts
+        popd
+    else
+        echo "OK"
+    fi
+}
+
+check_dependencies
 source git_config
-
-rm -rf ~/.vim
-
-link_file vimrc ~/.vimrc
-
-vim +PlugInstall +qall
-
-# Set up config files
-link_file agignore  ~/.agignore
-link_file bashrc    ~/.bashrc
-link_file bashrc    ~/.bash_profile
-link_file tmux.conf ~/.tmux.conf
-
-# Set up powerline fonts
-pushd ~
-rm -rf fonts
-rm -rf .fonts
-rm -rf .fontconfig
-git clone https://github.com/powerline/fonts.git
-cd fonts
-./install.sh
-cd
-rm -rf fonts
-popd
-
+install_vim
+install_dotfiles
+install_powerline_fonts
