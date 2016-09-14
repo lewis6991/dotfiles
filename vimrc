@@ -19,9 +19,10 @@
     Plug 'vhda/verilog_systemverilog.vim'
 
     "Should be built in
-    Plug 'tpope/vim-commentary'
-    Plug 'tpope/vim-surround'
-    Plug 'tpope/vim-repeat'
+    Plug 'tpope/vim-commentary', {'on': '<Plug>Commentary'}
+    map  gc  <Plug>Commentary
+    nmap gcc <Plug>CommentaryLine
+
     Plug 'tpope/vim-unimpaired'
     Plug 'triglav/vim-visual-increment'
     Plug 'michaeljsmith/vim-indent-object'
@@ -37,7 +38,8 @@
     Plug 'Konfekt/FastFold'
     Plug 'ervandew/supertab'
     Plug 'cmdline-completion'
-    Plug 'justinmk/vim-dirvish'
+    Plug 'justinmk/vim-dirvish', { 'on': '<Plug>(dirvish_up)' }
+    nmap - <Plug>(dirvish_up)
 
     "Snippets
     Plug 'MarcWeber/vim-addon-mw-utils' "vim-snipmate dependency
@@ -59,17 +61,23 @@
     Plug 'tmux-plugins/vim-tmux'
 
     "Search
-    Plug 'rking/ag.vim', { 'on': 'Ag' }
-    Plug 'ctrlpvim/ctrlp.vim'
-    Plug 'Chun-Yang/vim-action-ag'
+    Plug 'rking/ag.vim', { 'on': 'Ag'    }
+    Plug 'ctrlpvim/ctrlp.vim', { 'on': 'CtrlP' }
+    nnoremap <C-P> :CtrlP<cr>
+
+    Plug 'Chun-Yang/vim-action-ag', { 'on': '<Plug>AgActionWord' }
     if v:version == 704
-        Plug 'haya14busa/incsearch.vim'
+        Plug 'haya14busa/incsearch.vim', { 'on': [
+            \   '<Plug>(incsearch-forward)' ,
+            \   '<Plug>(incsearch-backward)',
+            \   '<Plug>(incsearch-stay)'
+            \ ]}
     endif
 
     "Source Control
     Plug 'tpope/vim-fugitive'
-    Plug 'vim-scripts/vcscommand.vim'
-    Plug 'junegunn/gv.vim'
+    Plug 'vim-scripts/vcscommand.vim', { 'on': 'VCSVimDiff' }
+    Plug 'junegunn/gv.vim', { 'on': 'GV' }
     Plug 'airblade/vim-gitgutter'
     Plug 'mhinz/vim-signify' "For SVN
 
@@ -284,19 +292,19 @@
             let num_col_size = wincol() - virtcol('.')
 
             let padding =
-                        \ winwidth(0) -
-                        \ num_col_size -
-                        \ len(l:line) -
-                        \ len(fold_size) -
-                        \ fold_level -
-                        \ right_margin
+                \ winwidth(0) -
+                \ num_col_size -
+                \ len(l:line) -
+                \ len(fold_size) -
+                \ fold_level -
+                \ right_margin
 
             return
-                        \ repeat(' ', fold_level).
-                        \ l:line.
-                        \ repeat(' ', padding).
-                        \ fold_size.
-                        \ repeat(' ', right_margin)
+                \ repeat(' ', fold_level).
+                \ l:line.
+                \ repeat(' ', padding).
+                \ fold_size.
+                \ repeat(' ', right_margin)
 
         endfunction "}}}
     endif
@@ -332,6 +340,7 @@
 "}}}
 "File Settings {{{
     let g:xml_syntax_folding=1
+    let g:vim_indent_cont = &sw
     augroup file_prefs
         autocmd!
         autocmd Filetype map    setlocal textwidth=0
