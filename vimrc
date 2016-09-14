@@ -105,7 +105,6 @@
     set winwidth=40
     set winminwidth=40
     set spell
-    " au! FileType help wincmd L     "Open help in vertical split.
 
     set clipboard=unnamed          "Yank and Paste from system clipboard instead
                                    "of 0 register. Very useful.
@@ -121,18 +120,25 @@
 
     " Enable cursorline for active pane. Using this with vim-tmux-focus-events
     " enables this to work in tmux.
-    au! FocusGained,WinEnter,BufEnter,InsertLeave * setlocal cursorline
-    au! FocusLost,WinLeave,BufLeave,InsertEnter   * setlocal nocursorline
+    au! FocusGained,InsertLeave * setlocal cursorline
+    au! FocusLost,InsertEnter   * setlocal nocursorline
 "}}}
 "Colours {{{
-    if !has('gui_running') && !has('nvim')
+    if $TERM =~ '256'
         let base16colorspace=256
     endif
-
     silent! colorscheme base16-harmonic16-dark
 "}}}
 "Mappings {{{
     nnoremap <leader>ev :call EditVimrc()<cr>
+
+    function! EditVimrc() "{{{
+        if expand('%t') == ''
+            edit $MYVIMRC
+        else
+            vsplit $MYVIMRC
+        endif
+    endfunction "}}}
 
     " Swap visual and block selection
     nnoremap v <C-V>
@@ -145,6 +151,14 @@
 
     nnoremap <leader>d :call RunDiff()<cr>
 
+    function! RunDiff() "{{{
+        if exists(':Gdiff')
+            Gdiff
+        else
+            VCSVimDiff
+        endif
+    endfunction "}}}
+
     " Correct common typos
     cnoremap W  w
     cnoremap Q  q
@@ -156,19 +170,8 @@
     cnoremap VS vs
     cnoremap Sp sp
 
-    nnoremap <M-J> :bnext<cr>
-    nnoremap <M-K> :bprev<cr>
-
     " Should this not be default?
     nnoremap Y y$
-
-    function! ToggleLineHighlight()
-        GitGutterLineHighlightsToggle
-        SignifyToggleHighlight
-    endfunction
-
-    nnoremap <C-S>      :call ToggleLineHighlight()<cr>
-    inoremap <C-S> <C-O>:call ToggleLineHighlight()<cr>
 
     " Disable
     nnoremap Q <nop>
@@ -211,9 +214,20 @@
         autocmd!
         "Delete trailing white space on save.
         autocmd BufWrite * call DeleteTrailingWS()
+
         "Highlight trailing whitespace
         autocmd BufEnter * call matchadd('ColorColumn', '\s\+$')
     augroup END
+
+    function! DeleteTrailingWS() "{{{
+        if expand('%:t') =~ 'indent.sv'
+            return
+        endif
+
+        normal mz"
+        %s/\s\+$//ge
+        normal `z"
+    endfunction "}}}
 "}}}
 "Undo {{{
     if has('persistent_undo')
@@ -241,7 +255,7 @@
         set foldtext=CustomFoldText()
         set foldmethod=syntax
 
-        let g:verilog_syntax_fold_lst = "function,task,clocking"
+        au! BufRead *vimrc* set foldmethod=marker foldlevel=0
 
         augroup folding
             autocmd!
@@ -251,6 +265,40 @@
             " Use SimpylFold for python
             autocmd FileType python setlocal foldmethod=expr
         augroup END
+
+        function! CustomFoldText() "{{{
+            let l:line = getline(v:foldstart)
+            let l:line = substitute(l:line, '//{{{', '', 'g') "Remove marker }}}
+            let l:line = substitute(l:line, '"{{{', '', 'g') "Remove marker }}}
+            let l:line = substitute(l:line, '{{{'  , '', 'g') "Remove marker }}}
+            let l:line = substitute(l:line, '//'   , '', 'g') "Remove comments
+            let l:line = substitute(l:line, '^\s*' , '', 'g') "Remove leading whitespace
+            let l:line = substitute(l:line, '^"'   , '', 'g') "Remove comment char (vim files)
+            let l:line = substitute(l:line, '(.\{-})', '', 'g') "Remove function arguments
+            let l:line = substitute(l:line, ';'     , '', 'g') "Remove function semi-colon
+            let l:line = substitute(l:line, '/\*\s*\(.*\)', '/* \1 */', 'g') "Make block comments look nicer
+
+            let right_margin = 1
+            let fold_size    = v:foldend - v:foldstart + 1
+            let fold_level   = &shiftwidth * v:foldlevel
+            let num_col_size = wincol() - virtcol('.')
+
+            let padding =
+                        \ winwidth(0) -
+                        \ num_col_size -
+                        \ len(l:line) -
+                        \ len(fold_size) -
+                        \ fold_level -
+                        \ right_margin
+
+            return
+                        \ repeat(' ', fold_level).
+                        \ l:line.
+                        \ repeat(' ', padding).
+                        \ fold_size.
+                        \ repeat(' ', right_margin)
+
+        endfunction "}}}
     endif
 "}}}
 "GUI Options {{{
@@ -272,6 +320,8 @@
     endif
 "}}}
 "SystemVerilog Settings {{{
+    let g:verilog_syntax_fold_lst = "function,task,clocking"
+
     augroup systemverilog_settings
         au!
         au Filetype verilog_systemverilog setlocal shiftwidth=2
@@ -283,13 +333,12 @@
 "File Settings {{{
     let g:xml_syntax_folding=1
     augroup file_prefs
-        au!
-        au Filetype map    setlocal textwidth=0
-        au BufEnter *.log  setlocal textwidth=0
-        au BufEnter *.sig  setlocal filetype=xml
-        au BufEnter *.sig  setlocal filetype=xml
-        au Filetype tcl    setlocal shiftwidth=2
-        au Filetype yaml   setlocal shiftwidth=2
+        autocmd!
+        autocmd Filetype map    setlocal textwidth=0
+        autocmd BufEnter *.log  setlocal textwidth=0
+        autocmd BufEnter *.sig  setlocal filetype=xml
+        autocmd Filetype tcl    setlocal shiftwidth=2
+        autocmd Filetype yaml   setlocal shiftwidth=2
 
         " Set filetype to asl for txt files in asset-protection
         autocmd BufRead *.txt if expand('%:p') =~ 'asset-protection'
@@ -358,11 +407,6 @@
         let g:ctrlp_custom_ignore = {
             \ 'dir': '\v[\/](teal_autogen|eventdb|hal|lint)$',
             \ }
-
-       if executable('ag')
-           " Use ag in CtrlP for listing files. Fast and respects .gitignore
-           " let g:ctrlp_user_command = 'ag %s -l --nocolor -g ""'
-       endif
     "}}}
     "Dirvish {{{
     augroup dirvish_group
@@ -386,6 +430,13 @@
         autocmd FileType dirvish call matchadd('Statement', ".*\.vh$" )
         autocmd FileType dirvish call matchadd('Statement', ".*\.svh$")
     augroup END
+
+    function! Attempt_select_last_file() abort "{{{
+        let l:previous=expand('#:t')
+        if l:previous != ''
+            call search('\v<' . l:previous . '>')
+        endif
+    endfunction "}}}
     "}}}
     "Easy Align {{{
         nmap ga <Plug>(EasyAlign)
@@ -463,81 +514,11 @@
         let g:signify_sign_delete           = '-'
     "}}}
 "}}}
-"Functions {{{
-
-    function! EditVimrc() "{{{
-        if expand('%t') == ''
-            edit $MYVIMRC
-        else
-            vsplit $MYVIMRC
-        endif
-    endfunction "}}}
-
-    function! DeleteTrailingWS() "{{{
-        if expand('%:t') =~ 'indent.sv'
-            return
-        endif
-
-        normal mz"
-        %s/\s\+$//ge
-        normal `z"
-    endfunction "}}}
-
-    function! CustomFoldText() "{{{
-        let l:line = getline(v:foldstart)
-        let l:line = substitute(l:line, '//{{{', '', 'g') "Remove marker }}}
-        let l:line = substitute(l:line, '"{{{', '', 'g') "Remove marker }}}
-        let l:line = substitute(l:line, '{{{'  , '', 'g') "Remove marker }}}
-        let l:line = substitute(l:line, '//'   , '', 'g') "Remove comments
-        let l:line = substitute(l:line, '^\s*' , '', 'g') "Remove leading whitespace
-        let l:line = substitute(l:line, '^"'   , '', 'g') "Remove comment char (vim files)
-        let l:line = substitute(l:line, '(.\{-})', '', 'g') "Remove function arguments
-        let l:line = substitute(l:line, ';'     , '', 'g') "Remove function semi-colon
-        let l:line = substitute(l:line, '/\*\s*\(.*\)', '/* \1 */', 'g') "Make block comments look nicer
-
-        let right_margin = 1
-        let fold_size    = v:foldend - v:foldstart + 1
-        let fold_level   = &shiftwidth * v:foldlevel
-        let num_col_size = wincol() - virtcol('.')
-
-        let padding =
-                    \ winwidth(0) -
-                    \ num_col_size -
-                    \ len(l:line) -
-                    \ len(fold_size) -
-                    \ fold_level -
-                    \ right_margin
-
-        return
-                    \ repeat(' ', fold_level).
-                    \ l:line.
-                    \ repeat(' ', padding).
-                    \ fold_size.
-                    \ repeat(' ', right_margin)
-
-    endfunction "}}}
-
-    function! RunDiff() "{{{
-        if exists(':Gdiff')
-            Gdiff
-        else
-            VCSVimDiff
-        endif
-    endfunction "}}}
-
-    function! Attempt_select_last_file() abort "{{{
-        let l:previous=expand('#:t')
-        if l:previous != ''
-            call search('\v<' . l:previous . '>')
-        endif
-    endfunction "}}}
-
-"}}}
 "Bug Fixes {{{
 augroup bug_fixes
     " Airline colours mess up now and again. This should refresh airline every
     " so often. Requires vim-tmux-focus-events.
-    au! FocusGained,FocusLost * AirlineRefresh
+    " au! FocusGained,FocusLost * AirlineRefresh
 
     " When using vim-tmux-navigator and vim-tmux-focus-events, ^[[O gets
     " inserted when switching panes. This is a workaround to prevent that.
@@ -547,4 +528,4 @@ augroup END
 "Apply .vimrc on save {{{
 autocmd! BufWritePost $MYVIMRC source $MYVIMRC || AirlineRefresh
 "}}}
-" vim: set textwidth=0 foldmethod=marker foldlevel=0:
+"vim: set textwidth=0
