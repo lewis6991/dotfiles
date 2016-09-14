@@ -9,55 +9,59 @@
     endif "}}}
     call plug#begin('~/.vim/plugged')
 
-     Plug 'vhda/verilog_systemverilog.vim'
+    Plug 'Super-Shell-Indent'
 
-     "Should be built in
-     Plug 'tpope/vim-commentary'
-     Plug 'tpope/vim-surround'
-     Plug 'tpope/vim-repeat'
-     Plug 'tpope/vim-unimpaired'
-     Plug 'triglav/vim-visual-increment'
-     Plug 'michaeljsmith/vim-indent-object'
-     Plug 'visualrepeat'
+    Plug '~/asl.vim'
+    Plug '~/archex.vim'
+    Plug 'vhda/verilog_systemverilog.vim'
 
-     Plug 'whatyouhide/vim-lengthmatters'
-     Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
-     Plug 'vim-airline/vim-airline'
-     Plug 'vim-airline/vim-airline-themes'
-     Plug 'vimtaku/hl_matchit.vim'
-     Plug 'sickill/vim-pasta'
-     Plug 'dietsche/vim-lastplace'
-     Plug 'Konfekt/FastFold'
-     Plug 'ervandew/supertab'
-     Plug 'cmdline-completion'
-     Plug 'justinmk/vim-dirvish'
+    "Should be built in
+    Plug 'tpope/vim-commentary'
+    Plug 'tpope/vim-surround'
+    Plug 'tpope/vim-repeat'
+    Plug 'tpope/vim-unimpaired'
+    Plug 'triglav/vim-visual-increment'
+    Plug 'michaeljsmith/vim-indent-object'
+    Plug 'visualrepeat'
 
-     "Snippets
-     Plug 'MarcWeber/vim-addon-mw-utils' "vim-snipmate dependency
-     Plug 'tomtom/tlib_vim'              "vim-snipmate dependency
-     Plug 'garbas/vim-snipmate'
+    Plug 'whatyouhide/vim-lengthmatters'
+    Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
+    Plug 'vimtaku/hl_matchit.vim'
+    Plug 'sickill/vim-pasta'
+    Plug 'dietsche/vim-lastplace'
+    Plug 'Konfekt/FastFold'
+    Plug 'ervandew/supertab'
+    Plug 'cmdline-completion'
+    Plug 'justinmk/vim-dirvish'
 
-     "Syntax
-     Plug 'tmhedberg/SimpylFold'
-     Plug 'derekwyatt/vim-scala'
+    "Snippets
+    Plug 'MarcWeber/vim-addon-mw-utils' "vim-snipmate dependency
+    Plug 'tomtom/tlib_vim'              "vim-snipmate dependency
+    Plug 'garbas/vim-snipmate'
 
-     "Colourschemes
-     Plug 'chriskempson/base16-vim'
-     Plug 'whatyouhide/vim-gotham'
-     Plug 'tomasr/molokai'
+    "Syntax
+    Plug 'tmhedberg/SimpylFold'
+    Plug 'derekwyatt/vim-scala'
 
-     "Tmux Integration
-     Plug 'christoomey/vim-tmux-navigator'
-     Plug 'tmux-plugins/vim-tmux-focus-events'
-     Plug 'tmux-plugins/vim-tmux'
+    "Colourschemes
+    Plug 'chriskempson/base16-vim'
+    Plug 'whatyouhide/vim-gotham'
+    Plug 'tomasr/molokai'
 
-     "Search
-     Plug 'rking/ag.vim', { 'on': 'Ag' }
-     Plug 'ctrlpvim/ctrlp.vim'
-     Plug 'Chun-Yang/vim-action-ag'
-     if v:version == 704
-         Plug 'haya14busa/incsearch.vim'
-     endif
+    "Tmux Integration
+    Plug 'christoomey/vim-tmux-navigator'
+    Plug 'tmux-plugins/vim-tmux-focus-events'
+    Plug 'tmux-plugins/vim-tmux'
+
+    "Search
+    Plug 'rking/ag.vim', { 'on': 'Ag' }
+    Plug 'ctrlpvim/ctrlp.vim'
+    Plug 'Chun-Yang/vim-action-ag'
+    if v:version == 704
+        Plug 'haya14busa/incsearch.vim'
+    endif
 
     "Source Control
     Plug 'tpope/vim-fugitive'
@@ -139,15 +143,15 @@
     nnoremap <leader>d :call RunDiff()<cr>
 
     " Correct common typos
-    nnoremap :W  :w
-    nnoremap :Q  :q
-    nnoremap :WQ :wq
-    nnoremap :Wq :wq
-    nnoremap :BD :bd
-    nnoremap :Bd :bd
-    nnoremap :Vs :vs
-    nnoremap :VS :vs
-    nnoremap :Sp :sp
+    cnoremap W  w
+    cnoremap Q  q
+    cnoremap WQ wq
+    cnoremap Wq wq
+    cnoremap BD bd
+    cnoremap Bd bd
+    cnoremap Vs vs
+    cnoremap VS vs
+    cnoremap Sp sp
 
     nnoremap <M-J> :bnext<cr>
     nnoremap <M-K> :bprev<cr>
@@ -228,27 +232,22 @@
 "Folding{{{
     if v:version == 704
         set foldnestmax=10
-        set foldlevel=1
+        set foldlevel=0
         set foldcolumn=3
         set foldenable
         set foldtext=CustomFoldText()
+        set foldmethod=syntax
 
-        " Enable folding for normal size files. Folding is really slow for large files.
-        augroup fold_settings
-            au!
-            au FileType *    if line('$') < 5000
-            au FileType *        setlocal foldmethod=syntax
-            au FileType *        let g:verilog_syntax_fold_lst = "comment,function,class,task,clocking"
-            au FileType *        syntax enable "Trigger fold calculation
-            au FileType *    else
-            au FileType *        setlocal foldmethod=marker
-            au FileType json     setlocal foldmarker={,}
-            au FileType *        let g:verilog_syntax_fold_lst = ""
-            au FileType *     endif
+        let g:verilog_syntax_fold_lst = "function,task,clocking"
+
+        augroup folding
+            autocmd!
+            autocmd FileType json,sh setlocal foldmethod=marker
+            autocmd FileType json,sh setlocal foldmarker={,}
+
+            " Use SimpylFold for python
+            autocmd FileType python setlocal foldmethod=expr
         augroup END
-
-        " Use SimpylFold for python
-        autocmd! FileType python setlocal foldmethod=expr
     endif
 "}}}
 "GUI Options {{{
@@ -272,7 +271,9 @@
 "SystemVerilog Settings {{{
     augroup systemverilog_settings
         au!
-        au Filetype verilog_systemverilog setlocal shiftwidth=2 tabstop=2
+        au Filetype verilog_systemverilog setlocal shiftwidth=2
+        au Filetype verilog_systemverilog setlocal tabstop=2
+        au Filetype verilog_systemverilog setlocal softtabstop=2
         au Filetype verilog_systemverilog setlocal commentstring=//%s
     augroup END
 "}}}
