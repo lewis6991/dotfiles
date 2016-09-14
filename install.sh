@@ -1,9 +1,24 @@
 #!/bin/bash
 
+readonly   RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly  CYAN='\033[0;36m'
+readonly  GREY='\033[1;30m'
+readonly   MAG='\033[0;34m'
+readonly    NC='\033[0m' # No Color
+
+function echo_error {
+    echo -e "${RED}Error:" $@ "$NC"
+}
+
+function echo_ok {
+    echo -e ${GREEN}OK${NC}
+}
+
 function check_cmd {
     echo -n Checking $1 is installed...
     if which $1 >/dev/null; then
-        echo OK
+        echo_ok
         return 0
     else
         echo No
@@ -12,7 +27,7 @@ function check_cmd {
             brew install $1
             return 0
         else
-            echo Error: $1 is not installed.
+            echo_error $1 is not installed.
             return 1
         fi
     fi
@@ -55,6 +70,20 @@ function install_dotfiles {
     fi
 }
 
+function install_prompt {
+    mkdir -p $HOME/git
+    cd $HOME/git
+    if [ -d "$HOME/git/fancy-prompt" ]; then
+        echo -e "${CYAN}fancy-prompt already exists${NC}"
+    else
+        git clone https://github.com/lewis6991/fancy-prompt
+        if [ $? -eq 1 ]; then
+            echo_error "Could no install fancy-prompt"
+        fi
+    fi
+    cd -
+}
+
 function install_powerline_fonts {
     echo -n "Checking if Powerline fonts are installed..."
     if [ -d "$HOME/.fonts" ]; then
@@ -82,7 +111,7 @@ function install_powerline_fonts {
         rm -rf fonts
         popd
     else
-        echo "OK"
+        echo_ok
     fi
 }
 
@@ -90,4 +119,5 @@ check_dependencies
 source git_config
 install_vim
 install_dotfiles
+install_prompt
 install_powerline_fonts
