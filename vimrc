@@ -11,8 +11,11 @@
 
     Plug 'Super-Shell-Indent'
 
-    Plug '~/asl.vim'
-    Plug '~/archex.vim'
+    if $HOST =~ 'arm'
+        Plug '~/asl.vim'
+        Plug '~/archex.vim'
+    endif
+
     Plug 'vhda/verilog_systemverilog.vim'
 
     "Should be built in
