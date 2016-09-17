@@ -9,7 +9,8 @@
     endif "}}}
     call plug#begin('~/.vim/plugged')
 
-    Plug 'Super-Shell-Indent'
+     Plug '~/git/vim-cool-status-line'
+     Plug 'Super-Shell-Indent'
 
     if $HOST =~ 'arm'
         Plug '~/asl.vim'
@@ -30,8 +31,6 @@
 
     Plug 'whatyouhide/vim-lengthmatters'
     Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
-    Plug 'vim-airline/vim-airline'
-    Plug 'vim-airline/vim-airline-themes'
     Plug 'vimtaku/hl_matchit.vim'
     Plug 'sickill/vim-pasta'
     Plug 'dietsche/vim-lastplace'
@@ -135,6 +134,11 @@
     if $TERM =~ '256'
         let base16colorspace=256
     endif
+
+    if has('termguicolors')
+        set termguicolors
+    endif
+
     silent! colorscheme base16-harmonic16-dark
 "}}}
 "Mappings {{{
@@ -384,31 +388,8 @@
         "Start searching from project root rather than CWD.
         let g:ag_working_path_mode="r"
     "}}}
-    "Airline {{{
-        let g:airline_mode_map = {
-            \ '__' : '-',
-            \ 'n'  : 'N',
-            \ 'i'  : 'I',
-            \ 'R'  : 'R',
-            \ 'c'  : 'C',
-            \ 'v'  : 'V',
-            \ 'V'  : 'V',
-            \ '' : 'V',
-            \ 's'  : 'S',
-            \ 'S'  : 'S',
-            \ '' : 'S',
-            \ }
-
-        let g:airline#extensions#default#layout = [
-            \   [ 'a', 'b', 'c' ], [ 'x', 'z', 'warning' ]
-            \ ]
-
-        let g:airline_powerline_fonts=1
-        let g:airline_theme = 'base16'
-        let g:airline_extensions = ['branch', 'hunks', 'wordcount', 'whitespace']
-        let g:airline#extensions#branch#use_vcscommand = 1
-        let g:airline_section_c = airline#section#create_left(['file'])
-
+    "Cool-Status-Line {{{
+        let g:coolstatusline_use_symbols = 1
     "}}}
     "CtrlP {{{
         let g:ctrlp_root_markers=['.ctrlp']
@@ -452,49 +433,49 @@
         xmap ga <Plug>(EasyAlign)
         let g:easy_align_delimiters = {}
         let g:easy_align_delimiters[';'] = {
-                    \ 'pattern'     : '\(.*function.*\)\@<!\zs;',
-                    \ 'left_margin' : 0
-                    \ }
+            \ 'pattern'     : '\(.*function.*\)\@<!\zs;',
+            \ 'left_margin' : 0
+            \ }
         let g:easy_align_delimiters['d'] = {
-                    \ 'pattern'     : '\ze\S\+\s*[,;=]',
-                    \ 'left_margin' : 1, 'right_margin': 0
-                    \ }
+            \ 'pattern'     : '\ze\S\+\s*[,;=]',
+            \ 'left_margin' : 1, 'right_margin': 0
+            \ }
         let g:easy_align_delimiters['['] = {
-                    \ 'pattern'     : '\s\zs\[',
-                    \ 'left_margin' : 1, 'right_margin': 0
-                    \ }
+            \ 'pattern'     : '\s\zs\[',
+            \ 'left_margin' : 1, 'right_margin': 0
+            \ }
         let g:easy_align_delimiters[']'] = {
-                    \ 'pattern'     : ']',
-                    \ 'left_margin' : 0, 'right_margin': 1
-                    \ }
+            \ 'pattern'     : ']',
+            \ 'left_margin' : 0, 'right_margin': 1
+            \ }
         let g:easy_align_delimiters[','] = {
-                    \ 'pattern'     : ',',
-                    \ 'left_margin' : 0, 'right_margin': 1
-                    \ }
+            \ 'pattern'     : ',',
+            \ 'left_margin' : 0, 'right_margin': 1
+            \ }
         let g:easy_align_delimiters[')'] = {
-                    \ 'pattern'     : ')',
-                    \ 'left_margin' : 0, 'right_margin': 0
-                    \ }
+            \ 'pattern'     : ')',
+            \ 'left_margin' : 0, 'right_margin': 0
+            \ }
         let g:easy_align_delimiters['('] = {
-                    \ 'pattern'     : '(',
-                    \ 'left_margin' : 0, 'right_margin': 0
-                    \ }
+            \ 'pattern'     : '(',
+            \ 'left_margin' : 0, 'right_margin': 0
+            \ }
         let g:easy_align_delimiters['='] = {
-                    \ 'pattern'     : '<\?=',
-                    \ 'left_margin' : 1, 'right_margin': 1
-                    \ }
+            \ 'pattern'     : '<\?=',
+            \ 'left_margin' : 1, 'right_margin': 1
+            \ }
         let g:easy_align_delimiters['|'] = {
-                    \ 'pattern'     : '|\?|',
-                    \ 'left_margin' : 1, 'right_margin': 1
-                    \ }
+            \ 'pattern'     : '|\?|',
+            \ 'left_margin' : 1, 'right_margin': 1
+            \ }
         let g:easy_align_delimiters['&'] = {
-                    \ 'pattern'     : '&\?&',
-                    \ 'left_margin' : 1, 'right_margin': 1
-                    \ }
+            \ 'pattern'     : '&\?&',
+            \ 'left_margin' : 1, 'right_margin': 1
+            \ }
         let g:easy_align_delimiters[':'] = {
-                    \ 'pattern'     : ':',
-                    \ 'left_margin' : 1, 'right_margin': 1
-                    \ }
+            \ 'pattern'     : ':',
+            \ 'left_margin' : 1, 'right_margin': 1
+            \ }
         nmap <leader>c mzgaip[gaipdgaip;gaip,`z
     "}}}
     "HL Matchit {{{
@@ -525,16 +506,17 @@
 "}}}
 "Bug Fixes {{{
 augroup bug_fixes
-    " Airline colours mess up now and again. This should refresh airline every
-    " so often. Requires vim-tmux-focus-events.
-    " au! FocusGained,FocusLost * AirlineRefresh
-
     " When using vim-tmux-navigator and vim-tmux-focus-events, ^[[O gets
     " inserted when switching panes. This is a workaround to prevent that.
     au FocusLost * silent redraw!
 augroup END
 "}}}
 "Apply .vimrc on save {{{
-autocmd! BufWritePost $MYVIMRC source $MYVIMRC || AirlineRefresh
+augroup apply_vimrc
+    autocmd!
+    autocmd BufWritePost $MYVIMRC source $MYVIMRC
+    autocmd BufWritePost $MYVIMRC call coolstatusline#Refresh()
+augroup END
 "}}}
-"vim: set textwidth=0
+
+" vim: set textwidth=0 foldmethod=marker foldlevel=0:
