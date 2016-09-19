@@ -9,8 +9,7 @@
     endif "}}}
     call plug#begin('~/.vim/plugged')
 
-     Plug '~/git/vim-cool-status-line'
-     Plug 'Super-Shell-Indent'
+     Plug 'lewis6991/vim-cool-status-line'
 
     if $HOST =~ 'arm'
         Plug '~/asl.vim'
@@ -29,6 +28,7 @@
     Plug 'michaeljsmith/vim-indent-object'
     Plug 'visualrepeat'
 
+    Plug 'Super-Shell-Indent'
     Plug 'whatyouhide/vim-lengthmatters'
     Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
     Plug 'vimtaku/hl_matchit.vim'
@@ -37,8 +37,7 @@
     Plug 'Konfekt/FastFold'
     Plug 'ervandew/supertab'
     Plug 'cmdline-completion'
-    Plug 'justinmk/vim-dirvish', { 'on': '<Plug>(dirvish_up)' }
-    nmap - <Plug>(dirvish_up)
+    Plug 'justinmk/vim-dirvish'
 
     "Snippets
     Plug 'MarcWeber/vim-addon-mw-utils' "vim-snipmate dependency
@@ -476,6 +475,11 @@
             \ 'pattern'     : ':',
             \ 'left_margin' : 1, 'right_margin': 1
             \ }
+        let g:easy_align_delimiters['?'] = {
+            \ 'pattern'     : '?',
+            \ 'left_margin' : 1, 'right_margin': 1
+            \ }
+
         nmap <leader>c mzgaip[gaipdgaip;gaip,`z
     "}}}
     "HL Matchit {{{

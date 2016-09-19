@@ -17,13 +17,10 @@ set show-all-if-ambiguous on
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Prompt
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-
 function prompt_command() {
     EXIT=$?
     PS1=`~/git/fancy-prompt/.prompt bash ${EXIT}`
 }
-
-export PROMPT_COMMAND=prompt_command
 
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Variables
@@ -66,13 +63,9 @@ fi
 #     alias vim=nvim
 # fi
 
-alias re-bashrc='source ~/.bashrc'
-alias edit-bashrc='v ~/.bashrc'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
-
 ~/git/base16-shell/base16-harmonic16.dark.sh
+
+alias re-csh="source ~/.cluster bash && source ~/.bashrc"
 
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Utilities
@@ -99,5 +92,4 @@ function extract() {
 }
 
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-
 # vim: set foldmarker={,} foldmethod=marker foldlevel=0:
