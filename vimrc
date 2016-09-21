@@ -9,9 +9,9 @@
     endif "}}}
     call plug#begin('~/.vim/plugged')
 
-     Plug 'lewis6991/vim-cool-status-line'
+    Plug '~/git/vim-cool-status-line'
 
-    if $HOST =~ 'arm'
+    if $HOST =~ 'login\|arm'
         Plug '~/asl.vim'
         Plug '~/archex.vim'
     endif
@@ -74,7 +74,7 @@
 
     "Source Control
     Plug 'tpope/vim-fugitive'
-    Plug 'vim-scripts/vcscommand.vim', { 'on': 'VCSVimDiff' }
+    Plug 'vim-scripts/vcscommand.vim'
     Plug 'junegunn/gv.vim', { 'on': 'GV' }
     Plug 'airblade/vim-gitgutter'
     Plug 'mhinz/vim-signify' "For SVN
@@ -171,15 +171,15 @@
     endfunction "}}}
 
     " Correct common typos
-    cnoremap W  w
-    cnoremap Q  q
-    cnoremap WQ wq
-    cnoremap Wq wq
-    cnoremap BD bd
-    cnoremap Bd bd
-    cnoremap Vs vs
-    cnoremap VS vs
-    cnoremap Sp sp
+    command! W  w
+    command! Q  q
+    command! WQ wq
+    command! Wq wq
+    command! BD bd
+    command! Bd bd
+    command! Vs vs
+    command! VS vs
+    command! Sp sp
 
     " Should this not be default?
     nnoremap Y y$
@@ -266,8 +266,6 @@
         set foldtext=CustomFoldText()
         set foldmethod=syntax
 
-        au! BufRead *vimrc* set foldmethod=marker foldlevel=0
-
         augroup folding
             autocmd!
             autocmd FileType json,sh setlocal foldmethod=marker
@@ -343,7 +341,9 @@
 "}}}
 "File Settings {{{
     let g:xml_syntax_folding=1
+    let g:vimsyn_folding = 'aflmpPrt'
     let g:vim_indent_cont = &sw
+
     augroup file_prefs
         autocmd!
         autocmd Filetype map    setlocal textwidth=0
@@ -520,6 +520,7 @@ augroup apply_vimrc
     autocmd!
     autocmd BufWritePost $MYVIMRC source $MYVIMRC
     autocmd BufWritePost $MYVIMRC call coolstatusline#Refresh()
+    autocmd BufWritePost $MYVIMRC set foldmethod=marker foldlevel=0
 augroup END
 "}}}
 
