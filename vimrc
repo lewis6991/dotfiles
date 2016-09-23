@@ -132,12 +132,16 @@
     au! FocusLost,InsertEnter   * setlocal nocursorline
 "}}}
 "Colours {{{
+
     if $TERM =~ '256'
         let base16colorspace=256
     endif
 
     if has('termguicolors')
         set termguicolors
+
+        " This is required for some reason; st-256color won't work.
+        set term=xterm-256color
     endif
 
     silent! colorscheme base16-harmonic16-dark
@@ -260,7 +264,7 @@
     endif
 "}}}
 "Folding{{{
-    if v:version >= 704
+    if has('folding')
         set foldnestmax=10
         set foldlevel=0
         set foldcolumn=3
