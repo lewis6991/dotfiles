@@ -9,14 +9,16 @@
     endif "}}}
     call plug#begin('~/.vim/plugged')
 
-    Plug '~/git/vim-cool-status-line'
-
     if $HOST =~ 'login\|arm'
         Plug '~/asl.vim'
         Plug '~/archex.vim'
+        Plug '~/git/tcl.vim'
+        Plug '~/git/verilog_systemverilog.vim'
+    else
+        Plug 'vhda/verilog_systemverilog.vim'
     endif
 
-    Plug 'vhda/verilog_systemverilog.vim'
+    Plug '~/git/vim-cool-status-line'
 
     "Should be built in
     Plug 'tpope/vim-commentary', {'on': '<Plug>Commentary'}
@@ -64,7 +66,7 @@
     nnoremap <C-P> :CtrlP<cr>
 
     Plug 'Chun-Yang/vim-action-ag', { 'on': '<Plug>AgActionWord' }
-    if v:version == 704
+    if v:version >= 704
         Plug 'haya14busa/incsearch.vim', { 'on': [
             \   '<Plug>(incsearch-forward)' ,
             \   '<Plug>(incsearch-backward)',
@@ -88,7 +90,7 @@
     set nostartofline             "Keep cursor in same column when moving
                                   "up/down.
     set number
-    if v:version == 704
+    if v:version >= 704
         set relativenumber
     endif
 
@@ -114,7 +116,7 @@
 
     set clipboard=unnamed          "Yank and Paste from system clipboard instead
                                    "of 0 register. Very useful.
-    if v:version == 704
+    if v:version >= 704
         set mouse=nicr             "Enable mouse support
     endif
 
@@ -258,7 +260,7 @@
     endif
 "}}}
 "Folding{{{
-    if v:version == 704
+    if v:version >= 704
         set foldnestmax=10
         set foldlevel=0
         set foldcolumn=3
@@ -418,6 +420,9 @@
         autocmd FileType dirvish call matchadd('Statement', ".*\.hv$" )
         autocmd FileType dirvish call matchadd('Statement', ".*\.vh$" )
         autocmd FileType dirvish call matchadd('Statement', ".*\.svh$")
+
+        " Enter Dirvish if we start vim without a file.
+        autocmd VimEnter * if expand('%t') == '' | Dirvish | endif
     augroup END
 
     function! Attempt_select_last_file() abort "{{{
