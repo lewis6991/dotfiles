@@ -36,7 +36,7 @@ function check_cmd {
 function link_file {
     rm -rf $2
     ln -srv $1 $2
-    # If last command failed then coreutils probably doesnt support -r switch (<8.16)
+    # If last command failed then coreutils probably doesn't support -r switch (<8.16)
     if [ $? -ne 0 ]; then
         echo "link failed... attempting alternate command that doesn't use -r"
         local current_dir=`pwd`
@@ -62,6 +62,7 @@ function install_vim {
 
 function install_dotfiles {
     link_file tmux.conf ~/.tmux.conf
+    link_file tmux      ~/.tmux
 
     if [ "$(uname)" == "Darwin" ]; then
         link_file bashrc ~/.bash_profile
