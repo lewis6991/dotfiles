@@ -16,7 +16,7 @@ function echo_ok {
 }
 
 function check_cmd {
-    echo -n Checking $1 is installed...
+    echo -en Checking if $CYAN$1$NC is installed...
     if which $1 >/dev/null; then
         echo_ok
         return 0
@@ -56,6 +56,9 @@ function check_dependencies {
 
 function install_vim {
     rm -rf ~/.vim
+    mkdir ~/.vim
+    mkdir ~/.vim/tmp
+    mkdir ~/.vim/tmp/backup
     link_file vimrc ~/.vimrc
     vim +PlugInstall +qall
 }
@@ -72,43 +75,46 @@ function install_dotfiles {
 }
 
 function install_prompt {
-    mkdir -p $HOME/git
-    cd $HOME/git
+    echo -en "Checking if ${CYAN}fancy-prompt${NC} is installed..."
+    INSTALL=1
     if [ -d "$HOME/git/fancy-prompt" ]; then
-        echo -e "${CYAN}fancy-prompt already exists${NC}"
-    else
+        INSTALL=0
+    fi
+
+    if [ $INSTALL -eq 1 ]; then
+        echo "No"
+        echo "Installing fancy-prompt..."
+        mkdir -p $HOME/git
+        cd $HOME/git
         git clone https://github.com/lewis6991/fancy-prompt
+        cd -
         if [ $? -eq 1 ]; then
             echo_error "Could no install fancy-prompt"
         fi
+    else
+        echo_ok
     fi
-    cd -
 }
 
 function install_powerline_fonts {
-    echo -n "Checking if Powerline fonts are installed..."
-    if [ -d "$HOME/.fonts" ]; then
-        POWERLINE_FONTS=$(ls ~/.fonts | grep Powerline | wc -l)
+    echo -en "Checking if ${CYAN}Powerline fonts${NC} are installed..."
+    INSTALL=1
+    if [ -d "$HOME/.local/share/fonts" ]; then
+        POWERLINE_FONTS=$(ls $HOME/.local/share/fonts | grep Powerline | wc -l)
         if [ "$POWERLINE_FONTS" -gt "0" ]; then
-            INSTALL_FONTS=0
-        else
-            INSTALL_FONTS=1
+            INSTALL=0
         fi
-    else
-        INSTALL_FONTS=1
     fi
 
-    if [ $INSTALL_FONTS -eq 1 ]; then
+    if [ $INSTALL -eq 1 ]; then
         echo "No"
         echo "Installing Powerline fonts..."
         pushd ~
-        rm -rf fonts
-        rm -rf .fonts
-        rm -rf .fontconfig
+        rm -rf .local/share/fonts
         git clone https://github.com/powerline/fonts.git
         cd fonts
         ./install.sh
-        cd
+        cd -
         rm -rf fonts
         popd
     else
