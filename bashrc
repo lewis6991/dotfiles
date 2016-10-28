@@ -17,7 +17,11 @@ set show-all-if-ambiguous on
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Prompt
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-export PROMPT_COMMAND='PS1=$(~/git/fancy-prompt/.prompt bash $?)'
+refresh-prompt() {
+    export PROMPT_COMMAND='PS1=$(~/git/fancy-prompt/.prompt bash $?)'
+}
+
+refresh-prompt
 
 #–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Variables
