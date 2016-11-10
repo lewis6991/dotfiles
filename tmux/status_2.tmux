@@ -7,6 +7,7 @@ set -g status-left                  '  #{session_name}  '
 set -g status-left-fg               colour7
 set -g status-left-bg               colour19
 set -g status-left-attr             dim
+set -g status-left-length           100
 
 set -g window-status-format         '  #{window_name}  '
 set -g window-status-fg             colour20
@@ -26,5 +27,6 @@ set -g status-right '\
 
 set -g status-right-fg              colour20
 set -g status-right-bg              colour19
+set -g status-right-length          100
 
 # vim: set ft=tmux :
