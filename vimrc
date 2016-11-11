@@ -2,7 +2,9 @@
 
     " Install vim-plug if we don't already have it {{{
     if empty(glob("~/.vim/autoload/plug.vim"))
-        execute 'silent !mkdir -p ~/.vimundo'
+        execute 'silent !mkdir -p ~/.vim/tmp/'
+        execute 'silent !mkdir -p ~/.vim/tmp/undo'
+        execute 'silent !mkdir -p ~/.vim/tmp/backup'
         execute 'silent !mkdir -p ~/.vim/plugged'
         execute 'silent !mkdir -p ~/.vim/autoload'
         execute 'silent !curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
@@ -10,16 +12,38 @@
 
     call plug#begin('~/.vim/plugged')
 
-    if $HOST =~ 'login\|arm'
+    if $USER =~ 'lewrus01'
         Plug '~/asl.vim'
         Plug '~/archex.vim'
         Plug '~/git/tcl.vim'
+        Plug '~/git/moonlight.vim'
         Plug '~/git/verilog_systemverilog.vim'
     else
+        Plug 'lewis6991/tcl.vim'
+        Plug 'lewis6991/moonlight.vim'
         Plug 'vhda/verilog_systemverilog.vim'
     endif
 
-    Plug '~/git/vim-cool-status-line' "{{{
+    " Plug '~/systemverilog.vim'
+
+    "Plug 'chrisbra/Colorizer'
+    "Config {{{
+    let g:colorizer_auto_map = 1
+    let g:colorizer_colornames_disable = 1
+    " let g:colorizer_hex_disable = 1
+    let g:colorizer_hsla_disable = 1
+    let g:colorizer_rgb_disable = 1
+    let g:colorizer_rgba_disable = 1
+    let g:colorizer_taskwarrior_disable = 1
+    let g:colorizer_term_disable = 1
+    let g:colorizer_term_conceal_disable = 1
+    let g:colorizer_vimcolors_disable = 1
+    let g:colorizer_vimhighl_dump_disable = 1
+    let g:colorizer_vimhighlight_disable = 1
+    "}}}
+
+    Plug '~/git/vim-cool-status-line'
+    "Config {{{
     let g:coolstatusline_use_symbols = 1
     "}}}
 
@@ -27,21 +51,11 @@
         Plug 'w0rp/ale'
     endif
 
-    Plug 'tpope/vim-commentary', "{{{
-        \ {'on': '<Plug>Commentary'}
+    Plug 'tpope/vim-commentary', {'on': '<Plug>Commentary'}
+    "Config {{{
     map  gc  <Plug>Commentary
     nmap gcc <Plug>CommentaryLine
     "}}}
-
-    Plug 'boucherm/ShowMotion' "{{{
-    nmap w <Plug>(show-motion-w)
-    nmap W <Plug>(show-motion-W)
-    nmap b <Plug>(show-motion-b)
-    nmap B <Plug>(show-motion-B)
-    nmap e <Plug>(show-motion-e)
-    nmap E <Plug>(show-motion-E)
-    "}}}
-
     Plug 'tpope/vim-unimpaired'
     Plug 'triglav/vim-visual-increment'
     Plug 'michaeljsmith/vim-indent-object'
@@ -49,66 +63,68 @@
     Plug 'Super-Shell-Indent'
     Plug 'sickill/vim-pasta'
     Plug 'dietsche/vim-lastplace'
-    Plug 'junegunn/vim-easy-align', "{{{
-        \ { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
-        nmap ga <Plug>(EasyAlign)
-        xmap ga <Plug>(EasyAlign)
-        let g:easy_align_delimiters = {}
-        let g:easy_align_delimiters[';'] = {
-            \ 'pattern'     : '\(.*function.*\)\@<!\zs;',
-            \ 'left_margin' : 0
-            \ }
-        let g:easy_align_delimiters['d'] = {
-            \ 'pattern'     : '\ze\S\+\s*[,;=]',
-            \ 'left_margin' : 1, 'right_margin': 0
-            \ }
-        let g:easy_align_delimiters['['] = {
-            \ 'pattern'     : '\s\zs\[',
-            \ 'left_margin' : 1, 'right_margin': 0
-            \ }
-        let g:easy_align_delimiters[']'] = {
-            \ 'pattern'     : ']',
-            \ 'left_margin' : 0, 'right_margin': 1
-            \ }
-        let g:easy_align_delimiters[','] = {
-            \ 'pattern'     : ',',
-            \ 'left_margin' : 0, 'right_margin': 1
-            \ }
-        let g:easy_align_delimiters[')'] = {
-            \ 'pattern'     : ')',
-            \ 'left_margin' : 0, 'right_margin': 0
-            \ }
-        let g:easy_align_delimiters['('] = {
-            \ 'pattern'     : '(',
-            \ 'left_margin' : 0, 'right_margin': 0
-            \ }
-        let g:easy_align_delimiters['='] = {
-            \ 'pattern'     : '<\?=',
-            \ 'left_margin' : 1, 'right_margin': 1
-            \ }
-        let g:easy_align_delimiters['|'] = {
-            \ 'pattern'     : '|\?|',
-            \ 'left_margin' : 1, 'right_margin': 1
-            \ }
-        let g:easy_align_delimiters['&'] = {
-            \ 'pattern'     : '&\?&',
-            \ 'left_margin' : 1, 'right_margin': 1
-            \ }
-        let g:easy_align_delimiters[':'] = {
-            \ 'pattern'     : ':',
-            \ 'left_margin' : 1, 'right_margin': 1
-            \ }
-        let g:easy_align_delimiters['?'] = {
-            \ 'pattern'     : '?',
-            \ 'left_margin' : 1, 'right_margin': 1
-            \ }
+    Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
+    "Config {{{
+    nmap ga <Plug>(EasyAlign)
+    xmap ga <Plug>(EasyAlign)
+    let g:easy_align_delimiters = {}
+    let g:easy_align_delimiters[';'] = {
+        \ 'pattern'     : '\(.*function.*\)\@<!\zs;',
+        \ 'left_margin' : 0
+        \ }
+    let g:easy_align_delimiters['d'] = {
+        \ 'pattern'     : '\ze\S\+\s*[,;=]',
+        \ 'left_margin' : 1, 'right_margin': 0
+        \ }
+    let g:easy_align_delimiters['['] = {
+        \ 'pattern'     : '\s\zs\[',
+        \ 'left_margin' : 1, 'right_margin': 0
+        \ }
+    let g:easy_align_delimiters[']'] = {
+        \ 'pattern'     : ']',
+        \ 'left_margin' : 0, 'right_margin': 1
+        \ }
+    let g:easy_align_delimiters[','] = {
+        \ 'pattern'     : ',',
+        \ 'left_margin' : 0, 'right_margin': 1
+        \ }
+    let g:easy_align_delimiters[')'] = {
+        \ 'pattern'     : ')',
+        \ 'left_margin' : 0, 'right_margin': 0
+        \ }
+    let g:easy_align_delimiters['('] = {
+        \ 'pattern'     : '(',
+        \ 'left_margin' : 0, 'right_margin': 0
+        \ }
+    let g:easy_align_delimiters['='] = {
+        \ 'pattern'     : '<\?=',
+        \ 'left_margin' : 1, 'right_margin': 1
+        \ }
+    let g:easy_align_delimiters['|'] = {
+        \ 'pattern'     : '|\?|',
+        \ 'left_margin' : 1, 'right_margin': 1
+        \ }
+    let g:easy_align_delimiters['&'] = {
+        \ 'pattern'     : '&\?&',
+        \ 'left_margin' : 1, 'right_margin': 1
+        \ }
+    let g:easy_align_delimiters[':'] = {
+        \ 'pattern'     : ':',
+        \ 'left_margin' : 1, 'right_margin': 1
+        \ }
+    let g:easy_align_delimiters['?'] = {
+        \ 'pattern'     : '?',
+        \ 'left_margin' : 1, 'right_margin': 1
+        \ }
 
-        nmap <leader>c mzgaip[gaipdgaip;gaip,`z
+    nmap <leader>c mzgaip[gaipdgaip;gaip,`z
     "}}}
-    Plug 'vimtaku/hl_matchit.vim' "{{{
+    Plug 'vimtaku/hl_matchit.vim'
+    "Config {{{
     let g:hl_matchit_enable_on_vim_startup = 1
     "}}}
-    Plug 'justinmk/vim-dirvish' "{{{
+    Plug 'justinmk/vim-dirvish'
+    "Config {{{
     augroup dirvish_group
         autocmd!
 
@@ -138,12 +154,13 @@
         endif
     endfunction "}}}
     "}}}
-    Plug 'whatyouhide/vim-lengthmatters' "{{{
+    Plug 'whatyouhide/vim-lengthmatters'
+    "Config {{{
     let g:lengthmatters_highlight_one_column=1
     "}}}
 
-    Plug 'ctrlpvim/ctrlp.vim', "{{{
-        \{ 'on': 'CtrlP' }
+    Plug 'ctrlpvim/ctrlp.vim', { 'on': 'CtrlP' }
+    "Config {{{
     nnoremap <C-P> :CtrlP<cr>
     "}}}
 
@@ -158,7 +175,8 @@
     "Snippets
     Plug 'MarcWeber/vim-addon-mw-utils' "vim-snipmate dependency
     Plug 'tomtom/tlib_vim'              "vim-snipmate dependency
-    Plug 'garbas/vim-snipmate' "{{{
+    Plug 'garbas/vim-snipmate'
+    "Config {{{
     imap <tab> <Plug>snipMateNextOrTrigger
     "}}}
 
@@ -170,7 +188,6 @@
     "Colourschemes
     Plug 'chriskempson/base16-vim'
     Plug 'whatyouhide/vim-gotham'
-    Plug 'tomasr/molokai'
 
     "Tmux Integration
     Plug 'christoomey/vim-tmux-navigator'
@@ -179,18 +196,19 @@
 
     "Search
     Plug 'rking/ag.vim', { 'on': 'Ag' }
-    Plug 'Chun-Yang/vim-action-ag', "{{{
-        \ { 'on': '<Plug>AgActionWord' }
+    Plug 'Chun-Yang/vim-action-ag', { 'on': '<Plug>AgActionWord' }
+    "Config {{{
     nmap g* <Plug>AgActionWord
     "}}}
 
     if v:version >= 704
-        Plug 'haya14busa/incsearch.vim', "{{{
+        Plug 'haya14busa/incsearch.vim',
             \ { 'on': [
             \   '<Plug>(incsearch-forward)' ,
             \   '<Plug>(incsearch-backward)',
             \   '<Plug>(incsearch-stay)'
             \ ]}
+        "Config {{{
         augroup mapincsearch
             au!
             " Disable incsearch plugin for large files
@@ -208,7 +226,8 @@
     Plug 'vim-scripts/vcscommand.vim'
     Plug 'junegunn/gv.vim', { 'on': 'GV' }
     Plug 'airblade/vim-gitgutter'
-    Plug 'mhinz/vim-signify' "{{{
+    Plug 'mhinz/vim-signify'
+    "Config {{{
     let g:signify_vcs_list              = [ 'svn' ]
     let g:signify_update_on_focusgained = 1
     let g:signify_sign_delete           = '-'
@@ -222,13 +241,14 @@
     set nocompatible               "VIM is better than VI
     set nostartofline              "Keep cursor in same column when moving
                                    "up/down.
+
     set number                     "Show line numbers.
+    set numberwidth=1              "Make as small as possible
     if v:version >= 704
         set relativenumber
     endif
 
     set autoindent
-    set numberwidth=1              "Make as small as possible
     set showmatch                  "Show matching parenthesis
     set scrolloff=8                "Context while scrolling
     set sidescrolloff=8            "Context while side-scrolling
@@ -237,27 +257,26 @@
     set wildmenu                   "Show completions on command line
     set wildmode=longest:full,full
     set laststatus=2               "Always show the status bar
-    set textwidth=80
     set lazyredraw                 "Don't redraw during macros
 
     " Auto-completion
     set completeopt+=menuone       "Show popup menu even if there is only one match.
-    " set completeopt+=noselect
     set completeopt+=longest
 
     set diffopt+=vertical          "Show diffs in vertical splits
     set diffopt+=foldcolumn:0      "Hide foldcolumn in diffs for more room.
     set virtualedit=block          "Allow visual block mode to select over any
                                    "row/column.
+
+    set textwidth=80
     set winwidth=40
     set winminwidth=40
-    set spell
+    set spell                     "Enable spellchecking
 
-    " set shortmess+=c
     set tags=./tags;              "Search recursively up directories until a tags file is found.
 
     set clipboard=unnamed          "Yank and Paste from system clipboard instead
-                                   "of 0 register. Very useful.
+                                   "of 0 register.
     if v:version >= 704
         set mouse=nicr             "Enable mouse support
     endif
@@ -266,8 +285,12 @@
         set encoding=utf8
     endif
 
-    set background=dark
-
+    " Enable cursorline for active pane. Using this with vim-tmux-focus-events
+    " enables this to work in tmux.
+    au! FocusGained,InsertLeave * setlocal cursorline
+    au! FocusLost,InsertEnter   * setlocal nocursorline
+"}}}
+"Formatting {{{
     set formatoptions=tc "Automatic wrapping for text and comments
     set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
     set formatoptions+=o "Automatically insert comment leader after 'o' or 'O' in Normal mode.
@@ -275,34 +298,30 @@
     set formatoptions+=l "Long lines are not broken in insert mode.
     if v:version >= 704
         set formatoptions+=j "Where it makes sense, remove a comment leader when joining lines.
+        set breakindent      "Indent wrapped lines to match start
     endif
-
-    if v:version >= 704
-      set breakindent                     " indent wrapped lines to match start
-    endif
-
-    " Enable cursorline for active pane. Using this with vim-tmux-focus-events
-    " enables this to work in tmux.
-    au! FocusGained,InsertLeave * setlocal cursorline
-    au! FocusLost,InsertEnter   * setlocal nocursorline
 "}}}
 "Colours {{{
-    " This is required for some reason; st-256color won't work.
-    if !has('nvim')
-        set term=xterm-256color
-    endif
-
-    let base16colorspace=256
-
     if has('termguicolors')
         set termguicolors
+    else
+        let base16colorspace=256
+    endif
+
+    if !has('nvim')
+        " Tell vim how to use true colour.
+        let &t_8f = "[38;2;%lu;%lu;%lum"
+        let &t_8b = "[48;2;%lu;%lu;%lum"
     endif
 
     if v:version >= 704
-        set highlight+=N:DiffText
+        set highlight+=N:Conceal
     endif
 
-    silent! colorscheme base16-harmonic16-dark
+    set background=dark
+
+    " silent! colorscheme base16-harmonic16-dark
+    silent! colorscheme moonlight
 "}}}
 "Mappings {{{
     nnoremap <leader>ev :call EditVimrc()<cr>
@@ -323,7 +342,7 @@
 
     nnoremap <bs> :nohlsearch<cr>
 
-    nnoremap S :%s/<C-R><C-W>//g<left><left>
+    nnoremap S :%s/\<<C-R><C-W>\>//g<left><left>
 
     nnoremap <leader>d :call RunDiff()<cr>
 
@@ -335,7 +354,17 @@
         endif
     endfunction "}}}
 
-    " Correct common typos
+    " Show syntax highlighting groups for word under cursor
+    nnoremap <leader>z :call <SID>SynStack()<CR>
+
+    function! <SID>SynStack() "{{{
+      if !exists("*synstack")
+        return
+      endif
+      echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+    endfunction "}}}
+
+    " Correct common typos for commands
     command! W  w
     command! Q  q
     command! WQ wq
@@ -347,7 +376,7 @@
     command! Sp sp
     command! Qa qa
 
-    " Should this not be default?
+    " Why is this not default?
     nnoremap Y y$
 
     " Disable
@@ -366,7 +395,7 @@
     " Escape is inefficient
     inoremap jk <esc>l
 
-    " Toggles line number mode. Very useful.
+    " Toggles line number mode.
     nnoremap <C-N> :set relativenumber!<cr>
 "}}}
 "Buffers {{{
@@ -384,7 +413,11 @@
         set viminfo=
     else
         set backupdir=~/.vim/tmp/backup  " keep backup files out of the way
-        set viminfo+=n~/.vim/tmp/viminfo " override ~/.viminfo default
+        if !has('nvim')
+            set viminfo+=n~/.vim/tmp/viminfo " override ~/.viminfo default
+        else
+            set viminfo+=n~/.vim/tmp/nviminfo " override ~/.viminfo default
+        endif
     endif
 
     if has('persistent_undo')
@@ -402,14 +435,13 @@
     set softtabstop=4
     set tabstop=4
     set expandtab              "Convert tabs to spaces when typing
-
-    set list listchars=tab:›\   "Show tabs as '›   ›   '
+    set list
+    set listchars=tab:›\       "Show tabs as '›   ›   '
 
     augroup WhitespaceGroup
         autocmd!
         "Delete trailing white space on save.
         autocmd BufWrite * call DeleteTrailingWS()
-
         "Highlight trailing whitespace
         autocmd BufEnter * call matchadd('ColorColumn', '\s\+$')
     augroup END
@@ -426,7 +458,7 @@
 "}}}
 "Searching {{{
     set hlsearch   "Highlight search results.
-    set incsearch  "Move cursor to search occurance.
+    set incsearch  "Move cursor to search occurrence.
     set ignorecase "Case insensitive search if lowercase.
     set smartcase
 "}}}
@@ -435,6 +467,7 @@
         set foldnestmax=10
         set foldlevel=0
         set foldcolumn=3
+        set foldcolumn=0
         set foldenable
         set foldmethod=syntax
 
@@ -467,7 +500,7 @@
     endif
 "}}}
 "SystemVerilog Settings {{{
-    let g:verilog_syntax_fold_lst = "function,task,clocking"
+    let g:verilog_syntax_fold_lst = "all"
 
     augroup systemverilog_settings
         au!
@@ -478,11 +511,12 @@
     augroup END
 "}}}
 "File Settings {{{
-    " XML
+    "XML
     let g:xml_syntax_folding=1
 
     "VimL
-    let g:vimsyn_folding = 'aflmpPrt'
+    let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
+    let g:vimsyn_folding  = 'af' "Fold augroups and functions
     let g:vim_indent_cont = &sw
 
     "Perl
