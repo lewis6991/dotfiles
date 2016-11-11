@@ -166,7 +166,7 @@
 
     "Fold
     Plug 'lewis6991/vim-clean-fold'
-    Plug 'Konfekt/FastFold'
+    " Plug 'Konfekt/FastFold'
 
     "Completion
     Plug 'cmdline-completion'
@@ -187,7 +187,6 @@
 
     "Colourschemes
     Plug 'chriskempson/base16-vim'
-    Plug 'whatyouhide/vim-gotham'
 
     "Tmux Integration
     Plug 'christoomey/vim-tmux-navigator'
@@ -466,7 +465,6 @@
     if has('folding')
         set foldnestmax=10
         set foldlevel=0
-        set foldcolumn=3
         set foldcolumn=0
         set foldenable
         set foldmethod=syntax
