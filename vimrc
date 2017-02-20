@@ -17,14 +17,14 @@
         Plug '~/archex.vim'
         Plug '~/git/tcl.vim'
         Plug '~/git/moonlight.vim'
-        Plug '~/git/verilog_systemverilog.vim'
+        " Plug '~/git/verilog_systemverilog.vim'
     else
         Plug 'lewis6991/tcl.vim'
         Plug 'lewis6991/moonlight.vim'
         Plug 'vhda/verilog_systemverilog.vim'
     endif
 
-    " Plug '~/systemverilog.vim'
+    Plug '~/systemverilog.vim'
 
     "Plug 'chrisbra/Colorizer'
     "Config {{{

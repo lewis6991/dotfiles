@@ -122,9 +122,9 @@ function install_powerline_fonts {
     fi
 }
 
-check_dependencies
-source git_config
-install_vim
-install_dotfiles
-install_prompt
+# check_dependencies
+# source git_config
+# install_vim
+# install_dotfiles
+# install_prompt
 install_powerline_fonts
