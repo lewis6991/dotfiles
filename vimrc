@@ -10,58 +10,69 @@
         execute 'silent !curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
     endif "}}}
 
+    " Install vim-pathogen if we don't already have it {{{
+    if empty(glob("~/.vim/autoload/pathogen.vim"))
+        execute 'silent !curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim'
+    endif
+    "}}}
+
+    " Load any plugins which are work sensitive.
+    execute pathogen#infect('~/.vim_local/{}')
+
     call plug#begin('~/.vim/plugged')
 
-    if $USER =~ 'lewrus01'
-        Plug '~/asl.vim'
-        Plug '~/archex.vim'
-        Plug '~/git/tcl.vim'
-        Plug '~/git/moonlight.vim'
-        " Plug '~/git/verilog_systemverilog.vim'
-    else
-        Plug 'lewis6991/tcl.vim'
-        Plug 'lewis6991/moonlight.vim'
-        Plug 'vhda/verilog_systemverilog.vim'
-    endif
+    function! s:localPlugin(plugin)
+        if isdirectory(glob("~/git/" . a:plugin))
+            Plug '~/git/' . a:plugin
+        else
+            Plug 'lewis6991/' . a:plugin
+        endif
+    endfunction
 
-    Plug '~/systemverilog.vim'
+    call s:localPlugin("moonlight.vim")
+    call s:localPlugin("tcl.vim")
+    call s:localPlugin("systemverilog.vim")
+    " call s:localPlugin("verilog_systemverilog.vim")
 
-    "Plug 'chrisbra/Colorizer'
+    Plug 'lewis6991/vim-clean-fold'
+
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
     "Config {{{
-    let g:colorizer_auto_map = 1
-    let g:colorizer_colornames_disable = 1
-    " let g:colorizer_hex_disable = 1
-    let g:colorizer_hsla_disable = 1
-    let g:colorizer_rgb_disable = 1
-    let g:colorizer_rgba_disable = 1
-    let g:colorizer_taskwarrior_disable = 1
-    let g:colorizer_term_disable = 1
-    let g:colorizer_term_conceal_disable = 1
-    let g:colorizer_vimcolors_disable = 1
-    let g:colorizer_vimhighl_dump_disable = 1
-    let g:colorizer_vimhighlight_disable = 1
+    let g:airline_powerline_fonts = 1
+    let g:airline_detect_spell=0
+    let g:airline_mode_map = {
+        \ '__' : '-',
+        \ 'n'  : 'N',
+        \ 'i'  : 'I',
+        \ 'R'  : 'R',
+        \ 'c'  : 'C',
+        \ 'v'  : 'V',
+        \ 'V'  : 'V',
+        \ '' : 'V',
+        \ 's'  : 'S',
+        \ 'S'  : 'S',
+        \ '' : 'S',
+        \ }
     "}}}
 
-    Plug '~/git/vim-cool-status-line'
+    " call s:localPlugin("vim-cool-status-line")
     "Config {{{
-    let g:coolstatusline_use_symbols = 1
+    " let g:coolstatusline_use_symbols = 1
     "}}}
-
-    if has('timers') && has('jobs') && has('channel')
-        Plug 'w0rp/ale'
-    endif
 
     Plug 'tpope/vim-commentary', {'on': '<Plug>Commentary'}
     "Config {{{
     map  gc  <Plug>Commentary
     nmap gcc <Plug>CommentaryLine
     "}}}
-    Plug 'tpope/vim-unimpaired'
+
+    " Plug 'tpope/vim-unimpaired'
     Plug 'triglav/vim-visual-increment'
     Plug 'michaeljsmith/vim-indent-object'
     Plug 'visualrepeat'
-    Plug 'Super-Shell-Indent'
-    Plug 'sickill/vim-pasta'
+    " Plug 'Super-Shell-Indent'
+    " Plug 'sickill/vim-pasta'
     Plug 'dietsche/vim-lastplace'
     Plug 'junegunn/vim-easy-align', { 'on': ['<Plug>(EasyAlign)', 'EasyAlign'] }
     "Config {{{
@@ -119,10 +130,12 @@
 
     nmap <leader>c mzgaip[gaipdgaip;gaip,`z
     "}}}
+
     Plug 'vimtaku/hl_matchit.vim'
     "Config {{{
     let g:hl_matchit_enable_on_vim_startup = 1
     "}}}
+
     Plug 'justinmk/vim-dirvish'
     "Config {{{
     augroup dirvish_group
@@ -154,9 +167,11 @@
         endif
     endfunction "}}}
     "}}}
+
     Plug 'whatyouhide/vim-lengthmatters'
     "Config {{{
     let g:lengthmatters_highlight_one_column=1
+    let g:lengthmatters_excluded = [ 'scala', 'dirvish' ]
     "}}}
 
     Plug 'ctrlpvim/ctrlp.vim', { 'on': 'CtrlP' }
@@ -164,26 +179,63 @@
     nnoremap <C-P> :CtrlP<cr>
     "}}}
 
-    "Fold
-    Plug 'lewis6991/vim-clean-fold'
-    " Plug 'Konfekt/FastFold'
-
     "Completion
     Plug 'cmdline-completion'
-    Plug 'maxboisvert/vim-simple-complete'
+    if has('nvim')
+        Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+        "Config {{{
+        let g:deoplete#enable_at_startup = 1
+        let g:deoplete#auto_complete_delay = 50
+        let g:deoplete#sources = ['buffer', 'tag', 'file', 'omni' ]
+        "}}}
+        Plug 'Shougo/neosnippet'
+        "Config {{{
+        let g:neosnippet#snippets_directory='~/snippets'
+        let g:neosnippet#disable_runtime_snippets = { '_' : 1 }
 
-    "Snippets
-    Plug 'MarcWeber/vim-addon-mw-utils' "vim-snipmate dependency
-    Plug 'tomtom/tlib_vim'              "vim-snipmate dependency
-    Plug 'garbas/vim-snipmate'
-    "Config {{{
-    imap <tab> <Plug>snipMateNextOrTrigger
-    "}}}
+        nnoremap <Leader>s :NeoSnippetEdit<CR>
+
+        imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
+            \ "\<Plug>(neosnippet_expand_or_jump)" :
+            \ pumvisible() ? "\<C-n>" :
+            \ <SID>check_back_space() ? "\<TAB>" :
+            \ deoplete#mappings#manual_complete()
+            function! s:check_back_space() abort "{{{
+                let col = col('.') - 1
+                return !col || getline ('.')[col - 1] =~ '\s'
+            endfunction "}}}
+        "}}}
+    else
+        Plug 'Shougo/neocomplcache.vim'
+        "Config {{{
+        let g:neocomplcache_enable_at_startup = 1
+        let g:neocomplcache_enable_smart_case = 1
+        "}}}
+        Plug 'Shougo/neosnippet'
+        "Config {{{
+        let g:neosnippet#snippets_directory='~/snippets'
+        let g:neosnippet#disable_runtime_snippets = { '_' : 1 }
+
+        nnoremap <Leader>s :NeoSnippetEdit<CR>
+
+        imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
+            \ "\<Plug>(neosnippet_expand_or_jump)" :
+            \ pumvisible() ? "\<C-n>" :
+            \ "\<TAB>"
+        "}}}
+    endif
 
     "Syntax
     Plug 'tmhedberg/SimpylFold'
     Plug 'derekwyatt/vim-scala'
-    Plug 'elzr/vim-json'
+    " Plug 'elzr/vim-json'
+    Plug 'sheerun/vim-polyglot'
+    "Config {{{
+    let g:python_highlight_all = 1
+    let g:python_slow_sync     = 1
+    "}}}
+
+    Plug 'hynek/vim-python-pep8-indent'
 
     "Colourschemes
     Plug 'chriskempson/base16-vim'
@@ -200,7 +252,7 @@
     nmap g* <Plug>AgActionWord
     "}}}
 
-    if v:version >= 704
+    if v:version >= 704 && !has('nvim')
         Plug 'haya14busa/incsearch.vim',
             \ { 'on': [
             \   '<Plug>(incsearch-forward)' ,
@@ -218,16 +270,20 @@
             au BufEnter * endif
         augroup END
         "}}}
+    else
+        set inccommand=split
+        set previewheight=20
     endif
 
     "Source Control
     Plug 'tpope/vim-fugitive'
-    Plug 'vim-scripts/vcscommand.vim'
-    Plug 'junegunn/gv.vim', { 'on': 'GV' }
+    " Plug 'vim-scripts/vcscommand.vim'
+    Plug 'juneedahamed/vc.vim'
+    " Plug 'junegunn/gv.vim', { 'on': 'GV' }
     Plug 'airblade/vim-gitgutter'
-    Plug 'mhinz/vim-signify'
+    " Plug 'mhinz/vim-signify'
     "Config {{{
-    let g:signify_vcs_list              = [ 'svn' ]
+    let g:signify_vcs_list              = [ 'svn', 'git' ]
     let g:signify_update_on_focusgained = 1
     let g:signify_sign_delete           = '-'
     "}}}
@@ -269,7 +325,7 @@
 
     set textwidth=80
     set winwidth=40
-    set winminwidth=40
+    " set winminwidth=40
     set spell                     "Enable spellchecking
 
     set tags=./tags;              "Search recursively up directories until a tags file is found.
@@ -278,10 +334,6 @@
                                    "of 0 register.
     if v:version >= 704
         set mouse=nicr             "Enable mouse support
-    endif
-
-    if !has('nvim')
-        set encoding=utf8
     endif
 
     " Enable cursorline for active pane. Using this with vim-tmux-focus-events
@@ -314,13 +366,14 @@
     endif
 
     if v:version >= 704
-        set highlight+=N:Conceal
+        "set highlight+=N:Conceal
     endif
 
     set background=dark
 
-    " silent! colorscheme base16-harmonic16-dark
-    silent! colorscheme moonlight
+    silent! colorscheme base16-harmonic16-dark
+    " silent! colorscheme base16-solar-flare
+    " silent! colorscheme moonlight
 "}}}
 "Mappings {{{
     nnoremap <leader>ev :call EditVimrc()<cr>
@@ -349,7 +402,8 @@
         if exists(':Gdiff')
             Gdiff
         else
-            VCSVimDiff
+            " VCSVimDiff
+            VCDiff
         endif
     endfunction "}}}
 
@@ -465,6 +519,7 @@
     if has('folding')
         set foldnestmax=10
         set foldlevel=0
+        set foldlevelstart=10
         set foldcolumn=0
         set foldenable
         set foldmethod=syntax
@@ -493,7 +548,7 @@
         if has("mac")
             set guifont=Meslo\ LG\ M\ DZ\ Regular\ for\ Powerline:h12
         else
-            set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 10
+            set guifont=DejaVu\ Sans\ Mono\ for\ Powerline\ 9
         endif
     endif
 "}}}
@@ -502,9 +557,9 @@
 
     augroup systemverilog_settings
         au!
-        au Filetype verilog_systemverilog setlocal shiftwidth=2
-        au Filetype verilog_systemverilog setlocal tabstop=2
-        au Filetype verilog_systemverilog setlocal softtabstop=2
+        au Filetype verilog_systemverilog,systemverilog setlocal shiftwidth=2
+        au Filetype verilog_systemverilog,systemverilog setlocal tabstop=2
+        au Filetype verilog_systemverilog,systemverilog setlocal softtabstop=2
         au Filetype verilog_systemverilog setlocal commentstring=//%s
     augroup END
 "}}}
@@ -521,16 +576,24 @@
     let perl_fold=1
     let perl_extended_vars = 1
 
+    set commentstring=#%s
+
     augroup file_prefs
         autocmd!
         autocmd Filetype map    setlocal textwidth=0
         autocmd BufEnter *.log  setlocal textwidth=0
         autocmd BufEnter *.sig  setlocal filetype=xml
+        autocmd BufEnter *.cmd  setlocal filetype=tcl
         autocmd Filetype tcl    setlocal shiftwidth=2
         autocmd Filetype yaml   setlocal shiftwidth=2
+        " autocmd Filetype python setlocal shiftwidth=2
+        autocmd Filetype vim    setlocal commentstring=\"%s
+        autocmd Filetype scala  setlocal commentstring=//%s
+        autocmd Filetype make   setlocal noet
+        autocmd Filetype scala  setlocal shiftwidth=2
 
         " Set filetype to asl for txt files in asset-protection
-        autocmd BufRead *.txt if expand('%:p') =~ 'asset-protection'
+        autocmd BufRead *.txt if expand('%:p') =~ 'asset-protection\|asl'
         autocmd BufRead *.txt     set filetype=asl
         autocmd BufRead *.txt endif
     augroup END
@@ -562,15 +625,26 @@
 augroup bug_fixes
     " When using vim-tmux-navigator and vim-tmux-focus-events, ^[[O gets
     " inserted when switching panes. This is a workaround to prevent that.
-    au FocusLost * silent redraw!
+    " au FocusLost * silent redraw!
 augroup END
+"}}}
+"Neovim {{{
+if has("nvim")
+    " Disable python2
+    " let g:loaded_python_provider = 1
+    " Disable ruby
+    let g:loaded_ruby_provider = 1
+
+    let g:python3_host_prog = '/home/lewrus01/tools/python/bin/python3.6'
+endif
 "}}}
 "Apply .vimrc on save {{{
-augroup apply_vimrc
-    autocmd!
-    autocmd BufWritePost $MYVIMRC source $MYVIMRC
-    autocmd BufWritePost $MYVIMRC call coolstatusline#Refresh()
-    autocmd BufWritePost $MYVIMRC set foldmethod=marker foldlevel=0
-augroup END
+" augroup apply_vimrc
+"     autocmd!
+"     autocmd BufWritePost $MYVIMRC source $MYVIMRC
+"     " autocmd BufWritePost $MYVIMRC call coolstatusline#Refresh()
+"     autocmd BufWritePost $MYVIMRC set foldmethod=marker foldlevel=0
+" augroup END
 "}}}
-" vim: set textwidth=0 foldmethod=marker foldlevel=0:
+
+" vim: textwidth=0 foldmethod=marker foldlevel=0:
