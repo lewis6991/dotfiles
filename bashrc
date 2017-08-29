@@ -42,8 +42,10 @@ prompt_command() {
     PS1=$(~/.prompt bash $?)
 
     if [ -n "$TMUX" ]; then
-        export DISPLAY
-        DISPLAY=$(cat ~/.display)
+        if [ -f "~/.display" ]; then
+            export DISPLAY
+            DISPLAY=$(cat ~/.display)
+        fi
     fi
 }
 
@@ -54,7 +56,7 @@ export PROMPT_COMMAND=prompt_command
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 # Modify path if coretuils is installed (Mac)
 if ((HAVE_BREW)); then
-    if [ -f "$BREW_PREFIX/opt/coreutils" ]; then
+    if [ -d "$BREW_PREFIX/opt/coreutils" ]; then
         export PATH="$BREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
         export MANPATH="$BREW_PREFIX/opt/coreutils/libexec/gnuman:$MANPATH"
     fi
@@ -82,6 +84,7 @@ bind 'TAB: menu-complete'
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Aliases                                                                     ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
 if ((HAVE_BREW)); then
     if brew --prefix coreutils >/dev/null ; then
         alias ls='ls --color'
@@ -115,10 +118,10 @@ stty -ixon
 # shellcheck source=/dev/null
 [ -f ~/.fzf.bash ] && source ~/.fzf.bash
 
-BASE16_SHELL=$HOME/.config/base16-shell/
+BASE16_SHELL=$HOME/git/base16-shell/
 [ -n "$PS1" ] && [ -s "$BASE16_SHELL/profile_helper.sh" ] && eval "$("$BASE16_SHELL/profile_helper.sh")"
 
-shopt -s autocd
+[ "${BASH_VERSINFO:-0}" -ge 4 ] && shopt -s autocd
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Utilities                                                                   ┃
@@ -175,7 +178,7 @@ bjobs2() {
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Locale                                                                      ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-LC_ALL="en_US.utf8"
+# LC_ALL="en_US.utf8"
 LANG="en_US.utf8"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -183,7 +186,9 @@ LANG="en_US.utf8"
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 # shellcheck source=/dev/null
-[ -f "$HOME/.bashrc_arm" ] && source "$HOME/.bashrc_arm"
+if [ -f "$HOME/.bashrc_arm" ]; then
+    source "$HOME/.bashrc_arm"
+fi
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
