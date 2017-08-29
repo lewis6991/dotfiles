@@ -307,12 +307,15 @@ endif
 " Nvim {{{
 if has("nvim")
     " Disable python2
-    let g:loaded_python_provider = 1
+    " let g:loaded_python_provider = 1
 
     " Disable ruby
     let g:loaded_ruby_provider = 1
 
-    let g:python3_host_prog = '/home/lewrus01/tools/python/bin/python3.6'
+    let alt_python3_bin = '/home/lewrus01/tools/python/bin/python3.6'
+    if filereadable(alt_python3_bin)
+        let g:python3_host_prog = alt_python3_bin
+    endif
 
     set inccommand=split
     set previewheight=20
