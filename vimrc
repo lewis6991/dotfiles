@@ -7,7 +7,9 @@
         execute 'silent !mkdir -p ~/.vim/tmp/backup'
         execute 'silent !mkdir -p ~/.vim/plugged'
         execute 'silent !mkdir -p ~/.vim/autoload'
-        execute 'silent !curl -fLo ~/.vim/autoload/plug.vim https://raw.github.com/junegunn/vim-plug/master/plug.vim'
+        silent !git clone https://github.com/junegunn/vim-plug.git $HOME/.vim/bundle/vim-plug
+        silent !ln -s $HOME/.vim/bundle/vim-plug/plug.vim $HOME/.vim/autoload/plug.vim
+        autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
     endif "}}}
 
     " Install vim-pathogen if we don't already have it {{{
@@ -16,37 +18,39 @@
     endif
     "}}}
 
+let loaded_netrwPlugin = 1
+
 " Load any plugins which are work sensitive.
 execute pathogen#infect('~/gerrit/{}')
 
 call plug#begin('~/.vim/plugged')
-"Plug 'jbnicolai/vim-AnsiEsc'
-Plug 'vim-scripts/Improved-AnsiEsc'
+Plug 'junegunn/vim-plug'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
+Plug 'junegunn/vim-easy-align'
 Plug '~/git/tcl.vim'
+" Plug 'lewis6991/tcl.vim'
 Plug '~/git/systemverilog.vim'
 Plug 'whatyouhide/vim-lengthmatters'
 Plug 'wellle/targets.vim'
-Plug 'kana/vim-textobj-user'
-Plug 'bps/vim-textobj-python'
-" Plug 'lewis6991/tcl.vim'
-Plug 'mhinz/vim-grepper'
-Plug 'tmhedberg/SimpylFold'
+Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeFind', 'NERDTreeToggle'] }
 Plug 'sickill/vim-pasta'
-Plug 'Vimjas/vim-python-pep8-indent'
-Plug 'airblade/vim-gitgutter'
-Plug 'bronson/vim-visual-star-search'
-Plug 'chriskempson/base16-vim'
-Plug 'christoomey/vim-tmux-navigator'
-Plug 'dietsche/vim-lastplace'
-Plug 'junegunn/vim-easy-align'
-Plug 'justinmk/vim-dirvish'
+
 if version >= 704
     Plug 'lewis6991/vim-clean-fold'
 endif
-" Plug 'ericpruitt/tmux.vim', {'rtp': 'vim/'}
+
+" Python
+Plug 'tmhedberg/SimpylFold'
+Plug 'Vimjas/vim-python-pep8-indent'
+Plug 'davidhalter/jedi-vim'
+
+Plug 'airblade/vim-gitgutter'
+Plug 'chriskempson/base16-vim'
+Plug 'christoomey/vim-tmux-navigator'
+Plug 'dietsche/vim-lastplace'
+Plug 'Yggdroot/indentLine'
 Plug 'tmux-plugins/vim-tmux'
 Plug 'tmux-plugins/vim-tmux-focus-events'
 Plug 'tpope/vim-commentary'
@@ -55,34 +59,15 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'ryanoasis/vim-devicons'
 Plug 'w0rp/ale'
 if has('nvim')
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
     Plug 'Shougo/neosnippet'
-    " Plug 'davidhalter/jedi'
-    " Plug 'zchee/deoplete-jedi'
-    Plug 'Shougo/neco-vim'
+    Plug 'zchee/deoplete-jedi'
+    Plug 'Shougo/neco-vim' "Deoplete completion for vim
 endif
 call plug#end()
-
-let g:fzf_colors = {
-    \ 'fg':      ['fg', 'Normal'],
-    \ 'bg':      ['bg', 'Normal'],
-    \ 'hl':      ['fg', 'Comment'],
-    \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-    \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-    \ 'hl+':     ['fg', 'Statement'],
-    \ 'info':    ['fg', 'PreProc'],
-    \ 'prompt':  ['fg', 'Conditional'],
-    \ 'pointer': ['fg', 'Exception'],
-    \ 'marker':  ['fg', 'Keyword'],
-    \ 'spinner': ['fg', 'Label'],
-    \ 'header':  ['fg', 'Comment']
-    \ }
-
-nmap <c-p> :GitFiles<cr>
-let g:fzf_layout = { 'down': '~30%' }
-let g:fzf_buffers_jump = 1
 
 " }}}
 " Plugin Settings {{{
@@ -104,85 +89,89 @@ let g:airline_mode_map = {
             \ 'S'  : 'S',
             \ '' : 'S',
             \ }
+
+" let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#buffers_label = 'b'
+let g:airline#extensions#tabline#tabs_label = 't'
+let g:airline#extensions#tabline#show_close_button = 0
+let g:airline#extensions#tabline#show_tab_nr = 0
+
 " }}}
 " Easy-align {{{
-" Start interactive EasyAlign in visual mode (e.g. vipga)
 xmap ga <Plug>(EasyAlign)
-
-" Start interactive EasyAlign for a motion/text object (e.g. gaip)
 nmap ga <Plug>(EasyAlign)
-let g:easy_align_delimiters = {}
-let g:easy_align_delimiters[';'] = {
-    \ 'pattern'     : ';',
-    \ 'left_margin' : 0
-    \ }
-let g:easy_align_delimiters['['] = {
-    \ 'pattern'     : '[',
-    \ 'left_margin' : 1, 'right_margin': 0
-    \ }
-let g:easy_align_delimiters[']'] = {
-    \ 'pattern'     : ']',
-    \ 'left_margin' : 0, 'right_margin': 1
-    \ }
-let g:easy_align_delimiters[','] = {
-    \ 'pattern'     : ',',
-    \ 'left_margin' : 0, 'right_margin': 1
-    \ }
-let g:easy_align_delimiters[')'] = {
-    \ 'pattern'     : ')',
-    \ 'left_margin' : 0, 'right_margin': 0
-    \ }
-let g:easy_align_delimiters['('] = {
-    \ 'pattern'     : '(',
-    \ 'left_margin' : 0, 'right_margin': 0
-    \ }
-let g:easy_align_delimiters['='] = {
-    \ 'pattern'     : '<\?=',
-    \ 'left_margin' : 1, 'right_margin': 1
-    \ }
-let g:easy_align_delimiters['|'] = {
-    \ 'pattern'     : '|\?|',
-    \ 'left_margin' : 1, 'right_margin': 1
-    \ }
-let g:easy_align_delimiters['&'] = {
-    \ 'pattern'     : '&\?&',
-    \ 'left_margin' : 1, 'right_margin': 1
-    \ }
-let g:easy_align_delimiters[':'] = {
-    \ 'pattern'     : ':',
-    \ 'left_margin' : 1, 'right_margin': 1
-    \ }
-let g:easy_align_delimiters['?'] = {
-    \ 'pattern'     : '?',
-    \ 'left_margin' : 1, 'right_margin': 1
-    \ }
-let g:easy_align_delimiters['<'] = {
-    \ 'pattern'     : '<',
-    \ 'left_margin' : 1, 'right_margin': 0
-    \ }
-let g:easy_align_delimiters['\'] = {
-    \ 'pattern'     : '\\',
-    \ 'left_margin' : 1, 'right_margin': 0
+let g:easy_aln_delimiters = {
+    \ ';': { 'pattern': ';'   , 'left_margin': 0 },
+    \ '[': { 'pattern': '['   , 'left_margin': 1, 'right_margin': 0 },
+    \ ']': { 'pattern': ']'   , 'left_margin': 0, 'right_margin': 1 },
+    \ ',': { 'pattern': ','   , 'left_margin': 0, 'right_margin': 1 },
+    \ ')': { 'pattern': ')'   , 'left_margin': 0, 'right_margin': 0 },
+    \ '(': { 'pattern': '('   , 'left_margin': 0, 'right_margin': 0 },
+    \ '=': { 'pattern': '<\?=', 'left_margin': 1, 'right_margin': 1 },
+    \ '|': { 'pattern': '|\?|', 'left_margin': 1, 'right_margin': 1 },
+    \ '&': { 'pattern': '&\?&', 'left_margin': 1, 'right_margin': 1 },
+    \ ':': { 'pattern': ':'   , 'left_margin': 1, 'right_margin': 1 },
+    \ '?': { 'pattern': '?'   , 'left_margin': 1, 'right_margin': 1 },
+    \ '<': { 'pattern': '<'   , 'left_margin': 1, 'right_margin': 0 },
+    \ '\': { 'pattern': '\\'  , 'left_margin': 1, 'right_margin': 0 }
     \ }
 "}}}
-" Vim-grepper {{{
-nmap gs <plug>(GrepperOperator)
-xmap gs <plug>(GrepperOperator)
-let g:grepper = {}
-let g:grepper.highlight = 1
-let g:grepper.prompt = 0
-" let g:grepper.dir = 'repo,cwd'
-" }}}
 " Vim-lengthmatters {{{
 let g:lengthmatters_highlight_one_column = 1
+" }}}
+" NERDTree {{{
+augroup NerdTreeGroup
+    autocmd!
+    autocmd StdinReadPre * let s:std_in=1
+    " Open NERDTree when No files are specified
+    " autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+    " Close vim if only window open is NERDTree
+    autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+augroup END
+
+function MyNerdToggle() abort
+    if &filetype == 'nerdtree'
+        :NERDTreeToggle
+    else
+        :NERDTreeFind
+    endif
+endfunction
+
+nnoremap - :call MyNerdToggle()<cr>
+let g:NERDTreeQuitOnOpen = 1
+" }}}
+" Indentline {{{
+let g:indentLine_char = '│'
+let g:indentLine_color_gui = '#1b2c3c'
+" }}}
+" FZF {{{
+let g:fzf_colors = {
+    \ 'fg':      ['fg', 'Normal'],
+    \ 'bg':      ['bg', 'Normal'],
+    \ 'hl':      ['fg', 'Comment'],
+    \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+    \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+    \ 'hl+':     ['fg', 'Statement'],
+    \ 'info':    ['fg', 'PreProc'],
+    \ 'border':  ['fg', 'Ignore'],
+    \ 'prompt':  ['fg', 'Conditional'],
+    \ 'pointer': ['fg', 'Exception'],
+    \ 'marker':  ['fg', 'Keyword'],
+    \ 'spinner': ['fg', 'Label'],
+    \ 'header':  ['fg', 'Comment']
+    \ }
+
+nnoremap <c-p> :GitFiles<cr>
+let g:fzf_layout = { 'down': '~30%' }
+let g:fzf_buffers_jump = 1
 " }}}
 if has('nvim')
     " Deoplete {{{
     let g:deoplete#enable_at_startup = 1
     let g:deoplete#auto_complete_delay = 50
     " let g:deoplete#sources = ['buffer', 'tag', 'file', 'omni', 'jedi' ]
-    let g:deoplete#sources = ['buffer', 'tag', 'file', 'omni' ]
-    set completeopt-=preview
+    " let g:deoplete#sources = ['buffer', 'tag', 'file', 'omni', 'jedi' ]
+    " set completeopt-=preview
     "}}}
     "Neosnippet {{{
     let g:neosnippet#snippets_directory='~/snippets'
@@ -208,8 +197,12 @@ let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
 let g:ale_lint_on_text_changed = 'never'
 " let g:ale_lint_on_insert_leave = 1
 
-let g:ale_python_flake8_options = '--ignore E501,E221,E251,E272,E203,E127,E241,C0301,C0413,E202'
+let g:ale_python_flake8_options = '--ignore E202,E203,E221,E251'
 let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
+
+let g:ale_python_mypy_options = '--strict'
+
+let g:ale_lint_on_enter = 0
 
 " highlight ALEError guibg=yellow guifg=red
 " }}}
@@ -225,7 +218,6 @@ set shiftwidth=4
 set tabstop=4
 set softtabstop=4
 set expandtab
-"set list listchars=tab:›\  "Show tabs as '›   ›   '
 set noswapfile
 set ignorecase
 set smartcase
@@ -237,11 +229,6 @@ if has('mouse')
 endif
 
 set diffopt+=vertical          "Show diffs in vertical splits
-
-" Enable cursorline for active pane. Using this with vim-tmux-focus-events
-" enables this to work in tmux.
-" au! FocusGained,InsertLeave,WinEnter * setlocal cursorline
-" au! FocusLost,InsertEnter,WinLeave   * setlocal nocursorline
 
 if has('persistent_undo')
     set undolevels=5000
@@ -262,6 +249,7 @@ set spell
 " }}}
 " Vim {{{
 " Make normal Vim behave like Neovim
+" Comment settings we set elsewhere in this file
 if !has('nvim')
     " 'listchars' defaults to "tab:> ,trail:-,nbsp:+"
     " 'directory' defaults to ~/.local/share/nvim/swap// (|xdg|), auto-created
@@ -306,11 +294,8 @@ endif
 " }}}
 " Nvim {{{
 if has("nvim")
-    " Disable python2
-    " let g:loaded_python_provider = 1
-
-    " Disable ruby
-    let g:loaded_ruby_provider = 1
+    let g:loaded_python_provider = 1 " Disable python2
+    let g:loaded_ruby_provider   = 1 " Disable ruby
 
     let alt_python3_bin = '/home/lewrus01/tools/python/bin/python3.6'
     if filereadable(alt_python3_bin)
@@ -322,27 +307,39 @@ if has("nvim")
 endif
 " }}}
 " Mappings {{{
-nnoremap <leader>ev :call EditVimrc()<cr>
+nnoremap <leader>ev :tabnew $MYVIMRC<CR>
 nnoremap <leader>rv :source $MYVIMRC <bar> set fdm=marker<cr>
 nnoremap <bs> :nohlsearch<cr>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>//g<left><left>
 nnoremap <leader>w :call DeleteTrailingWS()<cr>
-nnoremap <leader>d :call RunDiff()<cr>
+nnoremap <leader>d :Gdiff<CR>
 
-" Disable
-nnoremap Q <nop>
+nnoremap Y y$
+
+nnoremap Q :w<cr>
 vnoremap Q <nop>
-" nnoremap K <nop>
-nnoremap K :w<cr>
-vnoremap K <nop>
 
 " Show syntax highlighting groups for word under cursor
 nnoremap <leader>z :call <SID>SynStack()<CR>
 
+" nnoremap <Tab> <C-W>w
+" nnoremap <S-Tab> <C-W>W
+nnoremap <Tab> gt
+nnoremap <S-Tab> gT
+
+nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
+nnoremap <expr><silent> _ !v:count ? "<C-W>s<C-W><Down>"  : '_'
+
+nmap <leader>an <Plug>(ale_next)
+nmap <leader>ap <Plug>(ale_previous)
+
+nmap <leader>hn <Plug>GitGutterNextHunk
+nmap <leader>hp <Plug>GitGutterPrevHunk
 
 " }}}
 " Whitespace {{{
-set list listchars=tab:▸\   "Show tabs as '▸   ▸   '
+set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
+"set list listchars=tab:›\  "Show tabs as '›   ›   '
 
 augroup WhitespaceGroup
     autocmd!
@@ -362,6 +359,11 @@ if has('folding')
     set foldmethod=syntax
 
     set commentstring=#%s " This is the most common
+    augroup commentstring_group
+         autocmd!
+         autocmd Filetype scala         setlocal commentstring=//%s
+         autocmd Filetype vim           setlocal commentstring=\"%s
+    augroup END
 endif
 " }}}
 " GUI Options {{{
@@ -378,28 +380,13 @@ endif
 "}}}
 " Functions {{{
 
-function! DeleteTrailingWS() "{{{
+function! DeleteTrailingWS() abort "{{{
     normal mz"
     %s/\s\+$//ge
     normal `z"
 endfunction "}}}
 
-function! EditVimrc() "{{{
-    if expand('%t') == ''
-        edit $MYVIMRC
-    else
-        " If a file is open then open in a split
-        split $MYVIMRC
-    endif
-endfunction "}}}
-
-function! RunDiff() "{{{
-    if exists(':Gdiff')
-        Gdiff
-    endif
-endfunction "}}}
-
-function! <SID>SynStack() "{{{
+function! <SID>SynStack() abort "{{{
     if !exists("*synstack")
         return
     endif
@@ -421,24 +408,23 @@ silent! colorscheme base16-harmonic16-dark
 let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
 let g:vimsyn_folding  = 'af' "Fold augroups and functions
 let g:vim_indent_cont = &sw
-augroup file_settings_group
-     autocmd!
-     autocmd Filetype scala         setlocal shiftwidth=4
-     autocmd Filetype scala         setlocal commentstring=//%s
-     autocmd Filetype systemverilog setlocal shiftwidth=2
-     autocmd Filetype systemverilog setlocal tabstop=2
-     autocmd Filetype systemverilog setlocal softtabstop=2
-     autocmd Filetype make          setlocal noexpandtab
-     autocmd Filetype gitconfig     setlocal noexpandtab
-     autocmd Filetype vim           setlocal commentstring=\"%s
-     autocmd Filetype dirvish       setlocal nospell
-     autocmd BufEnter *.log         setlocal textwidth=0
-     autocmd BufEnter dotshrc       setlocal filetype=sh
-     autocmd BufEnter dotcshrc      setlocal filetype=csh
 
-     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
-     autocmd BufNewFile,BufRead *       setlocal ft=tcl
-     autocmd BufNewFile,BufRead *   endif
+augroup file_settings_group
+    autocmd!
+    autocmd Filetype scala         setlocal shiftwidth=4
+    autocmd Filetype systemverilog setlocal shiftwidth=2
+    autocmd Filetype systemverilog setlocal tabstop=2
+    autocmd Filetype systemverilog setlocal softtabstop=2
+    autocmd Filetype make          setlocal noexpandtab
+    autocmd Filetype gitconfig     setlocal noexpandtab
+    autocmd Filetype dirvish       setlocal nospell
+    autocmd BufEnter *.log         setlocal textwidth=0
+    autocmd BufEnter dotshrc       setlocal filetype=sh
+    autocmd BufEnter dotcshrc      setlocal filetype=csh
+
+    autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
+    autocmd BufNewFile,BufRead *       setlocal ft=tcl
+    autocmd BufNewFile,BufRead *   endif
 augroup END
 " }}}
 " Formatting {{{
@@ -450,4 +436,4 @@ if v:version >= 704
 endif
 "}}}
 
-" vim: textwidth=0 foldmethod=marker foldlevel=0:
+" vim: foldmethod=marker foldlevel=0:

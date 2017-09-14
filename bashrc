@@ -7,7 +7,7 @@
 [[ $- != *i* ]] && return
 
 export PATH="$HOME/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
+# export PATH="$HOME/.local/bin:$PATH"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Completion                                                                  ┃
@@ -34,6 +34,14 @@ set completion-ignore-case on
 
 # Show auto-completion list automatically, without double tab
 set show-all-if-ambiguous on
+
+_pip_completion() {
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+        COMP_CWORD=$COMP_CWORD \
+        PIP_AUTO_COMPLETE=1 $1 ) )
+}
+
+complete -o default -F _pip_completion pip
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Prompt                                                                      ┃
@@ -72,13 +80,15 @@ export FZF_DEFAULT_OPTS='--height 30%'
 export LS_COLORS=""
 # export LS_COLORS="*.sv=00;35:*.v=00;35:*.tcl=00;36:*.yml=00;94"
 
-export MYPYPATH=$PYTHONPATH
+export MYPYPATH=$PYTHONPATH:$HOME/.local/lib/python3.6/site-packages
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Bindings                                                                    ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 bind '"\e[A": history-search-backward'
 bind '"\e[B": history-search-forward'
+bind '"\C-p": history-search-backward'
+bind '"\C-n": history-search-forward'
 bind 'TAB: menu-complete'
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -101,12 +111,15 @@ fi
 
 # Give command history to tclsh
 if hash rlwrap 2>/dev/null; then
-    alias tclsh="rlwrap tclsh"
+    alias tclsh="rlwrap -A tclsh"
 fi
 
 alias install-nvim='make CMAKE_BUILD_TYPE=Release CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=$HOME"'
 
 alias tree="tree -A"
+
+alias ta="tmux attach"
+alias bashrc="vim ~/.bashrc"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Other                                                                       ┃
@@ -176,12 +189,6 @@ bjobs2() {
 }
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Locale                                                                      ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-# LC_ALL="en_US.utf8"
-LANG="en_US.utf8"
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Load other setups                                                           ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
@@ -189,6 +196,12 @@ LANG="en_US.utf8"
 if [ -f "$HOME/.bashrc_arm" ]; then
     source "$HOME/.bashrc_arm"
 fi
+
+#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+#┃ Locale                                                                      ┃
+#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+LC_ALL="en_US.utf8"
+LANG="en_US.utf8"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
