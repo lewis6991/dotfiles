@@ -74,28 +74,6 @@ function install_dotfiles {
     fi
 }
 
-function install_prompt {
-    echo -en "Checking if ${CYAN}fancy-prompt${NC} is installed..."
-    INSTALL=1
-    if [ -d "$HOME/git/fancy-prompt" ]; then
-        INSTALL=0
-    fi
-
-    if [ $INSTALL -eq 1 ]; then
-        echo "No"
-        echo "Installing fancy-prompt..."
-        mkdir -p $HOME/git
-        cd $HOME/git
-        git clone https://github.com/lewis6991/fancy-prompt
-        cd -
-        if [ $? -eq 1 ]; then
-            echo_error "Could no install fancy-prompt"
-        fi
-    else
-        echo_ok
-    fi
-}
-
 function install_powerline_fonts {
     echo -en "Checking if ${CYAN}Powerline fonts${NC} are installed..."
     INSTALL=1
@@ -122,9 +100,15 @@ function install_powerline_fonts {
     fi
 }
 
+function setup_nvim() {
+    mkdir -p ~/.config
+    link_file ~/.vim ~/.config/nvim
+    link_file ~/.vimrc ~/.config/nvim/init.vim
+}
+
 # check_dependencies
-# source git_config
-# install_vim
-# install_dotfiles
-# install_prompt
-install_powerline_fonts
+source git_config
+install_vim
+install_dotfiles
+./modules/fancy-prompt/install.sh
+# install_powerline_fonts

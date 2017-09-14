@@ -1,0 +1,3 @@
+[submodule "modules/fancy-prompt"]
+	path = modules/fancy-prompt
+	url = https://github.com/lewis6991/fancy-prompt
