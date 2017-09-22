@@ -61,6 +61,7 @@ function install_vim {
     mkdir ~/.vim/tmp/backup
     link_file vimrc ~/.vimrc
     vim +PlugInstall +qall
+    setup_nvim
 }
 
 function install_dotfiles {
@@ -107,8 +108,7 @@ function setup_nvim() {
     link_file ~/.vimrc ~/.config/nvim/init.vim
 }
 
-# check_dependencies
-source git_config
+check_dependencies
 install_vim
 install_dotfiles
 ./modules/fancy-prompt/install.sh
