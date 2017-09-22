@@ -66,6 +66,7 @@ function install_vim {
 function install_dotfiles {
     link_file tmux.conf ~/.tmux.conf
     link_file tmux      ~/.tmux
+    link_file gitconfig ~/.gitconfig
 
     if [ "$(uname)" == "Darwin" ]; then
         link_file bashrc ~/.bash_profile
