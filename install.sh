@@ -56,60 +56,25 @@ function check_dependencies {
 
 function install_vim {
     rm -rf ~/.vim
-    mkdir ~/.vim
-    mkdir ~/.vim/tmp
-    mkdir ~/.vim/tmp/backup
+    mkdir -p ~/.vim/tmp/backup
     link_file vimrc ~/.vimrc
-    vim +PlugInstall +qall
-    setup_nvim
+
+    # nvim
+    mkdir -p ~/.config/
+    link_file ~/.vim ~/.config/nvim
+    link_file ~/.vimrc ~/.vim/init.vim
+
+    nvim +qall
 }
 
 function install_dotfiles {
     link_file tmux.conf ~/.tmux.conf
     link_file tmux      ~/.tmux
     link_file gitconfig ~/.gitconfig
-
-    if [ "$(uname)" == "Darwin" ]; then
-        link_file bashrc ~/.bash_profile
-    else
-        link_file bashrc ~/.bashrc
-    fi
-}
-
-function install_powerline_fonts {
-    echo -en "Checking if ${CYAN}Powerline fonts${NC} are installed..."
-    INSTALL=1
-    if [ -d "$HOME/.local/share/fonts" ]; then
-        POWERLINE_FONTS=$(ls $HOME/.local/share/fonts | grep Powerline | wc -l)
-        if [ "$POWERLINE_FONTS" -gt "0" ]; then
-            INSTALL=0
-        fi
-    fi
-
-    if [ $INSTALL -eq 1 ]; then
-        echo "No"
-        echo "Installing Powerline fonts..."
-        pushd ~
-        rm -rf .local/share/fonts
-        git clone https://github.com/powerline/fonts.git
-        cd fonts
-        ./install.sh
-        cd -
-        rm -rf fonts
-        popd
-    else
-        echo_ok
-    fi
-}
-
-function setup_nvim() {
-    mkdir -p ~/.config
-    link_file ~/.vim ~/.config/nvim
-    link_file ~/.vimrc ~/.config/nvim/init.vim
+    link_file bashrc    ~/.bashrc
 }
 
 check_dependencies
 install_vim
 install_dotfiles
 ./modules/fancy-prompt/install.sh
-# install_powerline_fonts
