@@ -1,0 +1,23 @@
+[user]
+	name = Lewis Russell
+	email = lewis6991@gmail.com
+[diff]
+	tool = vimdiff
+[difftool]
+	prompt = false
+[alias]
+	a = add
+	d = difftool
+	st = status
+	ci = commit
+	co = checkout
+	br = branch
+    rebasec = rebase --continue
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
+[core]
+	editor = vim
+	excludesfile = ~/.gitignore
+[push]
+	default = simple
+[branch]
+	autosetuprebase = always
