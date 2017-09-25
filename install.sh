@@ -67,14 +67,14 @@ function install_vim {
     nvim +qall
 }
 
-function install_dotfiles {
-    link_file tmux.conf ~/.tmux.conf
-    link_file tmux      ~/.tmux
-    link_file gitconfig ~/.gitconfig
-    link_file bashrc    ~/.bashrc
-}
-
 check_dependencies
+
 install_vim
-install_dotfiles
+
+link_file tmux.conf ~/.tmux.conf
+link_file tmux      ~/.tmux
+link_file gitconfig ~/.gitconfig
+link_file bashrc    ~/.bashrc
+link_file inputrc   ~/.inputrc
+
 ./modules/fancy-prompt/install.sh

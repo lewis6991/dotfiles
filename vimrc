@@ -18,7 +18,7 @@
     endif
     "}}}
 
-let loaded_netrwPlugin = 1
+let loaded_netrwPlugin = 1  " Stop netrw loading
 
 " Load any plugins which are work sensitive.
 execute pathogen#infect('~/gerrit/{}')
@@ -30,12 +30,14 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
 Plug '~/git/tcl.vim'
+Plug '~/git/moonlight.vim'
 " Plug 'lewis6991/tcl.vim'
 Plug '~/git/systemverilog.vim'
 Plug 'whatyouhide/vim-lengthmatters'
 Plug 'wellle/targets.vim'
 Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeFind', 'NERDTreeToggle'] }
 Plug 'sickill/vim-pasta'
+Plug 'triglav/vim-visual-increment'
 
 if version >= 704
     Plug 'lewis6991/vim-clean-fold'
@@ -46,8 +48,8 @@ Plug 'tmhedberg/SimpylFold'
 Plug 'Vimjas/vim-python-pep8-indent'
 Plug 'davidhalter/jedi-vim'
 
+Plug 'ludovicchabant/vim-gutentags'
 Plug 'airblade/vim-gitgutter'
-Plug 'chriskempson/base16-vim'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'dietsche/vim-lastplace'
 Plug 'Yggdroot/indentLine'
@@ -61,17 +63,21 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'ryanoasis/vim-devicons'
 Plug 'w0rp/ale'
+
 if has('nvim')
     Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
     Plug 'Shougo/neosnippet'
     Plug 'zchee/deoplete-jedi'
     Plug 'Shougo/neco-vim' "Deoplete completion for vim
 endif
+
 call plug#end()
 
 " }}}
 " Plugin Settings {{{
 " Airline {{{
+let g:airline_highlighting_cache = 1
+let g:airline_theme='base16'
 let g:airline_detect_spell=0
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#hunks#non_zero_only = 1
@@ -97,10 +103,23 @@ let g:airline#extensions#tabline#show_close_button = 0
 let g:airline#extensions#tabline#show_tab_nr = 0
 
 " }}}
+"Ale {{{
+let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
+let g:ale_lint_on_enter = 0
+let g:ale_lint_on_text_changed = 'never'
+let g:ale_python_flake8_options = '--ignore E202,E203,E221,E251'
+let g:ale_python_mypy_options = '--strict'
+let g:ale_python_pylint_options = '--disable=C0326,C0103,E0401,C0301'
+let g:ale_set_highlights = 1
+let g:ale_sh_shellcheck_options = '-x'
+let g:ale_sign_info = '->'
+let g:ale_tcl_nagelfar_options = "-s ~/syntaxdbjg.tcl"
+let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
+" }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
-let g:easy_aln_delimiters = {
+let g:easy_align_delimiters = {
     \ ';': { 'pattern': ';'   , 'left_margin': 0 },
     \ '[': { 'pattern': '['   , 'left_margin': 1, 'right_margin': 0 },
     \ ']': { 'pattern': ']'   , 'left_margin': 0, 'right_margin': 1 },
@@ -122,11 +141,10 @@ let g:lengthmatters_highlight_one_column = 1
 " NERDTree {{{
 augroup NerdTreeGroup
     autocmd!
-    autocmd StdinReadPre * let s:std_in=1
-    " Open NERDTree when No files are specified
-    " autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
     " Close vim if only window open is NERDTree
-    autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+    autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree())
+    autocmd bufenter *     quit
+    autocmd bufenter * endif
 augroup END
 
 function MyNerdToggle() abort
@@ -140,9 +158,11 @@ endfunction
 nnoremap - :call MyNerdToggle()<cr>
 let g:NERDTreeQuitOnOpen = 1
 " }}}
+" Gitgutter {{{
+let g:gitgutter_max_signs=2000
+" }}}
 " Indentline {{{
 let g:indentLine_char = '│'
-let g:indentLine_color_gui = '#1b2c3c'
 " }}}
 " FZF {{{
 let g:fzf_colors = {
@@ -165,6 +185,9 @@ nnoremap <c-p> :GitFiles<cr>
 let g:fzf_layout = { 'down': '~30%' }
 let g:fzf_buffers_jump = 1
 " }}}
+" Jedi {{{
+let g:jedi#force_py_version = 3
+"}}}
 if has('nvim')
     " Deoplete {{{
     let g:deoplete#enable_at_startup = 1
@@ -188,24 +211,6 @@ if has('nvim')
     endfunction "}}}
     "}}}
 endif
-"Ale {{{
-let g:ale_sh_shellcheck_options = '-x'
-let g:ale_python_pylint_options = '--disable=C0326,C0103,E0401'
-let g:ale_set_highlights = 1
-let g:ale_sign_info = '->'
-let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
-let g:ale_lint_on_text_changed = 'never'
-" let g:ale_lint_on_insert_leave = 1
-
-let g:ale_python_flake8_options = '--ignore E202,E203,E221,E251'
-let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
-
-let g:ale_python_mypy_options = '--strict'
-
-let g:ale_lint_on_enter = 0
-
-" highlight ALEError guibg=yellow guifg=red
-" }}}
 " }}}
 " General {{{
 set number
@@ -297,10 +302,7 @@ if has("nvim")
     let g:loaded_python_provider = 1 " Disable python2
     let g:loaded_ruby_provider   = 1 " Disable ruby
 
-    let alt_python3_bin = '/home/lewrus01/tools/python/bin/python3.6'
-    if filereadable(alt_python3_bin)
-        let g:python3_host_prog = alt_python3_bin
-    endif
+    " let g:python3_host_prog = 'python3.6'
 
     set inccommand=split
     set previewheight=20
@@ -330,8 +332,93 @@ nnoremap <S-Tab> gT
 nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
 nnoremap <expr><silent> _ !v:count ? "<C-W>s<C-W><Down>"  : '_'
 
-nmap <leader>an <Plug>(ale_next)
-nmap <leader>ap <Plug>(ale_previous)
+nnoremap <cr> i<cr><esc>k$
+
+if !exists("g:last")
+    let g:last = {}
+endif
+
+function! Key(key, revkey) abort "{{{
+    if v:count >= 1
+        let l:count = v:count
+    else
+        let l:count = 1
+    endif
+
+    call extend(g:last, {
+        \     'repmo': 1,
+        \     'key': a:key,
+        \     'revkey': a:revkey,
+        \     'count': l:count,
+        \     'remap': 1
+        \ })
+    return a:key
+endfunction "}}}
+
+function! LastKey() abort "{{{
+    if !get(g:last, 'repmo', 0)
+        return ";"
+    endif
+
+    let lastkey = get(g:last, 'remap', 1) ? get(g:last, 'key', '') :
+                                          \ ";"
+    return lastkey
+endfunction "}}}
+
+function! LastRevKey() abort "{{{
+    if !get(g:last, 'repmo', 0)
+        return ","
+    endif
+
+    let lastrevkey = get(g:last, 'remap', 1) ? get(g:last, 'revkey', '') :
+                                             \ ","
+    return lastrevkey
+endfunction "}}}
+
+function! ZapKey(zapkey) "{{{
+    let g:last.repmo = 0
+    return a:zapkey
+endfunction "}}}
+
+function PreHook(map, revmap, map_rhs) abort "{{{
+    call extend(g:last, {
+        \     'repmo': 1,
+        \     'key': a:map,
+        \     'revkey': a:revmap,
+        \     'count': 1,
+        \     'remap': 1
+        \ })
+
+    echomsg "'".a:map_rhs."'"
+
+    let cmd = 'normal! '.a:map_rhs
+    echomsg cmd
+    exec cmd
+endfunction "}}}
+
+function Register(map, revmap) abort "{{{
+    let l:map_rhs = maparg(a:map)
+    let l:revmap_rhs = maparg(a:revmap)
+    echomsg l:map_rhs
+    " let cmd    = "map <expr> ".a:map   ." PreHook('" .a:map."', '".a:revmap."', \"".l:map_rhs."\")"
+    let l:map_rhs2 = substitute(l:map_rhs, '<', '\\<', "g")
+    let cmd    = "map <expr> ".a:map   ." PreHook('" .a:map."', '".a:revmap."', '".l:map_rhs2."')"
+    let revcmd = "map <expr> ".a:revmap." PreHook('" .a:map."', '".a:revmap."', \"".l:revmap_rhs."\")"
+    echomsg cmd
+    exec cmd
+    exec revcmd
+endfunction "}}}
+
+map <expr> <leader>an Key('<Plug>(ale_next)', '<Plug>(ale_previous)')
+map <expr> <leader>ap Key('<Plug>(ale_previous)', '<Plug>(ale_next)')
+
+nmap <expr> ; LastKey()
+nmap <expr> , LastRevKey()
+
+map <expr> f ZapKey('f')
+map <expr> F ZapKey('F')
+map <expr> t ZapKey('t')
+map <expr> T ZapKey('T')
 
 nmap <leader>hn <Plug>GitGutterNextHunk
 nmap <leader>hp <Plug>GitGutterPrevHunk
@@ -357,14 +444,15 @@ if has('folding')
     let g:vimsyn_folding = 'af' "Fold augroups and functions
     let g:sh_fold_enabled = 1
     set foldmethod=syntax
-
-    set commentstring=#%s " This is the most common
-    augroup commentstring_group
-         autocmd!
-         autocmd Filetype scala         setlocal commentstring=//%s
-         autocmd Filetype vim           setlocal commentstring=\"%s
-    augroup END
 endif
+" }}}
+" Comments {{{
+set commentstring=#%s " This is the most common
+augroup commentstring_group
+     autocmd!
+     autocmd Filetype scala setlocal commentstring=//%s
+     autocmd Filetype vim   setlocal commentstring=\"%s
+augroup END
 " }}}
 " GUI Options {{{
 if has("gui_running")
@@ -395,13 +483,11 @@ endfunction "}}}
 
 "}}}
 " Colours {{{
-if has('termguicolors')
-    set termguicolors
-else
-    let base16colorspace=256
-endif
+" if has('termguicolors')
+"     set termguicolors
+" endif
 
-silent! colorscheme base16-harmonic16-dark
+silent! colorscheme moonlight
 " }}}
 " File Settings {{{
 "VimL
@@ -420,6 +506,7 @@ augroup file_settings_group
     autocmd Filetype dirvish       setlocal nospell
     autocmd BufEnter *.log         setlocal textwidth=0
     autocmd BufEnter dotshrc       setlocal filetype=sh
+    autocmd BufEnter dotsh         setlocal filetype=sh
     autocmd BufEnter dotcshrc      setlocal filetype=csh
 
     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'

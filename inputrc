@@ -1,0 +1,13 @@
+
+# Ignore case on auto-completion
+# Note: bind used instead of sticking these in .inputrc
+set completion-ignore-case on
+
+set completion-query-items 50
+set show-all-if-ambiguous on
+
+set -o vi
+
+"\C-p": history-search-backward
+"\C-n": history-search-forward
+TAB: menu-complete
