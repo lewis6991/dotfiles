@@ -47,11 +47,15 @@ prompt_command() {
     fi
 }
 
-export PROMPT_COMMAND=prompt_command
+PROMPT_COMMAND=prompt_command
+
+export FANCY_PROMPT_RHS_ENABLE=0
+export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Variables                                                                   ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
 # Modify path if coretuils is installed (Mac)
 if ((HAVE_BREW)); then
     if [ -d "$BREW_PREFIX/opt/coreutils" ]; then
