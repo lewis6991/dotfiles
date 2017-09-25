@@ -163,6 +163,7 @@ let g:gitgutter_max_signs=2000
 " }}}
 " Indentline {{{
 let g:indentLine_char = '│'
+let g:indentLine_setColors = 0
 " }}}
 " FZF {{{
 let g:fzf_colors = {

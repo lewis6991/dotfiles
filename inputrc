@@ -1,13 +1,23 @@
 
-# Ignore case on auto-completion
-# Note: bind used instead of sticking these in .inputrc
+set mark-directories off
+set bell-style visible
+set colored-stats on
+set completion-display-width 0
 set completion-ignore-case on
-
+set completion-map-case on
 set completion-query-items 50
-set show-all-if-ambiguous on
+set enable-bracketed-paste on
 
 set -o vi
 
 "\C-p": history-search-backward
 "\C-n": history-search-forward
 TAB: menu-complete
+
+# https://mina86.com/2015/bash-right-prompt/
+# $if Bash
+#     "\C-l": redraw-current-line
+#     "\e\C-j": accept-line
+#     "\C-j": "\C-l\e\C-j"
+#     "\C-m": "\C-l\e\C-j"
+# $endif
