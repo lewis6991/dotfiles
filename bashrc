@@ -23,6 +23,8 @@ if ((HAVE_BREW)); then
     fi
 elif [[ $PS1 && -f ~/.local/share/bash-completion/bash_completion ]]; then
     . ~/.local/share/bash-completion/bash_completion
+elif [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+    . /etc/bash_completion
 fi
 
 _pip_completion() {
@@ -92,6 +94,7 @@ if ((HAVE_BREW)); then
     fi
 else
     alias ls='ls --color'
+    alias ll='ls -Al'
 fi
 
 alias ll='ls --Al'
@@ -112,6 +115,7 @@ alias tree="tree -A"
 
 alias ta="tmux attach"
 alias bashrc="vim ~/.bashrc"
+alias re-csh="source ~/.bashrc"
 
 alias python=python3
 alias pip=pip3
