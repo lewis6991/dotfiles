@@ -39,8 +39,11 @@ complete -o default -F _pip_completion pip
 prompt_command() {
     PS1=$(~/.prompt bash $?)
 
+    # Update history after every command
+    history -a
+
     if [ -n "$TMUX" ]; then
-        if [ -f "~/.display" ]; then
+        if [ -f "$HOME/.display" ]; then
             export DISPLAY
             DISPLAY=$(cat ~/.display)
         fi
@@ -67,6 +70,8 @@ fi
 # Colourise man pages
 if hash most 2>/dev/null; then
     export PAGER="most -s"
+else
+    export PAGER="less -isMR"
 fi
 
 export FZF_DEFAULT_OPTS='--height 30%'
@@ -89,6 +94,8 @@ else
     alias ls='ls --color'
 fi
 
+alias ll='ls --Al'
+
 if hash nvim 2>/dev/null; then
     alias vim="nvim"
     alias vimdiff="nvim -d"
@@ -108,6 +115,8 @@ alias bashrc="vim ~/.bashrc"
 
 alias python=python3
 alias pip=pip3
+
+alias lssize="ls --color=none | xargs du -sh"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Other                                                                       ┃
