@@ -1,0 +1,18 @@
+_complete_running_bjobs() {
+    local IFS=$'\n'
+    _init_completion || return
+
+    COMPREPLY=( $(bjobs | awk '''{print $1}''') )
+}
+
+complete -o bashdefault -o default -o nospace -F _complete_running_bjobs bjobs
+complete -o bashdefault -o default -o nospace -F _complete_running_bjobs bkill
+
+_pip_completion() {
+    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
+        COMP_CWORD=$COMP_CWORD \
+        PIP_AUTO_COMPLETE=1 $1 ) )
+}
+
+complete -o default -F _pip_completion pip
+
