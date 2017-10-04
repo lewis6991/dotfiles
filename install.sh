@@ -54,10 +54,15 @@ function check_dependencies {
     if ! check_cmd curl ; then exit; fi
 }
 
+install_dotfile() {
+    link_file "$1" "$HOME/.$1"
+}
+
 function install_vim {
     rm -rf ~/.vim
     mkdir -p ~/.vim/tmp/backup
-    link_file vimrc ~/.vimrc
+    install_dotfile vimrc
+    install_dotfile gvimrc
 
     # nvim
     mkdir -p ~/.config/
@@ -65,10 +70,6 @@ function install_vim {
     link_file ~/.vimrc ~/.vim/init.vim
 
     nvim +qall
-}
-
-install_dotfile() {
-    link_file "$1" "$HOME/.$1"
 }
 
 check_dependencies
