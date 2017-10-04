@@ -39,6 +39,8 @@ Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeFind', 'NERDTreeToggle'] }
 Plug 'sickill/vim-pasta'
 Plug 'triglav/vim-visual-increment'
 
+Plug 'derekwyatt/vim-scala'
+
 if version >= 704
     Plug 'lewis6991/vim-clean-fold'
 endif
@@ -76,7 +78,6 @@ call plug#end()
 " }}}
 " Plugin Settings {{{
 " Airline {{{
-let g:airline_highlighting_cache = 1
 let g:airline_theme='base16'
 let g:airline_detect_spell=0
 let g:airline_powerline_fonts = 1
@@ -424,6 +425,9 @@ map <expr> T ZapKey('T')
 nmap <leader>hn <Plug>GitGutterNextHunk
 nmap <leader>hp <Plug>GitGutterPrevHunk
 
+nmap <Leader>ha <Plug>GitGutterStageHunk
+nmap <Leader>hr <Plug>GitGutterUndoHunk
+
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
@@ -508,6 +512,7 @@ augroup file_settings_group
     autocmd BufEnter *.log         setlocal textwidth=0
     autocmd BufEnter dotshrc       setlocal filetype=sh
     autocmd BufEnter dotsh         setlocal filetype=sh
+    autocmd BufEnter dotbashrc     setlocal filetype=sh
     autocmd BufEnter dotcshrc      setlocal filetype=csh
 
     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
