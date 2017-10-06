@@ -509,6 +509,7 @@ augroup file_settings_group
     autocmd BufEnter dotshrc       setlocal filetype=sh
     autocmd BufEnter dotsh         setlocal filetype=sh
     autocmd BufEnter dotcshrc      setlocal filetype=csh
+    autocmd BufEnter *.tmux        setlocal filetype=tmux
 
     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
     autocmd BufNewFile,BufRead *       setlocal ft=tcl
