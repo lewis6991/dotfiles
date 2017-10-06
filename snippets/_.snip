@@ -1,0 +1,5 @@
+snippet REVISIT
+abbr REVISIT [USER] ([DATE]):
+alias rev
+    `substitute(&commentstring, '%s', '', '')` REVISIT `$USER` (`strftime("%d-%m-%y")`): ${0}
+

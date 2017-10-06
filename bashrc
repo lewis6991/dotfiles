@@ -6,6 +6,11 @@
 # Skip remaining setup if not an interactive shell
 [[ $- != *i* ]] && return
 
+source_if_exists() {
+    # shellcheck source=/dev/null
+    [[ -f "$1" ]] && source "$1"
+}
+
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Completion                                                                  ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
@@ -16,40 +21,31 @@ else
     HAVE_BREW=0
 fi
 
-# shellcheck source=/dev/null
+source_if_exists "$HOME/.bash_completion"
+
 if ((HAVE_BREW)); then
-    if [ -f "$BREW_PREFIX/etc/bash_completion" ]; then
-        . "$BREW_PREFIX/etc/bash_completion"
-    fi
-elif [[ $PS1 && -f ~/.local/share/bash-completion/bash_completion ]]; then
-    . ~/.local/share/bash-completion/bash_completion
-elif [ -f /etc/bash_completion ] && ! shopt -oq posix; then
-    . /etc/bash_completion
+    source_if_exists "$(brew --prefix)/etc/bash_completion"
+elif [[ $PS1 ]]; then
+    source_if_exists ~/.local/share/bash-completion/bash_completion
+elif ! shopt -oq posix; then
+    source_if_exists /etc/bash_completion
 fi
-
-_pip_completion() {
-    COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
-        COMP_CWORD=$COMP_CWORD \
-        PIP_AUTO_COMPLETE=1 $1 ) )
-}
-
-complete -o default -F _pip_completion pip
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Prompt                                                                      ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
 prompt_command() {
-    PS1=$(~/.prompt bash $?)
+    if [ -n "$TMUX" ]; then
+        # Refresh these variables
+        eval "$(tmux showenv -s DISPLAY)"
+        eval "$(tmux showenv -s SSH_CONNECTION)"
+    fi
 
     # Update history after every command
     history -a
 
-    if [ -n "$TMUX" ]; then
-        if [ -f "$HOME/.display" ]; then
-            export DISPLAY
-            DISPLAY=$(cat ~/.display)
-        fi
-    fi
+    PS1=$(~/.prompt bash $?)
 }
 
 PROMPT_COMMAND=prompt_command
@@ -94,10 +90,9 @@ if ((HAVE_BREW)); then
     fi
 else
     alias ls='ls --color'
-    alias ll='ls -Al'
 fi
 
-alias ll='ls --Al'
+alias ll='ls -Al'
 
 if hash nvim 2>/dev/null; then
     alias vim="nvim"
@@ -129,10 +124,7 @@ alias lssize="ls --color=none | xargs du -sh"
 stty -ixon
 
 # Load fzf
-# shellcheck source=/dev/null
-if [ -f ~/.fzf.bash ]; then
-    source ~/.fzf.bash
-fi
+source_if_exists ~/.fzf.bash
 
 if [ "${BASH_VERSINFO:-0}" -ge 4 ]; then
     shopt -s autocd
@@ -141,6 +133,8 @@ fi
 shopt -s histappend
 
 export HISTCONTROL=erasedups
+
+# source_if_exists "$HOME/.bash-preexec.sh"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Utilities                                                                   ┃
@@ -170,10 +164,7 @@ function extract() {
 #┃ Load other setups                                                           ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-# shellcheck source=/dev/null
-if [ -f "$HOME/.bashrc_local" ]; then
-    source "$HOME/.bashrc_local"
-fi
+source_if_exists "$HOME/.bashrc_local"
 
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/tools/python/bin:$PATH"
