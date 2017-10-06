@@ -11,15 +11,18 @@ source_if_exists() {
     [[ -f "$1" ]] && source "$1"
 }
 
+HAVE_BREW=0
+IS_WSL=0
+if hash brew 2> /dev/null; then
+    HAVE_BREW=1
+    BREW_PREFIX=$(brew --prefix)
+elif grep Microsoft /proc/version > /dev/null; then
+    IS_WSL=1
+fi
+
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Completion                                                                  ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-if hash brew 2>/dev/null; then
-    HAVE_BREW=1
-    BREW_PREFIX=$(brew --prefix)
-else
-    HAVE_BREW=0
-fi
 
 source_if_exists "$HOME/.bash_completion"
 
@@ -34,7 +37,6 @@ fi
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Prompt                                                                      ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
 prompt_command() {
     if [ -n "$TMUX" ]; then
         # Refresh these variables
@@ -75,7 +77,13 @@ fi
 export FZF_DEFAULT_OPTS='--height 30%'
 
 export LS_COLORS=""
-# export LS_COLORS="*.sv=00;35:*.v=00;35:*.tcl=00;36:*.yml=00;94"
+
+if ((IS_WSL)); then
+    # WSL sets all permissions outside of the unix filesystem to 777. This ruins
+    # all ls colors since they are all files executable. Tweak this to make the
+    # colors less offensive.
+    export LS_COLORS="$LS_COLORS:tw=30:ow=34:ex=00:"
+fi
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Aliases                                                                     ┃
@@ -93,7 +101,6 @@ else
 fi
 
 alias ll='ls -Al'
-
 if hash nvim 2>/dev/null; then
     alias vim="nvim"
     alias vimdiff="nvim -d"
@@ -133,8 +140,6 @@ fi
 shopt -s histappend
 
 export HISTCONTROL=erasedups
-
-# source_if_exists "$HOME/.bash-preexec.sh"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Utilities                                                                   ┃
