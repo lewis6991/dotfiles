@@ -54,15 +54,22 @@ function check_dependencies {
     if ! check_cmd curl ; then exit; fi
 }
 
+install_dotfile() {
+    link_file "$1" "$HOME/.$1"
+}
+
 function install_vim {
     rm -rf ~/.vim
     mkdir -p ~/.vim/tmp/backup
-    link_file vimrc ~/.vimrc
+    install_dotfile vimrc
+    install_dotfile gvimrc
 
     # nvim
     mkdir -p ~/.config/
     link_file ~/.vim ~/.config/nvim
     link_file ~/.vimrc ~/.vim/init.vim
+
+    link_file snippets ~/.vim/snippets
 
     nvim +qall
 }
@@ -71,10 +78,11 @@ check_dependencies
 
 install_vim
 
-link_file tmux.conf ~/.tmux.conf
-link_file tmux      ~/.tmux
-link_file gitconfig ~/.gitconfig
-link_file bashrc    ~/.bashrc
-link_file inputrc   ~/.inputrc
+install_dotfile tmux.conf
+install_dotfile tmux
+install_dotfile gitconfig
+install_dotfile bashrc
+install_dotfile bash_completion
+install_dotfile inputrc
 
 ./modules/fancy-prompt/install.sh

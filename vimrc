@@ -29,26 +29,28 @@ Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
-Plug '~/git/tcl.vim'
+Plug '~/git/tcl.vim', { 'for': 'tcl' }
 Plug '~/git/moonlight.vim'
-" Plug 'lewis6991/tcl.vim'
 Plug '~/git/systemverilog.vim'
 Plug 'whatyouhide/vim-lengthmatters'
-Plug 'wellle/targets.vim'
-Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeFind', 'NERDTreeToggle'] }
+Plug 'gaving/vim-textobj-argument'
+Plug 'michaeljsmith/vim-indent-object'
 Plug 'sickill/vim-pasta'
 Plug 'triglav/vim-visual-increment'
+Plug 'justinmk/vim-dirvish'
+Plug 'tpope/vim-eunuch'
+
+Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
 
 if version >= 704
     Plug 'lewis6991/vim-clean-fold'
 endif
 
 " Python
-Plug 'tmhedberg/SimpylFold'
-Plug 'Vimjas/vim-python-pep8-indent'
-Plug 'davidhalter/jedi-vim'
+Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
+Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
+Plug 'davidhalter/jedi-vim', { 'for': 'python' }
 
-Plug 'ludovicchabant/vim-gutentags'
 Plug 'airblade/vim-gitgutter'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'dietsche/vim-lastplace'
@@ -65,10 +67,10 @@ Plug 'ryanoasis/vim-devicons'
 Plug 'w0rp/ale'
 
 if has('nvim')
-    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins', 'on': []}
     Plug 'Shougo/neosnippet'
-    Plug 'zchee/deoplete-jedi'
-    Plug 'Shougo/neco-vim' "Deoplete completion for vim
+    Plug 'zchee/deoplete-jedi', { 'for': 'python' }
+    Plug 'Shougo/neco-vim', { 'for': 'vim' }  "Deoplete completion for vim
 endif
 
 call plug#end()
@@ -76,7 +78,6 @@ call plug#end()
 " }}}
 " Plugin Settings {{{
 " Airline {{{
-let g:airline_highlighting_cache = 1
 let g:airline_theme='base16'
 let g:airline_detect_spell=0
 let g:airline_powerline_fonts = 1
@@ -116,6 +117,9 @@ let g:ale_sign_info = '->'
 let g:ale_tcl_nagelfar_options = "-s ~/syntaxdbjg.tcl"
 let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 " }}}
+" Dirvish {{{
+let g:dirvish_mode = ':sort ,^.*[\/],'
+" }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
@@ -137,26 +141,6 @@ let g:easy_align_delimiters = {
 "}}}
 " Vim-lengthmatters {{{
 let g:lengthmatters_highlight_one_column = 1
-" }}}
-" NERDTree {{{
-augroup NerdTreeGroup
-    autocmd!
-    " Close vim if only window open is NERDTree
-    autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree())
-    autocmd bufenter *     quit
-    autocmd bufenter * endif
-augroup END
-
-function MyNerdToggle() abort
-    if &filetype == 'nerdtree'
-        :NERDTreeToggle
-    else
-        :NERDTreeFind
-    endif
-endfunction
-
-nnoremap - :call MyNerdToggle()<cr>
-let g:NERDTreeQuitOnOpen = 1
 " }}}
 " Gitgutter {{{
 let g:gitgutter_max_signs=2000
@@ -191,11 +175,9 @@ let g:jedi#force_py_version = 3
 "}}}
 if has('nvim')
     " Deoplete {{{
+    let g:deoplete#auto_complete_delay = 100
     let g:deoplete#enable_at_startup = 1
-    let g:deoplete#auto_complete_delay = 50
-    " let g:deoplete#sources = ['buffer', 'tag', 'file', 'omni', 'jedi' ]
-    " let g:deoplete#sources = ['buffer', 'tag', 'file', 'omni', 'jedi' ]
-    " set completeopt-=preview
+    autocmd! InsertEnter * call plug#load('deoplete.nvim')
     "}}}
     "Neosnippet {{{
     let g:neosnippet#snippets_directory='~/snippets'
@@ -283,7 +265,7 @@ if !has('nvim')
     set showcmd
     set smarttab
     set tabpagemax=50
-    set tags=./tags;,tags
+    " set tags=./tags;,tags
     set nocompatible
     set hlsearch
     set ttyfast
@@ -311,7 +293,7 @@ endif
 " }}}
 " Mappings {{{
 nnoremap <leader>ev :tabnew $MYVIMRC<CR>
-nnoremap <leader>rv :source $MYVIMRC <bar> set fdm=marker<cr>
+nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
 nnoremap <bs> :nohlsearch<cr>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>//g<left><left>
 nnoremap <leader>w :call DeleteTrailingWS()<cr>
@@ -335,94 +317,14 @@ nnoremap <expr><silent> _ !v:count ? "<C-W>s<C-W><Down>"  : '_'
 
 nnoremap <cr> i<cr><esc>k$
 
-if !exists("g:last")
-    let g:last = {}
-endif
-
-function! Key(key, revkey) abort "{{{
-    if v:count >= 1
-        let l:count = v:count
-    else
-        let l:count = 1
-    endif
-
-    call extend(g:last, {
-        \     'repmo': 1,
-        \     'key': a:key,
-        \     'revkey': a:revkey,
-        \     'count': l:count,
-        \     'remap': 1
-        \ })
-    return a:key
-endfunction "}}}
-
-function! LastKey() abort "{{{
-    if !get(g:last, 'repmo', 0)
-        return ";"
-    endif
-
-    let lastkey = get(g:last, 'remap', 1) ? get(g:last, 'key', '') :
-                                          \ ";"
-    return lastkey
-endfunction "}}}
-
-function! LastRevKey() abort "{{{
-    if !get(g:last, 'repmo', 0)
-        return ","
-    endif
-
-    let lastrevkey = get(g:last, 'remap', 1) ? get(g:last, 'revkey', '') :
-                                             \ ","
-    return lastrevkey
-endfunction "}}}
-
-function! ZapKey(zapkey) "{{{
-    let g:last.repmo = 0
-    return a:zapkey
-endfunction "}}}
-
-function PreHook(map, revmap, map_rhs) abort "{{{
-    call extend(g:last, {
-        \     'repmo': 1,
-        \     'key': a:map,
-        \     'revkey': a:revmap,
-        \     'count': 1,
-        \     'remap': 1
-        \ })
-
-    echomsg "'".a:map_rhs."'"
-
-    let cmd = 'normal! '.a:map_rhs
-    echomsg cmd
-    exec cmd
-endfunction "}}}
-
-function Register(map, revmap) abort "{{{
-    let l:map_rhs = maparg(a:map)
-    let l:revmap_rhs = maparg(a:revmap)
-    echomsg l:map_rhs
-    " let cmd    = "map <expr> ".a:map   ." PreHook('" .a:map."', '".a:revmap."', \"".l:map_rhs."\")"
-    let l:map_rhs2 = substitute(l:map_rhs, '<', '\\<', "g")
-    let cmd    = "map <expr> ".a:map   ." PreHook('" .a:map."', '".a:revmap."', '".l:map_rhs2."')"
-    let revcmd = "map <expr> ".a:revmap." PreHook('" .a:map."', '".a:revmap."', \"".l:revmap_rhs."\")"
-    echomsg cmd
-    exec cmd
-    exec revcmd
-endfunction "}}}
-
-map <expr> <leader>an Key('<Plug>(ale_next)', '<Plug>(ale_previous)')
-map <expr> <leader>ap Key('<Plug>(ale_previous)', '<Plug>(ale_next)')
-
-nmap <expr> ; LastKey()
-nmap <expr> , LastRevKey()
-
-map <expr> f ZapKey('f')
-map <expr> F ZapKey('F')
-map <expr> t ZapKey('t')
-map <expr> T ZapKey('T')
+map <expr> <leader>an <Plug>(ale_next)
+map <expr> <leader>ap <Plug>(ale_previous)
 
 nmap <leader>hn <Plug>GitGutterNextHunk
 nmap <leader>hp <Plug>GitGutterPrevHunk
+
+nmap <Leader>ha <Plug>GitGutterStageHunk
+nmap <Leader>hr <Plug>GitGutterUndoHunk
 
 " }}}
 " Whitespace {{{
@@ -455,18 +357,6 @@ augroup commentstring_group
      autocmd Filetype vim   setlocal commentstring=\"%s
 augroup END
 " }}}
-" GUI Options {{{
-if has("gui_running")
-    set guioptions-=m "Remove menu bar
-    set guioptions-=M "Remove menu bar
-    set guioptions-=L "Remove left scroll bar
-    set guioptions-=R "Remove right scroll bar
-    set guioptions-=r "Remove right scroll bar
-    set guioptions-=T "Remove toolbar
-    set guioptions-=e "Always use terminal tab line
-    set guioptions-=b "Remove horizontal scroll bar
-endif
-"}}}
 " Functions {{{
 
 function! DeleteTrailingWS() abort "{{{
@@ -508,6 +398,7 @@ augroup file_settings_group
     autocmd BufEnter *.log         setlocal textwidth=0
     autocmd BufEnter dotshrc       setlocal filetype=sh
     autocmd BufEnter dotsh         setlocal filetype=sh
+    autocmd BufEnter dotbashrc     setlocal filetype=sh
     autocmd BufEnter dotcshrc      setlocal filetype=csh
     autocmd BufEnter *.tmux        setlocal filetype=tmux
 

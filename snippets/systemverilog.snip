@@ -1,0 +1,38 @@
+snippet always_ff
+alias alf
+abbr always_ff @ (posedge clk or negedge reset_n)
+	always_ff @ (posedge clk or negedge reset_n)
+		if (!reset_n) begin
+			$1 <= '0;
+		end else begin
+			${1:VAR} <= ${2:'0};
+		end
+
+snippet for
+abbr for (int i = 0; i < x; ++i)
+	for (int ${1:i} = 0; $1 < ${2}; ++$1)
+		${0}
+
+snippet if
+abbr if (...)
+	if (${0})
+
+snippet begin
+alias be
+abbr begin ... end
+	begin
+		${1}
+	end
+
+snippet assert
+abbr assert property (...)
+	${1:LABEL} : assert property (
+		${0}
+	);
+
+snippet //-
+	//------------------------------------------------------------------------------
+	// ${0:TITLE}
+	//------------------------------------------------------------------------------
+
+# vim: set noet :
