@@ -21,3 +21,5 @@
 	default = simple
 [branch]
 	autosetuprebase = always
+
+# vim: ft=gitconfig
