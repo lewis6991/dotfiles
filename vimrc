@@ -145,6 +145,7 @@ let g:lengthmatters_highlight_one_column = 1
 " Gitgutter {{{
 let g:gitgutter_max_signs=2000
 " }}}
+"
 " Indentline {{{
 let g:indentLine_char = '│'
 let g:indentLine_setColors = 0
@@ -352,9 +353,9 @@ endif
 " Comments {{{
 set commentstring=#%s " This is the most common
 augroup commentstring_group
-     autocmd!
-     autocmd Filetype scala setlocal commentstring=//%s
-     autocmd Filetype vim   setlocal commentstring=\"%s
+    autocmd!
+    autocmd Filetype scala setlocal commentstring=//%s
+    autocmd Filetype vim   setlocal commentstring=\"%s
 augroup END
 " }}}
 " Functions {{{
@@ -374,9 +375,9 @@ endfunction "}}}
 
 "}}}
 " Colours {{{
-" if has('termguicolors')
-"     set termguicolors
-" endif
+if has('termguicolors')
+    set termguicolors
+endif
 
 silent! colorscheme moonlight
 " }}}
