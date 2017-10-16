@@ -6,8 +6,6 @@ set completion-map-case on
 set completion-query-items 50
 set enable-bracketed-paste on
 
-set editing-mode vi
-
 "\C-p": history-search-backward
 "\C-n": history-search-forward
 TAB: menu-complete
