@@ -74,7 +74,9 @@ else
     export PAGER="less -isMR"
 fi
 
-export FZF_DEFAULT_OPTS='--height 30%'
+export FZF_DEFAULT_OPTS='--height 30% --reverse --preview "head -80 {}"'
+export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+
 
 export LS_COLORS=""
 
@@ -105,6 +107,8 @@ if hash nvim 2>/dev/null; then
     alias vim="nvim"
     alias vimdiff="nvim -d"
 fi
+
+alias fim='vim $(fzf-tmux)'
 
 # Give command history to tclsh
 if hash rlwrap 2>/dev/null; then
