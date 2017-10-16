@@ -10,10 +10,22 @@
 	d = difftool
 	st = status
 	ci = commit
+	ca = commit --amend
 	co = checkout
 	br = branch
-    rebasec = rebase --continue
-	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
+	rc = rebase --continue
+	ra = rebase --abort
+	rs = rebase --skip
+	ri = rebase --interactive
+	# lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
+	# lg2 = !sh -c 'git log --graph --format=\"%w($(($(tput cols)-10)),,42)%C(bold yellow)%h %C(bold blue)%<(16)%an %C(bold green)%<(14)%cr %C(auto)%d %s\"' -
+	# lg3 = log --graph --format=\"%w(140,,42)%C(bold yellow)%h %C(bold blue)%<(16)%an %C(bold green)%<(14)%cr %C(auto)%d %s\"
+	lg = "!f() {\
+			width=$(($(tput cols) - 10)); \
+			git log --graph --format=\"%w($width,,42)%C(bold yellow)%h %C(bold blue)%<(16)%an %C(bold green)%<(14)%cr %C(auto)%d %s\" $@; \
+		}; f"
+	publish = !sh -c 'git push origin HEAD:refs/publish/${1-$(git rev-parse --abbrev-ref HEAD)}' -
+	draft   = !sh -c 'git push origin HEAD:refs/drafts/${1-$(git rev-parse --abbrev-ref HEAD)}' -
 [core]
 	editor = vim
 	excludesfile = ~/.gitignore

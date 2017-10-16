@@ -26,8 +26,8 @@ execute pathogen#infect('~/gerrit/{}')
 call plug#begin('~/.vim/plugged')
 Plug 'junegunn/vim-plug'
 Plug 'tpope/vim-fugitive'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf', { 'on': 'GitFiles', 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim', { 'on' : 'GitFiles' }
 Plug 'junegunn/vim-easy-align'
 Plug '~/git/tcl.vim', { 'for': 'tcl' }
 Plug '~/git/moonlight.vim'
@@ -39,6 +39,8 @@ Plug 'sickill/vim-pasta'
 Plug 'triglav/vim-visual-increment'
 Plug 'justinmk/vim-dirvish'
 Plug 'tpope/vim-eunuch'
+
+Plug 'chriskempson/base16-vim'
 
 Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
 
@@ -67,13 +69,21 @@ Plug 'ryanoasis/vim-devicons'
 Plug 'w0rp/ale'
 
 if has('nvim')
-    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins', 'on': []}
-    Plug 'Shougo/neosnippet'
+    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins'}
+    Plug 'Shougo/neosnippet', { 'on': [] }
     Plug 'zchee/deoplete-jedi', { 'for': 'python' }
     Plug 'Shougo/neco-vim', { 'for': 'vim' }  "Deoplete completion for vim
 endif
 
 call plug#end()
+
+if has('nvim')
+    augroup LazyLoadPlugins
+        autocmd!
+        autocmd InsertEnter * call deoplete#enable()
+        autocmd InsertEnter * call plug#load('neosnippet')
+    augroup END
+endif
 
 " }}}
 " Plugin Settings {{{
@@ -119,6 +129,50 @@ let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 " }}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
+
+nmap - <Plug>(dirvish-toggle)
+nnoremap <silent> <Plug>(dirvish-toggle) :<C-U>call <SID>dirvish_toggle()<CR>
+
+function! s:dirvish_toggle() abort "{{{
+    " Close any existing dirvish buffers
+    for i in range(1, bufnr('$'))
+        if bufexists(l:i) && bufloaded(l:i) && getbufvar(l:i, '&filetype') ==? 'dirvish'
+            execute ':'.l:i.'bd!'
+        endif
+    endfor
+
+    35vsp +Dirvish
+endfunction "}}}
+
+function! s:dirvish_open(cmd) abort "{{{
+    let l:line = getline('.')
+    if l:line =~? '/$'
+        call dirvish#open(a:cmd, 0)
+    else
+        execute 'bd'
+        execute a:cmd.' '.l:line
+    endif
+endfunction "}}}
+
+function! s:dirvish_attempt_select_last_file() abort "{{{
+    let l:previous = expand('#:t')
+    if l:previous != ''
+        call search('\v<' . l:previous . '>')
+    endif
+endfunction "}}}
+
+augroup dirvish_commands
+    autocmd!
+    autocmd FileType dirvish call <SID>dirvish_attempt_select_last_file()
+    autocmd FileType dirvish unmap    <silent> <buffer> <CR>
+    autocmd FileType dirvish unmap    <silent> <buffer> a
+    autocmd FileType dirvish unmap    <silent> <buffer> o
+    autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U> call <SID>dirvish_open('edit')<CR>
+    autocmd FileType dirvish nmap     <silent> <buffer> -     <Plug>(dirvish_up)
+    autocmd FileType dirvish nmap     <silent> <buffer> <ESC> :bd<CR>
+    autocmd FileType dirvish nmap     <silent> <buffer> v     :<C-U> call <SID>dirvish_open('vsplit')<CR>
+    autocmd FileType dirvish nmap     <silent> <buffer> s     :<C-U> call <SID>dirvish_open('split')<CR>
+augroup END
 " }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
@@ -177,11 +231,10 @@ let g:jedi#force_py_version = 3
 if has('nvim')
     " Deoplete {{{
     let g:deoplete#auto_complete_delay = 100
-    let g:deoplete#enable_at_startup = 1
-    autocmd! InsertEnter * call plug#load('deoplete.nvim')
+    let g:deoplete#enable_at_startup = 0
     "}}}
     "Neosnippet {{{
-    let g:neosnippet#snippets_directory='~/snippets'
+    let g:neosnippet#snippets_directory='~/.vim/snippets'
     let g:neosnippet#disable_runtime_snippets = { '_' : 1 }
 
     imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
@@ -212,6 +265,8 @@ set ignorecase
 set smartcase
 set clipboard=unnamed
 set scrolloff=6
+set sidescroll=1
+set sidescrolloff=6
 
 if has('mouse')
     set mouse=a
@@ -379,6 +434,7 @@ if has('termguicolors')
     set termguicolors
 endif
 
+" silent! colorscheme base16-harmonic16-light
 silent! colorscheme moonlight
 " }}}
 " File Settings {{{
@@ -395,7 +451,7 @@ augroup file_settings_group
     autocmd Filetype systemverilog setlocal softtabstop=2
     autocmd Filetype make          setlocal noexpandtab
     autocmd Filetype gitconfig     setlocal noexpandtab
-    autocmd Filetype dirvish       setlocal nospell
+    " autocmd Filetype dirvish       setlocal nospell
     autocmd BufEnter *.log         setlocal textwidth=0
     autocmd BufEnter dotshrc       setlocal filetype=sh
     autocmd BufEnter dotsh         setlocal filetype=sh
