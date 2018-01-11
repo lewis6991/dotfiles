@@ -79,7 +79,6 @@ check_dependencies
 install_vim
 
 install_dotfile tmux.conf
-install_dotfile tmux
 install_dotfile gitconfig
 install_dotfile bashrc
 install_dotfile bash_completion
