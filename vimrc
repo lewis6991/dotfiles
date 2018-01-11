@@ -263,7 +263,7 @@ set expandtab
 set noswapfile
 set ignorecase
 set smartcase
-set clipboard=unnamed
+set clipboard^=unnamed,unnamedplus
 set scrolloff=6
 set sidescroll=1
 set sidescrolloff=6
@@ -340,8 +340,7 @@ endif
 if has("nvim")
     let g:loaded_python_provider = 1 " Disable python2
     let g:loaded_ruby_provider   = 1 " Disable ruby
-
-    " let g:python3_host_prog = 'python3.6'
+    let g:loaded_node_provider   = 1 " Disable ruby
 
     set inccommand=split
     set previewheight=20
@@ -409,8 +408,9 @@ endif
 set commentstring=#%s " This is the most common
 augroup commentstring_group
     autocmd!
-    autocmd Filetype scala setlocal commentstring=//%s
-    autocmd Filetype vim   setlocal commentstring=\"%s
+    autocmd Filetype scala     setlocal commentstring=//%s
+    autocmd Filetype vim       setlocal commentstring=\"%s
+    autocmd Filetype sbt.scala setlocal commentstring=//%s
 augroup END
 " }}}
 " Functions {{{
