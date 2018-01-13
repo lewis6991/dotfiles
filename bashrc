@@ -12,10 +12,17 @@ source_if_exists() {
 }
 
 HAVE_BREW=0
-IS_WSL=0
+
 if hash brew 2> /dev/null; then
     HAVE_BREW=1
     BREW_PREFIX=$(brew --prefix)
+fi
+
+IS_WSL=0
+IS_MAC=0
+
+if [ "$(uname)" == "Darwin" ]; then
+    IS_MAC=1
 elif grep Microsoft /proc/version > /dev/null; then
     IS_WSL=1
 fi
@@ -27,7 +34,7 @@ fi
 source_if_exists "$HOME/.bash_completion"
 
 if ((HAVE_BREW)); then
-    source_if_exists "$(brew --prefix)/etc/bash_completion"
+    source_if_exists "$BREW_PREFIX/etc/bash_completion"
 elif [[ $PS1 ]]; then
     source_if_exists ~/.local/share/bash-completion/bash_completion
 elif ! shopt -oq posix; then
@@ -61,9 +68,10 @@ export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 
 # Modify path if coretuils is installed (Mac)
 if ((HAVE_BREW)); then
-    if [ -d "$BREW_PREFIX/opt/coreutils" ]; then
-        export PATH="$BREW_PREFIX/opt/coreutils/libexec/gnubin:$PATH"
-        export MANPATH="$BREW_PREFIX/opt/coreutils/libexec/gnuman:$MANPATH"
+    COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
+    if [ -d "$COREUTILS_PATH" ]; then
+        export PATH="$COREUTILS_PATH/gnubin:$PATH"
+        export MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
     fi
 fi
 
@@ -77,7 +85,6 @@ fi
 export FZF_DEFAULT_OPTS='--height 30% --reverse --preview "head -80 {}"'
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 
-
 export LS_COLORS=""
 
 if ((IS_WSL)); then
@@ -90,25 +97,13 @@ fi
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Aliases                                                                     ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+alias ls='ls --color'
+alias ll='ls -goAh'
 
-if ((HAVE_BREW)); then
-    if brew --prefix coreutils >/dev/null ; then
-        alias ls='ls --color'
-        alias ll='ls -goAh --group-directories-first'
-    else
-        alias ll='ls -goAh'
-    fi
-else
-    alias ls='ls --color'
-fi
-
-alias ll='ls -Al'
 if hash nvim 2>/dev/null; then
     alias vim="nvim"
     alias vimdiff="nvim -d"
 fi
-
-alias fim='vim $(fzf-tmux)'
 
 # Give command history to tclsh
 if hash rlwrap 2>/dev/null; then
