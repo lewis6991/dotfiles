@@ -81,6 +81,7 @@ install_vim
 install_dotfile tmux.conf
 install_dotfile gitconfig
 install_dotfile bashrc
+install_dotfile bash_functions
 install_dotfile bash_completion
 install_dotfile inputrc
 
