@@ -6,10 +6,7 @@
 # Skip remaining setup if not an interactive shell
 [[ $- != *i* ]] && return
 
-source_if_exists() {
-    # shellcheck source=/dev/null
-    [[ -f "$1" ]] && source "$1"
-}
+source ~/.bash_functions
 
 HAVE_BREW=0
 
@@ -20,11 +17,16 @@ fi
 
 IS_WSL=0
 IS_MAC=0
+IS_LINUX=0
 
 if [ "$(uname)" == "Darwin" ]; then
     IS_MAC=1
-elif grep Microsoft /proc/version > /dev/null; then
-    IS_WSL=1
+elif [ "$(uname)" == "Linux" ]; then
+    if grep Microsoft /proc/version > /dev/null; then
+        IS_WSL=1
+    else
+        IS_LINUX=1
+    fi
 fi
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -139,30 +141,6 @@ fi
 shopt -s histappend
 
 export HISTCONTROL=erasedups
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Utilities                                                                   ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-# Handy Extract Program
-function extract() {
-    if [ -f "$1" ] ; then
-        case $1 in
-            *.tar.bz2) tar xvjf   "$1" ;;
-            *.tar.gz ) tar xvzf   "$1" ;;
-            *.tar.xz ) tar xvf    "$1" ;;
-            *.bz2    ) bunzip2    "$1" ;;
-            *.gz     ) gunzip     "$1" ;;
-            *.tar    ) tar xvf    "$1" ;;
-            *.tbz2   ) tar xvjf   "$1" ;;
-            *.tgz    ) tar xvzf   "$1" ;;
-            *.zip    ) unzip      "$1" ;;
-            *.Z      ) uncompress "$1" ;;
-            *        ) echo "'$1' cannot be extracted via >extract<" ;;
-        esac
-    else
-        echo "'$1' is not a valid file!"
-    fi
-}
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Load other setups                                                           ┃

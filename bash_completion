@@ -5,8 +5,8 @@ _complete_running_bjobs() {
     COMPREPLY=( $(bjobs | awk '''{print $1}''') )
 }
 
-complete -o bashdefault -o default -o nospace -F _complete_running_bjobs bjobs
-complete -o bashdefault -o default -o nospace -F _complete_running_bjobs bkill
+complete -o default -F _complete_running_bjobs bjobs
+complete -o default -F _complete_running_bjobs bkill
 
 _pip_completion() {
     COMPREPLY=( $( COMP_WORDS="${COMP_WORDS[*]}" \
@@ -15,4 +15,6 @@ _pip_completion() {
 }
 
 complete -o default -F _pip_completion pip
+complete -o default -F _pip_completion pip2
+complete -o default -F _pip_completion pip3
 
