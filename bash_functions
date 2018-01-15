@@ -5,7 +5,7 @@ source_if_exists() {
     [[ -f "$1" ]] && source "$1"
 }
 
-function extract() {
+extract() {
     if [ -f "$1" ] ; then
         case $1 in
             *.tar.bz2) tar xvjf   "$1" ;;
@@ -22,6 +22,16 @@ function extract() {
         esac
     else
         echo "'$1' is not a valid file!"
+    fi
+}
+
+ssh() {
+    if [ -n "$TMUX" ]; then
+        tmux rename-window "ssh:$(echo $* | sed 's/\.arm\.com$//')"
+        command ssh "$@"
+        tmux set-window-option automatic-rename "on" 1>/dev/null
+    else
+        command ssh "$@"
     fi
 }
 
