@@ -130,8 +130,7 @@ let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
 
-nmap - <Plug>(dirvish-toggle)
-nnoremap <silent> <Plug>(dirvish-toggle) :<C-U>call <SID>dirvish_toggle()<CR>
+nmap - :<C-U>call <SID>dirvish_toggle()<CR>
 
 function! s:dirvish_toggle() abort "{{{
     " Close any existing dirvish buffers
@@ -141,7 +140,8 @@ function! s:dirvish_toggle() abort "{{{
         endif
     endfor
 
-    35vsp +Dirvish
+    40vsp
+    Dirvish %
 endfunction "}}}
 
 function! s:dirvish_open(cmd) abort "{{{
@@ -154,22 +154,12 @@ function! s:dirvish_open(cmd) abort "{{{
     endif
 endfunction "}}}
 
-function! s:dirvish_attempt_select_last_file() abort "{{{
-    let l:previous = expand('#:t')
-    if l:previous != ''
-        call search('\v<' . l:previous . '>')
-    endif
-endfunction "}}}
-
 augroup dirvish_commands
     autocmd!
-    autocmd FileType dirvish call <SID>dirvish_attempt_select_last_file()
-    autocmd FileType dirvish unmap    <silent> <buffer> <CR>
-    autocmd FileType dirvish unmap    <silent> <buffer> a
-    autocmd FileType dirvish unmap    <silent> <buffer> o
     autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U> call <SID>dirvish_open('edit')<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> -     <Plug>(dirvish_up)
     autocmd FileType dirvish nmap     <silent> <buffer> <ESC> :bd<CR>
+    autocmd FileType dirvish nmap     <silent> <buffer> q     :bd<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> v     :<C-U> call <SID>dirvish_open('vsplit')<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> s     :<C-U> call <SID>dirvish_open('split')<CR>
 augroup END
