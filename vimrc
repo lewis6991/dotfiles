@@ -30,7 +30,7 @@ Plug 'junegunn/fzf', { 'on': 'GitFiles', 'dir': '~/.fzf', 'do': './install --all
 Plug 'junegunn/fzf.vim', { 'on' : 'GitFiles' }
 Plug 'junegunn/vim-easy-align'
 Plug '~/git/tcl.vim', { 'for': 'tcl' }
-Plug '~/git/moonlight.vim'
+Plug '~/git/dotfiles/modules/moonlight.vim'
 Plug '~/git/systemverilog.vim'
 Plug 'whatyouhide/vim-lengthmatters'
 Plug 'gaving/vim-textobj-argument'

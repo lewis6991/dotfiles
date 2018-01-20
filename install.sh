@@ -12,14 +12,10 @@ function echo_error {
     echo -e "${RED}Error:" $@ "$NC"
 }
 
-function echo_ok {
-    echo -e ${GREEN}OK${NC}
-}
-
 function check_cmd {
     echo -en Checking if $CYAN$1$NC is installed...
     if which $1 >/dev/null; then
-        echo_ok
+        echo -e ${GREEN}OK${NC}
         return 0
     else
         echo No
@@ -48,12 +44,11 @@ function link_file {
 }
 
 function check_dependencies {
-    # Check that required commands are installed
-    if ! check_cmd git  ; then exit; fi
-    if ! check_cmd rsync; then exit; fi
-    if ! check_cmd wget ; then exit; fi
-    if ! check_cmd curl ; then exit; fi
-    if ! check_cmd nvim ; then exit; fi
+    for tool in $@; do
+        if ! check_cmd $tool; then
+            exit
+        fi
+    done
 }
 
 function install_dotfile {
@@ -77,7 +72,14 @@ function install_vim {
     nvim +PlugInstall +quitall
 }
 
-check_dependencies
+check_dependencies \
+    git   \
+    rsync \
+    wget  \
+    curl  \
+    nvim  \
+    tmux  \
+    tree
 
 install_vim
 
