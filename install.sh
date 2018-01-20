@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 readonly   RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
@@ -52,15 +53,17 @@ function check_dependencies {
     if ! check_cmd rsync; then exit; fi
     if ! check_cmd wget ; then exit; fi
     if ! check_cmd curl ; then exit; fi
+    if ! check_cmd nvim ; then exit; fi
 }
 
-install_dotfile() {
+function install_dotfile {
     link_file "$1" "$HOME/.$1"
 }
 
 function install_vim {
     rm -rf ~/.vim
     mkdir -p ~/.vim/tmp/backup
+
     install_dotfile vimrc
     install_dotfile gvimrc
 
@@ -71,7 +74,7 @@ function install_vim {
 
     link_file snippets ~/.vim/snippets
 
-    nvim +qall
+    nvim +PlugInstall +quitall
 }
 
 check_dependencies
@@ -86,3 +89,5 @@ install_dotfile bash_completion
 install_dotfile inputrc
 
 ./modules/fancy-prompt/install.sh
+
+echo -e "${GREEN}Finished successfully${NC}"
