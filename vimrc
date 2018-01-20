@@ -93,6 +93,7 @@ let g:airline_detect_spell=0
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#hunks#non_zero_only = 1
 let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
+let g:airline_powerline_fonts = 0
 let g:airline_mode_map = {
             \ '__' : '-',
             \ 'n'  : 'N',
@@ -107,9 +108,9 @@ let g:airline_mode_map = {
             \ '' : 'S',
             \ }
 
-" let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#buffers_label = 'b'
-let g:airline#extensions#tabline#tabs_label = 't'
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#buffers_label = 'B'
+let g:airline#extensions#tabline#tabs_label = 'T'
 let g:airline#extensions#tabline#show_close_button = 0
 let g:airline#extensions#tabline#show_tab_nr = 0
 
@@ -452,6 +453,8 @@ augroup file_settings_group
     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
     autocmd BufNewFile,BufRead *       setlocal ft=tcl
     autocmd BufNewFile,BufRead *   endif
+
+    autocmd BufRead .vimrc,init.vim setlocal foldmethod=marker
 augroup END
 " }}}
 " Formatting {{{
@@ -463,4 +466,3 @@ if v:version >= 704
 endif
 "}}}
 
-" vim: foldmethod=marker foldlevel=0:
