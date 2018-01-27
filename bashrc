@@ -6,6 +6,7 @@
 # Skip remaining setup if not an interactive shell
 [[ $- != *i* ]] && return
 
+# shellcheck  source=/dev/null
 source ~/.bash_functions
 
 HAVE_BREW=0
@@ -30,6 +31,19 @@ elif [ "$(uname)" == "Linux" ]; then
 fi
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+#┃ FZF                                                                         ┃
+#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+source_if_exists ~/.fzf.bash
+
+export FZF_DEFAULT_OPTS='--height 30% --reverse --preview "head -80 {}"'
+
+if hash rg 2>/dev/null; then
+    export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
+elif hash ag 2>/dev/null; then
+    export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+fi
+
+#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Completion                                                                  ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
@@ -47,6 +61,8 @@ fi
 #┃ Prompt                                                                      ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 prompt_command() {
+    PS1=$(~/.prompt bash $?)
+
     if [ -n "$TMUX" ]; then
         # Refresh these variables
         eval "$(tmux showenv -s DISPLAY)"
@@ -55,8 +71,6 @@ prompt_command() {
 
     # Update history after every command
     history -a
-
-    PS1=$(~/.prompt bash $?)
 }
 
 PROMPT_COMMAND=prompt_command
@@ -78,14 +92,25 @@ if ((HAVE_BREW)); then
 fi
 
 # Colourise man pages
-export PAGER="less"
-export LESS="\
-    --no-init \
-    --RAW-CONTROL-CHARS \
-    --ignore-case \
-    --LONG-PROMPT \
-    --quit-if-one-screen \
-    --chop-long-lines"
+export PAGER="\
+    nvim \
+    -R \
+    -c 'set ft=man nomod nolist nonu nornu' \
+    -c 'map q :q<CR>' \
+    -c 'map <SPACE> <C-D>' \
+    -c 'map K :Man<CR>' \
+    -c 'map b <C-U>' \
+    -c 'map d <C-d>' \
+    -c 'map u <C-u>' -"
+
+# export PAGER="less"
+# export LESS="\
+#     --no-init \
+#     --RAW-CONTROL-CHARS \
+#     --ignore-case \
+#     --LONG-PROMPT \
+#     --quit-if-one-screen \
+#     --chop-long-lines"
 
 export LESS_TERMCAP_mb=$(tput bold; tput setaf 2) # green
 export LESS_TERMCAP_md=$(tput bold; tput setaf 6) # cyan
@@ -100,9 +125,6 @@ export LESS_TERMCAP_ZN=$(tput ssubm)
 export LESS_TERMCAP_ZV=$(tput rsubm)
 export LESS_TERMCAP_ZO=$(tput ssupm)
 export LESS_TERMCAP_ZW=$(tput rsupm)
-
-export FZF_DEFAULT_OPTS='--height 30% --reverse --preview "head -80 {}"'
-export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 
 export LS_COLORS=""
 
@@ -148,9 +170,6 @@ alias lssize="ls --color=none | xargs du -sh"
 # Disable software flow control so <Ctrl-S> doesn't hang the terminal.
 stty -ixon
 
-# Load fzf
-source_if_exists ~/.fzf.bash
-
 if [ "${BASH_VERSINFO:-0}" -ge 4 ]; then
     shopt -s autocd
 fi
@@ -170,7 +189,7 @@ export PATH="$HOME/tools/python/bin:$PATH"
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Locale                                                                      ┃
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-if [ "$(uname)" != "Darwin" ]; then
+if ! ((IS_MAC)); then
     LC_ALL="en_US.utf8"
     LANG="en_US.utf8"
 fi
