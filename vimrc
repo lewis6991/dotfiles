@@ -503,8 +503,8 @@ set statusline+=%m%r  " [+][RO]
 set statusline+=\ %#CursorColumn#
 set statusline+=%=
 set statusline+=\ %#Visual#
-set statusline+=\ %{&filetype}
-set statusline+=\ %#PmenuSel#
+set statusline+=%(\ %{&filetype}\ %)
+set statusline+=%#PmenuSel#
 set statusline+=%(\ %{EncodingAndFormat()}%)
 set statusline+=\ %p%%  " Percent through file
 set statusline+=\ %l/%L\ %c\  " lnum:cnum
