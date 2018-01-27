@@ -495,19 +495,51 @@ function! EncodingAndFormat() abort
     return Strip(join([e,f]))
 endfunction
 
-set statusline=%#PmenuSel#
-set statusline+=%(\ %{Hunks()}\ %)
-set statusline+=\%#Visual#
-set statusline+=\ %f
-set statusline+=%m%r  " [+][RO]
-set statusline+=\ %#CursorColumn#
-set statusline+=%=
-set statusline+=\ %#Visual#
-set statusline+=%(\ %{&filetype}\ %)
-set statusline+=%#PmenuSel#
-set statusline+=%(\ %{EncodingAndFormat()}%)
-set statusline+=\ %p%%  " Percent through file
-set statusline+=\ %l/%L\ %c\  " lnum:cnum
+function! ActiveStatus(active)
+    if a:active
+        let  s="%#PmenuSel#"
+    else
+        let  s="%#LinrNr#"
+    endif
+
+    let s.="%(\ %{Hunks()}\ %)"
+
+    if a:active
+        let s.="\%#Visual#"
+    endif
+
+    let s.="\ %f"
+    let s.="%m%r" " [+][RO]"
+
+    if a:active
+        let s.="\ %#CursorColumn#"
+    endif
+
+    let s.="%="
+
+    if a:active
+        let s.="\ %#Visual#"
+    endif
+
+    let s.="%(\ %{&filetype}\ %)"
+
+    if a:active
+        let s.="%#PmenuSel#"
+    endif
+    let s.="%(\ %{EncodingAndFormat()}%)"
+    let s.="\ %p%%" " Percent through file
+    let s.="\ %l/%L\ %c\ " " lnum:cnum
+    return s
+endfunction
+
+augroup status
+  autocmd!
+  autocmd WinEnter * setlocal statusline=%!ActiveStatus(1)
+  autocmd WinLeave * setlocal statusline=%!ActiveStatus(0)
+augroup END
+
+set statusline=%!ActiveStatus(1)
+
 "}}}
 highlight EndOfBuffer ctermfg=bg guifg=bg
 
