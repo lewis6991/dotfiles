@@ -92,7 +92,7 @@ if ((HAVE_BREW)); then
 fi
 
 # Colourise man pages
-export PAGER="\
+export MANPAGER="\
     nvim \
     -R \
     -c 'set ft=man nomod nolist nonu nornu' \
@@ -103,14 +103,14 @@ export PAGER="\
     -c 'map d <C-d>' \
     -c 'map u <C-u>' -"
 
-# export PAGER="less"
-# export LESS="\
-#     --no-init \
-#     --RAW-CONTROL-CHARS \
-#     --ignore-case \
-#     --LONG-PROMPT \
-#     --quit-if-one-screen \
-#     --chop-long-lines"
+export PAGER="less"
+export LESS="\
+    --no-init \
+    --RAW-CONTROL-CHARS \
+    --ignore-case \
+    --LONG-PROMPT \
+    --quit-if-one-screen \
+    --chop-long-lines"
 
 export LESS_TERMCAP_mb=$(tput bold; tput setaf 2) # green
 export LESS_TERMCAP_md=$(tput bold; tput setaf 6) # cyan
