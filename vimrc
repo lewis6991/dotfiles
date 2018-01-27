@@ -24,14 +24,16 @@ let loaded_netrwPlugin = 1  " Stop netrw loading
 execute pathogen#infect('~/gerrit/{}')
 
 call plug#begin('~/.vim/plugged')
+
+Plug '~/git/tcl.vim', { 'for': 'tcl' }
+Plug '~/git/systemverilog.vim' , { 'for': 'systemverilog' }
+Plug '~/git/dotfiles/modules/moonlight.vim'
+
 Plug 'junegunn/vim-plug'
 Plug 'tpope/vim-fugitive'
-Plug 'junegunn/fzf', { 'on': 'GitFiles', 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim', { 'on' : 'GitFiles' }
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
 Plug 'junegunn/vim-easy-align'
-Plug '~/git/tcl.vim', { 'for': 'tcl' }
-Plug '~/git/dotfiles/modules/moonlight.vim'
-Plug '~/git/systemverilog.vim'
 Plug 'whatyouhide/vim-lengthmatters'
 Plug 'gaving/vim-textobj-argument'
 Plug 'michaeljsmith/vim-indent-object'
@@ -39,9 +41,6 @@ Plug 'sickill/vim-pasta'
 Plug 'triglav/vim-visual-increment'
 Plug 'justinmk/vim-dirvish'
 Plug 'tpope/vim-eunuch'
-
-Plug 'chriskempson/base16-vim'
-
 Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
 
 if version >= 704
@@ -57,14 +56,12 @@ Plug 'airblade/vim-gitgutter'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'dietsche/vim-lastplace'
 Plug 'Yggdroot/indentLine'
-Plug 'tmux-plugins/vim-tmux'
+Plug 'tmux-plugins/vim-tmux', { 'for': 'tmux' }
 Plug 'tmux-plugins/vim-tmux-focus-events'
 Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
 Plug 'ryanoasis/vim-devicons'
 Plug 'w0rp/ale'
 
@@ -87,34 +84,6 @@ endif
 
 " }}}
 " Plugin Settings {{{
-" Airline {{{
-let g:airline_theme='base16'
-let g:airline_detect_spell=0
-let g:airline_powerline_fonts = 1
-let g:airline#extensions#hunks#non_zero_only = 1
-let g:airline#parts#ffenc#skip_expected_string='utf-8[unix]'
-let g:airline_powerline_fonts = 0
-let g:airline_mode_map = {
-            \ '__' : '-',
-            \ 'n'  : 'N',
-            \ 'i'  : 'I',
-            \ 'R'  : 'R',
-            \ 'c'  : 'C',
-            \ 'v'  : 'V',
-            \ 'V'  : '-V',
-            \ '' : '[V]',
-            \ 's'  : 'S',
-            \ 'S'  : 'S',
-            \ '' : 'S',
-            \ }
-
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#buffers_label = 'B'
-let g:airline#extensions#tabline#tabs_label = 'T'
-let g:airline#extensions#tabline#show_close_button = 0
-let g:airline#extensions#tabline#show_tab_nr = 0
-
-" }}}
 "Ale {{{
 let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
 let g:ale_lint_on_enter = 0
@@ -196,25 +165,37 @@ let g:indentLine_char = '│'
 let g:indentLine_setColors = 0
 " }}}
 " FZF {{{
-let g:fzf_colors = {
-    \ 'fg':      ['fg', 'Normal'],
-    \ 'bg':      ['bg', 'Normal'],
-    \ 'hl':      ['fg', 'Comment'],
-    \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-    \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-    \ 'hl+':     ['fg', 'Statement'],
-    \ 'info':    ['fg', 'PreProc'],
-    \ 'border':  ['fg', 'Ignore'],
-    \ 'prompt':  ['fg', 'Conditional'],
-    \ 'pointer': ['fg', 'Exception'],
-    \ 'marker':  ['fg', 'Keyword'],
-    \ 'spinner': ['fg', 'Label'],
-    \ 'header':  ['fg', 'Comment']
-    \ }
 
-nnoremap <c-p> :GitFiles<cr>
-let g:fzf_layout = { 'down': '~30%' }
+" let g:fzf_colors = {
+"     \ 'fg':      ['fg', 'Normal'],
+"     \ 'bg':      ['bg', 'Normal'],
+"     \ 'hl':      ['fg', 'Comment'],
+"     \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+"     \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+"     \ 'hl+':     ['fg', 'Statement'],
+"     \ 'info':    ['fg', 'PreProc'],
+"     \ 'border':  ['fg', 'Ignore'],
+"     \ 'prompt':  ['fg', 'Conditional'],
+"     \ 'pointer': ['fg', 'Exception'],
+"     \ 'marker':  ['fg', 'Keyword'],
+"     \ 'spinner': ['fg', 'Label'],
+"     \ 'header':  ['fg', 'Comment']
+"     \ }
+
+" set grepprg=rg\ --vimgrep
+function! s:find_git_root()
+  return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+endfunction
+
+command! ProjectFiles execute 'Files' s:find_git_root()
+
+let g:indentLine_fileTypeExclude = ['fzf', 'dirvish']
+
+nnoremap <c-p> :ProjectFiles<cr>
+" let g:fzf_layout = { 'down': '~30%' }
+let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
+
 " }}}
 " Jedi {{{
 let g:jedi#force_py_version = 3
@@ -222,7 +203,6 @@ let g:jedi#force_py_version = 3
 if has('nvim')
     " Deoplete {{{
     let g:deoplete#auto_complete_delay = 100
-    let g:deoplete#enable_at_startup = 0
     "}}}
     "Neosnippet {{{
     let g:neosnippet#snippets_directory='~/.vim/snippets'
@@ -425,7 +405,6 @@ if has('termguicolors')
     set termguicolors
 endif
 
-" silent! colorscheme base16-harmonic16-light
 silent! colorscheme moonlight
 " }}}
 " File Settings {{{
@@ -454,7 +433,7 @@ augroup file_settings_group
     autocmd BufNewFile,BufRead *       setlocal ft=tcl
     autocmd BufNewFile,BufRead *   endif
 
-    autocmd BufRead .vimrc,init.vim setlocal foldmethod=marker
+    autocmd BufRead .vimrc,vimrc,init.vim setlocal foldmethod=marker
 augroup END
 " }}}
 " Formatting {{{
@@ -465,4 +444,70 @@ if v:version >= 704
     set breakindent      "Indent wrapped lines to match start
 endif
 "}}}
+" Statusline {{{
+
+function! Strip(input_string)
+    return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
+endfunction
+
+function! Hunks() abort
+    let hunks = GitGutterGetHunkSummary()
+
+    let modified = hunks[0]
+    let added = hunks[1]
+    let deleted = hunks[2]
+
+    if modified != '0'
+        let modified = '~'.modified
+    else
+        let modified = ''
+    endif
+
+    if added != '0'
+        let added = '+'.added
+    else
+        let added = ''
+    endif
+
+    if deleted != '0'
+        let deleted = '-'.deleted
+    else
+        let deleted = ''
+    endif
+
+    return Strip(join([modified,added,deleted]))
+endfunction
+
+function! EncodingAndFormat() abort
+    let e = &fileencoding ? &fileencoding : &encoding
+    let f = &fileformat
+
+    if e == 'utf-8'
+        let e = ''
+    endif
+
+    if f == 'unix'
+        let f = ''
+    else
+        let f = '['.f.']'
+    endif
+
+    return Strip(join([e,f]))
+endfunction
+
+set statusline=%#PmenuSel#
+set statusline+=%(\ %{Hunks()}\ %)
+set statusline+=\%#Visual#
+set statusline+=\ %f
+set statusline+=%m%r  " [+][RO]
+set statusline+=\ %#CursorColumn#
+set statusline+=%=
+set statusline+=\ %#Visual#
+set statusline+=\ %{&filetype}
+set statusline+=\ %#PmenuSel#
+set statusline+=%(\ %{EncodingAndFormat()}%)
+set statusline+=\ %p%%  " Percent through file
+set statusline+=\ %l/%L\ %c\  " lnum:cnum
+"}}}
+highlight EndOfBuffer ctermfg=bg guifg=bg
 
