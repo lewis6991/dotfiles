@@ -27,7 +27,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug '~/git/tcl.vim', { 'for': 'tcl' }
 Plug '~/git/systemverilog.vim' , { 'for': 'systemverilog' }
-Plug '~/git/dotfiles/modules/moonlight.vim'
+Plug '~/projects/dotfiles/modules/moonlight.vim'
 
 Plug 'junegunn/vim-plug'
 Plug 'tpope/vim-fugitive'
@@ -48,9 +48,8 @@ if version >= 704
 endif
 
 " Python
-Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
+Plug 'tmhedberg/SimpylFold'         , { 'for': 'python' }
 Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
-Plug 'davidhalter/jedi-vim', { 'for': 'python' }
 
 Plug 'airblade/vim-gitgutter'
 Plug 'christoomey/vim-tmux-navigator'
@@ -63,23 +62,37 @@ Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'ryanoasis/vim-devicons'
-Plug 'w0rp/ale'
 
 if has('nvim')
-    Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins'}
-    Plug 'Shougo/neosnippet', { 'on': [] }
-    Plug 'zchee/deoplete-jedi', { 'for': 'python' }
-    Plug 'Shougo/neco-vim', { 'for': 'vim' }  "Deoplete completion for vim
+    Plug 'Shougo/deoplete.nvim', { 'on': [], 'do': ':UpdateRemotePlugins'}
+    Plug 'Shougo/neosnippet'   , { 'on': [] }
+    Plug 'davidhalter/jedi-vim', { 'on': [] }
+    Plug 'zchee/deoplete-jedi' , { 'on': [] }
+    Plug 'Shougo/neco-vim'     , { 'on': [] }  "Deoplete completion for vim
+    Plug 'w0rp/ale'            , { 'on': [] }
 endif
 
 call plug#end()
 
 if has('nvim')
-    augroup LazyLoadPlugins
+    augroup LazyLoadPluginsInsertEnter
         autocmd!
-        autocmd InsertEnter * call deoplete#enable()
-        autocmd InsertEnter * call plug#load('neosnippet')
+        autocmd CursorHold,InsertEnter *     call plug#load('deoplete.nvim')
+        autocmd CursorHold,InsertEnter *     call plug#load('neosnippet')
+        autocmd CursorHold,InsertEnter *.py  call plug#load('jedi-vim')
+        autocmd CursorHold,InsertEnter *.py  call plug#load('deoplete-jedi')
+        autocmd CursorHold,InsertEnter *.vim call plug#load('neco-vim')
     augroup END
+
+    " Only run LazyLoadPlugins once
+    autocmd! CursorHold,InsertEnter * autocmd! LazyLoadPluginsInsertEnter
+
+    augroup LazyLoadPluginsBufWritePre
+        autocmd!
+        autocmd CursorHold,BufWritePre *     call plug#load('ale')
+    augroup END
+
+    autocmd! CursorHold,BufWritePre * autocmd! LazyLoadPluginsBufWritePre
 endif
 
 " }}}
@@ -110,8 +123,16 @@ function! s:dirvish_toggle() abort "{{{
         endif
     endfor
 
-    40vsp
-    Dirvish %
+    " let old_splitright = &splitright
+    " setlocal nosplitright
+    30vsp
+    " let &splitright = old_splitright
+
+    if expand('%') == ""
+        Dirvish
+    else
+        Dirvish %
+    endif
 endfunction "}}}
 
 function! s:dirvish_open(cmd) abort "{{{
@@ -132,6 +153,11 @@ augroup dirvish_commands
     autocmd FileType dirvish nmap     <silent> <buffer> q     :bd<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> v     :<C-U> call <SID>dirvish_open('vsplit')<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> s     :<C-U> call <SID>dirvish_open('split')<CR>
+
+    autocmd Filetype dirvish setlocal nospell
+    autocmd Filetype dirvish setlocal statusline=%f
+    autocmd Filetype dirvish setlocal nonumber
+    autocmd Filetype dirvish setlocal norelativenumber
 augroup END
 " }}}
 " Easy-align {{{
@@ -144,7 +170,7 @@ let g:easy_align_delimiters = {
     \ ',': { 'pattern': ','   , 'left_margin': 0, 'right_margin': 1 },
     \ ')': { 'pattern': ')'   , 'left_margin': 0, 'right_margin': 0 },
     \ '(': { 'pattern': '('   , 'left_margin': 0, 'right_margin': 0 },
-    \ '=': { 'pattern': '<\?=', 'left_margin': 1, 'right_margin': 1 },
+    \ '=': { 'pattern': '<\?=>\?', 'left_margin': 1, 'right_margin': 1 },
     \ '|': { 'pattern': '|\?|', 'left_margin': 1, 'right_margin': 1 },
     \ '&': { 'pattern': '&\?&', 'left_margin': 1, 'right_margin': 1 },
     \ ':': { 'pattern': ':'   , 'left_margin': 1, 'right_margin': 1 },
@@ -203,6 +229,7 @@ let g:jedi#force_py_version = 3
 if has('nvim')
     " Deoplete {{{
     let g:deoplete#auto_complete_delay = 100
+    let g:deoplete#enable_at_startup = 1
     "}}}
     "Neosnippet {{{
     let g:neosnippet#snippets_directory='~/.vim/snippets'
@@ -421,19 +448,18 @@ augroup file_settings_group
     autocmd Filetype systemverilog setlocal softtabstop=2
     autocmd Filetype make          setlocal noexpandtab
     autocmd Filetype gitconfig     setlocal noexpandtab
-    " autocmd Filetype dirvish       setlocal nospell
-    autocmd BufEnter *.log         setlocal textwidth=0
-    autocmd BufEnter dotshrc       setlocal filetype=sh
-    autocmd BufEnter dotsh         setlocal filetype=sh
-    autocmd BufEnter dotbashrc     setlocal filetype=sh
-    autocmd BufEnter dotcshrc      setlocal filetype=csh
-    autocmd BufEnter *.tmux        setlocal filetype=tmux
+    autocmd BufEnter,BufRead *.log         setlocal textwidth=0
+    autocmd BufEnter,BufRead dotshrc,dotsh setlocal filetype=sh
+    autocmd BufEnter,BufRead dotcshrc      setlocal filetype=csh
+    autocmd BufEnter,BufRead *.tmux        setlocal filetype=tmux
 
     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
     autocmd BufNewFile,BufRead *       setlocal ft=tcl
     autocmd BufNewFile,BufRead *   endif
 
     autocmd BufRead .vimrc,vimrc,init.vim setlocal foldmethod=marker
+
+    autocmd BufRead lit.cfg setlocal filetype=python
 augroup END
 " }}}
 " Formatting {{{
@@ -454,28 +480,28 @@ function! Hunks() abort
     let hunks = GitGutterGetHunkSummary()
 
     let modified = hunks[0]
-    let added = hunks[1]
-    let deleted = hunks[2]
+    let added    = hunks[1]
+    let deleted  = hunks[2]
 
+    let modified_s = ''
     if modified != '0'
-        let modified = '~'.modified
-    else
-        let modified = ''
+        let modified_s .= '~'
+        let modified_s .= modified
     endif
 
+    let added_s = ''
     if added != '0'
-        let added = '+'.added
-    else
-        let added = ''
+        let added_s .= '+'
+        let added_s .= added
     endif
 
+    let deleted_s = ''
     if deleted != '0'
-        let deleted = '-'.deleted
-    else
-        let deleted = ''
+        let deleted_s .= '-'
+        let deleted_s .= deleted
     endif
 
-    return Strip(join([modified,added,deleted]))
+    return Strip(join([modified_s,added_s,deleted_s]))
 endfunction
 
 function! EncodingAndFormat() abort
@@ -495,51 +521,111 @@ function! EncodingAndFormat() abort
     return Strip(join([e,f]))
 endfunction
 
-function! ActiveStatus(active)
-    if a:active
-        let  s="%#PmenuSel#"
+function! s:GetAle(active) abort
+    try
+        let s = ALEGetStatusLine()
+    catch
+        return ""
+    endtry
+
+    if s == "OK"
+        return ""
     else
-        let  s="%#LinrNr#"
+        if a:active
+            return "%#DiffRemoved#".s
+        else
+            return s
+        endif
+    endif
+endfunction
+
+function! Statusbar(active) abort
+    if a:active
+        let s="%#PmenuSel#"
+    else
+        let s="%#StatusLineNC#"
     endif
 
-    let s.="%(\ %{Hunks()}\ %)"
+    let s.="%(  %{fugitive#head()}  %)"
 
     if a:active
-        let s.="\%#Visual#"
+        let s.="%#Visual#"
     endif
 
-    let s.="\ %f"
+    let s .= "%(  %{Hunks()}  %)"
+
+    if a:active
+        let s.="%#CursorLine#"
+    endif
+
+    let s.="  %f"
     let s.="%m%r" " [+][RO]"
-
-    if a:active
-        let s.="\ %#CursorColumn#"
-    endif
 
     let s.="%="
 
+    let s.=s:GetAle(a:active)
+
+    let s.="  "
+
     if a:active
-        let s.="\ %#Visual#"
+        let s.="%#Visual#"
     endif
 
-    let s.="%(\ %{&filetype}\ %)"
+    let s.="%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)"
 
     if a:active
         let s.="%#PmenuSel#"
     endif
-    let s.="%(\ %{EncodingAndFormat()}%)"
-    let s.="\ %p%%" " Percent through file
-    let s.="\ %l/%L\ %c\ " " lnum:cnum
+
+    let s.="%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)"
+    let s.=" %p%%" " Percent through file
+    let s.=" %l/%L %c  " " lnum:cnum
     return s
 endfunction
 
 augroup status
   autocmd!
-  autocmd WinEnter * setlocal statusline=%!ActiveStatus(1)
-  autocmd WinLeave * setlocal statusline=%!ActiveStatus(0)
+  autocmd WinEnter * setlocal statusline=%!Statusbar(1)
+  autocmd WinLeave * setlocal statusline=%!Statusbar(0)
 augroup END
 
-set statusline=%!ActiveStatus(1)
+set statusline=%!Statusbar(1)
 
 "}}}
+" Tabline {{{
+set tabline=%!MyTabLine()
+" set showtabline=2
+
+function! MyTabLine() abort
+    let s = ''
+    for i in range(tabpagenr('$'))
+        let t = i + 1
+        " select the highlighting
+        if t == tabpagenr()
+            let s .= '%#TabLineSel#'
+        else
+            let s .= '%#TabLine#'
+        endif
+
+        let s .= ' '
+        let s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . t . '))}'
+        let s .= '%{MyTabLabel(' . t . ')}'
+        let s .= ' '
+    endfor
+
+    " after the last tab fill with TabLineFill and reset tab page nr
+    let s .= '%#TabLineFill#%T'
+
+    return s
+endfunction
+
+function! MyTabLabel(n) abort
+    let buflist = tabpagebuflist(a:n)
+    let winnr = tabpagewinnr(a:n)
+    let path = bufname(buflist[winnr - 1])
+    return fnamemodify(path, ':t')
+endfunction
+" }}}
+
 highlight EndOfBuffer ctermfg=bg guifg=bg
 
