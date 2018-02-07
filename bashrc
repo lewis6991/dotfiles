@@ -185,6 +185,7 @@ source_if_exists "$HOME/.bashrc_local"
 
 export PATH="$HOME/bin:$PATH"
 export PATH="$HOME/tools/python/bin:$PATH"
+export PATH="/usr/local/sbin:$PATH"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Locale                                                                      ┃

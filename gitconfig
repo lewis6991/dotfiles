@@ -10,6 +10,7 @@
 
 [alias]
 	a   = add
+	au  = add -u
 	br  = branch
 	ca  = commit --amend
 	ci  = commit
@@ -17,11 +18,13 @@
 	cp  = cherry-pick
 	cpc = cherry-pick --continue
 	d   = difftool
+	dt = "!f() { vim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst; }; f"
 	ra  = rebase --abort
 	rc  = rebase --continue
 	ri  = rebase --interactive
 	rs  = rebase --skip
 	st  = status
+	stp = status --porcelain
 	su  = submodule update
 	# lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
 	# lg2 = !sh -c 'git log --graph --format=\"%w($(($(tput cols)-10)),,42)%C(bold yellow)%h %C(bold blue)%<(16)%an %C(bold green)%<(14)%cr %C(auto)%d %s\"' -
