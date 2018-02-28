@@ -25,13 +25,18 @@
 	rs  = rebase --skip
 	st  = status
 	stp = status --porcelain
-	su  = submodule update
+	su  = submodule update --recursive
 	# lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
+	rlg = log --pretty=format:'- %s' --abbrev-commit
 	# lg2 = !sh -c 'git log --graph --format=\"%w($(($(tput cols)-10)),,42)%C(bold yellow)%h %C(bold blue)%<(16)%an %C(bold green)%<(14)%cr %C(auto)%d %s\"' -
 	# lg3 = log --graph --format=\"%w(140,,42)%C(bold yellow)%h %C(bold blue)%<(16)%an %C(bold green)%<(14)%cr %C(auto)%d %s\"
 	lg = "!f() {\
 			width=$(($(tput cols) - 10)); \
 			git log --graph --format=\"%w($width,,43)%C(bold yellow)%h %C(bold blue)%<(18)%an %C(bold green)%<(14)%cr %C(auto)%d %s\" $@; \
+		}; f"
+	put = "!f() {\
+			git branch -f ${1-master}; \
+			git checkout ${1-master}; \
 		}; f"
 
 	# Gerrit aliases
@@ -45,5 +50,8 @@
 
 [pull]
 	rebase = true
+
+[rebase]
+	autoStash = true
 
 # vim: ft=gitconfig

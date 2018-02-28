@@ -24,54 +24,55 @@ let loaded_netrwPlugin = 1  " Stop netrw loading
 execute pathogen#infect('~/gerrit/{}')
 
 call plug#begin('~/.vim/plugged')
+    Plug '~/git/tcl.vim', { 'for': 'tcl' }
+    Plug '~/git/systemverilog.vim' , { 'for': 'systemverilog' }
+    Plug '~/git/dotfiles/modules/moonlight.vim'
 
-Plug '~/git/tcl.vim', { 'for': 'tcl' }
-Plug '~/git/systemverilog.vim' , { 'for': 'systemverilog' }
-Plug '~/projects/dotfiles/modules/moonlight.vim'
+    Plug 'junegunn/vim-plug'
 
-Plug 'junegunn/vim-plug'
-Plug 'tpope/vim-fugitive'
-Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-Plug 'junegunn/fzf.vim'
-Plug 'junegunn/vim-easy-align'
-Plug 'whatyouhide/vim-lengthmatters'
-Plug 'gaving/vim-textobj-argument'
-Plug 'michaeljsmith/vim-indent-object'
-Plug 'sickill/vim-pasta'
-Plug 'triglav/vim-visual-increment'
-Plug 'justinmk/vim-dirvish'
-Plug 'tpope/vim-eunuch'
-Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
+    Plug 'tpope/vim-fugitive'
+    Plug 'tpope/vim-commentary'
+    Plug 'tpope/vim-unimpaired'
+    Plug 'tpope/vim-surround'
+    Plug 'tpope/vim-repeat'
+    Plug 'tpope/vim-eunuch'
 
-if version >= 704
-    Plug 'lewis6991/vim-clean-fold'
-endif
+    Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+    Plug 'junegunn/fzf.vim'
+    Plug 'junegunn/vim-easy-align'
+    Plug 'whatyouhide/vim-lengthmatters'
+    Plug 'gaving/vim-textobj-argument'
+    Plug 'michaeljsmith/vim-indent-object'
+    " Plug 'sickill/vim-pasta'
+    " Plug 'triglav/vim-visual-increment'
+    Plug 'justinmk/vim-dirvish'
+    Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
 
-" Python
-Plug 'tmhedberg/SimpylFold'         , { 'for': 'python' }
-Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
+    if version >= 704
+        Plug 'lewis6991/vim-clean-fold'
+    endif
 
-Plug 'airblade/vim-gitgutter'
-Plug 'christoomey/vim-tmux-navigator'
-Plug 'dietsche/vim-lastplace'
-Plug 'Yggdroot/indentLine'
-Plug 'tmux-plugins/vim-tmux', { 'for': 'tmux' }
-Plug 'tmux-plugins/vim-tmux-focus-events'
-Plug 'tpope/vim-commentary'
-Plug 'tpope/vim-unimpaired'
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-repeat'
-Plug 'ryanoasis/vim-devicons'
+    " Python
+    Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
+    Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
+    Plug 'airblade/vim-gitgutter'
+    Plug 'christoomey/vim-tmux-navigator'
+    Plug 'dietsche/vim-lastplace'
+    Plug 'Yggdroot/indentLine'
+    Plug 'tmux-plugins/vim-tmux', { 'for': 'tmux' }
+    Plug 'tmux-plugins/vim-tmux-focus-events'
+    Plug 'ryanoasis/vim-devicons'
 
-if has('nvim')
-    Plug 'Shougo/deoplete.nvim', { 'on': [], 'do': ':UpdateRemotePlugins'}
-    Plug 'Shougo/neosnippet'   , { 'on': [] }
-    Plug 'davidhalter/jedi-vim', { 'on': [] }
-    Plug 'zchee/deoplete-jedi' , { 'on': [] }
-    Plug 'Shougo/neco-vim'     , { 'on': [] }  "Deoplete completion for vim
-    Plug 'w0rp/ale'            , { 'on': [] }
-endif
+    Plug 'powerman/vim-plugin-AnsiEsc'
 
+    if has('nvim')
+        Plug 'Shougo/deoplete.nvim', { 'on': [], 'do': ':UpdateRemotePlugins'}
+        Plug 'Shougo/neosnippet'   , { 'on': [] }
+        Plug 'davidhalter/jedi-vim', { 'on': [] }
+        " Plug 'zchee/deoplete-jedi' , { 'on': [] }
+        Plug 'Shougo/neco-vim'     , { 'on': [] }  "Deoplete completion for vim
+        Plug 'w0rp/ale'            , { 'on': [] }
+    endif
 call plug#end()
 
 if has('nvim')
@@ -80,7 +81,7 @@ if has('nvim')
         autocmd CursorHold,InsertEnter *     call plug#load('deoplete.nvim')
         autocmd CursorHold,InsertEnter *     call plug#load('neosnippet')
         autocmd CursorHold,InsertEnter *.py  call plug#load('jedi-vim')
-        autocmd CursorHold,InsertEnter *.py  call plug#load('deoplete-jedi')
+        " autocmd CursorHold,InsertEnter *.py  call plug#load('deoplete-jedi')
         autocmd CursorHold,InsertEnter *.vim call plug#load('neco-vim')
     augroup END
 
@@ -89,7 +90,7 @@ if has('nvim')
 
     augroup LazyLoadPluginsBufWritePre
         autocmd!
-        autocmd CursorHold,BufWritePre *     call plug#load('ale')
+        autocmd CursorHold,BufWritePre * call plug#load('ale')
     augroup END
 
     autocmd! CursorHold,BufWritePre * autocmd! LazyLoadPluginsBufWritePre
@@ -98,12 +99,10 @@ endif
 " }}}
 " Plugin Settings {{{
 "Ale {{{
-let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
+" let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
 let g:ale_lint_on_enter = 0
 let g:ale_lint_on_text_changed = 'never'
-let g:ale_python_flake8_options = '--ignore E202,E203,E221,E251'
-let g:ale_python_mypy_options = '--strict'
-let g:ale_python_pylint_options = '--disable=C0326,C0103,E0401,C0301'
+let g:ale_python_mypy_options = '--config-file setup.cfg'
 let g:ale_set_highlights = 1
 let g:ale_sh_shellcheck_options = '-x'
 let g:ale_sign_info = '->'
@@ -123,10 +122,7 @@ function! s:dirvish_toggle() abort "{{{
         endif
     endfor
 
-    " let old_splitright = &splitright
-    " setlocal nosplitright
     30vsp
-    " let &splitright = old_splitright
 
     if expand('%') == ""
         Dirvish
@@ -189,39 +185,19 @@ let g:gitgutter_max_signs=2000
 " Indentline {{{
 let g:indentLine_char = '│'
 let g:indentLine_setColors = 0
+let g:indentLine_fileTypeExclude = ['fzf', 'dirvish']
 " }}}
 " FZF {{{
-
-" let g:fzf_colors = {
-"     \ 'fg':      ['fg', 'Normal'],
-"     \ 'bg':      ['bg', 'Normal'],
-"     \ 'hl':      ['fg', 'Comment'],
-"     \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-"     \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-"     \ 'hl+':     ['fg', 'Statement'],
-"     \ 'info':    ['fg', 'PreProc'],
-"     \ 'border':  ['fg', 'Ignore'],
-"     \ 'prompt':  ['fg', 'Conditional'],
-"     \ 'pointer': ['fg', 'Exception'],
-"     \ 'marker':  ['fg', 'Keyword'],
-"     \ 'spinner': ['fg', 'Label'],
-"     \ 'header':  ['fg', 'Comment']
-"     \ }
-
-" set grepprg=rg\ --vimgrep
-function! s:find_git_root()
+function! s:find_git_root() abort
   return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
 endfunction
 
 command! ProjectFiles execute 'Files' s:find_git_root()
 
-let g:indentLine_fileTypeExclude = ['fzf', 'dirvish']
-
 nnoremap <c-p> :ProjectFiles<cr>
-" let g:fzf_layout = { 'down': '~30%' }
+nnoremap <c-s> :Ag<cr>
 let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
-
 " }}}
 " Jedi {{{
 let g:jedi#force_py_version = 3
@@ -278,16 +254,15 @@ if has('persistent_undo')
     set undofile " Preserve undo tree between sessions.
 endif
 
-if !has('nvim')
-    set viminfo+=n~/.vim/tmp/viminfo " override ~/.viminfo default
-else
+if has('nvim')
     set viminfo+=n~/.vim/tmp/nviminfo " override ~/.viminfo default
+else
+    set viminfo+=n~/.vim/tmp/viminfo " override ~/.viminfo default
 endif
 
 set splitright
 set splitbelow
 set spell
-
 " }}}
 " Vim {{{
 " Make normal Vim behave like Neovim
@@ -349,7 +324,6 @@ nnoremap <leader>ev :tabnew $MYVIMRC<CR>
 nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
 nnoremap <bs> :nohlsearch<cr>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>//g<left><left>
-nnoremap <leader>w :call DeleteTrailingWS()<cr>
 nnoremap <leader>d :Gdiff<CR>
 
 nnoremap Y y$
@@ -360,29 +334,23 @@ vnoremap Q <nop>
 " Show syntax highlighting groups for word under cursor
 nnoremap <leader>z :call <SID>SynStack()<CR>
 
-" nnoremap <Tab> <C-W>w
-" nnoremap <S-Tab> <C-W>W
 nnoremap <Tab> gt
 nnoremap <S-Tab> gT
 
 nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
-nnoremap <expr><silent> _ !v:count ? "<C-W>s<C-W><Down>"  : '_'
+nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
 
-nnoremap <cr> i<cr><esc>k$
-
-map <expr> <leader>an <Plug>(ale_next)
-map <expr> <leader>ap <Plug>(ale_previous)
+nmap <leader>an <Plug>(ale_next)
+nmap <leader>ap <Plug>(ale_previous)
 
 nmap <leader>hn <Plug>GitGutterNextHunk
 nmap <leader>hp <Plug>GitGutterPrevHunk
 
 nmap <Leader>ha <Plug>GitGutterStageHunk
 nmap <Leader>hr <Plug>GitGutterUndoHunk
-
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
-"set list listchars=tab:›\  "Show tabs as '›   ›   '
 
 augroup WhitespaceGroup
     autocmd!
@@ -407,12 +375,11 @@ set commentstring=#%s " This is the most common
 augroup commentstring_group
     autocmd!
     autocmd Filetype scala     setlocal commentstring=//%s
-    autocmd Filetype vim       setlocal commentstring=\"%s
     autocmd Filetype sbt.scala setlocal commentstring=//%s
+    autocmd Filetype vim       setlocal commentstring=\"%s
 augroup END
 " }}}
 " Functions {{{
-
 function! DeleteTrailingWS() abort "{{{
     normal mz"
     %s/\s\+$//ge
@@ -425,7 +392,6 @@ function! <SID>SynStack() abort "{{{
     endif
     echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunction "}}}
-
 "}}}
 " Colours {{{
 if has('termguicolors')
@@ -442,16 +408,17 @@ let g:vim_indent_cont = &sw
 
 augroup file_settings_group
     autocmd!
-    autocmd Filetype scala         setlocal shiftwidth=4
-    autocmd Filetype systemverilog setlocal shiftwidth=2
-    autocmd Filetype systemverilog setlocal tabstop=2
-    autocmd Filetype systemverilog setlocal softtabstop=2
-    autocmd Filetype make          setlocal noexpandtab
-    autocmd Filetype gitconfig     setlocal noexpandtab
+    autocmd Filetype         scala         setlocal shiftwidth=4
+    autocmd Filetype         systemverilog setlocal shiftwidth=2
+    autocmd Filetype         systemverilog setlocal tabstop=2
+    autocmd Filetype         systemverilog setlocal softtabstop=2
+    autocmd Filetype         make          setlocal noexpandtab
+    autocmd Filetype         gitconfig     setlocal noexpandtab
     autocmd BufEnter,BufRead *.log         setlocal textwidth=0
     autocmd BufEnter,BufRead dotshrc,dotsh setlocal filetype=sh
     autocmd BufEnter,BufRead dotcshrc      setlocal filetype=csh
     autocmd BufEnter,BufRead *.tmux        setlocal filetype=tmux
+    autocmd BufEnter,BufRead setup.cfg     setlocal filetype=dosini
 
     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
     autocmd BufNewFile,BufRead *       setlocal ft=tcl
@@ -471,7 +438,6 @@ if v:version >= 704
 endif
 "}}}
 " Statusline {{{
-
 function! Strip(input_string)
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
 endfunction
@@ -539,7 +505,7 @@ function! s:GetAle(active) abort
     endif
 endfunction
 
-function! Statusbar(active) abort
+function! Statusbar(active)
     if a:active
         let s="%#PmenuSel#"
     else
@@ -558,7 +524,7 @@ function! Statusbar(active) abort
         let s.="%#CursorLine#"
     endif
 
-    let s.="  %f"
+    let s.="  %.40f"
     let s.="%m%r" " [+][RO]"
 
     let s.="%="
@@ -627,5 +593,36 @@ function! MyTabLabel(n) abort
 endfunction
 " }}}
 
-highlight EndOfBuffer ctermfg=bg guifg=bg
+augroup terminal_settings
+    au!
+    au TermOpen * setlocal nonumber
+    au TermOpen * setlocal norelativenumber
+    au TermOpen * setlocal nospell
+augroup END
+
+" let g:terminal_color_0  = "#051018"
+" let g:terminal_color_18 = "#0F1A22"
+" let g:terminal_color_19 = "#253038"
+" let g:terminal_color_8  = "#556068"
+" let g:terminal_color_20 = "#657078"
+" let g:terminal_color_7  = "#C5D0D8"
+" let g:terminal_color_21 = "#D5E0E8"
+" let g:terminal_color_15 = "#FFFFFF"
+" let g:terminal_color_1  = "#d5996d"
+" let g:terminal_color_9  = "#d5996d"
+" let g:terminal_color_16 = "#d5d56d"
+" let g:terminal_color_11 = "#99d56d"
+" let g:terminal_color_3  = "#99d56d"
+" let g:terminal_color_10 = "#6dd599"
+" let g:terminal_color_02 = "#6dd599"
+" let g:terminal_color_14 = "#6d99d5"
+" let g:terminal_color_6  = "#6d99d5"
+" let g:terminal_color_12 = "#996dd5"
+" let g:terminal_color_4  = "#996dd5"
+" let g:terminal_color_13 = "#d56d99"
+" let g:terminal_color_5  = "#d56d99"
+" let g:terminal_color_17 = "#d56d6d"
+
+
+" highlight EndOfBuffer ctermfg=bg guifg=bg
 
