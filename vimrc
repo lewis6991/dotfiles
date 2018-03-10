@@ -489,20 +489,36 @@ endfunction
 
 function! s:GetAle(active) abort
     try
-        let s = ALEGetStatusLine()
+        let aleinfo = ale#statusline#Count(bufnr('%'))
     catch
         return ""
     endtry
 
-    if s == "OK"
+    if aleinfo['total'] == 0
         return ""
-    else
-        if a:active
-            return "%#DiffRemoved#".s
-        else
-            return s
-        endif
     endif
+
+    let keydisp = {
+        \     'error'         : {'display' : 'E' , 'highlight' : 'DiffRemoved'},
+        \     'warning'       : {'display' : 'W' , 'highlight' : 'DiffLine'   },
+        \     'style_error'   : {'display' : 'SE', 'highlight' : 'DiffRemoved'},
+        \     'style_warning' : {'display' : 'SW', 'highlight' : 'DiffLine'   },
+        \     'info'          : {'display' : 'I' , 'highlight' : 'DiffAdded'  }
+        \ }
+
+    let alestatus = []
+    for key in keys(keydisp)
+        if aleinfo[key] > 0
+            let entry = ''
+            if a:active
+                let entry .= "%#".keydisp[key]['highlight']."#"
+            endif
+            let entry .= keydisp[key]['display'].':'.aleinfo[key]
+            let alestatus += [entry]
+        endif
+    endfor
+
+    return Strip(join(alestatus))
 endfunction
 
 function! Statusbar(active)
@@ -593,12 +609,14 @@ function! MyTabLabel(n) abort
 endfunction
 " }}}
 
-augroup terminal_settings
-    au!
-    au TermOpen * setlocal nonumber
-    au TermOpen * setlocal norelativenumber
-    au TermOpen * setlocal nospell
-augroup END
+if has('nvim')
+    augroup terminal_settings
+        au!
+        au TermOpen * setlocal nonumber
+        au TermOpen * setlocal norelativenumber
+        au TermOpen * setlocal nospell
+    augroup END
+endif
 
 " let g:terminal_color_0  = "#051018"
 " let g:terminal_color_18 = "#0F1A22"
