@@ -641,6 +641,9 @@ endif
 " let g:terminal_color_5  = "#d56d99"
 " let g:terminal_color_17 = "#d56d6d"
 
+if has('nvim-0.2.3')
+    highlight EndOfBuffer ctermfg=bg guifg=bg
+endif
 
 " highlight EndOfBuffer ctermfg=bg guifg=bg
 
