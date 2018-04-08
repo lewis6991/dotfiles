@@ -64,6 +64,7 @@ function install_vim {
 
     # nvim
     mkdir -p ~/.config/
+    mkdir -p ~/.config/autoload
     link_file ~/.vim ~/.config/nvim
     link_file ~/.vimrc ~/.vim/init.vim
 
@@ -86,6 +87,7 @@ install_vim
 install_dotfile tmux.conf
 install_dotfile gitconfig
 install_dotfile bashrc
+install_dotfile zshrc
 install_dotfile bash_functions
 install_dotfile bash_completion
 install_dotfile inputrc
