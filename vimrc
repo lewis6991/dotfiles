@@ -24,9 +24,9 @@ let loaded_netrwPlugin = 1  " Stop netrw loading
 execute pathogen#infect('~/gerrit/{}')
 
 call plug#begin('~/.vim/plugged')
-    Plug '~/git/tcl.vim', { 'for': 'tcl' }
+    Plug 'lewis6991/tcl.vim', { 'for': 'tcl' }
     Plug '~/git/systemverilog.vim' , { 'for': 'systemverilog' }
-    Plug '~/git/dotfiles/modules/moonlight.vim'
+    Plug '~/projects/dotfiles/modules/moonlight.vim'
 
     Plug 'junegunn/vim-plug'
 
@@ -36,6 +36,8 @@ call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-repeat'
     Plug 'tpope/vim-eunuch'
+
+    Plug 'majutsushi/tagbar'
 
     Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
     Plug 'junegunn/fzf.vim'
@@ -67,6 +69,7 @@ call plug#begin('~/.vim/plugged')
 
     if has('nvim')
         Plug 'Shougo/deoplete.nvim', { 'on': [], 'do': ':UpdateRemotePlugins'}
+        Plug 'roxma/nvim-completion-manager', { 'on' : [] }
         Plug 'Shougo/neosnippet'   , { 'on': [] }
         Plug 'davidhalter/jedi-vim', { 'on': [] }
         " Plug 'zchee/deoplete-jedi' , { 'on': [] }
@@ -75,10 +78,19 @@ call plug#begin('~/.vim/plugged')
     endif
 call plug#end()
 
+augroup vim-scala-override
+    autocmd!
+    autocmd Filetype scala setlocal errorformat=
+        \%E\ %#[error]\ %f:%l:%c:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
+        \%W\ %#[warn]\ %f:%l:%c:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
+        \%-G%.%#
+augroup END
+
 if has('nvim')
     augroup LazyLoadPluginsInsertEnter
         autocmd!
-        autocmd CursorHold,InsertEnter *     call plug#load('deoplete.nvim')
+        " autocmd CursorHold,InsertEnter *     call plug#load('deoplete.nvim')
+        autocmd CursorHold,InsertEnter *     call plug#load('nvim-completion-manager')
         autocmd CursorHold,InsertEnter *     call plug#load('neosnippet')
         autocmd CursorHold,InsertEnter *.py  call plug#load('jedi-vim')
         " autocmd CursorHold,InsertEnter *.py  call plug#load('deoplete-jedi')
@@ -108,6 +120,7 @@ let g:ale_sh_shellcheck_options = '-x'
 let g:ale_sign_info = '->'
 let g:ale_tcl_nagelfar_options = "-s ~/syntaxdbjg.tcl"
 let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
+let g:ale_echo_msg_format = '%severity%->%linter%->%code: %%s'
 " }}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
@@ -160,19 +173,20 @@ augroup END
 xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
 let g:easy_align_delimiters = {
-    \ ';': { 'pattern': ';'   , 'left_margin': 0 },
-    \ '[': { 'pattern': '['   , 'left_margin': 1, 'right_margin': 0 },
-    \ ']': { 'pattern': ']'   , 'left_margin': 0, 'right_margin': 1 },
-    \ ',': { 'pattern': ','   , 'left_margin': 0, 'right_margin': 1 },
-    \ ')': { 'pattern': ')'   , 'left_margin': 0, 'right_margin': 0 },
-    \ '(': { 'pattern': '('   , 'left_margin': 0, 'right_margin': 0 },
+    \ ';': { 'pattern': ';'      , 'left_margin': 0 },
+    \ '[': { 'pattern': '['      , 'left_margin': 1, 'right_margin': 0 },
+    \ ']': { 'pattern': ']'      , 'left_margin': 0, 'right_margin': 1 },
+    \ ',': { 'pattern': ','      , 'left_margin': 0, 'right_margin': 1 },
+    \ ')': { 'pattern': ')'      , 'left_margin': 0, 'right_margin': 0 },
+    \ '(': { 'pattern': '('      , 'left_margin': 0, 'right_margin': 0 },
     \ '=': { 'pattern': '<\?=>\?', 'left_margin': 1, 'right_margin': 1 },
-    \ '|': { 'pattern': '|\?|', 'left_margin': 1, 'right_margin': 1 },
-    \ '&': { 'pattern': '&\?&', 'left_margin': 1, 'right_margin': 1 },
-    \ ':': { 'pattern': ':'   , 'left_margin': 1, 'right_margin': 1 },
-    \ '?': { 'pattern': '?'   , 'left_margin': 1, 'right_margin': 1 },
-    \ '<': { 'pattern': '<'   , 'left_margin': 1, 'right_margin': 0 },
-    \ '\': { 'pattern': '\\'  , 'left_margin': 1, 'right_margin': 0 }
+    \ '|': { 'pattern': '|\?|'   , 'left_margin': 1, 'right_margin': 1 },
+    \ '&': { 'pattern': '&\?&'   , 'left_margin': 1, 'right_margin': 1 },
+    \ ':': { 'pattern': ':'      , 'left_margin': 1, 'right_margin': 1 },
+    \ '?': { 'pattern': '?'      , 'left_margin': 1, 'right_margin': 1 },
+    \ '<': { 'pattern': '<'      , 'left_margin': 1, 'right_margin': 0 },
+    \ '\': { 'pattern': '\\'     , 'left_margin': 1, 'right_margin': 0 },
+    \ '+': { 'pattern': '+'      , 'left_margin': 1, 'right_margin': 1 }
     \ }
 "}}}
 " Vim-lengthmatters {{{
@@ -211,15 +225,18 @@ if has('nvim')
     let g:neosnippet#snippets_directory='~/.vim/snippets'
     let g:neosnippet#disable_runtime_snippets = { '_' : 1 }
 
-    imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
-        \ "\<Plug>(neosnippet_expand_or_jump)" :
-        \ pumvisible() ? "\<C-n>" :
-        \ <SID>check_back_space() ? "\<TAB>" :
-        \ deoplete#mappings#manual_complete()
-    function! s:check_back_space() abort "{{{
-        let col = col('.') - 1
-        return !col || getline ('.')[col - 1] =~ '\s'
-    endfunction "}}}
+
+	inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+	inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+    " imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
+    "     \ "\<Plug>(neosnippet_expand_or_jump)" :
+    "     \ pumvisible() ? "\<C-n>" : "\<TAB>"
+    "     " \ <SID>check_back_space() ? "\<TAB>" :
+    "     " \ deoplete#mappings#manual_complete()
+    " function! s:check_back_space() abort "{{{
+    "     let col = col('.') - 1
+    "     return !col || getline ('.')[col - 1] =~ '\s'
+    " endfunction "}}}
     "}}}
 endif
 " }}}
@@ -325,6 +342,11 @@ nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
 nnoremap <bs> :nohlsearch<cr>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>//g<left><left>
 nnoremap <leader>d :Gdiff<CR>
+nnoremap <leader>c 1z=
+nnoremap <leader>w :execute "resize ".line('$')<cr>
+
+nnoremap j gj
+nnoremap k gk
 
 nnoremap Y y$
 
@@ -409,9 +431,14 @@ let g:vim_indent_cont = &sw
 augroup file_settings_group
     autocmd!
     autocmd Filetype         scala         setlocal shiftwidth=4
+    autocmd Filetype         scala         setlocal foldlevelstart=1
+
     autocmd Filetype         systemverilog setlocal shiftwidth=2
     autocmd Filetype         systemverilog setlocal tabstop=2
     autocmd Filetype         systemverilog setlocal softtabstop=2
+
+    autocmd Filetype         tags          setlocal tabstop=30
+
     autocmd Filetype         make          setlocal noexpandtab
     autocmd Filetype         gitconfig     setlocal noexpandtab
     autocmd BufEnter,BufRead *.log         setlocal textwidth=0
@@ -645,5 +672,52 @@ if has('nvim-0.2.3')
     highlight EndOfBuffer ctermfg=bg guifg=bg
 endif
 
-" highlight EndOfBuffer ctermfg=bg guifg=bg
 
+function! SCTags()
+    if executable("sctags")
+        let g:tagbar_ctags_bin = "sctags"
+        let g:tagbar_type_scala = {
+            \ 'ctagstype' : 'scala',
+            \ 'sro'       : '.',
+            \ 'kinds'     : [
+                \ 'p:packages',
+                \ 'V:values',
+                \ 'v:variables',
+                \ 'T:types',
+                \ 't:traits',
+                \ 'o:objects',
+                \ 'O:case objects',
+                \ 'c:classes',
+                \ 'C:case classes',
+                \ 'm:methods:1'
+            \ ],
+            \ 'kind2scope'  : {
+                \ 'p' : 'package',
+                \ 'T' : 'type',
+                \ 't' : 'trait',
+                \ 'o' : 'object',
+                \ 'O' : 'case_object',
+                \ 'c' : 'class',
+                \ 'C' : 'case_class',
+                \ 'm' : 'method'
+            \ },
+            \ 'scope2kind'  : {
+                \ 'package'     : 'p',
+                \ 'type'        : 'T',
+                \ 'trait'       : 't',
+                \ 'object'      : 'o',
+                \ 'case_object' : 'O',
+                \ 'class'       : 'c',
+                \ 'case_class'  : 'C',
+                \ 'method'      : 'm'
+            \ }
+        \ }
+    endif
+endfunction
+
+if has("autocmd")
+    autocmd FileType scala call SCTags()
+endif
+
+" highlight EndOfBuffer ctermfg=bg guifg=bg
+au! BufWritePre * GitGutter

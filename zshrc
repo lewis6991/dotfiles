@@ -1,4 +1,5 @@
 HAVE_BREW=0
+REPO_DIR=~/projects/
 
 if hash brew 2> /dev/null; then
     HAVE_BREW=1
@@ -43,9 +44,19 @@ fi
 alias re-csh="source ~/.zshrc"
 
 # Async prompt -----------------------------------------------------------------
-source ~/git/dotfiles/modules/fancy-prompt/prompt.zsh
+source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
 
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
+
+refresh_display() {
+    if [ -n "$TMUX" ]; then
+        # Refresh these variables
+        eval "$(tmux showenv -s DISPLAY)"
+        eval "$(tmux showenv -s SSH_CONNECTION)"
+    fi
+}
+
+add-zsh-hook precmd refresh_display
 
 # vim : set nofoldenable

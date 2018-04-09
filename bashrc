@@ -35,7 +35,7 @@ fi
 #┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 source_if_exists ~/.fzf.bash
 
-export FZF_DEFAULT_OPTS='--height 30% --reverse --preview "head -80 {}"'
+export FZF_DEFAULT_OPTS='--height 30% --reverse'
 
 if hash rg 2>/dev/null; then
     export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
@@ -55,6 +55,10 @@ elif [[ $PS1 ]]; then
     source_if_exists ~/.local/share/bash-completion/bash_completion
 elif ! shopt -oq posix; then
     source_if_exists /etc/bash_completion
+fi
+
+if hash gerrit 2> /dev/null; then
+    source <(gerrit completion)
 fi
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -177,6 +181,10 @@ fi
 shopt -s histappend
 
 export HISTCONTROL=erasedups
+
+if ((IS_MAC)); then
+    xhost + > /dev/null
+fi
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Load other setups                                                           ┃
