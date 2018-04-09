@@ -25,8 +25,11 @@ execute pathogen#infect('~/gerrit/{}')
 
 call plug#begin('~/.vim/plugged')
     Plug 'lewis6991/tcl.vim', { 'for': 'tcl' }
-    Plug '~/git/systemverilog.vim' , { 'for': 'systemverilog' }
-    Plug '~/projects/dotfiles/modules/moonlight.vim'
+    Plug 'lewis6991/systemverilog.vim' , { 'for': 'systemverilog' }
+    Plug 'lewis6991/moonlight.vim'
+    if version >= 704
+        Plug 'lewis6991/vim-clean-fold'
+    endif
 
     Plug 'junegunn/vim-plug'
 
@@ -50,10 +53,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'justinmk/vim-dirvish'
     Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
 
-    if version >= 704
-        Plug 'lewis6991/vim-clean-fold'
-    endif
-
     " Python
     Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
     Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
@@ -64,37 +63,22 @@ call plug#begin('~/.vim/plugged')
     Plug 'tmux-plugins/vim-tmux', { 'for': 'tmux' }
     Plug 'tmux-plugins/vim-tmux-focus-events'
     Plug 'ryanoasis/vim-devicons'
-
     Plug 'powerman/vim-plugin-AnsiEsc'
+    Plug 'rhysd/clever-f.vim'
 
     if has('nvim')
-        Plug 'Shougo/deoplete.nvim', { 'on': [], 'do': ':UpdateRemotePlugins'}
         Plug 'roxma/nvim-completion-manager', { 'on' : [] }
         Plug 'Shougo/neosnippet'   , { 'on': [] }
-        Plug 'davidhalter/jedi-vim', { 'on': [] }
-        " Plug 'zchee/deoplete-jedi' , { 'on': [] }
-        Plug 'Shougo/neco-vim'     , { 'on': [] }  "Deoplete completion for vim
+        Plug 'Shougo/neco-vim'     , { 'for': 'vim' }  "Deoplete completion for vim
         Plug 'w0rp/ale'            , { 'on': [] }
     endif
 call plug#end()
 
-augroup vim-scala-override
-    autocmd!
-    autocmd Filetype scala setlocal errorformat=
-        \%E\ %#[error]\ %f:%l:%c:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
-        \%W\ %#[warn]\ %f:%l:%c:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
-        \%-G%.%#
-augroup END
-
 if has('nvim')
     augroup LazyLoadPluginsInsertEnter
         autocmd!
-        " autocmd CursorHold,InsertEnter *     call plug#load('deoplete.nvim')
         autocmd CursorHold,InsertEnter *     call plug#load('nvim-completion-manager')
         autocmd CursorHold,InsertEnter *     call plug#load('neosnippet')
-        autocmd CursorHold,InsertEnter *.py  call plug#load('jedi-vim')
-        " autocmd CursorHold,InsertEnter *.py  call plug#load('deoplete-jedi')
-        autocmd CursorHold,InsertEnter *.vim call plug#load('neco-vim')
     augroup END
 
     " Only run LazyLoadPlugins once
@@ -169,6 +153,10 @@ augroup dirvish_commands
     autocmd Filetype dirvish setlocal norelativenumber
 augroup END
 " }}}
+" Clever F {{{
+let g:clever_f_across_no_line = 1
+let g:clever_f_mark_char_color = "DiffChange"
+" }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
@@ -194,8 +182,8 @@ let g:lengthmatters_highlight_one_column = 1
 " }}}
 " Gitgutter {{{
 let g:gitgutter_max_signs=2000
+autocmd! BufWritePre * GitGutter
 " }}}
-"
 " Indentline {{{
 let g:indentLine_char = '│'
 let g:indentLine_setColors = 0
@@ -213,14 +201,16 @@ nnoremap <c-s> :Ag<cr>
 let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
 " }}}
-" Jedi {{{
-let g:jedi#force_py_version = 3
+" Scala {{{
+augroup vim-scala-override
+    autocmd!
+    autocmd Filetype scala setlocal errorformat=
+        \%E\ %#[error]\ %f:%l:%c:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
+        \%W\ %#[warn]\ %f:%l:%c:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
+        \%-G%.%#
+augroup END
 "}}}
 if has('nvim')
-    " Deoplete {{{
-    let g:deoplete#auto_complete_delay = 100
-    let g:deoplete#enable_at_startup = 1
-    "}}}
     "Neosnippet {{{
     let g:neosnippet#snippets_directory='~/.vim/snippets'
     let g:neosnippet#disable_runtime_snippets = { '_' : 1 }
@@ -555,7 +545,7 @@ function! Statusbar(active)
         let s="%#StatusLineNC#"
     endif
 
-    let s.="%(  %{fugitive#head()}  %)"
+    " let s.="%(  %{fugitive#head()}  %)"
 
     if a:active
         let s.="%#Visual#"
@@ -672,7 +662,6 @@ if has('nvim-0.2.3')
     highlight EndOfBuffer ctermfg=bg guifg=bg
 endif
 
-
 function! SCTags()
     if executable("sctags")
         let g:tagbar_ctags_bin = "sctags"
@@ -715,9 +704,4 @@ function! SCTags()
     endif
 endfunction
 
-if has("autocmd")
-    autocmd FileType scala call SCTags()
-endif
-
-" highlight EndOfBuffer ctermfg=bg guifg=bg
-au! BufWritePre * GitGutter
+" autocmd! FileType scala call SCTags()
