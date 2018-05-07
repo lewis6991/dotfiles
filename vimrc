@@ -48,8 +48,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'whatyouhide/vim-lengthmatters'
     Plug 'gaving/vim-textobj-argument'
     Plug 'michaeljsmith/vim-indent-object'
-    " Plug 'sickill/vim-pasta'
-    " Plug 'triglav/vim-visual-increment'
     Plug 'justinmk/vim-dirvish'
     Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
 
@@ -67,29 +65,39 @@ call plug#begin('~/.vim/plugged')
     Plug 'rhysd/clever-f.vim'
 
     if has('nvim')
-        Plug 'roxma/nvim-completion-manager', { 'on' : [] }
-        Plug 'Shougo/neosnippet'   , { 'on': [] }
-        Plug 'Shougo/neco-vim'     , { 'for': 'vim' }  "Deoplete completion for vim
-        Plug 'w0rp/ale'            , { 'on': [] }
+        Plug 'Shougo/neosnippet', { 'on': [] }
+
+        Plug 'Shougo/deoplete.nvim'
+
+        " Deoplete sources
+        Plug 'Shougo/neco-vim'
+        Plug 'Shougo/neco-syntax'
+        Plug 'zchee/deoplete-jedi'
+        Plug 'zchee/deoplete-zsh'
+        Plug 'ujihisa/neco-look'
+        Plug 'wellle/tmux-complete.vim'
+
+        Plug 'w0rp/ale', { 'on': [] }
     endif
 call plug#end()
 
 if has('nvim')
     augroup LazyLoadPluginsInsertEnter
         autocmd!
-        autocmd CursorHold,InsertEnter *     call plug#load('nvim-completion-manager')
-        autocmd CursorHold,InsertEnter *     call plug#load('neosnippet')
+        autocmd CursorHold,InsertEnter * call plug#load('neosnippet')
     augroup END
 
     " Only run LazyLoadPlugins once
-    autocmd! CursorHold,InsertEnter * autocmd! LazyLoadPluginsInsertEnter
+    autocmd! CursorHold,InsertEnter *
+        \ autocmd! LazyLoadPluginsInsertEnter
 
     augroup LazyLoadPluginsBufWritePre
         autocmd!
         autocmd CursorHold,BufWritePre * call plug#load('ale')
     augroup END
 
-    autocmd! CursorHold,BufWritePre * autocmd! LazyLoadPluginsBufWritePre
+    autocmd! CursorHold,BufWritePre *
+        \ autocmd! LazyLoadPluginsBufWritePre
 endif
 
 " }}}
@@ -211,22 +219,21 @@ augroup vim-scala-override
 augroup END
 "}}}
 if has('nvim')
+    " Deoplete {{{
+    let g:deoplete#enable_at_startup = 1
+
+    call deoplete#custom#option('refresh_always', v:true)
+    " }}}
     "Neosnippet {{{
     let g:neosnippet#snippets_directory='~/.vim/snippets'
     let g:neosnippet#disable_runtime_snippets = { '_' : 1 }
 
+    inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
 
-	inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-	inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-    " imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
-    "     \ "\<Plug>(neosnippet_expand_or_jump)" :
-    "     \ pumvisible() ? "\<C-n>" : "\<TAB>"
-    "     " \ <SID>check_back_space() ? "\<TAB>" :
-    "     " \ deoplete#mappings#manual_complete()
-    " function! s:check_back_space() abort "{{{
-    "     let col = col('.') - 1
-    "     return !col || getline ('.')[col - 1] =~ '\s'
-    " endfunction "}}}
+    imap <expr><TAB>
+        \ neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" :
+        \ pumvisible()                        ? "\<C-n>" :
+        \                                       "\<TAB>"
     "}}}
 endif
 " }}}
@@ -270,6 +277,13 @@ endif
 set splitright
 set splitbelow
 set spell
+" }}}
+" Colours {{{
+if has('termguicolors')
+    set termguicolors
+endif
+
+silent! colorscheme moonlight
 " }}}
 " Vim {{{
 " Make normal Vim behave like Neovim
@@ -324,6 +338,10 @@ if has("nvim")
 
     set inccommand=split
     set previewheight=20
+
+    if has('nvim-0.2.3')
+        highlight EndOfBuffer ctermfg=bg guifg=bg
+    endif
 endif
 " }}}
 " Mappings {{{
@@ -404,14 +422,50 @@ function! <SID>SynStack() abort "{{{
     endif
     echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunction "}}}
-"}}}
-" Colours {{{
-if has('termguicolors')
-    set termguicolors
-endif
 
-silent! colorscheme moonlight
-" }}}
+function! SCTags() abort "{{{
+    if executable("sctags")
+        let g:tagbar_ctags_bin = "sctags"
+        let g:tagbar_type_scala = {
+            \ 'ctagstype' : 'scala',
+            \ 'sro'       : '.',
+            \ 'kinds'     : [
+                \ 'p:packages',
+                \ 'V:values',
+                \ 'v:variables',
+                \ 'T:types',
+                \ 't:traits',
+                \ 'o:objects',
+                \ 'O:case objects',
+                \ 'c:classes',
+                \ 'C:case classes',
+                \ 'm:methods:1'
+            \ ],
+            \ 'kind2scope'  : {
+                \ 'p' : 'package',
+                \ 'T' : 'type',
+                \ 't' : 'trait',
+                \ 'o' : 'object',
+                \ 'O' : 'case_object',
+                \ 'c' : 'class',
+                \ 'C' : 'case_class',
+                \ 'm' : 'method'
+            \ },
+            \ 'scope2kind'  : {
+                \ 'package'     : 'p',
+                \ 'type'        : 'T',
+                \ 'trait'       : 't',
+                \ 'object'      : 'o',
+                \ 'case_object' : 'O',
+                \ 'class'       : 'c',
+                \ 'case_class'  : 'C',
+                \ 'method'      : 'm'
+            \ }
+        \ }
+    endif
+endfunction "}}}
+
+"}}}
 " File Settings {{{
 "VimL
 let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
@@ -595,7 +649,7 @@ set statusline=%!Statusbar(1)
 set tabline=%!MyTabLine()
 " set showtabline=2
 
-function! MyTabLine() abort
+function! MyTabLine() abort "{{{
     let s = ''
     for i in range(tabpagenr('$'))
         let t = i + 1
@@ -608,7 +662,7 @@ function! MyTabLine() abort
 
         let s .= ' '
         let s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . t . '))}'
-        let s .= '%{MyTabLabel(' . t . ')}'
+        let s .= ' %{MyTabLabel(' . t . ')}'
         let s .= ' '
     endfor
 
@@ -616,16 +670,16 @@ function! MyTabLine() abort
     let s .= '%#TabLineFill#%T'
 
     return s
-endfunction
+endfunction "}}}
 
-function! MyTabLabel(n) abort
+function! MyTabLabel(n) abort "{{{
     let buflist = tabpagebuflist(a:n)
     let winnr = tabpagewinnr(a:n)
     let path = bufname(buflist[winnr - 1])
     return fnamemodify(path, ':t')
-endfunction
+endfunction "}}}
 " }}}
-
+" Terminal {{{
 if has('nvim')
     augroup terminal_settings
         au!
@@ -633,75 +687,29 @@ if has('nvim')
         au TermOpen * setlocal norelativenumber
         au TermOpen * setlocal nospell
     augroup END
+    " let g:terminal_color_0  = "#051018"
+    " let g:terminal_color_18 = "#0F1A22"
+    " let g:terminal_color_19 = "#253038"
+    " let g:terminal_color_8  = "#556068"
+    " let g:terminal_color_20 = "#657078"
+    " let g:terminal_color_7  = "#C5D0D8"
+    " let g:terminal_color_21 = "#D5E0E8"
+    " let g:terminal_color_15 = "#FFFFFF"
+    " let g:terminal_color_1  = "#d5996d"
+    " let g:terminal_color_9  = "#d5996d"
+    " let g:terminal_color_16 = "#d5d56d"
+    " let g:terminal_color_11 = "#99d56d"
+    " let g:terminal_color_3  = "#99d56d"
+    " let g:terminal_color_10 = "#6dd599"
+    " let g:terminal_color_02 = "#6dd599"
+    " let g:terminal_color_14 = "#6d99d5"
+    " let g:terminal_color_6  = "#6d99d5"
+    " let g:terminal_color_12 = "#996dd5"
+    " let g:terminal_color_4  = "#996dd5"
+    " let g:terminal_color_13 = "#d56d99"
+    " let g:terminal_color_5  = "#d56d99"
+    " let g:terminal_color_17 = "#d56d6d"
 endif
-
-" let g:terminal_color_0  = "#051018"
-" let g:terminal_color_18 = "#0F1A22"
-" let g:terminal_color_19 = "#253038"
-" let g:terminal_color_8  = "#556068"
-" let g:terminal_color_20 = "#657078"
-" let g:terminal_color_7  = "#C5D0D8"
-" let g:terminal_color_21 = "#D5E0E8"
-" let g:terminal_color_15 = "#FFFFFF"
-" let g:terminal_color_1  = "#d5996d"
-" let g:terminal_color_9  = "#d5996d"
-" let g:terminal_color_16 = "#d5d56d"
-" let g:terminal_color_11 = "#99d56d"
-" let g:terminal_color_3  = "#99d56d"
-" let g:terminal_color_10 = "#6dd599"
-" let g:terminal_color_02 = "#6dd599"
-" let g:terminal_color_14 = "#6d99d5"
-" let g:terminal_color_6  = "#6d99d5"
-" let g:terminal_color_12 = "#996dd5"
-" let g:terminal_color_4  = "#996dd5"
-" let g:terminal_color_13 = "#d56d99"
-" let g:terminal_color_5  = "#d56d99"
-" let g:terminal_color_17 = "#d56d6d"
-
-if has('nvim-0.2.3')
-    highlight EndOfBuffer ctermfg=bg guifg=bg
-endif
-
-function! SCTags()
-    if executable("sctags")
-        let g:tagbar_ctags_bin = "sctags"
-        let g:tagbar_type_scala = {
-            \ 'ctagstype' : 'scala',
-            \ 'sro'       : '.',
-            \ 'kinds'     : [
-                \ 'p:packages',
-                \ 'V:values',
-                \ 'v:variables',
-                \ 'T:types',
-                \ 't:traits',
-                \ 'o:objects',
-                \ 'O:case objects',
-                \ 'c:classes',
-                \ 'C:case classes',
-                \ 'm:methods:1'
-            \ ],
-            \ 'kind2scope'  : {
-                \ 'p' : 'package',
-                \ 'T' : 'type',
-                \ 't' : 'trait',
-                \ 'o' : 'object',
-                \ 'O' : 'case_object',
-                \ 'c' : 'class',
-                \ 'C' : 'case_class',
-                \ 'm' : 'method'
-            \ },
-            \ 'scope2kind'  : {
-                \ 'package'     : 'p',
-                \ 'type'        : 'T',
-                \ 'trait'       : 't',
-                \ 'object'      : 'o',
-                \ 'case_object' : 'O',
-                \ 'class'       : 'c',
-                \ 'case_class'  : 'C',
-                \ 'method'      : 'm'
-            \ }
-        \ }
-    endif
-endfunction
+"}}}
 
 " autocmd! FileType scala call SCTags()
