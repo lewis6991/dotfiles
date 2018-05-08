@@ -25,8 +25,8 @@ execute pathogen#infect('~/gerrit/{}')
 
 call plug#begin('~/.vim/plugged')
     Plug 'lewis6991/tcl.vim', { 'for': 'tcl' }
-    Plug 'lewis6991/systemverilog.vim' , { 'for': 'systemverilog' }
-    Plug 'lewis6991/moonlight.vim'
+    Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
+    Plug '~/projects/dotfiles/modules/moonlight.vim'
     if version >= 704
         Plug 'lewis6991/vim-clean-fold'
     endif
@@ -42,6 +42,8 @@ call plug#begin('~/.vim/plugged')
 
     Plug 'majutsushi/tagbar'
 
+    Plug 'rhysd/conflict-marker.vim'
+
     Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
     Plug 'junegunn/fzf.vim'
     Plug 'junegunn/vim-easy-align'
@@ -49,7 +51,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'gaving/vim-textobj-argument'
     Plug 'michaeljsmith/vim-indent-object'
     Plug 'justinmk/vim-dirvish'
-    Plug 'derekwyatt/vim-scala', { 'for': 'scala' }
+    Plug 'derekwyatt/vim-scala'
 
     " Python
     Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
@@ -255,6 +257,7 @@ set clipboard^=unnamed,unnamedplus
 set scrolloff=6
 set sidescroll=1
 set sidescrolloff=6
+set virtualedit=block " allow cursor to exist where there is no character
 
 if has('mouse')
     set mouse=a
@@ -349,9 +352,11 @@ nnoremap <leader>ev :tabnew $MYVIMRC<CR>
 nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
 nnoremap <bs> :nohlsearch<cr>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>//g<left><left>
-nnoremap <leader>d :Gdiff<CR>
 nnoremap <leader>c 1z=
 nnoremap <leader>w :execute "resize ".line('$')<cr>
+
+nnoremap <leader>gd :Gdiff<CR>
+nnoremap <leader>gs :Gstatus<CR>
 
 nnoremap j gj
 nnoremap k gk
@@ -398,6 +403,8 @@ if has('folding')
     let g:vimsyn_folding = 'af' "Fold augroups and functions
     let g:sh_fold_enabled = 1
     set foldmethod=syntax
+    set foldcolumn=3
+    set foldnestmax=2
 endif
 " }}}
 " Comments {{{
@@ -476,6 +483,7 @@ augroup file_settings_group
     autocmd!
     autocmd Filetype         scala         setlocal shiftwidth=4
     autocmd Filetype         scala         setlocal foldlevelstart=1
+    autocmd FileType         scala         call SCTags()
 
     autocmd Filetype         systemverilog setlocal shiftwidth=2
     autocmd Filetype         systemverilog setlocal tabstop=2
@@ -497,7 +505,7 @@ augroup file_settings_group
 
     autocmd BufRead .vimrc,vimrc,init.vim setlocal foldmethod=marker
 
-    autocmd BufRead lit.cfg setlocal filetype=python
+    autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
 augroup END
 " }}}
 " Formatting {{{
@@ -676,7 +684,13 @@ function! MyTabLabel(n) abort "{{{
     let buflist = tabpagebuflist(a:n)
     let winnr = tabpagewinnr(a:n)
     let path = bufname(buflist[winnr - 1])
-    return fnamemodify(path, ':t')
+    let label = fnamemodify(path, ':t')
+
+    if label == ""
+        let label = "[NONE]"
+    endif
+
+    return label
 endfunction "}}}
 " }}}
 " Terminal {{{
