@@ -1,5 +1,5 @@
 HAVE_BREW=0
-REPO_DIR=~/projects/
+REPO_DIR=~/git
 
 if hash brew 2> /dev/null; then
     HAVE_BREW=1
@@ -43,6 +43,8 @@ fi
 
 alias re-csh="source ~/.zshrc"
 
+source ~/.aliases
+
 # Async prompt -----------------------------------------------------------------
 source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
 
@@ -59,4 +61,7 @@ refresh_display() {
 
 add-zsh-hook precmd refresh_display
 
-# vim : set nofoldenable
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+source ~/.zshrc_local
