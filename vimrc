@@ -1,7 +1,7 @@
 " Plugins {{{
 
     " Install vim-plug if we don't already have it {{{
-    if empty(glob("~/.vim/autoload/plug.vim"))
+    if empty(glob('~/.vim/autoload/plug.vim'))
         execute 'silent !mkdir -p ~/.vim/tmp/'
         execute 'silent !mkdir -p ~/.vim/tmp/undo'
         execute 'silent !mkdir -p ~/.vim/tmp/backup'
@@ -13,12 +13,12 @@
     endif "}}}
 
     " Install vim-pathogen if we don't already have it {{{
-    if empty(glob("~/.vim/autoload/pathogen.vim"))
+    if empty(glob('~/.vim/autoload/pathogen.vim'))
         execute 'silent !curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim'
     endif
     "}}}
 
-let loaded_netrwPlugin = 1  " Stop netrw loading
+let g:loaded_netrwPlugin = 1  " Stop netrw loading
 
 " Load any plugins which are work sensitive.
 execute pathogen#infect('~/gerrit/{}')
@@ -52,7 +52,7 @@ call plug#begin('~/.vim/plugged')
 
     " Python
     Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
-    if version >= 704
+    if v:version >= 704
         Plug 'lewis6991/vim-clean-fold'
     endif
     Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
@@ -112,7 +112,7 @@ let g:ale_python_mypy_options = '--config-file setup.cfg'
 let g:ale_set_highlights = 1
 let g:ale_sh_shellcheck_options = '-x'
 let g:ale_sign_info = '->'
-let g:ale_tcl_nagelfar_options = "-s ~/syntaxdbjg.tcl"
+let g:ale_tcl_nagelfar_options = '-s ~/syntaxdbjg.tcl'
 let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 let g:ale_echo_msg_format = '%severity%->%linter%->%code: %%s'
 " }}}
@@ -123,7 +123,7 @@ nmap - :<C-U>call <SID>dirvish_toggle()<CR>
 
 function! s:dirvish_toggle() abort "{{{
     " Close any existing dirvish buffers
-    for i in range(1, bufnr('$'))
+    for l:i in range(1, bufnr('$'))
         if bufexists(l:i) && bufloaded(l:i) && getbufvar(l:i, '&filetype') ==? 'dirvish'
             execute ':'.l:i.'bd!'
         endif
@@ -131,7 +131,7 @@ function! s:dirvish_toggle() abort "{{{
 
     30vsp
 
-    if expand('%') == ""
+    if expand('%') ==# ''
         Dirvish
     else
         Dirvish %
@@ -165,7 +165,7 @@ augroup END
 " }}}
 " Clever F {{{
 let g:clever_f_across_no_line = 1
-let g:clever_f_mark_char_color = "DiffChange"
+let g:clever_f_mark_char_color = 'DiffChange'
 " }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
@@ -246,7 +246,7 @@ endif
 " General {{{
 set number
 set nowrap
-if version >= 704
+if v:version >= 704
     set relativenumber
 endif
 set textwidth=80
@@ -324,7 +324,6 @@ if !has('nvim')
     set smarttab
     set tabpagemax=50
     " set tags=./tags;,tags
-    set nocompatible
     set hlsearch
     set ttyfast
     set ruler
@@ -333,13 +332,13 @@ if !has('nvim')
 
     " Tell vim how to use true colour.
     if v:version >= 704
-        let &t_8f = "[38;2;%lu;%lu;%lum"
-        let &t_8b = "[48;2;%lu;%lu;%lum"
+        let &t_8f = '[38;2;%lu;%lu;%lum'
+        let &t_8b = '[48;2;%lu;%lu;%lum'
     endif
 endif
 " }}}
 " Nvim {{{
-if has("nvim")
+if has('nvim')
     let g:loaded_python_provider = 1 " Disable python2
     let g:loaded_ruby_provider   = 1 " Disable ruby
     let g:loaded_node_provider   = 1 " Disable ruby
@@ -423,14 +422,14 @@ function! DeleteTrailingWS() abort "{{{
 endfunction "}}}
 
 function! <SID>SynStack() abort "{{{
-    if !exists("*synstack")
+    if !exists('*synstack')
         return
     endif
     echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunction "}}}
 
 function! SCTags() abort "{{{
-    if executable("sctags")
+    if executable('sctags')
         let g:tagbar_ctags_bin = "sctags"
         let g:tagbar_type_scala = {
             \ 'ctagstype' : 'scala',
@@ -476,7 +475,7 @@ endfunction "}}}
 "VimL
 let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
 let g:vimsyn_folding  = 'af' "Fold augroups and functions
-let g:vim_indent_cont = &sw
+let g:vim_indent_cont = &shiftwidth
 
 augroup file_settings_group
     autocmd!
@@ -522,62 +521,62 @@ function! Strip(input_string)
 endfunction
 
 function! Hunks() abort
-    let hunks = GitGutterGetHunkSummary()
+    let l:hunks = GitGutterGetHunkSummary()
 
-    let modified = hunks[0]
-    let added    = hunks[1]
-    let deleted  = hunks[2]
+    let l:modified = l:hunks[0]
+    let l:added    = l:hunks[1]
+    let l:deleted  = l:hunks[2]
 
-    let modified_s = ''
-    if modified != '0'
-        let modified_s .= '~'
-        let modified_s .= modified
+    let l:modified_s = ''
+    if l:modified !=# '0'
+        let l:modified_s .= '~'
+        let l:modified_s .= l:modified
     endif
 
-    let added_s = ''
-    if added != '0'
-        let added_s .= '+'
-        let added_s .= added
+    let l:added_s = ''
+    if l:added !=# '0'
+        let l:added_s .= '+'
+        let l:added_s .= l:added
     endif
 
-    let deleted_s = ''
-    if deleted != '0'
-        let deleted_s .= '-'
-        let deleted_s .= deleted
+    let l:deleted_s = ''
+    if l:deleted !=# '0'
+        let l:deleted_s .= '-'
+        let l:deleted_s .= l:deleted
     endif
 
-    return Strip(join([modified_s,added_s,deleted_s]))
+    return Strip(join([l:modified_s, l:added_s, l:deleted_s]))
 endfunction
 
 function! EncodingAndFormat() abort
-    let e = &fileencoding ? &fileencoding : &encoding
-    let f = &fileformat
+    let l:e = &fileencoding ? &fileencoding : &encoding
+    let l:f = &fileformat
 
-    if e == 'utf-8'
-        let e = ''
+    if l:e ==# 'utf-8'
+        let l:e = ''
     endif
 
-    if f == 'unix'
-        let f = ''
+    if l:f ==# 'unix'
+        let l:f = ''
     else
-        let f = '['.f.']'
+        let l:f = '['.l:f.']'
     endif
 
-    return Strip(join([e,f]))
+    return Strip(join([l:e, l:f]))
 endfunction
 
 function! s:GetAle(active) abort
     try
-        let aleinfo = ale#statusline#Count(bufnr('%'))
+        let l:aleinfo = ale#statusline#Count(bufnr('%'))
     catch
-        return ""
+        return ''
     endtry
 
-    if aleinfo['total'] == 0
-        return ""
+    if l:aleinfo['total'] == 0
+        return ''
     endif
 
-    let keydisp = {
+    let l:keydisp = {
         \     'error'         : {'display' : 'E' , 'highlight' : 'DiffRemoved'},
         \     'warning'       : {'display' : 'W' , 'highlight' : 'DiffLine'   },
         \     'style_error'   : {'display' : 'SE', 'highlight' : 'DiffRemoved'},
@@ -585,63 +584,64 @@ function! s:GetAle(active) abort
         \     'info'          : {'display' : 'I' , 'highlight' : 'DiffAdded'  }
         \ }
 
-    let alestatus = []
-    for key in keys(keydisp)
-        if aleinfo[key] > 0
-            let entry = ''
+    let l:alestatus = []
+    for l:key in keys(l:keydisp)
+        if l:aleinfo[l:key] > 0
+            let l:entry = ''
             if a:active
-                let entry .= "%#".keydisp[key]['highlight']."#"
+                let l:entry .= '%#' . l:keydisp[l:key]['highlight'] . '#'
             endif
-            let entry .= keydisp[key]['display'].':'.aleinfo[key]
-            let alestatus += [entry]
+            let entry .= l:keydisp[l:key]['display'] . ':' . l:aleinfo[l:key]
+            let l:alestatus += [l:entry]
         endif
     endfor
 
-    return Strip(join(alestatus))
+    return Strip(join(l:alestatus))
 endfunction
 
 function! Statusbar(active)
     if a:active
-        let s="%#PmenuSel#"
+        let l:s = '%#PmenuSel#'
     else
-        let s="%#StatusLineNC#"
+        let l:s = '%#StatusLineNC#'
     endif
 
-    " let s.="%(  %{fugitive#head()}  %)"
+    " let l:s .= '%(  %{fugitive#head()}  %)'
 
     if a:active
-        let s.="%#Visual#"
+        let l:s .= '%#Visual#'
     endif
 
-    let s .= "%(  %{Hunks()}  %)"
+    let l:s .= '%(  %{Hunks()}  %)'
 
     if a:active
-        let s.="%#CursorLine#"
+        let l:s .= '%#CursorLine#'
     endif
 
-    let s.="  %.40f"
-    let s.="%m%r" " [+][RO]"
+    let l:s .= '  %.40f'
+    let l:s .= '%m%r" " [+][RO]'
 
-    let s.="%="
+    let l:s .= '%='
 
-    let s.=s:GetAle(a:active)
+    let l:s .= s:GetAle(a:active)
 
-    let s.="  "
+    let l:s .= '  '
 
     if a:active
-        let s.="%#Visual#"
+        let l:s .= '%#Visual#'
     endif
 
-    let s.="%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)"
+    let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
 
     if a:active
-        let s.="%#PmenuSel#"
+        let l:s .= '%#PmenuSel#'
     endif
 
-    let s.="%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)"
-    let s.=" %p%%" " Percent through file
-    let s.=" %l/%L %c  " " lnum:cnum
-    return s
+    let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+    let l:s .= ' %p%%' " Percent through file
+    let l:s .= ' %l/%L %c  ' " lnum:cnum
+
+    return l:s
 endfunction
 
 augroup status
@@ -658,39 +658,39 @@ set tabline=%!MyTabLine()
 " set showtabline=2
 
 function! MyTabLine() abort "{{{
-    let s = ''
-    for i in range(tabpagenr('$'))
-        let t = i + 1
+    let l:s = ''
+    for l:i in range(tabpagenr('$'))
+        let l:t = l:i + 1
         " select the highlighting
-        if t == tabpagenr()
-            let s .= '%#TabLineSel#'
+        if l:t == tabpagenr()
+            let l:s .= '%#TabLineSel#'
         else
-            let s .= '%#TabLine#'
+            let l:s .= '%#TabLine#'
         endif
 
-        let s .= ' '
-        let s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . t . '))}'
-        let s .= ' %{MyTabLabel(' . t . ')}'
-        let s .= ' '
+        let l:s .= ' '
+        let l:s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . l:t . '))}'
+        let l:s .= ' %{MyTabLabel(' . l:t . ')}'
+        let l:s .= ' '
     endfor
 
     " after the last tab fill with TabLineFill and reset tab page nr
-    let s .= '%#TabLineFill#%T'
+    let l:s .= '%#TabLineFill#%T'
 
-    return s
+    return l:s
 endfunction "}}}
 
 function! MyTabLabel(n) abort "{{{
-    let buflist = tabpagebuflist(a:n)
-    let winnr = tabpagewinnr(a:n)
-    let path = bufname(buflist[winnr - 1])
-    let label = fnamemodify(path, ':t')
+    let l:buflist = tabpagebuflist(a:n)
+    let l:winnr = tabpagewinnr(a:n)
+    let l:path = bufname(l:buflist[l:winnr - 1])
+    let l:label = fnamemodify(l:path, ':t')
 
-    if label == ""
-        let label = "[NONE]"
+    if l:label ==# ''
+        let l:label = '[NONE]'
     endif
 
-    return label
+    return l:label
 endfunction "}}}
 " }}}
 " Terminal {{{
