@@ -26,10 +26,7 @@ execute pathogen#infect('~/gerrit/{}')
 call plug#begin('~/.vim/plugged')
     Plug 'lewis6991/tcl.vim', { 'for': 'tcl' }
     Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
-    Plug '~/projects/dotfiles/modules/moonlight.vim'
-    if version >= 704
-        Plug 'lewis6991/vim-clean-fold'
-    endif
+    Plug 'lewis6991/moonlight.vim'
 
     Plug 'junegunn/vim-plug'
 
@@ -55,6 +52,9 @@ call plug#begin('~/.vim/plugged')
 
     " Python
     Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
+    if version >= 704
+        Plug 'lewis6991/vim-clean-fold'
+    endif
     Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
     Plug 'airblade/vim-gitgutter'
     Plug 'christoomey/vim-tmux-navigator'
@@ -191,8 +191,12 @@ let g:easy_align_delimiters = {
 let g:lengthmatters_highlight_one_column = 1
 " }}}
 " Gitgutter {{{
-let g:gitgutter_max_signs=2000
-autocmd! BufWritePre * GitGutter
+let g:gitgutter_max_signs=4000
+let g:gitgutter_sign_added              = '│'  " '+'
+let g:gitgutter_sign_modified           = '│'  " '~'
+let g:gitgutter_sign_removed            = '│'  " '_'
+let g:gitgutter_sign_removed_first_line = '│'  " '‾'
+let g:gitgutter_sign_modified_removed   = '│'  " '~_'
 " }}}
 " Indentline {{{
 let g:indentLine_char = '│'
@@ -253,11 +257,12 @@ set expandtab
 set noswapfile
 set ignorecase
 set smartcase
-set clipboard^=unnamed,unnamedplus
+set clipboard+=unnamedplus
 set scrolloff=6
 set sidescroll=1
 set sidescrolloff=6
 set virtualedit=block " allow cursor to exist where there is no character
+set updatetime=100
 
 if has('mouse')
     set mouse=a
@@ -377,12 +382,6 @@ nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
 
 nmap <leader>an <Plug>(ale_next)
 nmap <leader>ap <Plug>(ale_previous)
-
-nmap <leader>hn <Plug>GitGutterNextHunk
-nmap <leader>hp <Plug>GitGutterPrevHunk
-
-nmap <Leader>ha <Plug>GitGutterStageHunk
-nmap <Leader>hr <Plug>GitGutterUndoHunk
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
@@ -485,6 +484,7 @@ augroup file_settings_group
     autocmd Filetype         scala         setlocal foldlevelstart=1
     autocmd FileType         scala         call SCTags()
 
+    autocmd BufRead          *.hv setlocal filetype=systemverilog
     autocmd Filetype         systemverilog setlocal shiftwidth=2
     autocmd Filetype         systemverilog setlocal tabstop=2
     autocmd Filetype         systemverilog setlocal softtabstop=2
@@ -725,5 +725,3 @@ if has('nvim')
     " let g:terminal_color_17 = "#d56d6d"
 endif
 "}}}
-
-" autocmd! FileType scala call SCTags()
