@@ -194,8 +194,8 @@ let g:lengthmatters_highlight_one_column = 1
 let g:gitgutter_max_signs=4000
 let g:gitgutter_sign_added              = '│'  " '+'
 let g:gitgutter_sign_modified           = '│'  " '~'
-let g:gitgutter_sign_removed            = '│'  " '_'
-let g:gitgutter_sign_removed_first_line = '│'  " '‾'
+let g:gitgutter_sign_removed            = '_'  " '_'
+let g:gitgutter_sign_removed_first_line = '‾'  " '‾'
 let g:gitgutter_sign_modified_removed   = '│'  " '~_'
 " }}}
 " Indentline {{{
@@ -211,6 +211,7 @@ endfunction
 command! ProjectFiles execute 'Files' s:find_git_root()
 
 nnoremap <c-p> :ProjectFiles<cr>
+nnoremap <c-space> :GFiles<cr>
 nnoremap <c-s> :Ag<cr>
 let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
@@ -412,6 +413,7 @@ augroup commentstring_group
     autocmd Filetype scala     setlocal commentstring=//%s
     autocmd Filetype sbt.scala setlocal commentstring=//%s
     autocmd Filetype vim       setlocal commentstring=\"%s
+    autocmd Filetype dosini    setlocal commentstring=#%s
 augroup END
 " }}}
 " Functions {{{
@@ -619,7 +621,7 @@ function! Statusbar(active)
     endif
 
     let l:s .= '  %.40f'
-    let l:s .= '%m%r" " [+][RO]'
+    let l:s .= '%m%r' " [+][RO]
 
     let l:s .= '%='
 

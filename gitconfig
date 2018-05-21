@@ -35,7 +35,7 @@
 			git branch -f ${1-master}; \
 			git checkout ${1-master}; \
 		}; f"
-	trackm = branch --set-upstream-to origin/master
+	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
 	# Gerrit aliases
 	publish = !sh -c 'git push origin HEAD:refs/publish/${1-$(git rev-parse --abbrev-ref HEAD)}' -
 	draft   = !sh -c 'git push origin HEAD:refs/drafts/${1-$(git rev-parse --abbrev-ref HEAD)}' -
