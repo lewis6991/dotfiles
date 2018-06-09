@@ -67,6 +67,13 @@ call plug#begin('~/.vim/plugged')
     Plug 'rhysd/clever-f.vim'
 
     if has('nvim')
+        " Workaround for: https://github.com/neovim/neovim/issues/1822
+        Plug 'bfredl/nvim-miniyank'
+        if has('nvim')
+            map p <Plug>(miniyank-autoput)
+            map P <Plug>(miniyank-autoPut)
+        endif
+
         Plug 'Shougo/neosnippet', { 'on': [] }
 
         Plug 'Shougo/deoplete.nvim'
@@ -81,6 +88,7 @@ call plug#begin('~/.vim/plugged')
 
         Plug 'w0rp/ale', { 'on': [] }
     endif
+
 call plug#end()
 
 if has('nvim')
@@ -498,6 +506,7 @@ augroup file_settings_group
     autocmd BufEnter,BufRead dotshrc,dotsh setlocal filetype=sh
     autocmd BufEnter,BufRead dotcshrc      setlocal filetype=csh
     autocmd BufEnter,BufRead *.tmux        setlocal filetype=tmux
+    autocmd BufEnter,BufRead *.jelly       setlocal filetype=xml
     autocmd BufEnter,BufRead setup.cfg     setlocal filetype=dosini
 
     autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
