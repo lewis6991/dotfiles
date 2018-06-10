@@ -24,11 +24,11 @@ let g:loaded_netrwPlugin = 1  " Stop netrw loading
 execute pathogen#infect('~/gerrit/{}')
 
 call plug#begin('~/.vim/plugged')
+    Plug 'junegunn/vim-plug'
+
     Plug 'lewis6991/tcl.vim', { 'for': 'tcl' }
     Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
     Plug 'lewis6991/moonlight.vim'
-
-    Plug 'junegunn/vim-plug'
 
     Plug 'tpope/vim-fugitive'
     Plug 'tpope/vim-commentary'
@@ -36,8 +36,6 @@ call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-repeat'
     Plug 'tpope/vim-eunuch'
-
-    Plug 'majutsushi/tagbar'
 
     Plug 'rhysd/conflict-marker.vim'
 
@@ -64,17 +62,15 @@ call plug#begin('~/.vim/plugged')
     Plug 'tmux-plugins/vim-tmux-focus-events'
     Plug 'ryanoasis/vim-devicons'
     Plug 'powerman/vim-plugin-AnsiEsc'
-    Plug 'rhysd/clever-f.vim'
 
     if has('nvim')
         " Workaround for: https://github.com/neovim/neovim/issues/1822
         Plug 'bfredl/nvim-miniyank'
+
         if has('nvim')
             map p <Plug>(miniyank-autoput)
             map P <Plug>(miniyank-autoPut)
         endif
-
-        Plug 'Shougo/neosnippet', { 'on': [] }
 
         Plug 'Shougo/deoplete.nvim'
 
@@ -86,30 +82,10 @@ call plug#begin('~/.vim/plugged')
         Plug 'ujihisa/neco-look'
         Plug 'wellle/tmux-complete.vim'
 
-        Plug 'w0rp/ale', { 'on': [] }
+        Plug 'w0rp/ale'
     endif
 
 call plug#end()
-
-if has('nvim')
-    augroup LazyLoadPluginsInsertEnter
-        autocmd!
-        autocmd CursorHold,InsertEnter * call plug#load('neosnippet')
-    augroup END
-
-    " Only run LazyLoadPlugins once
-    autocmd! CursorHold,InsertEnter *
-        \ autocmd! LazyLoadPluginsInsertEnter
-
-    augroup LazyLoadPluginsBufWritePre
-        autocmd!
-        autocmd CursorHold,BufWritePre * call plug#load('ale')
-    augroup END
-
-    autocmd! CursorHold,BufWritePre *
-        \ autocmd! LazyLoadPluginsBufWritePre
-endif
-
 " }}}
 " Plugin Settings {{{
 "Ale {{{
@@ -119,10 +95,13 @@ let g:ale_lint_on_text_changed = 'never'
 let g:ale_python_mypy_options = '--config-file setup.cfg'
 let g:ale_set_highlights = 1
 let g:ale_sh_shellcheck_options = '-x'
-let g:ale_sign_info = '->'
+let g:ale_sign_info = '>'
 let g:ale_tcl_nagelfar_options = '-s ~/syntaxdbjg.tcl'
 let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 let g:ale_echo_msg_format = '%severity%->%linter%->%code: %%s'
+
+nmap <leader>an <Plug>(ale_next)
+nmap <leader>ap <Plug>(ale_previous)
 " }}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
@@ -170,10 +149,6 @@ augroup dirvish_commands
     autocmd Filetype dirvish setlocal nonumber
     autocmd Filetype dirvish setlocal norelativenumber
 augroup END
-" }}}
-" Clever F {{{
-let g:clever_f_across_no_line = 1
-let g:clever_f_mark_char_color = 'DiffChange'
 " }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
@@ -238,17 +213,10 @@ if has('nvim')
     let g:deoplete#enable_at_startup = 1
 
     call deoplete#custom#option('refresh_always', v:true)
-    " }}}
-    "Neosnippet {{{
-    let g:neosnippet#snippets_directory='~/.vim/snippets'
-    let g:neosnippet#disable_runtime_snippets = { '_' : 1 }
 
-    inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-
-    imap <expr><TAB>
-        \ neosnippet#expandable_or_jumpable() ? "\<Plug>(neosnippet_expand_or_jump)" :
-        \ pumvisible()                        ? "\<C-n>" :
-        \                                       "\<TAB>"
+    inoremap <expr> <S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
+    inoremap <expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
+    inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<CR>"
     "}}}
 endif
 " }}}
@@ -277,10 +245,10 @@ if has('mouse')
     set mouse=a
 endif
 
-set diffopt+=vertical          "Show diffs in vertical splits
+set diffopt+=vertical  "Show diffs in vertical splits
 
 if has('persistent_undo')
-    set undolevels=5000
+    set undolevels=10000
     set undodir=~/.vim/tmp/undo
     set undofile " Preserve undo tree between sessions.
 endif
@@ -387,9 +355,6 @@ nnoremap <S-Tab> gT
 
 nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
 nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
-
-nmap <leader>an <Plug>(ale_next)
-nmap <leader>ap <Plug>(ale_previous)
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
@@ -479,7 +444,6 @@ function! SCTags() abort "{{{
         \ }
     endif
 endfunction "}}}
-
 "}}}
 " File Settings {{{
 "VimL
@@ -526,6 +490,11 @@ if v:version >= 704
     set breakindent      "Indent wrapped lines to match start
 endif
 "}}}
+" Snippets {{{
+iabbrev rev
+    \ <c-r>=substitute(&commentstring, '%s', '', '').
+    \' REVISIT: '.$USER.' '.strftime("%m/%d/%y").':'<CR>
+" }}}
 " Statusline {{{
 function! Strip(input_string)
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
