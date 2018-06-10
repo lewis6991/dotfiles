@@ -68,8 +68,6 @@ function install_vim {
     link_file ~/.vim ~/.config/nvim
     link_file ~/.vimrc ~/.vim/init.vim
 
-    link_file snippets ~/.vim/snippets
-
     nvim +PlugInstall +quitall
 }
 
