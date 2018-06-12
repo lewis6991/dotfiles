@@ -571,7 +571,7 @@ function! s:GetAle(active) abort
             if a:active
                 let l:entry .= '%#' . l:keydisp[l:key]['highlight'] . '#'
             endif
-            let entry .= l:keydisp[l:key]['display'] . ':' . l:aleinfo[l:key]
+            let l:entry .= l:keydisp[l:key]['display'] . ':' . l:aleinfo[l:key]
             let l:alestatus += [l:entry]
         endif
     endfor
