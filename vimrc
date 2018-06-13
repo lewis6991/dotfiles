@@ -79,12 +79,18 @@ call plug#begin('~/.vim/plugged')
             map P <Plug>(miniyank-autoPut)
         endif
 
-        Plug 'Shougo/deoplete.nvim'
+        Plug 'Shougo/deoplete.nvim', { 'on' : []}
+        augroup lazy_deoplete
+            autocmd! InsertEnter,CursorHold * 
+                \   call plug#load('deoplete.nvim')
+                \ | call deoplete#custom#option('refresh_always', v:true)
+                \ | autocmd! lazy_deoplete
+        augroup END
 
         " Deoplete sources
         Plug 'Shougo/neco-vim'
         Plug 'Shougo/neco-syntax'
-        Plug 'zchee/deoplete-jedi'
+        " Plug 'zchee/deoplete-jedi'
         Plug 'zchee/deoplete-zsh'
         Plug 'ujihisa/neco-look'
         Plug 'wellle/tmux-complete.vim'
@@ -206,6 +212,9 @@ nnoremap <c-s> :Ag<cr>
 let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
 " }}}
+" Plug {{{
+let g:plug_window = 'tabnew'
+" }}}
 " Polyglot {{{
 let g:polyglot_disabled = ['yaml']
 let g:vim_json_syntax_conceal = 0
@@ -222,8 +231,6 @@ augroup END
 if has('nvim')
     " Deoplete {{{
     let g:deoplete#enable_at_startup = 1
-
-    call deoplete#custom#option('refresh_always', v:true)
 
     inoremap <expr> <S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
     inoremap <expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
@@ -519,7 +526,7 @@ augroup vimrc
     autocmd Filetype tags          setlocal tabstop=30
     autocmd Filetype make          setlocal noexpandtab
     autocmd Filetype gitconfig     setlocal noexpandtab
-    autocmd Filetype log           setlocal textwidth=0
+    autocmd Filetype log           setlocal textwidth=1000
     autocmd FileType yaml          setlocal foldmethod=expr
         \                          setlocal foldexpr=YamlFolds()
     autocmd FileType xml           setlocal foldnestmax=20
