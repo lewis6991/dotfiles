@@ -34,12 +34,22 @@
 	put = "!f() {\
 			git branch -f ${1-master}; \
 			git checkout ${1-master}; \
+			git track ${2-master}; \
 		}; f"
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
 	# Gerrit aliases
-	publish = !sh -c 'git push origin HEAD:refs/publish/${1-$(git rev-parse --abbrev-ref HEAD)}' -
-	draft   = !sh -c 'git push origin HEAD:refs/drafts/${1-$(git rev-parse --abbrev-ref HEAD)}' -
-	pa = !sh -c 'git commit --amend && git push origin HEAD:refs/publish/${1-$(git rev-parse --abbrev-ref HEAD)}' -
+	publish = "!f() {\
+			branch=$(git rev-parse --abbrev-ref HEAD); \
+			remoteBranch=$(git config branch.$branch.merge); \
+			remoteBranch=${remoteBranch##refs/heads/}; \
+			git push origin HEAD:refs/publish/${1-$remoteBranch}; \
+		}; f"
+	draft = "!f() {\
+			branch=$(git rev-parse --abbrev-ref HEAD); \
+			remoteBranch=$(git config branch.$branch.merge); \
+			remoteBranch=${remoteBranch##refs/heads/}; \
+			git push origin HEAD:refs/drafts/${1-$remoteBranch}; \
+		}; f"
 	reh = reset --hard
 
 	gco = "!f() {\
