@@ -1,3 +1,10 @@
+" Init {{{
+scriptencoding utf-8
+
+augroup vimrc
+    autocmd!
+augroup END
+" }}}
 " Plugins {{{
 
     " Install vim-plug if we don't already have it {{{
@@ -9,7 +16,7 @@
         execute 'silent !mkdir -p ~/.vim/autoload'
         silent !git clone https://github.com/junegunn/vim-plug.git $HOME/.vim/bundle/vim-plug
         silent !ln -s $HOME/.vim/bundle/vim-plug/plug.vim $HOME/.vim/autoload/plug.vim
-        autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+        autocmd! vimrc VimEnter * PlugInstall --sync | source $MYVIMRC
     endif "}}}
 
     " Install vim-pathogen if we don't already have it {{{
@@ -26,8 +33,6 @@ execute pathogen#infect('~/gerrit/{}')
 call plug#begin('~/.vim/plugged')
     Plug 'junegunn/vim-plug'
 
-    Plug 'lewis6991/tcl.vim', { 'for': 'tcl' }
-    Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
     Plug 'lewis6991/moonlight.vim'
 
     Plug 'tpope/vim-fugitive'
@@ -36,6 +41,13 @@ call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-repeat'
     Plug 'tpope/vim-eunuch'
+
+    Plug 'sheerun/vim-polyglot'
+    Plug 'tmhedberg/SimpylFold'       , { 'for': 'python'        }
+    Plug 'lewis6991/tcl.vim'          , { 'for': 'tcl'           }
+    Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
+    Plug 'tmux-plugins/vim-tmux'      , { 'for': 'tmux'          }
+    Plug 'dzeban/vim-log-syntax'
 
     Plug 'rhysd/conflict-marker.vim'
 
@@ -46,22 +58,17 @@ call plug#begin('~/.vim/plugged')
     Plug 'gaving/vim-textobj-argument'
     Plug 'michaeljsmith/vim-indent-object'
     Plug 'justinmk/vim-dirvish'
-    Plug 'derekwyatt/vim-scala'
 
-    " Python
-    Plug 'tmhedberg/SimpylFold', { 'for': 'python' }
     if v:version >= 704
         Plug 'lewis6991/vim-clean-fold'
     endif
-    Plug 'Vimjas/vim-python-pep8-indent', { 'for': 'python' }
     Plug 'airblade/vim-gitgutter'
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'dietsche/vim-lastplace'
     Plug 'Yggdroot/indentLine'
-    Plug 'tmux-plugins/vim-tmux', { 'for': 'tmux' }
     Plug 'tmux-plugins/vim-tmux-focus-events'
     Plug 'ryanoasis/vim-devicons'
-    Plug 'powerman/vim-plugin-AnsiEsc'
+    " Plug 'powerman/vim-plugin-AnsiEsc'
 
     if has('nvim')
         " Workaround for: https://github.com/neovim/neovim/issues/1822
@@ -199,6 +206,10 @@ nnoremap <c-s> :Ag<cr>
 let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
 " }}}
+" Polyglot {{{
+let g:polyglot_disabled = ['yaml']
+let g:vim_json_syntax_conceal = 0
+" }}}
 " Scala {{{
 augroup vim-scala-override
     autocmd!
@@ -207,7 +218,7 @@ augroup vim-scala-override
         \%W\ %#[warn]\ %f:%l:%c:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
         \%-G%.%#
 augroup END
-"}}}
+" }}}
 if has('nvim')
     " Deoplete {{{
     let g:deoplete#enable_at_startup = 1
@@ -240,6 +251,7 @@ set sidescroll=1
 set sidescrolloff=6
 set virtualedit=block " allow cursor to exist where there is no character
 set updatetime=100
+set hidden
 
 if has('mouse')
     set mouse=a
@@ -359,15 +371,12 @@ nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
 
-augroup WhitespaceGroup
-    autocmd!
-    "Delete trailing white space on save.
-    autocmd BufWrite * call DeleteTrailingWS()
-augroup END
+"Delete trailing white space on save.
+autocmd! vimrc BufWrite * call DeleteTrailingWS()
 
 if v:version >= 704
     "Highlight trailing whitespace
-    autocmd! BufEnter * call matchadd('ColorColumn', '\s\+$')
+    autocmd! vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')
 endif
 " }}}
 " Folding {{{
@@ -391,21 +400,30 @@ augroup END
 " }}}
 " Functions {{{
 function! DeleteTrailingWS() abort "{{{
-    normal mz"
-    %s/\s\+$//ge
-    normal `z"
+    " Save cursor position
+    let l:save = winsaveview()
+
+    " vint: -ProhibitCommandWithUnintendedSideEffect
+    " vint: -ProhibitCommandRelyOnUser
+    " Remove trailing whitespace
+    %s/\s\+$//e
+    " vint: +ProhibitCommandWithUnintendedSideEffect
+    " vint: +ProhibitCommandRelyOnUser
+
+    " Move cursor to original position
+    call winrestview(l:save)
 endfunction "}}}
 
 function! <SID>SynStack() abort "{{{
     if !exists('*synstack')
         return
     endif
-    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+    echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, ''name'')')
 endfunction "}}}
 
 function! SCTags() abort "{{{
     if executable('sctags')
-        let g:tagbar_ctags_bin = "sctags"
+        let g:tagbar_ctags_bin = 'sctags'
         let g:tagbar_type_scala = {
             \ 'ctagstype' : 'scala',
             \ 'sro'       : '.',
@@ -444,6 +462,24 @@ function! SCTags() abort "{{{
         \ }
     endif
 endfunction "}}}
+
+function! YamlFolds() abort "{{{
+  let l:previous_level = indent(prevnonblank(v:lnum - 1)) / &shiftwidth
+  let l:current_level = indent(v:lnum) / &shiftwidth
+  let l:next_level = indent(nextnonblank(v:lnum + 1)) / &shiftwidth
+
+  if getline(v:lnum + 1) =~? '^\s*$'
+    return '='
+  elseif l:current_level < l:next_level
+    return l:next_level
+  elseif l:current_level > l:next_level
+    return ('s' . (l:current_level - l:next_level))
+  elseif l:current_level == l:previous_level
+    return '='
+  endif
+
+  return l:next_level
+endfunction "}}}
 "}}}
 " File Settings {{{
 "VimL
@@ -451,41 +487,54 @@ let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
 let g:vimsyn_folding  = 'af' "Fold augroups and functions
 let g:vim_indent_cont = &shiftwidth
 
-augroup file_settings_group
+let g:xml_syntax_folding=1
+
+augroup vimrc
     autocmd!
-    autocmd Filetype         scala         setlocal shiftwidth=4
-    autocmd Filetype         scala         setlocal foldlevelstart=1
-    autocmd FileType         scala         call SCTags()
 
-    autocmd BufRead          *.hv setlocal filetype=systemverilog
-    autocmd Filetype         systemverilog setlocal shiftwidth=2
-    autocmd Filetype         systemverilog setlocal tabstop=2
-    autocmd Filetype         systemverilog setlocal softtabstop=2
+    " Filetype detections
+    autocmd BufRead dotshrc,dotsh         setlocal filetype=sh
+    autocmd BufRead dotcshrc              setlocal filetype=csh
+    autocmd BufRead *.tmux                setlocal filetype=tmux
+    autocmd BufRead *.jelly               setlocal filetype=xml
+    autocmd BufRead setup.cfg             setlocal filetype=dosini
+    autocmd BufRead *.hv                  setlocal filetype=systemverilog
+    autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
 
-    autocmd Filetype         tags          setlocal tabstop=30
+    autocmd BufRead * if getline(1) == '#%Module1.0'
+                  \ |     setlocal ft=tcl
+                  \ | endif
 
-    autocmd Filetype         make          setlocal noexpandtab
-    autocmd Filetype         gitconfig     setlocal noexpandtab
-    autocmd BufEnter,BufRead *.log         setlocal textwidth=0
-    autocmd BufEnter,BufRead dotshrc,dotsh setlocal filetype=sh
-    autocmd BufEnter,BufRead dotcshrc      setlocal filetype=csh
-    autocmd BufEnter,BufRead *.tmux        setlocal filetype=tmux
-    autocmd BufEnter,BufRead *.jelly       setlocal filetype=xml
-    autocmd BufEnter,BufRead setup.cfg     setlocal filetype=dosini
+    " Scala
+    autocmd Filetype scala setlocal
+        \ shiftwidth=4
+        \ foldlevelstart=1
 
-    autocmd BufNewFile,BufRead *   if getline(1) == '#%Module1.0'
-    autocmd BufNewFile,BufRead *       setlocal ft=tcl
-    autocmd BufNewFile,BufRead *   endif
+    autocmd FileType scala call SCTags()
+
+
+    autocmd Filetype systemverilog setlocal shiftwidth=2
+        \                                   tabstop=2
+        \                                   softtabstop=2
+    autocmd Filetype tags          setlocal tabstop=30
+    autocmd Filetype make          setlocal noexpandtab
+    autocmd Filetype gitconfig     setlocal noexpandtab
+    autocmd Filetype log           setlocal textwidth=0
+    autocmd FileType yaml          setlocal foldmethod=expr
+        \                          setlocal foldexpr=YamlFolds()
+    autocmd FileType xml           setlocal foldnestmax=20
+        \                                   foldcolumn=5
 
     autocmd BufRead .vimrc,vimrc,init.vim setlocal foldmethod=marker
 
-    autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
 augroup END
 " }}}
 " Formatting {{{
 set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
 set formatoptions+=o "Automatically insert comment leader after 'o' or 'O' in Normal mode.
 set formatoptions+=l "Long lines are not broken in insert mode.
+set formatoptions-=t "Do not auto wrap text
+set formatoptions+=n "Recognise lists
 if v:version >= 704
     set breakindent      "Indent wrapped lines to match start
 endif
