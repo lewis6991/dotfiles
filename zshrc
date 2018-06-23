@@ -43,8 +43,6 @@ fi
 
 alias re-csh="source ~/.zshrc"
 
-source ~/.aliases
-
 # Async prompt -----------------------------------------------------------------
 source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
 
@@ -61,7 +59,6 @@ refresh_display() {
 
 add-zsh-hook precmd refresh_display
 
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-source ~/.zshrc_local
+[ -f ~/.aliases     ] && source ~/.aliases
+[ -f ~/.fzf.zsh     ] && source ~/.fzf.zsh
+[ -f ~/.zshrc_local ] && source ~/.zshrc_local
