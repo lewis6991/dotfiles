@@ -197,7 +197,8 @@ let g:gitgutter_sign_modified_removed   = '│'  " '~_'
 " Indentline {{{
 let g:indentLine_char = '│'
 let g:indentLine_setColors = 0
-let g:indentLine_fileTypeExclude = ['fzf', 'dirvish']
+" Causes dirvish issues when running vim <DIR>
+let g:indentLine_fileTypeExclude = ['fzf', 'man']
 " }}}
 " FZF {{{
 function! s:find_git_root() abort

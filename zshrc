@@ -43,6 +43,13 @@ fi
 
 alias re-csh="source ~/.zshrc"
 
+export LESS="\
+    --RAW-CONTROL-CHARS \
+    --ignore-case \
+    --LONG-PROMPT \
+    --quit-if-one-screen \
+    --chop-long-lines"
+
 # Async prompt -----------------------------------------------------------------
 source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
 
