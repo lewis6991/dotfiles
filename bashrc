@@ -109,7 +109,6 @@ export MANPAGER="\
 
 export PAGER="less"
 export LESS="\
-    --no-init \
     --RAW-CONTROL-CHARS \
     --ignore-case \
     --LONG-PROMPT \

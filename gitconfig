@@ -4,6 +4,7 @@
 
 [diff]
 	tool = vimdiff
+	algorithm = patience
 
 [difftool]
 	prompt = false
@@ -18,8 +19,9 @@
 	co   = checkout
 	cp   = cherry-pick
 	cpc  = cherry-pick --continue
-	d    = difftool
-	dt   = "!f() { nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst; }; f"
+	d    = "!f() { \
+			nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst;\
+		}; f"
 	ra   = rebase --abort
 	rc   = rebase --continue
 	ri   = rebase --interactive
@@ -37,6 +39,7 @@
 			git track ${2-master}; \
 		}; f"
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
+	who = shortlog -sne
 	# Gerrit aliases
 	publish = "!f() {\
 			branch=$(git rev-parse --abbrev-ref HEAD); \
@@ -70,5 +73,8 @@
 
 [rebase]
 	autoStash = true
+
+[fetch]
+	prune = true
 
 # vim: ft=gitconfig
