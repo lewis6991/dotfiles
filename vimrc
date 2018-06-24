@@ -198,7 +198,7 @@ let g:gitgutter_sign_modified_removed   = '│'  " '~_'
 let g:indentLine_char = '│'
 let g:indentLine_setColors = 0
 " Causes dirvish issues when running vim <DIR>
-let g:indentLine_fileTypeExclude = ['fzf', 'man']
+let g:indentLine_fileTypeExclude = ['fzf', 'man'] 
 " }}}
 " FZF {{{
 function! s:find_git_root() abort
@@ -553,11 +553,11 @@ iabbrev rev
     \' REVISIT: '.$USER.' '.strftime("%m/%d/%y").':'<CR>
 " }}}
 " Statusline {{{
-function! Strip(input_string)
+function! Strip(input_string) "{{{
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
-endfunction
+endfunction "}}}
 
-function! Hunks() abort
+function! Hunks() abort "{{{
     let l:hunks = GitGutterGetHunkSummary()
 
     let l:modified = l:hunks[0]
@@ -583,9 +583,9 @@ function! Hunks() abort
     endif
 
     return Strip(join([l:modified_s, l:added_s, l:deleted_s]))
-endfunction
+endfunction "}}}
 
-function! EncodingAndFormat() abort
+function! EncodingAndFormat() abort "{{{
     let l:e = &fileencoding ? &fileencoding : &encoding
     let l:f = &fileformat
 
@@ -600,9 +600,9 @@ function! EncodingAndFormat() abort
     endif
 
     return Strip(join([l:e, l:f]))
-endfunction
+endfunction "}}}
 
-function! s:GetAle(active) abort
+function! s:GetAle(active) abort "{{{
     try
         let l:aleinfo = ale#statusline#Count(bufnr('%'))
     catch
@@ -634,9 +634,9 @@ function! s:GetAle(active) abort
     endfor
 
     return Strip(join(l:alestatus))
-endfunction
+endfunction "}}}
 
-function! Statusbar(active)
+function! Statusbar(active) "{{{
     if a:active
         let l:s = '%#PmenuSel#'
     else
@@ -647,39 +647,27 @@ function! Statusbar(active)
 
     if a:active
         let l:s .= '%#Visual#'
-    endif
-
-    let l:s .= '%(  %{Hunks()}  %)'
-
-    if a:active
+        let l:s .= '%(  %{Hunks()}  %)'
         let l:s .= '%#CursorLine#'
     endif
 
-    let l:s .= '  %.40f'
-    let l:s .= '%m%r' " [+][RO]
+    let l:s .= '  %0.40t%m%r'  " file.txt[+][RO]
 
     let l:s .= '%='
 
     let l:s .= s:GetAle(a:active)
-
     let l:s .= '  '
 
     if a:active
         let l:s .= '%#Visual#'
-    endif
-
-    let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
-
-    if a:active
+        let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
         let l:s .= '%#PmenuSel#'
+        let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+        let l:s .= ' %p%% %l/%L %c ' " 80% 65/120 12
     endif
-
-    let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
-    let l:s .= ' %p%%' " Percent through file
-    let l:s .= ' %l/%L %c  ' " lnum:cnum
 
     return l:s
-endfunction
+endfunction "}}}
 
 augroup status
   autocmd!
