@@ -10,20 +10,43 @@ fi
 export FANCY_PROMPT_DOUBLE_LINE=1
 export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 
-# Plugins (antigen) ------------------------------------------------------------
-source "$(brew --prefix)/share/antigen/antigen.zsh"
+export ZSH_AUTOSUGGEST_USE_ASYNC=1
+# Plugins ----------------------------------------------------------------------
 
-antigen use oh-my-zsh
+### Added by Zplugin's installer
+source '~/.zplugin/bin/zplugin.zsh'
+autoload -Uz _zplugin
+(( ${+_comps} )) && _comps[zplugin]=_zplugin
+### End of Zplugin's installer chunk
 
-antigen bundle pip
-antigen bundle colored-man-pages
-antigen bundle zsh-users/zsh-syntax-highlighting
-antigen bundle zsh-users/zsh-autosuggestions
-antigen bundle mafredri/zsh-async
-antigen bundle zsh-users/zsh-history-substring-search
-antigen bundle zsh-users/zsh-completions
+zplugin ice wait"0" lucid
+zplugin snippet OMZ::plugins/colored-man-pages/colored-man-pages.plugin.zsh
 
-antigen apply
+zplugin ice wait"0" lucid
+zplugin snippet OMZ::lib/history.zsh
+
+zplugin ice wait"0" lucid
+zplugin snippet OMZ::lib/grep.zsh
+
+zplugin ice wait'0' atload'_zsh_autosuggest_start' lucid
+zplugin light zsh-users/zsh-autosuggestions
+
+zplugin light zsh-users/zsh-history-substring-search
+
+zplugin ice wait"0" blockf lucid
+zplugin light zsh-users/zsh-completions
+
+zplugin light mafredri/zsh-async
+
+zplugin ice wait"0" atinit"zpcompinit; zpcdreplay" lucid
+zplugin light zdharma/fast-syntax-highlighting
+
+autoload bashcompinit && bashcompinit
+
+# Menu completion
+zstyle ':completion:*' menu yes select
+
+setopt NO_BEEP
 
 if ((HAVE_BREW)); then
     COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
@@ -39,6 +62,15 @@ alias ll='ls -goAh'
 if hash nvim 2>/dev/null; then
     alias vim="nvim"
     alias vimdiff="nvim -d"
+fi
+
+# Give command history to tclsh
+if hash rlwrap 2>/dev/null; then
+    alias tclsh="rlwrap -Ar -pcyan tclsh"
+fi
+
+if hash highlight 2>/dev/null; then
+    alias ccat="highlight --out-format=ansi --force"
 fi
 
 alias re-csh="source ~/.zshrc"

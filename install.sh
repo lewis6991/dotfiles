@@ -92,4 +92,31 @@ install_dotfile inputrc
 
 ./modules/fancy-prompt/install.sh
 
+# pip packages
+# ------------
+# gitlint
+# mypy
+# neovim
+# pylint
+# vim-vint
+# yamllint
+
+# brew packages
+# -------------
+# bash
+# bash-completion
+# diff-so-fancy
+# git
+# highlight
+# make
+# neovim
+# python3
+# rlwrap
+# shellcheck
+# the_silver_searcher
+# tmux
+# tree
+# zplug
+# zsh
+
 echo -e "${GREEN}Finished successfully${NC}"
