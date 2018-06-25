@@ -12,7 +12,7 @@
 [alias]
 	a    = add
 	au   = add -u
-	br   = branch
+	br   = branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:reset)%(align:10,left)%(refname:strip=2)%(end) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)'
 	cam  = commit --amend
 	ca   = commit --amend --no-edit
 	ci   = commit
@@ -26,8 +26,7 @@
 	rc   = rebase --continue
 	ri   = rebase --interactive
 	rs   = rebase --skip
-	st   = status
-	stp  = status --porcelain
+	st   = status --short --show-stash
 	su   = submodule update --recursive
 	lg = "!f() {\
 			width=$(($(tput cols) - 10)); \
@@ -40,6 +39,7 @@
 		}; f"
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
 	who = shortlog -sne
+
 	# Gerrit aliases
 	publish = "!f() {\
 			branch=$(git rev-parse --abbrev-ref HEAD); \
@@ -65,8 +65,9 @@
 	list = !sh -c 'gerrit patches --assigned'
 
 [core]
-	editor = nvim
+	editor       = nvim
 	excludesfile = ~/.gitignore
+	pager        = diff-so-fancy | less --tabs=4 -RFX
 
 [pull]
 	rebase = true
@@ -77,4 +78,16 @@
 [fetch]
 	prune = true
 
-# vim: ft=gitconfig
+[color "diff-highlight"]
+	oldNormal    = red   bold
+	oldHighlight = red   bold 52
+	newNormal    = green bold
+	newHighlight = green bold 22
+
+[color "diff"]
+	meta       = yellow
+	frag       = magenta bold
+	commit     = yellow  bold
+	old        = red     bold
+	new        = green   bold
+	whitespace = red     reverse

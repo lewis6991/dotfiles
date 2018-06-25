@@ -16,7 +16,7 @@ augroup END
         execute 'silent !mkdir -p ~/.vim/autoload'
         silent !git clone https://github.com/junegunn/vim-plug.git $HOME/.vim/bundle/vim-plug
         silent !ln -s $HOME/.vim/bundle/vim-plug/plug.vim $HOME/.vim/autoload/plug.vim
-        autocmd! vimrc VimEnter * PlugInstall --sync | source $MYVIMRC
+        autocmd vimrc VimEnter * PlugInstall --sync | source $MYVIMRC
     endif "}}}
 
     " Install vim-pathogen if we don't already have it {{{
@@ -81,7 +81,7 @@ call plug#begin('~/.vim/plugged')
 
         Plug 'Shougo/deoplete.nvim', { 'on' : []}
         augroup lazy_deoplete
-            autocmd! InsertEnter,CursorHold * 
+            autocmd! InsertEnter,CursorHold *
                 \   call plug#load('deoplete.nvim')
                 \ | call deoplete#custom#option('refresh_always', v:true)
                 \ | autocmd! lazy_deoplete
@@ -260,6 +260,7 @@ set sidescrolloff=6
 set virtualedit=block " allow cursor to exist where there is no character
 set updatetime=100
 set hidden
+set lazyredraw
 
 if has('mouse')
     set mouse=a
@@ -380,11 +381,11 @@ nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
 
 "Delete trailing white space on save.
-autocmd! vimrc BufWrite * call DeleteTrailingWS()
+autocmd vimrc BufWrite * call DeleteTrailingWS()
 
 if v:version >= 704
     "Highlight trailing whitespace
-    autocmd! vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')
+    autocmd vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')
 endif
 " }}}
 " Folding {{{
@@ -414,7 +415,7 @@ function! DeleteTrailingWS() abort "{{{
     " vint: -ProhibitCommandWithUnintendedSideEffect
     " vint: -ProhibitCommandRelyOnUser
     " Remove trailing whitespace
-    %s/\s\+$//e
+    %s/\s\+$//ge
     " vint: +ProhibitCommandWithUnintendedSideEffect
     " vint: +ProhibitCommandRelyOnUser
 
@@ -498,8 +499,6 @@ let g:vim_indent_cont = &shiftwidth
 let g:xml_syntax_folding=1
 
 augroup vimrc
-    autocmd!
-
     " Filetype detections
     autocmd BufRead dotshrc,dotsh         setlocal filetype=sh
     autocmd BufRead dotcshrc              setlocal filetype=csh
@@ -514,12 +513,9 @@ augroup vimrc
                   \ | endif
 
     " Scala
-    autocmd Filetype scala setlocal
-        \ shiftwidth=4
-        \ foldlevelstart=1
-
-    autocmd FileType scala call SCTags()
-
+    autocmd Filetype scala         setlocal shiftwidth=4
+        \                                   foldlevelstart=1
+    autocmd FileType scala         call SCTags()
 
     autocmd Filetype systemverilog setlocal shiftwidth=2
         \                                   tabstop=2
@@ -529,7 +525,7 @@ augroup vimrc
     autocmd Filetype gitconfig     setlocal noexpandtab
     autocmd Filetype log           setlocal textwidth=1000
     autocmd FileType yaml          setlocal foldmethod=expr
-        \                          setlocal foldexpr=YamlFolds()
+        \                                   foldexpr=YamlFolds()
     autocmd FileType xml           setlocal foldnestmax=20
         \                                   foldcolumn=5
 
@@ -550,7 +546,7 @@ endif
 " Snippets {{{
 iabbrev rev
     \ <c-r>=substitute(&commentstring, '%s', '', '').
-    \' REVISIT: '.$USER.' '.strftime("%m/%d/%y").':'<CR>
+    \' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):'<CR>
 " }}}
 " Statusline {{{
 function! Strip(input_string) "{{{
