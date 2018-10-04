@@ -72,7 +72,7 @@ call plug#begin('~/.vim/plugged')
     PlugLazy 'tpope/vim-repeat'
     PlugLazy 'tpope/vim-eunuch'
 
-    Plug 'sheerun/vim-polyglot'
+    " Plug 'sheerun/vim-polyglot'
     Plug 'tmhedberg/SimpylFold'       , { 'for': 'python'        }
     Plug 'lewis6991/tcl.vim'          , { 'for': 'tcl'           }
     Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
@@ -98,6 +98,11 @@ call plug#begin('~/.vim/plugged')
     Plug 'Yggdroot/indentLine'
     Plug 'tmux-plugins/vim-tmux-focus-events'
     Plug 'ryanoasis/vim-devicons'
+
+    " Plug 'pangloss/vim-javascript'
+    " Plug 'mxw/vim-jsx'
+    " Plug 'neoclide/vim-jsx-improve'
+    Plug 'othree/yajs.vim'
 
     if has('nvim')
         " Workaround for: https://github.com/neovim/neovim/issues/1822
@@ -453,6 +458,7 @@ augroup commentstring_group
     autocmd Filetype sbt.scala   setlocal commentstring=//%s
     autocmd Filetype vim         setlocal commentstring=\"%s
     autocmd Filetype dosini      setlocal commentstring=#%s
+    autocmd Filetype javascript  setlocal commentstring=//%s
     autocmd Filetype Jenkinsfile setlocal commentstring=//%s
 augroup END
 " }}}
