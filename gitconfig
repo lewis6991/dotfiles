@@ -13,8 +13,22 @@
 	a    = add
 	au   = add -u
 	br   = branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:reset)%(align:10,left)%(refname:strip=2)%(end) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)'
+	brs = "!f() { \
+			git for-each-ref --shell --format=\"ref=%(refname)\" refs/heads | \
+				while read entry; do \
+					eval \"$entry\";\
+					branch=${ref##refs/heads/}; \
+					remoteBranch=$(git config branch.$branch.merge); \
+					remoteBranch=${remoteBranch##refs/heads/}; \
+					git branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:yellow)%(refname:strip=2)%(color:reset) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)' \
+					--list $branch; \
+					git --no-pager log --format=\"      %s\" origin/$remoteBranch..$branch;\
+				done \
+		}; f"
+	bd   = branch -D
 	cam  = commit --amend
 	ca   = commit --amend --no-edit
+	cap  = !git ca && git publish
 	ci   = commit
 	co   = checkout
 	cp   = cherry-pick
@@ -22,21 +36,30 @@
 	d    = "!f() { \
 			nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst;\
 		}; f"
+	drop = !sh -c 'git reset --hard HEAD~${1-1}' -
 	ra   = rebase --abort
 	rc   = rebase --continue
 	ri   = rebase --interactive
 	rs   = rebase --skip
-	st   = status --short --show-stash
+	st   = status --short --show-stash --ignore-submodules
+	sp   = stash show -p
 	su   = submodule update --recursive
 	lg = "!f() {\
+			hash_length=$(expr length $(git rev-parse --short HEAD)) \
 			width=$(($(tput cols) - 10)); \
-			git log --graph --format=\"%w($width,,44)%C(bold yellow)%h %C(bold blue)%<(18)%an %C(bold green)%<(14)%cr %C(auto)%d %Creset%s\" $@; \
+			width2=$(expr 54 - $hash_length); \
+			git log --graph --format=\"%w($width,,$width2)%C(bold yellow)%h %C(bold blue)%<(18,trunc)%an %C(bold green)%<(14)%cr %C(auto)%d %Creset%s\" $@; \
 		}; f"
+	lgs = !git lg HEAD..origin
 	put = "!f() {\
+			branch=$(git rev-parse --abbrev-ref HEAD); \
+			remoteBranch=$(git config branch.$branch.merge); \
+			remoteBranch=${remoteBranch##refs/heads/}; \
 			git branch -f ${1-master}; \
 			git checkout ${1-master}; \
-			git track ${2-master}; \
+			git track ${2-$remoteBranch}; \
 		}; f"
+	reh = reset --hard
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
 	who = shortlog -sne
 
@@ -45,24 +68,11 @@
 			branch=$(git rev-parse --abbrev-ref HEAD); \
 			remoteBranch=$(git config branch.$branch.merge); \
 			remoteBranch=${remoteBranch##refs/heads/}; \
-			git push origin HEAD:refs/publish/${1-$remoteBranch}; \
+			git push origin HEAD:refs/for/${1-$remoteBranch}; \
 		}; f"
-	draft = "!f() {\
-			branch=$(git rev-parse --abbrev-ref HEAD); \
-			remoteBranch=$(git config branch.$branch.merge); \
-			remoteBranch=${remoteBranch##refs/heads/}; \
-			git push origin HEAD:refs/drafts/${1-$remoteBranch}; \
-		}; f"
-	reh = reset --hard
+	p = !git publish
 
-	gco = "!f() {\
-			git fetch origin refs/changes/${1} && \
-			git checkout FETCH_HEAD && \
-			git branch -f gerrit/${1} &&  \
-			git checkout gerrit/${1}; \
-		}; f"
-
-	list = !sh -c 'gerrit patches --assigned'
+	setup-hooks = !sh -c 'scp -p $1:hooks/commit-msg ${2}/.git/hooks/' -
 
 [core]
 	editor       = nvim

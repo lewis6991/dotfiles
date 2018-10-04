@@ -1,9 +1,15 @@
 " Init {{{
 scriptencoding utf-8
 
-augroup vimrc
+augroup vimrc | autocmd! | augroup END
+
+augroup lazy_plugin
     autocmd!
+    autocmd CursorHold *
+        \   doautocmd User LazyPlugin
+        \ | autocmd! lazy_plugin
 augroup END
+
 " }}}
 " Plugins {{{
 
@@ -30,17 +36,41 @@ let g:loaded_netrwPlugin = 1  " Stop netrw loading
 " Load any plugins which are work sensitive.
 execute pathogen#infect('~/gerrit/{}')
 
+function! PlugLazy(...)
+    let l:name = a:1
+    Plug l:name, {'on' : []}
+
+    let l:au_prefix = 'autocmd lazy_plugin User LazyPlugin'
+
+    let l:base = split(l:name, '/')[1]
+    execute printf('%s call plug#load("%s")', l:au_prefix, l:base)
+
+    if a:0 > 1
+        let l:post_cmds = a:000[2:]
+        for cmd in l:post_cmds
+            execute printf('%s %s', l:au_prefix, cmd)
+        endfor
+    endif
+endfunction
+
+command! -nargs=* PlugLazy call PlugLazy(<args>)
+
 call plug#begin('~/.vim/plugged')
     Plug 'junegunn/vim-plug'
 
     Plug 'lewis6991/moonlight.vim'
 
-    Plug 'tpope/vim-fugitive'
-    Plug 'tpope/vim-commentary'
-    Plug 'tpope/vim-unimpaired'
-    Plug 'tpope/vim-surround'
-    Plug 'tpope/vim-repeat'
-    Plug 'tpope/vim-eunuch'
+    PlugLazy 'tpope/vim-fugitive'
+    PlugLazy 'tpope/vim-commentary'
+    PlugLazy 'tpope/vim-unimpaired'
+
+    PlugLazy 'jonhiggs/vim-readline'
+
+    Plug 'timakro/vim-searchant'
+
+    PlugLazy 'tpope/vim-surround'
+    PlugLazy 'tpope/vim-repeat'
+    PlugLazy 'tpope/vim-eunuch'
 
     Plug 'sheerun/vim-polyglot'
     Plug 'tmhedberg/SimpylFold'       , { 'for': 'python'        }
@@ -53,7 +83,7 @@ call plug#begin('~/.vim/plugged')
 
     Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
     Plug 'junegunn/fzf.vim'
-    Plug 'junegunn/vim-easy-align'
+    PlugLazy 'junegunn/vim-easy-align'
     Plug 'whatyouhide/vim-lengthmatters'
     Plug 'gaving/vim-textobj-argument'
     Plug 'michaeljsmith/vim-indent-object'
@@ -61,14 +91,13 @@ call plug#begin('~/.vim/plugged')
 
     if v:version >= 704
         Plug 'lewis6991/vim-clean-fold'
+        PlugLazy 'airblade/vim-gitgutter'
     endif
-    Plug 'airblade/vim-gitgutter'
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'dietsche/vim-lastplace'
     Plug 'Yggdroot/indentLine'
     Plug 'tmux-plugins/vim-tmux-focus-events'
     Plug 'ryanoasis/vim-devicons'
-    " Plug 'powerman/vim-plugin-AnsiEsc'
 
     if has('nvim')
         " Workaround for: https://github.com/neovim/neovim/issues/1822
@@ -79,13 +108,9 @@ call plug#begin('~/.vim/plugged')
             map P <Plug>(miniyank-autoPut)
         endif
 
-        Plug 'Shougo/deoplete.nvim', { 'on' : []}
-        augroup lazy_deoplete
-            autocmd! InsertEnter,CursorHold *
-                \   call plug#load('deoplete.nvim')
-                \ | call deoplete#custom#option('refresh_always', v:true)
-                \ | autocmd! lazy_deoplete
-        augroup END
+        " Plug 'Shougo/deoplete.nvim'
+        PlugLazy 'Shougo/deoplete.nvim',
+            \ "call deoplete#custom#option('refresh_always', v:true)"
 
         " Deoplete sources
         Plug 'Shougo/neco-vim'
@@ -100,6 +125,64 @@ call plug#begin('~/.vim/plugged')
 
 call plug#end()
 " }}}
+" General {{{
+set number
+set nowrap
+if v:version >= 704
+    set relativenumber
+endif
+set textwidth=80
+set shiftwidth=4
+set tabstop=4
+set softtabstop=4
+set expandtab
+set noswapfile
+set ignorecase
+set smartcase
+set clipboard+=unnamedplus
+set scrolloff=6
+set sidescroll=1
+set sidescrolloff=6
+set virtualedit=block " allow cursor to exist where there is no character
+set updatetime=100
+set hidden
+set lazyredraw
+
+if has('mouse')
+    set mouse=a
+endif
+
+set diffopt+=vertical  "Show diffs in vertical splits
+
+let g:clipboard = {
+      \   'name': 'pb-remote',
+      \   'copy': {
+      \      '+': 'pbcopy-remote',
+      \      '*': 'pbcopy-remote',
+      \    },
+      \   'paste': {
+      \      '+': 'pbpaste-remote',
+      \      '*': 'pbpaste-remote',
+      \   },
+      \   'cache_enabled': 1,
+      \ }
+
+if has('persistent_undo')
+    set undolevels=10000
+    set undodir=~/.vim/tmp/undo
+    set undofile " Preserve undo tree between sessions.
+endif
+
+if has('nvim')
+    set viminfo+=n~/.vim/tmp/nviminfo " override ~/.viminfo default
+else
+    set viminfo+=n~/.vim/tmp/viminfo " override ~/.viminfo default
+endif
+
+set splitright
+set splitbelow
+set spell
+" }}}
 " Plugin Settings {{{
 "Ale {{{
 " let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
@@ -112,9 +195,9 @@ let g:ale_sign_info = '>'
 let g:ale_tcl_nagelfar_options = '-s ~/syntaxdbjg.tcl'
 let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 let g:ale_echo_msg_format = '%severity%->%linter%->%code: %%s'
+let g:ale_linters = {'python': ['vulture', 'mypy', 'pylint', 'pyls']}
 
-nmap <leader>an <Plug>(ale_next)
-nmap <leader>ap <Plug>(ale_previous)
+let g:ale_virtualenv_dir_names = ['venv', 'venv_6', 'venv_7']
 " }}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
@@ -187,28 +270,36 @@ let g:easy_align_delimiters = {
 let g:lengthmatters_highlight_one_column = 1
 " }}}
 " Gitgutter {{{
-let g:gitgutter_max_signs=4000
-let g:gitgutter_sign_added              = '│'  " '+'
-let g:gitgutter_sign_modified           = '│'  " '~'
-let g:gitgutter_sign_removed            = '_'  " '_'
-let g:gitgutter_sign_removed_first_line = '‾'  " '‾'
-let g:gitgutter_sign_modified_removed   = '│'  " '~_'
+if v:version >= 704
+    let g:gitgutter_max_signs=4000
+    let g:gitgutter_sign_added              = '│'  " '+'
+    let g:gitgutter_sign_modified           = '│'  " '~'
+    let g:gitgutter_sign_removed            = '_'  " '_'
+    let g:gitgutter_sign_removed_first_line = '‾'  " '‾'
+    let g:gitgutter_sign_modified_removed   = '│'  " '~_'
+endif
 " }}}
 " Indentline {{{
 let g:indentLine_char = '│'
 let g:indentLine_setColors = 0
 " Causes dirvish issues when running vim <DIR>
-let g:indentLine_fileTypeExclude = ['fzf', 'man'] 
+let g:indentLine_fileTypeExclude = ['fzf', 'man']
 " }}}
 " FZF {{{
 function! s:find_git_root() abort
   return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
 endfunction
 
-command! ProjectFiles execute 'Files' s:find_git_root()
+" command! ProjectFiles execute 'Files' s:find_git_root()
 
-nnoremap <c-p> :ProjectFiles<cr>
-nnoremap <c-space> :GFiles<cr>
+            " \'source': 'echo -e "'.join(v:oldfiles, '\n').'"; $FZF_DEFAULT_COMMAND',
+command! FZFMix call fzf#run(fzf#wrap('my_cmd', {
+            \'dir' : s:find_git_root(),
+            \}))
+
+" nnoremap <c-p> :FZFMix<cr>
+nnoremap <c-p> :GFiles<cr>
+nnoremap <c-space> :FZFMix<cr>
 nnoremap <c-s> :Ag<cr>
 let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
@@ -238,51 +329,6 @@ if has('nvim')
     inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<CR>"
     "}}}
 endif
-" }}}
-" General {{{
-set number
-set nowrap
-if v:version >= 704
-    set relativenumber
-endif
-set textwidth=80
-set shiftwidth=4
-set tabstop=4
-set softtabstop=4
-set expandtab
-set noswapfile
-set ignorecase
-set smartcase
-set clipboard+=unnamedplus
-set scrolloff=6
-set sidescroll=1
-set sidescrolloff=6
-set virtualedit=block " allow cursor to exist where there is no character
-set updatetime=100
-set hidden
-set lazyredraw
-
-if has('mouse')
-    set mouse=a
-endif
-
-set diffopt+=vertical  "Show diffs in vertical splits
-
-if has('persistent_undo')
-    set undolevels=10000
-    set undodir=~/.vim/tmp/undo
-    set undofile " Preserve undo tree between sessions.
-endif
-
-if has('nvim')
-    set viminfo+=n~/.vim/tmp/nviminfo " override ~/.viminfo default
-else
-    set viminfo+=n~/.vim/tmp/viminfo " override ~/.viminfo default
-endif
-
-set splitright
-set splitbelow
-set spell
 " }}}
 " Colours {{{
 if has('termguicolors')
@@ -352,7 +398,6 @@ endif
 " Mappings {{{
 nnoremap <leader>ev :tabnew $MYVIMRC<CR>
 nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
-nnoremap <bs> :nohlsearch<cr>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>//g<left><left>
 nnoremap <leader>c 1z=
 nnoremap <leader>w :execute "resize ".line('$')<cr>
@@ -376,6 +421,9 @@ nnoremap <S-Tab> gT
 
 nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
 nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
+
+cnoremap <C-p> <up>
+cnoremap <C-n> <down>
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
@@ -401,10 +449,11 @@ endif
 set commentstring=#%s " This is the most common
 augroup commentstring_group
     autocmd!
-    autocmd Filetype scala     setlocal commentstring=//%s
-    autocmd Filetype sbt.scala setlocal commentstring=//%s
-    autocmd Filetype vim       setlocal commentstring=\"%s
-    autocmd Filetype dosini    setlocal commentstring=#%s
+    autocmd Filetype scala       setlocal commentstring=//%s
+    autocmd Filetype sbt.scala   setlocal commentstring=//%s
+    autocmd Filetype vim         setlocal commentstring=\"%s
+    autocmd Filetype dosini      setlocal commentstring=#%s
+    autocmd Filetype Jenkinsfile setlocal commentstring=//%s
 augroup END
 " }}}
 " Functions {{{
@@ -505,6 +554,7 @@ augroup vimrc
     autocmd BufRead *.tmux                setlocal filetype=tmux
     autocmd BufRead *.jelly               setlocal filetype=xml
     autocmd BufRead setup.cfg             setlocal filetype=dosini
+    autocmd BufRead gerrit_hooks          setlocal filetype=dosini
     autocmd BufRead *.hv                  setlocal filetype=systemverilog
     autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
 
@@ -517,9 +567,9 @@ augroup vimrc
         \                                   foldlevelstart=1
     autocmd FileType scala         call SCTags()
 
-    autocmd Filetype systemverilog setlocal shiftwidth=2
-        \                                   tabstop=2
-        \                                   softtabstop=2
+    autocmd Filetype systemverilog setlocal shiftwidth=4
+        \                                   tabstop=4
+        \                                   softtabstop=4
     autocmd Filetype tags          setlocal tabstop=30
     autocmd Filetype make          setlocal noexpandtab
     autocmd Filetype gitconfig     setlocal noexpandtab
@@ -554,7 +604,15 @@ function! Strip(input_string) "{{{
 endfunction "}}}
 
 function! Hunks() abort "{{{
-    let l:hunks = GitGutterGetHunkSummary()
+    if v:version >= 704
+        try
+            let l:hunks = GitGutterGetHunkSummary()
+        catch
+            let l:hunks = [0,0,0]
+        endtry
+    else
+        let l:hunks = ""
+    endif
 
     let l:modified = l:hunks[0]
     let l:added    = l:hunks[1]
@@ -636,7 +694,8 @@ function! Statusbar(active) "{{{
     if a:active
         let l:s = '%#PmenuSel#'
     else
-        let l:s = '%#StatusLineNC#'
+        let l:s = '%#StatusLine#'
+        " let l:s = '%#StatusLineNC#'
     endif
 
     " let l:s .= '%(  %{fugitive#head()}  %)'
@@ -745,4 +804,36 @@ if has('nvim')
     " let g:terminal_color_5  = "#d56d99"
     " let g:terminal_color_17 = "#d56d6d"
 endif
+"}}}
+"Cursorword-highlight {{{
+function! Cursor_matchadd() abort
+    if exists('w:cursorword_id')
+        call matchdelete(w:cursorword_id)
+    endif
+    let l:line = getline('.')
+    let l:col = col('.') - 1
+    let l:word = matchstr(l:line[:l:col], '\k*$') . matchstr(l:line[l:col:], '^\k*')[1:]
+    let w:cursorword_id = matchadd('MatchParen', '\<' . l:word . '\>', -1)
+endfunction
+
+augroup cursorword
+  autocmd!
+  autocmd CursorMoved,CursorMovedI * call Cursor_matchadd()
+augroup END
+"}}}
+"Colorecho {{{
+function! ColorEcho(str) abort
+    let l:index = 0
+    for l:item in split(a:str, '#')
+        let l:index+=1
+        if l:index % 2
+            echon l:item
+        else
+            exec 'echohl ' . l:item
+        endif
+    endfor
+endfunction
+
+" :ColorEcho "I need some #Comment#Real Color"
+com! -nargs=+ ColorEcho :call ColorEcho(<args>)
 "}}}

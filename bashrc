@@ -67,11 +67,11 @@ fi
 prompt_command() {
     PS1=$(~/.prompt bash $?)
 
-    if [ -n "$TMUX" ]; then
-        # Refresh these variables
-        eval "$(tmux showenv -s DISPLAY)"
-        eval "$(tmux showenv -s SSH_CONNECTION)"
-    fi
+    # if [ -n "$TMUX" ]; then
+    #     # Refresh these variables
+    #     eval "$(tmux showenv -s DISPLAY)"
+    #     eval "$(tmux showenv -s SSH_CONNECTION)"
+    # fi
 
     # Update history after every command
     history -a
@@ -165,7 +165,7 @@ alias re-csh="source ~/.bashrc"
 alias python=python3
 alias pip=pip3
 
-alias lssize="ls --color=none | xargs du -sh"
+alias lssize="ls -A --color=none | xargs du -sh"
 
 #┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 #┃ Other                                                                       ┃
