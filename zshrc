@@ -1,7 +1,7 @@
 HAVE_BREW=0
 REPO_DIR=~/projects
 
-have_cmd() {
+function have_cmd {
     if ! hash $1 2>/dev/null; then
         echo "zshrc: Command '$1' is not installed"
         return 1
@@ -19,6 +19,61 @@ export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 
+# History ----------------------------------------------------------------------
+HISTFILE="$XDG_DATA_HOME/zsh_history"
+HISTSIZE=50000
+SAVEHIST=10000
+setopt HIST_IGNORE_ALL_DUPS
+setopt SHARE_HISTORY
+setopt HIST_REDUCE_BLANKS
+
+# Completion -------------------------------------------------------------------
+# enable meanu completion and highlighting current option
+zstyle ':completion:*' menu yes select
+zstyle ':completion::complete:*' use-cache 1
+zstyle ':completion::complete:*' cache-path $XDG_CACHE_HOME
+
+# Set up ls colors
+eval "$(dircolors -b)"
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+# export LS_COLORS="$(ls_colors_generator)"
+
+# Pager ------------------------------------------------------------------------
+export PAGER="less"
+export LESS="\
+    --RAW-CONTROL-CHARS \
+    --ignore-case \
+    --LONG-PROMPT \
+    --quit-if-one-screen \
+    --chop-long-lines"
+
+export MANPAGER="\
+nvim \
+-R \
+-u NORC \
+-c 'set ft=man nomod' \
+-c 'set laststatus=0' \
+-c 'map q :q<CR>' \
+-c 'map <SPACE> <C-D>' \
+-c 'map K :Man<CR>' \
+-c 'map b <C-U>' \
+-c 'map d <C-d>' \
+-c 'map u <C-u>' -"
+
+export LESS_TERMCAP_mb=$(tput bold; tput setaf 2) # green
+export LESS_TERMCAP_md=$(tput bold; tput setaf 1) # red
+export LESS_TERMCAP_me=$(tput sgr0)
+export LESS_TERMCAP_so=$(tput bold; tput setaf 3; tput setab 4) # yellow on blue
+export LESS_TERMCAP_se=$(tput rmso; tput sgr0)
+export LESS_TERMCAP_us=$(tput bold; tput setaf 7) # white
+export LESS_TERMCAP_ue=$(tput rmul; tput sgr0)
+export LESS_TERMCAP_mr=$(tput rev)
+export LESS_TERMCAP_mh=$(tput dim)
+export LESS_TERMCAP_ZN=$(tput ssubm)
+export LESS_TERMCAP_ZV=$(tput rsubm)
+export LESS_TERMCAP_ZO=$(tput ssupm)
+export LESS_TERMCAP_ZW=$(tput rsupm)
+
 # Plugins ----------------------------------------------------------------------
 
 ### Added by Zplugin's installer
@@ -27,27 +82,7 @@ autoload -Uz _zplugin
 (( ${+_comps} )) && _comps[zplugin]=_zplugin
 ### End of Zplugin's installer chunk
 
-zplugin ice wait"0" lucid
-zplugin snippet OMZ::plugins/colored-man-pages/colored-man-pages.plugin.zsh
-
-zplugin ice wait"0" lucid
-zplugin snippet OMZ::lib/history.zsh
-
-zplugin ice wait"0" lucid
-zplugin snippet OMZ::lib/termsupport.zsh
-
-zplugin ice wait"0" lucid
-zplugin snippet OMZ::lib/completion.zsh
-
-zplugin ice wait"0" lucid
-zplugin snippet OMZ::lib/grep.zsh
-
-zplugin ice wait"0" lucid
-zplugin snippet OMZ::lib/theme-and-appearance.zsh
-
-# zplugin ice wait"0" lucid
-# zplugin snippet OMZ::lib/key-bindings.zsh
-
+# Spawns a concurrent child process
 zplugin ice wait'0' atload'_zsh_autosuggest_start' lucid
 zplugin light zsh-users/zsh-autosuggestions
 
@@ -62,20 +97,21 @@ zplugin light mafredri/zsh-async
 zplugin ice wait"0" blockf lucid
 zplugin light zdharma/fast-syntax-highlighting
 
+# Other ----------------------------------------------------------------------
+
 autoload -U +X compinit && compinit
 autoload -U +X bashcompinit && bashcompinit
 
-# Menu completion
-# auto-select first completion option
-zstyle ':completion:*' menu yes select
-
 setopt NO_BEEP
+
+# Stop ctrl-d from closing the shell
+setopt IGNORE_EOF
 
 if ((HAVE_BREW)); then
     COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
     if [ -d "$COREUTILS_PATH" ]; then
-        export PATH="$COREUTILS_PATH/gnubin:$PATH"
-        export MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
+        PATH="$COREUTILS_PATH/gnubin:$PATH"
+        MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
     fi
 fi
 
@@ -96,7 +132,11 @@ fi
 
 if have_cmd rg; then
     _rg () {
-        \rg --heading --color always "$@" | less -RFX
+        if [[ -t 1 ]]; then
+            \rg --heading --ignore-case "$@" --color=always | less -RFX
+        else
+            \rg "$@"
+        fi
     }
 
     alias rg="_rg --colors 'match:bg:yellow' --colors 'match:fg:19' --colors 'line:fg:20' --colors 'path:fg:cyan'"
@@ -128,30 +168,15 @@ source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
 
-refresh_display() {
-    if [ -n "$TMUX" ]; then
-        # Refresh these variables
-        eval "$(tmux showenv -s DISPLAY)"
-        eval "$(tmux showenv -s SSH_CONNECTION)"
+function update-x11-forwarding {
+    if [ -z "$STY" -a -z "$TMUX" ]; then
+        echo $DISPLAY > ~/.display.txt
+    else
+        export DISPLAY=$(cat ~/.display.txt)
     fi
 }
 
-# add-zsh-hook precmd refresh_display
-
-notify_tmux() {
-    echo -n -e "\a"
-}
-
-# add-zsh-hook precmd notify_tmux
-
-# export FZF_DEFAULT_COMMAND='
-#   (git ls-tree -r --name-only HEAD ||
-#    find . -path "*/\.*" -prune -o -type f -print -o -type l -print |
-#       sed s/^..//) 2> /dev/null'
-
-# export FZF_DEFAULT_COMMAND='
-#    find . -path "*/\.*" -prune -o -type f -print -o -type l -print |
-#       sed s/^..// 2> /dev/null'
+add-zsh-hook precmd update-x11-forwarding
 
 [ -f ~/.aliases     ] && source ~/.aliases
 [ -f ~/.fzf.zsh     ] && source ~/.fzf.zsh
