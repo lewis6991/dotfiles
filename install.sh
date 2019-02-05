@@ -61,13 +61,11 @@ function install_vim {
 
     install_dotfile vimrc
     install_dotfile gvimrc
+}
 
-    # nvim
-    mkdir -p ~/.config/
-    mkdir -p ~/.config/autoload
-    link_file ~/.vim ~/.config/nvim
-    link_file ~/.vimrc ~/.vim/init.vim
-
+function install_vim {
+    mkdir -p $XDG_CONFIG_HOME/nvim
+    link_file vimrc ~/$XDG_CONFIG_HOME/nvim/init.vim
     nvim +PlugInstall +quitall
 }
 
@@ -80,10 +78,16 @@ check_dependencies \
     tmux  \
     tree
 
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME-$HOME/.config}"
+
+mkdir -p $XDG_CONFIG_HOME
+
 install_vim
+install_nvim
+
+link_file gitconfig $XDG_CONFIG_HOME/git/config
 
 install_dotfile tmux.conf
-install_dotfile gitconfig
 install_dotfile bashrc
 install_dotfile zshrc
 install_dotfile bash_functions
