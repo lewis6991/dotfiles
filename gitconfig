@@ -11,6 +11,7 @@
 
 [alias]
 	a    = add
+	ai   = !nvim -c 'Gstatus | wincmd o' .
 	au   = add -u
 	br   = branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:reset)%(align:10,left)%(refname:strip=2)%(end) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)'
 	brs = "!f() { \
@@ -39,13 +40,13 @@
 	# 		nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst;\
 	# 	}; f"
 	drop = !sh -c 'git reset --hard HEAD~${1-1}' -
+	r    = rebase
 	ra   = rebase --abort
 	rc   = rebase --continue
 	ri   = rebase --interactive
 	rs   = rebase --skip
 	st   = status --short --show-stash --ignore-submodules
 	sp   = stash show -p
-	su   = submodule update --recursive
 	lg = "!f() {\
 			hash_length=$(expr length $(git rev-parse --short HEAD)) \
 			width=$(($(tput cols) - 10)); \
@@ -58,6 +59,15 @@
 			remoteBranch=$(git config branch.$branch.merge); \
 			remoteBranch=${remoteBranch##refs/heads/}; \
 			git branch -f ${1-master}; \
+			git checkout ${1-master}; \
+			git track ${2-$remoteBranch}; \
+		}; f"
+	new = "!f() {\
+			branch=$(git rev-parse --abbrev-ref HEAD); \
+			remoteBranch=$(git config branch.$branch.merge); \
+			remote=$(git config branch.$branch.remote); \
+			remoteBranch=${remoteBranch##refs/heads/}; \
+			git branch -f ${1-master} $remote/$remoteBranch; \
 			git checkout ${1-master}; \
 			git track ${2-$remoteBranch}; \
 		}; f"
@@ -74,12 +84,24 @@
 		}; f"
 	p = !git publish
 
+	draft = "!f() {\
+			branch=$(git rev-parse --abbrev-ref HEAD); \
+			remoteBranch=$(git config branch.$branch.merge); \
+			remoteBranch=${remoteBranch##refs/heads/}; \
+			git push origin HEAD:refs/drafts/${1-$remoteBranch}; \
+		}; f"
+
+	# Get the latest patchset for a given change number it checkout to a local
+	# branch
+	# $1: change number
+	# $2: (optional) branch name, defaults to $1
+	get = !sh -c 'gerrit_url $1 $2' -
 	setup-hooks = !sh -c 'scp -p $1:hooks/commit-msg ${2}/.git/hooks/' -
 
 [core]
 	editor       = nvim
 	excludesfile = ~/.gitignore
-	pager        = diff-so-fancy | less --tabs=4 -RFX
+	pager        = diff-so-fancy | less --no-init --tabs=4 -R
 
 [pull]
 	rebase = true

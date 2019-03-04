@@ -1,19 +1,21 @@
 " Init {{{
 if empty($XDG_CONFIG_HOME)
-    echo "XDG_CONFIG_HOME is not defined"
+    echoerr 'XDG_CONFIG_HOME is not defined'
     quitall
 endif
 
 scriptencoding utf-8
 
-augroup vimrc | autocmd! | augroup END
+if v:version >= 800
+    augroup vimrc | autocmd! | augroup END
 
-augroup lazy_plugin
-    autocmd!
-    autocmd CursorHold *
-        \   doautocmd User LazyPlugin
-        \ | autocmd! lazy_plugin
-augroup END
+    augroup lazy_plugin
+        autocmd!
+        autocmd CursorHold *
+            \   doautocmd User LazyPlugin
+            \ | autocmd! lazy_plugin
+    augroup END
+endif
 
 " }}}
 " Plugins {{{
@@ -41,22 +43,25 @@ let g:loaded_netrwPlugin = 1  " Stop netrw loading
 " Load any plugins which are work sensitive.
 silent execute pathogen#infect('~/gerrit/{}')
 
-function! PlugLazy(...)
+function! PlugLazy(...) "{{{
     let l:name = a:1
-    Plug l:name, {'on' : []}
+    if v:version >= 800
+        Plug l:name, {'on' : []}
+        let l:au_prefix = 'autocmd lazy_plugin User LazyPlugin'
 
-    let l:au_prefix = 'autocmd lazy_plugin User LazyPlugin'
+        let l:base = split(l:name, '/')[1]
+        execute printf('%s call plug#load("%s")', l:au_prefix, l:base)
 
-    let l:base = split(l:name, '/')[1]
-    execute printf('%s call plug#load("%s")', l:au_prefix, l:base)
-
-    if a:0 > 1
-        let l:post_cmds = a:000[2:]
-        for cmd in l:post_cmds
-            execute printf('%s %s', l:au_prefix, cmd)
-        endfor
+        if a:0 > 1
+            let l:post_cmds = a:000[2:]
+            for cmd in l:post_cmds
+                execute printf('%s %s', l:au_prefix, cmd)
+            endfor
+        endif
+    else
+        Plug l:name
     endif
-endfunction
+endfunction "}}}
 
 command! -nargs=* PlugLazy call PlugLazy(<args>)
 
@@ -67,12 +72,12 @@ call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
 
     Plug 'powerman/vim-plugin-AnsiEsc'
 
-    PlugLazy 'tpope/vim-fugitive'
+    Plug 'tpope/vim-fugitive'
+
     PlugLazy 'tpope/vim-commentary'
     PlugLazy 'tpope/vim-unimpaired'
 
-    PlugLazy 'jonhiggs/vim-readline'
-
+    Plug 'vim-scripts/visualrepeat'
     Plug 'timakro/vim-searchant'
 
     PlugLazy 'tpope/vim-surround'
@@ -86,7 +91,7 @@ call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
     Plug 'tmux-plugins/vim-tmux'      , { 'for': 'tmux'          }
     Plug 'dzeban/vim-log-syntax'
 
-    Plug 'rhysd/conflict-marker.vim'
+    " Plug 'rhysd/conflict-marker.vim'
 
     Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
     Plug 'junegunn/fzf.vim'
@@ -95,44 +100,44 @@ call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
     Plug 'gaving/vim-textobj-argument'
     Plug 'michaeljsmith/vim-indent-object'
     Plug 'justinmk/vim-dirvish'
+    Plug 'christoomey/vim-tmux-navigator'
+    Plug 'dietsche/vim-lastplace'
+    " Plug 'Yggdroot/indentLine'
+    Plug 'tmux-plugins/vim-tmux-focus-events'
+    Plug 'ryanoasis/vim-devicons'
+
+    Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
+
+    " Plug 'pangloss/vim-javascript'
+    " Plug 'mxw/vim-jsx'
+    " Plug 'neoclide/vim-jsx-improve'
+    " Plug 'othree/yajs.vim'
+    " Plug 'davidhalter/jedi-vim'
 
     if v:version >= 800
         Plug 'lewis6991/vim-clean-fold'
         Plug 'airblade/vim-gitgutter'
     endif
-    Plug 'christoomey/vim-tmux-navigator'
-    Plug 'dietsche/vim-lastplace'
-    Plug 'Yggdroot/indentLine'
-    Plug 'tmux-plugins/vim-tmux-focus-events'
-    Plug 'ryanoasis/vim-devicons'
-
-    " Plug 'pangloss/vim-javascript'
-    " Plug 'mxw/vim-jsx'
-    " Plug 'neoclide/vim-jsx-improve'
-    Plug 'othree/yajs.vim'
 
     if has('nvim')
+        Plug 'autozimu/LanguageClient-neovim', {
+            \ 'branch': 'next',
+            \ 'do': 'bash install.sh',
+            \ }
+
+        Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+        Plug 'Shougo/neco-syntax'
+        Plug 'wellle/tmux-complete.vim'
+        Plug 'Shougo/neco-vim'
+        " Plug 'zchee/deoplete-jedi'
+
         " Workaround for: https://github.com/neovim/neovim/issues/1822
         Plug 'bfredl/nvim-miniyank'
-
-        if has('nvim')
-            map p <Plug>(miniyank-autoput)
-            map P <Plug>(miniyank-autoPut)
-        endif
-
-        " Plug 'Shougo/deoplete.nvim'
-        PlugLazy 'Shougo/deoplete.nvim',
-            \ "call deoplete#custom#option('refresh_always', v:true)"
-
-        " Deoplete sources
-        Plug 'Shougo/neco-vim'
-        Plug 'Shougo/neco-syntax'
-        " Plug 'zchee/deoplete-jedi'
-        Plug 'zchee/deoplete-zsh'
-        Plug 'ujihisa/neco-look'
-        Plug 'wellle/tmux-complete.vim'
+        map p <Plug>(miniyank-autoput)
+        map P <Plug>(miniyank-autoPut)
 
         Plug 'w0rp/ale'
+        Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
     endif
 
 call plug#end()
@@ -158,44 +163,39 @@ set sidescrolloff=6
 set virtualedit=block " allow cursor to exist where there is no character
 set updatetime=100
 set hidden
+set backup
+set backupdir-=.
 set lazyredraw
+if v:version >= 800
+    set completeopt=noinsert,menuone,noselect
+endif
 
 if has('mouse')
     set mouse=a
 endif
 
+silent! set pumblend=20
+
 set diffopt+=vertical  "Show diffs in vertical splits
 
 if !empty($STY)
     let g:clipboard = {
-        \   'name': 'pb-remote',
-        \   'copy': {
-        \      '+': 'pbcopy-remote',
-        \      '*': 'pbcopy-remote',
-        \    },
-        \   'paste': {
-        \      '+': 'pbpaste-remote',
-        \      '*': 'pbpaste-remote',
-        \   },
-        \   'cache_enabled': 1,
-        \ }
+          \   'name': 'pb-remote',
+          \   'copy':  {'+': 'pbcopy-remote' , '*': 'pbcopy-remote' },
+          \   'paste': {'+': 'pbpaste-remote', '*': 'pbpaste-remote'},
+          \   'cache_enabled': 1,
+          \ }
 endif
 
 if has('persistent_undo')
     set undolevels=10000
-    set undodir=~/.vim/tmp/undo
     set undofile " Preserve undo tree between sessions.
-endif
-
-if has('nvim')
-    set viminfo+=n~/.vim/tmp/nviminfo " override ~/.viminfo default
-else
-    set viminfo+=n~/.vim/tmp/viminfo " override ~/.viminfo default
 endif
 
 set splitright
 set splitbelow
 set spell
+
 " }}}
 " Plugin Settings {{{
 "Ale {{{
@@ -209,9 +209,33 @@ let g:ale_sign_info = '>'
 let g:ale_tcl_nagelfar_options = '-s ~/syntaxdbjg.tcl'
 let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 let g:ale_echo_msg_format = '%severity%->%linter%->%code: %%s'
-let g:ale_linters = {'python': ['vulture', 'mypy', 'pylint', 'pyls']}
 
-let g:ale_virtualenv_dir_names = ['venv', 'venv_6', 'venv_7']
+let g:ale_linters = {}
+" let g:ale_linters.python = ['vulture', 'mypy', 'pylint']
+let g:ale_linters.python = ['mypy', 'pylint', 'flake8']
+" let g:ale_linters.python = ['pyls', 'pylint']
+let g:ale_linters.scala = ['fsc', 'sbtserver', 'scalastyle']
+
+if has('nvim')
+    let g:ale_python_pyls_config = {
+        \   'pyls': {
+        \     'plugins': {
+        \       'pycodestyle': {
+        \         'enabled': v:false
+        \       }
+        \     }
+        \   },
+        \ }
+endif
+
+
+let g:ale_virtualenv_dir_names = ['venv_7', '.venv_7']
+
+let g:ale_python_pylint_options = '--disable=bad-whitespace,invalid-name'
+" let g:ale_python_pylint_options = '--disable=bad-whitespace,missing-docstring,line-too-long,invalid-name'
+
+" let g:ale_virtualtext_cursor = v:true
+" highlight link ALEVirtualTextError ErrorMsg
 " }}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
@@ -226,11 +250,10 @@ function! s:dirvish_toggle() abort "{{{
         endif
     endfor
 
-    30vsp
-
     if expand('%') ==# ''
         Dirvish
     else
+        30vsp
         Dirvish %
     endif
 endfunction "}}}
@@ -247,12 +270,12 @@ endfunction "}}}
 
 augroup dirvish_commands
     autocmd!
-    autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U> call <SID>dirvish_open('edit')<CR>
+    autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U>call <SID>dirvish_open('edit')<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> -     <Plug>(dirvish_up)
     autocmd FileType dirvish nmap     <silent> <buffer> <ESC> :bd<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> q     :bd<CR>
-    autocmd FileType dirvish nmap     <silent> <buffer> v     :<C-U> call <SID>dirvish_open('vsplit')<CR>
-    autocmd FileType dirvish nmap     <silent> <buffer> s     :<C-U> call <SID>dirvish_open('split')<CR>
+    autocmd FileType dirvish nmap     <silent> <buffer> v     :<C-U>call <SID>dirvish_open('vsplit')<CR>
+    autocmd FileType dirvish nmap     <silent> <buffer> s     :<C-U>call <SID>dirvish_open('split')<CR>
 
     autocmd Filetype dirvish setlocal nospell
     autocmd Filetype dirvish setlocal statusline=%f
@@ -284,14 +307,12 @@ let g:easy_align_delimiters = {
 let g:lengthmatters_highlight_one_column = 1
 " }}}
 " Gitgutter {{{
-if v:version >= 704
-    let g:gitgutter_max_signs=4000
-    let g:gitgutter_sign_added              = '│'  " '+'
-    let g:gitgutter_sign_modified           = '│'  " '~'
-    let g:gitgutter_sign_removed            = '_'  " '_'
-    let g:gitgutter_sign_removed_first_line = '‾'  " '‾'
-    let g:gitgutter_sign_modified_removed   = '│'  " '~_'
-endif
+let g:gitgutter_max_signs=4000
+let g:gitgutter_sign_added              = '│'  " '+'
+let g:gitgutter_sign_modified           = '│'  " '~'
+let g:gitgutter_sign_removed            = '_'  " '_'
+let g:gitgutter_sign_removed_first_line = '‾'  " '‾'
+let g:gitgutter_sign_modified_removed   = '│'  " '~_'
 " }}}
 " Indentline {{{
 let g:indentLine_char = '│'
@@ -301,29 +322,59 @@ let g:indentLine_fileTypeExclude = ['fzf', 'man']
 " }}}
 " FZF {{{
 function! s:find_git_root() abort
-  return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+    return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
 endfunction
 
-" command! ProjectFiles execute 'Files' s:find_git_root()
-
-            " \'source': 'echo -e "'.join(v:oldfiles, '\n').'"; $FZF_DEFAULT_COMMAND',
 command! FZFMix call fzf#run(fzf#wrap('my_cmd', {
-            \'dir' : s:find_git_root(),
-            \}))
+    \ 'dir' : s:find_git_root(),
+    \ }))
+
+command! GFiles2 call fzf#run(fzf#wrap('my_cmd', {
+    \ 'source': 'git ls-files --recurse-submodules && git ls-files --others --exclude-standard',
+    \ 'dir' : s:find_git_root(),
+    \ }))
 
 " nnoremap <c-p> :FZFMix<cr>
-nnoremap <c-p> :GFiles<cr>
+nnoremap <c-p> :GFiles2<cr>
 nnoremap <c-space> :FZFMix<cr>
 nnoremap <c-s> :Ag<cr>
+
 let g:fzf_layout = { 'window': '12split enew' }
 let g:fzf_buffers_jump = 1
+
+let g:fzf_colors = {
+    \ 'fg':      ['fg', 'Normal'],
+    \ 'bg':      ['bg', 'Normal'],
+    \ 'hl':      ['fg', 'Comment'],
+    \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+    \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+    \ 'hl+':     ['fg', 'Statement'],
+    \ 'info':    ['fg', 'PreProc'],
+    \ 'border':  ['fg', 'Ignore'],
+    \ 'prompt':  ['fg', 'Conditional'],
+    \ 'pointer': ['fg', 'Exception'],
+    \ 'marker':  ['fg', 'Keyword'],
+    \ 'spinner': ['fg', 'Label'],
+    \ 'header':  ['fg', 'Comment'] }
+
+" }}}
+" LanguageClient {{{
+let g:LanguageClient_serverCommands = {
+    \ 'python': ['pyls'],
+    \ }
+let g:LanguageClient_diagnosticsEnable = 0
+
+let g:LanguageClient_rootMarkers = {
+    \ 'python': ['setup.cfg']
+    \ }
+
+let g:LanguageClient_settingsPath = '~/.lsp_settings.json'
 " }}}
 " Plug {{{
 let g:plug_window = 'tabnew'
 " }}}
 " Polyglot {{{
 let g:polyglot_disabled = ['yaml']
-let g:vim_json_syntax_conceal = 0
 " }}}
 " Scala {{{
 augroup vim-scala-override
@@ -332,17 +383,22 @@ augroup vim-scala-override
         \%E\ %#[error]\ %f:%l:%c:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
         \%W\ %#[warn]\ %f:%l:%c:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
         \%-G%.%#
+
+    autocmd Filetype groovy setlocal errorformat+=
+        \%PErrors\ encountered\ validating\ %f:,
+        \%EWorkflowScript:\ %l:\ %m\ column\ %c.,%-C%.%#,%Z
+    autocmd Filetype groovy setlocal makeprg=java\ -jar\ ~/jenkins-cli.jar\ -s\ http://cem-jenkins.euhpc.arm.com\ declarative-linter\ <\ Jenkinsfile
 augroup END
 " }}}
-if has('nvim')
-    " Deoplete {{{
-    let g:deoplete#enable_at_startup = 1
-
-    inoremap <expr> <S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
-    inoremap <expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
-    inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<CR>"
-    "}}}
-endif
+" ncm2 {{{
+" if v:version >= 800
+"     let g:ncm2_look_enabled = 1
+"     autocmd BufEnter * call ncm2#enable_for_buffer()
+" endif
+"}}}
+"Deoplete {{{
+let g:deoplete#enable_at_startup = 1
+"}}}
 " }}}
 " Colours {{{
 if has('termguicolors')
@@ -355,18 +411,9 @@ silent! colorscheme moonlight
 " Make normal Vim behave like Neovim
 " Comment settings we set elsewhere in this file
 if !has('nvim')
-    " 'listchars' defaults to "tab:> ,trail:-,nbsp:+"
-    " 'directory' defaults to ~/.local/share/nvim/swap// (|xdg|), auto-created
-    " 'backupdir' defaults to .,~/.local/share/nvim/backup (|xdg|)
-    " 'sessionoptions' doesn't include "options"
-    " 'undodir' defaults to ~/.local/share/nvim/undo (|xdg|), auto-created
-    " 'viminfo' includes "!"
     set autoindent
     set autoread
     set backspace=indent,eol,start
-    if v:version >= 704
-        set belloff=all
-    endif
     set complete-=i
     set display=lastline
     if v:version >= 704
@@ -374,22 +421,16 @@ if !has('nvim')
     endif
     set history=10000
     set incsearch
-    if v:version >= 704
-        set nolangremap
-        set nrformats=bin,hex
-    endif
     set showcmd
     set smarttab
     set tabpagemax=50
-    " set tags=./tags;,tags
     set hlsearch
-    set ttyfast
     set ruler
     set laststatus=2
     set wildmenu
 
     " Tell vim how to use true colour.
-    if v:version >= 704
+    if v:version >= 800
         let &t_8f = '[38;2;%lu;%lu;%lum'
         let &t_8b = '[48;2;%lu;%lu;%lum'
     endif
@@ -399,20 +440,23 @@ endif
 if has('nvim')
     let g:loaded_python_provider = 1 " Disable python2
     let g:loaded_ruby_provider   = 1 " Disable ruby
-    let g:loaded_node_provider   = 1 " Disable ruby
+    let g:loaded_node_provider   = 1 " Disable node
+
+    let hostname = substitute(system('hostname'), '\n', '', '')
+    if hostname ==# 'cem-dev'
+        let g:python3_host_prog = '/devtools/linuxbrew/bin/python3'
+    endif
 
     set inccommand=split
     set previewheight=20
 
-    " if has('nvim-0.2.3')
-    "     silent highlight EndOfBuffer ctermfg=bg guifg=bg
-    " endif
+    "silent highlight EndOfBuffer ctermfg=bg guifg=bg
 endif
 " }}}
 " Mappings {{{
 nnoremap <leader>ev :tabnew $MYVIMRC<CR>
 nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
-nnoremap <leader>s :%s/\<<C-R><C-W>\>//g<left><left>
+nnoremap <leader>s :%s/\<<C-R><C-W>\>\C//g<left><left>
 nnoremap <leader>c 1z=
 nnoremap <leader>w :execute "resize ".line('$')<cr>
 
@@ -430,22 +474,41 @@ vnoremap Q <nop>
 " Show syntax highlighting groups for word under cursor
 nnoremap <leader>z :call <SID>SynStack()<CR>
 
-nnoremap <Tab> gt
+nnoremap <Tab>   gt
 nnoremap <S-Tab> gT
 
 nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
 nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
 
-cnoremap <C-p> <up>
-cnoremap <C-n> <down>
+cnoremap <C-P> <up>
+cnoremap <C-N> <down>
+
+cnoremap <C-A> <Home>
+cnoremap <C-D> <Del>
+
+inoremap <expr> <S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
+inoremap <expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
+inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<CR>"
+
+nnoremap & /\<<C-R><C-w>\>\C<CR>
+
+tnoremap <Esc> <C-\><C-n>
+
+cabbrev help tab help
+cabbrev h    tab h
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
 
-"Delete trailing white space on save.
-autocmd vimrc BufWrite * call DeleteTrailingWS()
+if v:version >= 800
+    "Delete trailing white space on save.
+    autocmd vimrc BufWrite * call DeleteTrailingWS()
+else
+    "Delete trailing white space on save.
+    autocmd! BufWrite * call DeleteTrailingWS()
+endif
 
-if v:version >= 704
+if v:version >= 800
     "Highlight trailing whitespace
     autocmd vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')
 endif
@@ -455,20 +518,15 @@ if has('folding')
     let g:vimsyn_folding = 'af' "Fold augroups and functions
     let g:sh_fold_enabled = 1
     set foldmethod=syntax
-    set foldcolumn=3
+    set foldcolumn=0
     set foldnestmax=2
 endif
+
 " }}}
 " Comments {{{
-set commentstring=#%s " This is the most common
 augroup commentstring_group
     autocmd!
-    autocmd Filetype scala       setlocal commentstring=//%s
-    autocmd Filetype sbt.scala   setlocal commentstring=//%s
-    autocmd Filetype vim         setlocal commentstring=\"%s
-    autocmd Filetype dosini      setlocal commentstring=#%s
-    autocmd Filetype javascript  setlocal commentstring=//%s
-    autocmd Filetype Jenkinsfile setlocal commentstring=//%s
+    autocmd Filetype sbt setlocal commentstring=//%s
 augroup END
 " }}}
 " Functions {{{
@@ -494,64 +552,105 @@ function! <SID>SynStack() abort "{{{
     echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, ''name'')')
 endfunction "}}}
 
-function! SCTags() abort "{{{
-    if executable('sctags')
-        let g:tagbar_ctags_bin = 'sctags'
-        let g:tagbar_type_scala = {
-            \ 'ctagstype' : 'scala',
-            \ 'sro'       : '.',
-            \ 'kinds'     : [
-                \ 'p:packages',
-                \ 'V:values',
-                \ 'v:variables',
-                \ 'T:types',
-                \ 't:traits',
-                \ 'o:objects',
-                \ 'O:case objects',
-                \ 'c:classes',
-                \ 'C:case classes',
-                \ 'm:methods:1'
-            \ ],
-            \ 'kind2scope'  : {
-                \ 'p' : 'package',
-                \ 'T' : 'type',
-                \ 't' : 'trait',
-                \ 'o' : 'object',
-                \ 'O' : 'case_object',
-                \ 'c' : 'class',
-                \ 'C' : 'case_class',
-                \ 'm' : 'method'
-            \ },
-            \ 'scope2kind'  : {
-                \ 'package'     : 'p',
-                \ 'type'        : 'T',
-                \ 'trait'       : 't',
-                \ 'object'      : 'o',
-                \ 'case_object' : 'O',
-                \ 'class'       : 'c',
-                \ 'case_class'  : 'C',
-                \ 'method'      : 'm'
-            \ }
-        \ }
-    endif
+" function! SCTags() abort "{{{
+"     if executable('sctags')
+"         let g:tagbar_ctags_bin = 'sctags'
+"         let g:tagbar_type_scala = {
+"             \ 'ctagstype' : 'scala',
+"             \ 'sro'       : '.',
+"             \ 'kinds'     : [
+"                 \ 'p:packages',
+"                 \ 'V:values',
+"                 \ 'v:variables',
+"                 \ 'T:types',
+"                 \ 't:traits',
+"                 \ 'o:objects',
+"                 \ 'O:case objects',
+"                 \ 'c:classes',
+"                 \ 'C:case classes',
+"                 \ 'm:methods:1'
+"             \ ],
+"             \ 'kind2scope'  : {
+"                 \ 'p' : 'package',
+"                 \ 'T' : 'type',
+"                 \ 't' : 'trait',
+"                 \ 'o' : 'object',
+"                 \ 'O' : 'case_object',
+"                 \ 'c' : 'class',
+"                 \ 'C' : 'case_class',
+"                 \ 'm' : 'method'
+"             \ },
+"             \ 'scope2kind'  : {
+"                 \ 'package'     : 'p',
+"                 \ 'type'        : 'T',
+"                 \ 'trait'       : 't',
+"                 \ 'object'      : 'o',
+"                 \ 'case_object' : 'O',
+"                 \ 'class'       : 'c',
+"                 \ 'case_class'  : 'C',
+"                 \ 'method'      : 'm'
+"             \ }
+"         \ }
+"     endif
+" endfunction "}}}
+
+function! QualifiedTagJump() abort "{{{
+    let l:plain_tag = expand('<cword>')
+    let l:orig_keyword = &iskeyword
+    set iskeyword+=\.
+    let l:word = expand('<cword>')
+    let &iskeyword = l:orig_keyword
+
+    let l:splitted = split(l:word, '\.')
+    let l:acc = []
+    for wo in l:splitted
+        let l:acc = add(l:acc, wo)
+        if wo ==# l:plain_tag
+            break
+        endif
+    endfor
+
+    let l:combined = join(l:acc, '.')
+    try
+        execute 'ta ' . l:combined
+    catch /.*E426.*/ " Tag not found
+        execute 'ta ' . l:plain_tag
+    endtry
 endfunction "}}}
 
+nnoremap <silent> <C-]> :<C-u>call QualifiedTagJump()<CR>
+
 function! YamlFolds() abort "{{{
-  let l:previous_level = indent(prevnonblank(v:lnum - 1)) / &shiftwidth
-  let l:current_level = indent(v:lnum) / &shiftwidth
-  let l:next_level = indent(nextnonblank(v:lnum + 1)) / &shiftwidth
+    let l:previous_level = indent(prevnonblank(v:lnum - 1)) / &shiftwidth
+    let l:current_level = indent(v:lnum) / &shiftwidth
+    let l:next_level = indent(nextnonblank(v:lnum + 1)) / &shiftwidth
 
-  if getline(v:lnum + 1) =~? '^\s*$'
-    return '='
-  elseif l:current_level < l:next_level
+    if getline(v:lnum + 1) =~? '^\s*$'
+        return '='
+    elseif l:current_level < l:next_level
+        return l:next_level
+    elseif l:current_level > l:next_level
+        return ('s' . (l:current_level - l:next_level))
+    elseif l:current_level == l:previous_level
+        return '='
+    endif
+
     return l:next_level
-  elseif l:current_level > l:next_level
-    return ('s' . (l:current_level - l:next_level))
-  elseif l:current_level == l:previous_level
-    return '='
-  endif
+endfunction "}}}
 
-  return l:next_level
+function! JsonFolds() abort "{{{
+    let l:line = getline(v:lnum)
+    let l:lline = split(l:line, '\zs')
+    let l:inc = count(l:lline, '{')
+    let l:dec = count(l:lline, '}')
+    let l:level = inc - dec
+    if l:level == 0
+        return '='
+    elseif l:level > 0
+        return 'a'.l:level
+    elseif l:level < 0
+        return 's'.-l:level
+    endif
 endfunction "}}}
 "}}}
 " File Settings {{{
@@ -570,8 +669,10 @@ augroup vimrc
     autocmd BufRead *.jelly               setlocal filetype=xml
     autocmd BufRead setup.cfg             setlocal filetype=dosini
     autocmd BufRead gerrit_hooks          setlocal filetype=dosini
-    autocmd BufRead *.hv                  setlocal filetype=systemverilog
+    autocmd BufRead requirements*.txt     setlocal filetype=requirements
+    " autocmd BufRead Jenkinsfile*          setlocal filetype=groovy
     autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
+    autocmd BufRead gitconfig             setlocal filetype=gitconfig
 
     autocmd BufRead * if getline(1) == '#%Module1.0'
                   \ |     setlocal ft=tcl
@@ -580,7 +681,8 @@ augroup vimrc
     " Scala
     autocmd Filetype scala         setlocal shiftwidth=4
         \                                   foldlevelstart=1
-    autocmd FileType scala         call SCTags()
+        \                                   foldnestmax=3
+    " autocmd FileType scala         call SCTags()
 
     autocmd Filetype systemverilog setlocal shiftwidth=4
         \                                   tabstop=4
@@ -588,14 +690,20 @@ augroup vimrc
     autocmd Filetype tags          setlocal tabstop=30
     autocmd Filetype make          setlocal noexpandtab
     autocmd Filetype gitconfig     setlocal noexpandtab
+    autocmd FileType json          setlocal conceallevel=0
+        \                                   foldnestmax=5
+        \                                   foldmethod=marker
+        \                                   foldmarker={,}
+    " autocmd FileType json          setlocal
+    "     \                                   foldmethod=expr
+    "     \                                   foldexpr=JsonFolds()
     autocmd Filetype log           setlocal textwidth=1000
     autocmd FileType yaml          setlocal foldmethod=expr
         \                                   foldexpr=YamlFolds()
     autocmd FileType xml           setlocal foldnestmax=20
         \                                   foldcolumn=5
 
-    autocmd BufRead .vimrc,vimrc,init.vim setlocal foldmethod=marker
-
+    autocmd FileType fzf           tnoremap <buffer> <esc> :bd<cr>
 augroup END
 " }}}
 " Formatting {{{
@@ -604,7 +712,7 @@ set formatoptions+=o "Automatically insert comment leader after 'o' or 'O' in No
 set formatoptions+=l "Long lines are not broken in insert mode.
 set formatoptions-=t "Do not auto wrap text
 set formatoptions+=n "Recognise lists
-if v:version >= 704
+if v:version >= 800
     set breakindent      "Indent wrapped lines to match start
 endif
 "}}}
@@ -629,26 +737,23 @@ function! Hunks() abort "{{{
         let l:hunks = ""
     endif
 
-    let l:modified = l:hunks[0]
-    let l:added    = l:hunks[1]
+    let l:added    = l:hunks[0]
+    let l:modified = l:hunks[1]
     let l:deleted  = l:hunks[2]
 
     let l:modified_s = ''
     if l:modified !=# '0'
-        let l:modified_s .= '~'
-        let l:modified_s .= l:modified
+        let l:modified_s = '~' . l:modified
     endif
 
     let l:added_s = ''
     if l:added !=# '0'
-        let l:added_s .= '+'
-        let l:added_s .= l:added
+        let l:added_s .= '+' . l:added
     endif
 
     let l:deleted_s = ''
     if l:deleted !=# '0'
-        let l:deleted_s .= '-'
-        let l:deleted_s .= l:deleted
+        let l:deleted_s .= '-' . l:deleted
     endif
 
     return Strip(join([l:modified_s, l:added_s, l:deleted_s]))
@@ -705,7 +810,40 @@ function! s:GetAle(active) abort "{{{
     return Strip(join(l:alestatus))
 endfunction "}}}
 
-function! Statusbar(active) "{{{
+let s:diagnostics = {}
+
+function! s:record_diagnostics(state)
+  let result = json_decode(a:state.result)
+  let s:diagnostics = result.diagnostics
+endfunction
+
+function! s:diagnostics_for_buffer() "{{{
+
+    " let d = getqflist()
+    let d = getloclist(0)
+
+    let message = []
+
+    for [p, s, h] in [
+        \     ['E', 1, 'DiffRemoved'],
+        \     ['W', 2, 'DiffLine'],
+        \     ['I', 3, 'DiffAdded'],
+        \     ['H', 4, 'DiffRemoved']
+        \ ]
+        let l:count = 0
+        for i in d
+            if i.type == p
+                let l:count += 1
+            endif
+        endfor
+        if l:count > 0
+            let message += ['%#'.h.'#'.p.':'.l:count]
+        endif
+    endfor
+    return join(message, ' ')
+endfunction "}}}
+
+function! Statusbar(active) abort "{{{
     if a:active
         let l:s = '%#PmenuSel#'
     else
@@ -715,18 +853,33 @@ function! Statusbar(active) "{{{
 
     " let l:s .= '%(  %{fugitive#head()}  %)'
 
+    " if expand('%t') !~# '/.git/'
+    "     let l:s .= '%(  %{fugitive#statusline()}  %)'
+    " endif
+
     if a:active
         let l:s .= '%#Visual#'
-        let l:s .= '%(  %{Hunks()}  %)'
+    endif
+
+    let l:s .= '%( %{Hunks()}  %)'
+
+    " let l:s .= Hunks()
+
+    if a:active
         let l:s .= '%#CursorLine#'
     endif
 
-    let l:s .= '  %0.40t%m%r'  " file.txt[+][RO]
+    let l:s .= '  ' . s:GetAle(a:active)
+    " let l:s .= '  ' . s:diagnostics_for_buffer()
 
-    let l:s .= '%='
+    if a:active
+        let l:s .= '%#CursorLine#'
+        " let l:s .= '%#Visual#'
+    endif
 
-    let l:s .= s:GetAle(a:active)
-    let l:s .= '  '
+    let l:s .= ' %= '
+    let l:s .= '%<%0.60f%m%r'  " file.txt[+][RO]
+    let l:s .= ' %= '
 
     if a:active
         let l:s .= '%#Visual#'
@@ -739,14 +892,16 @@ function! Statusbar(active) "{{{
         endif
         let l:s .= ' %p%% %l/%L %c ' " 80% 65/120 12
     endif
+    " let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+    let l:s .= ' %3p%% %3l(%02c)/%-3L ' " 80% 65[12]/120
 
     return l:s
 endfunction "}}}
 
 augroup status
   autocmd!
-  autocmd WinEnter * setlocal statusline=%!Statusbar(1)
-  autocmd WinLeave * setlocal statusline=%!Statusbar(0)
+  autocmd WinEnter,FocusGained * setlocal statusline=%!Statusbar(1)
+  autocmd WinLeave,FocusLost   * setlocal statusline=%!Statusbar(0)
 augroup END
 
 set statusline=%!Statusbar(1)
@@ -834,27 +989,28 @@ function! Cursor_matchadd() abort
     let l:line = getline('.')
     let l:col = col('.') - 1
     let l:word = matchstr(l:line[:l:col], '\k*$') . matchstr(l:line[l:col:], '^\k*')[1:]
-    let w:cursorword_id = matchadd('MatchParen', '\<' . l:word . '\>', -1)
+    let w:cursorword_id = matchadd('MatchParen', '\<' . escape(l:word, '~') . '\>', -1)
 endfunction
 
-augroup cursorword
-  autocmd!
-  autocmd CursorMoved,CursorMovedI * call Cursor_matchadd()
-augroup END
+if v:version >= 800
+    autocmd vimrc CursorMoved,CursorMovedI * call Cursor_matchadd()
+endif
 "}}}
-"Colorecho {{{
-function! ColorEcho(str) abort
-    let l:index = 0
-    for l:item in split(a:str, '#')
-        let l:index+=1
-        if l:index % 2
-            echon l:item
-        else
-            exec 'echohl ' . l:item
-        endif
-    endfor
-endfunction
+""Colorecho {{{
+"function! ColorEcho(str) abort
+"    let l:index = 0
+"    for l:item in split(a:str, '#')
+"        let l:index+=1
+"        if l:index % 2
+"            echon l:item
+"        else
+"            exec 'echohl ' . l:item
+"        endif
+"    endfor
+"endfunction
 
-" :ColorEcho "I need some #Comment#Real Color"
-com! -nargs=+ ColorEcho :call ColorEcho(<args>)
-"}}}
+
+"" :ColorEcho "I need some #Comment#Real Color"
+"com! -nargs=+ ColorEcho :call ColorEcho(<args>)
+""}}}
+" vim: foldmethod=marker

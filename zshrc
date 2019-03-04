@@ -158,6 +158,8 @@ export LESS="\
 # Async prompt -----------------------------------------------------------------
 source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
 
+# Use default emacs bindings
+bindkey -e
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
 
