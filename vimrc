@@ -1,4 +1,9 @@
 " Init {{{
+if empty($XDG_CONFIG_HOME)
+    echo "XDG_CONFIG_HOME is not defined"
+    quitall
+endif
+
 scriptencoding utf-8
 
 augroup vimrc | autocmd! | augroup END
@@ -14,27 +19,27 @@ augroup END
 " Plugins {{{
 
     " Install vim-plug if we don't already have it {{{
-    if empty(glob('~/.vim/autoload/plug.vim'))
-        execute 'silent !mkdir -p ~/.vim/tmp/'
-        execute 'silent !mkdir -p ~/.vim/tmp/undo'
-        execute 'silent !mkdir -p ~/.vim/tmp/backup'
-        execute 'silent !mkdir -p ~/.vim/plugged'
-        execute 'silent !mkdir -p ~/.vim/autoload'
-        silent !git clone https://github.com/junegunn/vim-plug.git $HOME/.vim/bundle/vim-plug
-        silent !ln -s $HOME/.vim/bundle/vim-plug/plug.vim $HOME/.vim/autoload/plug.vim
-        autocmd vimrc VimEnter * PlugInstall --sync | source $MYVIMRC
-    endif "}}}
+    if empty(glob(expand('$XDG_CONFIG_HOME/nvim/autoload/plug.vim')))
+        !mkdir -p $XDG_CONFIG_HOME/nvim/tmp/
+        !mkdir -p $XDG_CONFIG_HOME/nvim/tmp/undo
+        !mkdir -p $XDG_CONFIG_HOME/nvim/tmp/backup
+        !mkdir -p $XDG_CONFIG_HOME/nvim/plugged
+        !mkdir -p $XDG_CONFIG_HOME/nvim/autoload
+        !wget -nc -q github.com/junegunn/vim-plug/raw/master/plug.vim -P $XDG_CONFIG_HOME/nvim/autoload/
+        autocmd! vimrc VimEnter * PlugInstall --sync | bd | source $MYVIMRC
+    endif
 
-    " Install vim-pathogen if we don't already have it {{{
-    if empty(glob('~/.vim/autoload/pathogen.vim'))
-        execute 'silent !curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim'
+    " Install vim-pathogen if we don't already have it
+    if empty(glob(expand('$XDG_CONFIG_HOME/nvim/autoload/pathogen.vim')))
+        !mkdir -p $XDG_CONFIG_HOME/nvim/autoload
+        !curl -LSso $XDG_CONFIG_HOME/nvim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
     endif
     "}}}
 
 let g:loaded_netrwPlugin = 1  " Stop netrw loading
 
 " Load any plugins which are work sensitive.
-execute pathogen#infect('~/gerrit/{}')
+silent execute pathogen#infect('~/gerrit/{}')
 
 function! PlugLazy(...)
     let l:name = a:1
@@ -55,10 +60,12 @@ endfunction
 
 command! -nargs=* PlugLazy call PlugLazy(<args>)
 
-call plug#begin('~/.vim/plugged')
+call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
     Plug 'junegunn/vim-plug'
 
     Plug 'lewis6991/moonlight.vim'
+
+    Plug 'powerman/vim-plugin-AnsiEsc'
 
     PlugLazy 'tpope/vim-fugitive'
     PlugLazy 'tpope/vim-commentary'
@@ -89,9 +96,9 @@ call plug#begin('~/.vim/plugged')
     Plug 'michaeljsmith/vim-indent-object'
     Plug 'justinmk/vim-dirvish'
 
-    if v:version >= 704
+    if v:version >= 800
         Plug 'lewis6991/vim-clean-fold'
-        PlugLazy 'airblade/vim-gitgutter'
+        Plug 'airblade/vim-gitgutter'
     endif
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'dietsche/vim-lastplace'
@@ -159,18 +166,20 @@ endif
 
 set diffopt+=vertical  "Show diffs in vertical splits
 
-let g:clipboard = {
-      \   'name': 'pb-remote',
-      \   'copy': {
-      \      '+': 'pbcopy-remote',
-      \      '*': 'pbcopy-remote',
-      \    },
-      \   'paste': {
-      \      '+': 'pbpaste-remote',
-      \      '*': 'pbpaste-remote',
-      \   },
-      \   'cache_enabled': 1,
-      \ }
+if !empty($STY)
+    let g:clipboard = {
+        \   'name': 'pb-remote',
+        \   'copy': {
+        \      '+': 'pbcopy-remote',
+        \      '*': 'pbcopy-remote',
+        \    },
+        \   'paste': {
+        \      '+': 'pbpaste-remote',
+        \      '*': 'pbpaste-remote',
+        \   },
+        \   'cache_enabled': 1,
+        \ }
+endif
 
 if has('persistent_undo')
     set undolevels=10000
@@ -395,9 +404,9 @@ if has('nvim')
     set inccommand=split
     set previewheight=20
 
-    if has('nvim-0.2.3')
-        highlight EndOfBuffer ctermfg=bg guifg=bg
-    endif
+    " if has('nvim-0.2.3')
+    "     silent highlight EndOfBuffer ctermfg=bg guifg=bg
+    " endif
 endif
 " }}}
 " Mappings {{{
@@ -721,9 +730,13 @@ function! Statusbar(active) "{{{
 
     if a:active
         let l:s .= '%#Visual#'
-        let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
+        if exists("*WebDevIconsGetFileTypeSymbol")
+            let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
+        endif
         let l:s .= '%#PmenuSel#'
-        let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+        if exists("*WebDevIconsGetFileFormatSymbol")
+            let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+        endif
         let l:s .= ' %p%% %l/%L %c ' " 80% 65/120 12
     endif
 
@@ -755,7 +768,9 @@ function! MyTabLine() abort "{{{
         endif
 
         let l:s .= ' '
-        let l:s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . l:t . '))}'
+        if exists("*WebDevIconsGetFileTypeSymbol")
+            let l:s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . l:t . '))}'
+        endif
         let l:s .= ' %{MyTabLabel(' . l:t . ')}'
         let l:s .= ' '
     endfor

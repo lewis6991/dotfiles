@@ -13,6 +13,14 @@ if have_cmd brew; then
     BREW_PREFIX=$(brew --prefix)
 fi
 
+if ((HAVE_BREW)); then
+    COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
+    if [ -d "$COREUTILS_PATH" ]; then
+        PATH="$COREUTILS_PATH/gnubin:$PATH"
+        MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
+    fi
+fi
+
 # Variables --------------------------------------------------------------------
 export FANCY_PROMPT_DOUBLE_LINE=1
 export FANCY_PROMPT_USE_NERD_SYMBOLS=1
@@ -20,7 +28,9 @@ export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 
 # History ----------------------------------------------------------------------
-HISTFILE="$XDG_DATA_HOME/zsh_history"
+if (( ${+XDG_DATA_HOME} )); then
+    HISTFILE="$XDG_DATA_HOME/zsh_history"
+fi
 HISTSIZE=50000
 SAVEHIST=10000
 setopt HIST_IGNORE_ALL_DUPS
@@ -34,7 +44,7 @@ zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion::complete:*' cache-path $XDG_CACHE_HOME
 
 # Set up ls colors
-eval "$(dircolors -b)"
+# eval "$(dircolors -b)"
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 # export LS_COLORS="$(ls_colors_generator)"
 
@@ -60,23 +70,13 @@ nvim \
 -c 'map d <C-d>' \
 -c 'map u <C-u>' -"
 
-export LESS_TERMCAP_mb=$(tput bold; tput setaf 2) # green
-export LESS_TERMCAP_md=$(tput bold; tput setaf 1) # red
-export LESS_TERMCAP_me=$(tput sgr0)
-export LESS_TERMCAP_so=$(tput bold; tput setaf 3; tput setab 4) # yellow on blue
-export LESS_TERMCAP_se=$(tput rmso; tput sgr0)
-export LESS_TERMCAP_us=$(tput bold; tput setaf 7) # white
-export LESS_TERMCAP_ue=$(tput rmul; tput sgr0)
-export LESS_TERMCAP_mr=$(tput rev)
-export LESS_TERMCAP_mh=$(tput dim)
-export LESS_TERMCAP_ZN=$(tput ssubm)
-export LESS_TERMCAP_ZV=$(tput rsubm)
-export LESS_TERMCAP_ZO=$(tput ssupm)
-export LESS_TERMCAP_ZW=$(tput rsupm)
-
 # Plugins ----------------------------------------------------------------------
 
 ### Added by Zplugin's installer
+if ! [ -f "$HOME/.zplugin/bin/zplugin.zsh" ]; then
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zplugin/master/doc/install.sh)"
+fi
+
 source "$HOME/.zplugin/bin/zplugin.zsh"
 autoload -Uz _zplugin
 (( ${+_comps} )) && _comps[zplugin]=_zplugin
@@ -107,13 +107,6 @@ setopt NO_BEEP
 # Stop ctrl-d from closing the shell
 setopt IGNORE_EOF
 
-if ((HAVE_BREW)); then
-    COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
-    if [ -d "$COREUTILS_PATH" ]; then
-        PATH="$COREUTILS_PATH/gnubin:$PATH"
-        MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
-    fi
-fi
 
 # Aliases ----------------------------------------------------------------------
 
@@ -178,6 +171,7 @@ function update-x11-forwarding {
 
 add-zsh-hook precmd update-x11-forwarding
 
-[ -f ~/.aliases     ] && source ~/.aliases
-[ -f ~/.fzf.zsh     ] && source ~/.fzf.zsh
-[ -f ~/.zshrc_local ] && source ~/.zshrc_local
+! [ -f ~/.aliases       ] || source ~/.aliases
+! [ -f ~/.aliases_local ] || source ~/.aliases_local
+! [ -f ~/.fzf.zsh       ] || source ~/.fzf.zsh
+! [ -f ~/.zshrc_local   ] || source ~/.zshrc_local

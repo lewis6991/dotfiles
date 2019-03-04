@@ -33,9 +33,11 @@
 	co   = checkout
 	cp   = cherry-pick
 	cpc  = cherry-pick --continue
-	d    = "!f() { \
-			nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst;\
-		}; f"
+	d    = diff --ignore-submodules
+	ciff = diff --cached
+	# d    = "!f() { \
+	# 		nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst;\
+	# 	}; f"
 	drop = !sh -c 'git reset --hard HEAD~${1-1}' -
 	ra   = rebase --abort
 	rc   = rebase --continue
@@ -101,3 +103,5 @@
 	old        = red     bold
 	new        = green   bold
 	whitespace = red     reverse
+
+# vim: filetype=gitconfig :

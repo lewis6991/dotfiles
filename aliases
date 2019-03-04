@@ -1,0 +1,7 @@
+alias gs="git st"
+alias ga="git a"
+alias gd="git d"
+
+alias rgi="rg --no-ignore"
+
+# vim: set filetype=sh:
