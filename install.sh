@@ -8,46 +8,61 @@ readonly  GREY='\033[1;30m'
 readonly   MAG='\033[0;34m'
 readonly    NC='\033[0m' # No Color
 
-function echo_error {
+function message() {
+    echo -e "$@" | tee -a install.log
+}
+
+function message_install () {
+    message -n "Installing ${CYAN}$1${NC}..."
+}
+
+function message_done () {
+    message "${GREEN}DONE${NC}"
+}
+
+function message_ok () {
+    message "${GREEN}OK${NC}"
+}
+
+function message_error {
     echo -e "${RED}Error:" $@ "$NC"
+    exit 1
 }
 
 function check_cmd {
-    echo -en Checking if $CYAN$1$NC is installed...
-    if which $1 >/dev/null; then
-        echo -e ${GREEN}OK${NC}
-        return 0
+    command=$1
+    message -n "Checking for ${CYAN}$command${NC}..."
+    if command -v $command >/dev/null; then
+        message_ok
     else
-        echo No
-        if which brew >/dev/null; then
-            echo Attempting to install $1 using brew...
-            brew install $1
-            return 0
+        message "${RED}NO${NC}"
+        if command -v brew >/dev/null; then
+            message_install $command
+            brew install $command >> install.log
+            message_done
         else
-            echo_error $1 is not installed.
-            return 1
+            message_error "$command is not installed"
         fi
     fi
 }
 
 function link_file {
     rm -rf $2
-    ln -srv $1 $2
-    # If last command failed then coreutils probably doesn't support -r switch (<8.16)
-    if [ $? -ne 0 ]; then
-        echo "link failed... attempting alternate command that doesn't use -r"
-        local current_dir=`pwd`
-        pushd `dirname $2`
-        ln -sv $current_dir/$1 `basename $2`
+    mkdir -p $(dirname $2)
+    message "Linking ${CYAN}$1${NC} to ${CYAN}$2${NC}"
+    if ! ln -srv $1 $2 >/dev/null; then
+        # If last command failed then coreutils probably doesn't support -r switch (<8.16)
+        message "link failed... attempting alternate command that doesn't use -r"
+        local current_dir=$(pwd)
+        pushd $(dirname $2)
+        ln -sv $current_dir/$1 $(basename $2)
         popd
     fi
 }
 
 function check_dependencies {
-    for tool in $@; do
-        if ! check_cmd $tool; then
-            exit
-        fi
+    for tool in "$@"; do
+        check_cmd $tool
     done
 }
 
@@ -63,64 +78,132 @@ function install_vim {
     install_dotfile gvimrc
 }
 
-function install_vim {
+function install_nvim {
+    message_install neovim
+    rm -rf $XDG_CONFIG_HOME/nvim
     mkdir -p $XDG_CONFIG_HOME/nvim
-    link_file vimrc ~/$XDG_CONFIG_HOME/nvim/init.vim
-    nvim +PlugInstall +quitall
+    link_file vimrc $XDG_CONFIG_HOME/nvim/init.vim
+    nvim --headless +PlugInstall +quitall
+    message_done
 }
 
-check_dependencies \
-    git   \
-    rsync \
-    wget  \
-    curl  \
-    nvim  \
-    tmux  \
-    tree
+function install_brew_package() {
+    command=$1
+    package=$2
+    shift 2
+    brew_args="$@"
+    message -n "Checking if $CYAN$command ($package)$NC is installed..."
+    if ! command -v $command >/dev/null; then
+        message_install $package
+        brew install $package $brew_args >> install.log
+        message_done
+    else
+        message_ok
+    fi
+}
 
-XDG_CONFIG_HOME="${XDG_CONFIG_HOME-$HOME/.config}"
+function install_pip_package() {
+    package=$1
+    message_install $package
+    pip3 install $package >> install.log
+    message_done
+}
 
-mkdir -p $XDG_CONFIG_HOME
+install_extra_brew_packages() {
+    installed=$(brew list)
+    to_install=()
 
-install_vim
-install_nvim
+    for p in "$@"; do
+        message -n "Checking for ${CYAN}$p${NC}..."
+        if grep -v "$p" <<< $installed > /dev/null; then
+            to_install+=($p)
+            message "${RED}NO${NC}"
+        else
+            message_ok
+        fi
+    done
 
-link_file gitconfig $XDG_CONFIG_HOME/git/config
+    to_install_l="${to_install[@]+"${to_install[@]}"}"
 
-install_dotfile tmux.conf
-install_dotfile bashrc
-install_dotfile zshrc
-install_dotfile bash_functions
-install_dotfile bash_completion
-install_dotfile inputrc
+    if [ -n "$to_install_l" ]; then
+        message_install "{$to_install_l}"
+        brew install $to_install_l >> install.log
+        message_done
+    fi
+}
 
-./modules/fancy-prompt/install.sh
+function main {
+    rm -rf install.log
 
-# pip packages
-# ------------
-# gitlint
-# mypy
-# neovim
-# pylint
-# vim-vint
-# yamllint
+    install_brew_package nvim neovim --HEAD
 
-# brew packages
-# -------------
-# bash
-# bash-completion
-# diff-so-fancy
-# git
-# highlight
-# make
-# neovim
-# python3
-# rlwrap
-# shellcheck
-# the_silver_searcher
-# tmux
-# tree
-# zplug
-# zsh
+    check_dependencies \
+        git   \
+        rsync \
+        wget  \
+        curl
 
-echo -e "${GREEN}Finished successfully${NC}"
+    git submodule update --init
+
+    export XDG_CONFIG_HOME="${XDG_CONFIG_HOME-$HOME/.config}"
+
+    mkdir -p "$XDG_CONFIG_HOME"
+
+    link_file gitconfig "$XDG_CONFIG_HOME/git/config"
+
+    install_dotfile tmux.conf
+    install_dotfile bashrc
+    install_dotfile zshrc
+    install_dotfile zprofile
+    install_dotfile bash_functions
+    install_dotfile bash_completion
+    install_dotfile inputrc
+    install_dotfile aliases
+
+    message_install fancy-prompt
+    ./modules/fancy-prompt/install.sh >> install.log
+    message_done
+
+    install_vim
+    install_nvim
+
+    if ! command -v brew >/dev/null; then
+        message_error "Cannot install brew packages. Please install brew"
+    fi
+
+    install_extra_brew_packages \
+        bash          \
+        diff-so-fancy \
+        highlight     \
+        make          \
+        python        \
+        python@2      \
+        rlwrap        \
+        tmux          \
+        tree          \
+        zsh
+
+    if ! command -v rg >/dev/null; then
+        message_install ripgrep
+        brew tap burntsushi/ripgrep https://github.com/BurntSushi/ripgrep.git
+        brew install ripgrep-bin
+        message_done
+    fi
+
+    if ! command -v pip3 >/dev/null; then
+        message_error "pip3 is not installed"
+    fi
+
+    install_pip_package gitlint
+    install_pip_package mypy
+    install_pip_package pylint
+    install_pip_package pynvim
+    install_pip_package vim-vint
+    install_pip_package yamllint
+
+    message "${GREEN}Finished successfully${NC}"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi
