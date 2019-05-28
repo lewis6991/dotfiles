@@ -80,6 +80,8 @@ call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
     Plug 'vim-scripts/visualrepeat'
     Plug 'timakro/vim-searchant'
 
+    Plug 'martinda/Jenkinsfile-vim-syntax'
+
     PlugLazy 'tpope/vim-surround'
     PlugLazy 'tpope/vim-repeat'
     PlugLazy 'tpope/vim-eunuch'
@@ -102,11 +104,11 @@ call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
     Plug 'justinmk/vim-dirvish'
     Plug 'christoomey/vim-tmux-navigator'
     Plug 'dietsche/vim-lastplace'
-    " Plug 'Yggdroot/indentLine'
     Plug 'tmux-plugins/vim-tmux-focus-events'
     Plug 'ryanoasis/vim-devicons'
-
+    Plug 'derekwyatt/vim-scala'
     Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
+
 
     " Plug 'pangloss/vim-javascript'
     " Plug 'mxw/vim-jsx'
@@ -116,20 +118,25 @@ call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
 
     if v:version >= 800
         Plug 'lewis6991/vim-clean-fold'
-        Plug 'airblade/vim-gitgutter'
+        " Plug 'airblade/vim-gitgutter'
     endif
 
     if has('nvim')
-        Plug 'autozimu/LanguageClient-neovim', {
-            \ 'branch': 'next',
-            \ 'do': 'bash install.sh',
-            \ }
-
-        Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-        Plug 'Shougo/neco-syntax'
-        Plug 'wellle/tmux-complete.vim'
         Plug 'Shougo/neco-vim'
-        " Plug 'zchee/deoplete-jedi'
+        Plug 'neoclide/coc-neco'
+
+        function UpdateCoc()
+            call coc#util#install()
+
+            CocInstall coc-git
+            CocInstall coc-python
+            CocInstall coc-json
+            CocInstall coc-tag
+            CocInstall coc-word
+            CocInstall coc-dictionary
+        endfunction
+
+        Plug 'neoclide/coc.nvim', { 'do': function('UpdateCoc') }
 
         " Workaround for: https://github.com/neovim/neovim/issues/1822
         Plug 'bfredl/nvim-miniyank'
@@ -178,7 +185,7 @@ silent! set pumblend=20
 
 set diffopt+=vertical  "Show diffs in vertical splits
 
-if !empty($STY)
+if !empty($SSH_TTY)
     let g:clipboard = {
           \   'name': 'pb-remote',
           \   'copy':  {'+': 'pbcopy-remote' , '*': 'pbcopy-remote' },
@@ -240,7 +247,7 @@ let g:ale_python_pylint_options = '--disable=bad-whitespace,invalid-name'
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
 
-nmap - :<C-U>call <SID>dirvish_toggle()<CR>
+nmap <silent> - :<C-U>call <SID>dirvish_toggle()<CR>
 
 function! s:dirvish_toggle() abort "{{{
     " Close any existing dirvish buffers
@@ -259,18 +266,18 @@ function! s:dirvish_toggle() abort "{{{
 endfunction "}}}
 
 function! s:dirvish_open(cmd) abort "{{{
-    let l:line = getline('.')
-    if l:line =~? '/$'
-        call dirvish#open(a:cmd, 0)
-    else
-        execute 'bd'
-        execute a:cmd.' '.l:line
+    let l:path = getline('.')
+    if !isdirectory(l:path)
+        if bufname(bufnr('#')) !=? ''
+            execute 'bd'
+        endif
     endif
+    execute a:cmd.' '.l:path
 endfunction "}}}
 
 augroup dirvish_commands
     autocmd!
-    autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U>call <SID>dirvish_open('edit')<CR>
+    autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U>.call <SID>dirvish_open('edit')<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> -     <Plug>(dirvish_up)
     autocmd FileType dirvish nmap     <silent> <buffer> <ESC> :bd<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> q     :bd<CR>
@@ -314,12 +321,6 @@ let g:gitgutter_sign_removed            = '_'  " '_'
 let g:gitgutter_sign_removed_first_line = '‾'  " '‾'
 let g:gitgutter_sign_modified_removed   = '│'  " '~_'
 " }}}
-" Indentline {{{
-let g:indentLine_char = '│'
-let g:indentLine_setColors = 0
-" Causes dirvish issues when running vim <DIR>
-let g:indentLine_fileTypeExclude = ['fzf', 'man']
-" }}}
 " FZF {{{
 function! s:find_git_root() abort
     return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
@@ -345,17 +346,21 @@ let g:fzf_buffers_jump = 1
 let g:fzf_colors = {
     \ 'fg':      ['fg', 'Normal'],
     \ 'bg':      ['bg', 'Normal'],
-    \ 'hl':      ['fg', 'Comment'],
-    \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-    \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-    \ 'hl+':     ['fg', 'Statement'],
+    \ 'hl':      ['fg', 'Question'],
+    \ 'fg+':     ['fg', 'Visual'],
+    \ 'bg+':     ['bg', 'Visual'],
+    \ 'hl+':     ['fg', 'Question'],
     \ 'info':    ['fg', 'PreProc'],
     \ 'border':  ['fg', 'Ignore'],
     \ 'prompt':  ['fg', 'Conditional'],
-    \ 'pointer': ['fg', 'Exception'],
-    \ 'marker':  ['fg', 'Keyword'],
+    \ 'pointer': ['fg', 'MoreMsg'],
+    \ 'marker':  ['fg', 'MoreMsg'],
     \ 'spinner': ['fg', 'Label'],
     \ 'header':  ['fg', 'Comment'] }
+
+autocmd vimrc FileType fzf        set laststatus=0 noshowmode noruler
+    \ | autocmd BufLeave <buffer> set laststatus=2   showmode   ruler
+autocmd vimrc FileType fzf tunmap <Esc>
 
 " }}}
 " LanguageClient {{{
@@ -376,29 +381,6 @@ let g:plug_window = 'tabnew'
 " Polyglot {{{
 let g:polyglot_disabled = ['yaml']
 " }}}
-" Scala {{{
-augroup vim-scala-override
-    autocmd!
-    autocmd Filetype scala setlocal errorformat=
-        \%E\ %#[error]\ %f:%l:%c:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
-        \%W\ %#[warn]\ %f:%l:%c:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
-        \%-G%.%#
-
-    autocmd Filetype groovy setlocal errorformat+=
-        \%PErrors\ encountered\ validating\ %f:,
-        \%EWorkflowScript:\ %l:\ %m\ column\ %c.,%-C%.%#,%Z
-    autocmd Filetype groovy setlocal makeprg=java\ -jar\ ~/jenkins-cli.jar\ -s\ http://cem-jenkins.euhpc.arm.com\ declarative-linter\ <\ Jenkinsfile
-augroup END
-" }}}
-" ncm2 {{{
-" if v:version >= 800
-"     let g:ncm2_look_enabled = 1
-"     autocmd BufEnter * call ncm2#enable_for_buffer()
-" endif
-"}}}
-"Deoplete {{{
-let g:deoplete#enable_at_startup = 1
-"}}}
 " }}}
 " Colours {{{
 if has('termguicolors')
@@ -450,7 +432,7 @@ if has('nvim')
     set inccommand=split
     set previewheight=20
 
-    "silent highlight EndOfBuffer ctermfg=bg guifg=bg
+    silent highlight EndOfBuffer ctermfg=bg guifg=bg
 endif
 " }}}
 " Mappings {{{
@@ -462,6 +444,8 @@ nnoremap <leader>w :execute "resize ".line('$')<cr>
 
 nnoremap <leader>gd :Gdiff<CR>
 nnoremap <leader>gs :Gstatus<CR>
+
+nnoremap <M-]> <C-w><c-]><C-w>T
 
 nnoremap j gj
 nnoremap k gk
@@ -486,13 +470,31 @@ cnoremap <C-N> <down>
 cnoremap <C-A> <Home>
 cnoremap <C-D> <Del>
 
+" inoremap <expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
 inoremap <expr> <S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
-inoremap <expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
-inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<CR>"
+inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
 nnoremap & /\<<C-R><C-w>\>\C<CR>
 
-tnoremap <Esc> <C-\><C-n>
+" navigate chunks of current buffer
+nmap [c <Plug>(coc-git-prevchunk)
+nmap ]c <Plug>(coc-git-nextchunk)
+nmap <leader>hi <Plug>(coc-git-chunkinfo)
+nmap <leader>hs :CocCommand git.chunkStage<cr>
+
+if has('nvim')
+    autocmd vimrc TermOpen * tnoremap <Esc> <c-\><c-n>
+endif
 
 cabbrev help tab help
 cabbrev h    tab h
@@ -503,12 +505,7 @@ set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
 if v:version >= 800
     "Delete trailing white space on save.
     autocmd vimrc BufWrite * call DeleteTrailingWS()
-else
-    "Delete trailing white space on save.
-    autocmd! BufWrite * call DeleteTrailingWS()
-endif
 
-if v:version >= 800
     "Highlight trailing whitespace
     autocmd vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')
 endif
@@ -551,48 +548,6 @@ function! <SID>SynStack() abort "{{{
     endif
     echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, ''name'')')
 endfunction "}}}
-
-" function! SCTags() abort "{{{
-"     if executable('sctags')
-"         let g:tagbar_ctags_bin = 'sctags'
-"         let g:tagbar_type_scala = {
-"             \ 'ctagstype' : 'scala',
-"             \ 'sro'       : '.',
-"             \ 'kinds'     : [
-"                 \ 'p:packages',
-"                 \ 'V:values',
-"                 \ 'v:variables',
-"                 \ 'T:types',
-"                 \ 't:traits',
-"                 \ 'o:objects',
-"                 \ 'O:case objects',
-"                 \ 'c:classes',
-"                 \ 'C:case classes',
-"                 \ 'm:methods:1'
-"             \ ],
-"             \ 'kind2scope'  : {
-"                 \ 'p' : 'package',
-"                 \ 'T' : 'type',
-"                 \ 't' : 'trait',
-"                 \ 'o' : 'object',
-"                 \ 'O' : 'case_object',
-"                 \ 'c' : 'class',
-"                 \ 'C' : 'case_class',
-"                 \ 'm' : 'method'
-"             \ },
-"             \ 'scope2kind'  : {
-"                 \ 'package'     : 'p',
-"                 \ 'type'        : 'T',
-"                 \ 'trait'       : 't',
-"                 \ 'object'      : 'o',
-"                 \ 'case_object' : 'O',
-"                 \ 'class'       : 'c',
-"                 \ 'case_class'  : 'C',
-"                 \ 'method'      : 'm'
-"             \ }
-"         \ }
-"     endif
-" endfunction "}}}
 
 function! QualifiedTagJump() abort "{{{
     let l:plain_tag = expand('<cword>')
@@ -652,6 +607,23 @@ function! JsonFolds() abort "{{{
         return 's'.-l:level
     endif
 endfunction "}}}
+
+function! MakeFolds() abort "{{{
+    let l:line1 = getline(v:lnum)
+    let l:line2 = getline(v:lnum+1)
+    if l:line1 =~# '^# \w\+' && l:line2 =~# '^#-\+$'
+        return '>1'
+    else
+        return '='
+    endif
+endfunction "}}}
+
+"}}}
+" File Settings {{{
+"VimL
+let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
+let g:vimsyn_folding  = 'af' "Fold augroups and functions
+let g:vim_indent_cont = &shiftwidth
 "}}}
 " File Settings {{{
 "VimL
@@ -694,17 +666,27 @@ augroup vimrc
         \                                   foldnestmax=5
         \                                   foldmethod=marker
         \                                   foldmarker={,}
-    " autocmd FileType json          setlocal
-    "     \                                   foldmethod=expr
-    "     \                                   foldexpr=JsonFolds()
+
+    " autocmd FileType json          setlocal foldmethod=expr foldexpr=JsonFolds()
+
+    autocmd FileType make          setlocal foldmethod=expr foldexpr=MakeFolds()
     autocmd Filetype log           setlocal textwidth=1000
     autocmd FileType yaml          setlocal foldmethod=expr
         \                                   foldexpr=YamlFolds()
     autocmd FileType xml           setlocal foldnestmax=20
         \                                   foldcolumn=5
 
-    autocmd FileType fzf           tnoremap <buffer> <esc> :bd<cr>
+    autocmd FileType python nmap <silent> <C-]> <Plug>(coc-definition)
+    autocmd FileType python nmap <silent> <C-q> <Plug>(coc-diagnostic-info)
+    autocmd FileType python highlight semshiSelected ctermbg=8 guibg=#444A54
+
+    autocmd Filetype groovy setlocal errorformat+=
+        \%PErrors\ encountered\ validating\ %f:,
+        \%EWorkflowScript:\ %l:\ %m\ column\ %c.,%-C%.%#,%Z
+    autocmd Filetype groovy setlocal makeprg=java\ -jar\ ~/jenkins-cli.jar\ -s\ http://cem-jenkins.euhpc.arm.com\ declarative-linter\ <\ Jenkinsfile
+
 augroup END
+" highlight semshiSelected ctermbg=8 guibg=#444A54
 " }}}
 " Formatting {{{
 set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
@@ -734,7 +716,7 @@ function! Hunks() abort "{{{
             let l:hunks = [0,0,0]
         endtry
     else
-        let l:hunks = ""
+        let l:hunks = ''
     endif
 
     let l:added    = l:hunks[0]
@@ -843,65 +825,55 @@ function! s:diagnostics_for_buffer() "{{{
     return join(message, ' ')
 endfunction "}}}
 
-function! Statusbar(active) abort "{{{
+function! StatusHighlight(no, active) abort "{{{
     if a:active
-        let l:s = '%#PmenuSel#'
-    else
-        let l:s = '%#StatusLine#'
-        " let l:s = '%#StatusLineNC#'
+        if     a:no == 1 | return '%#PmenuSel#'
+        elseif a:no == 2 | return '%#Visual#'
+        elseif a:no == 3 | return '%#CursorLine#'
+        endif
     endif
+    return ''
+endfunction "}}}
+
+function! Statusbar(active) abort "{{{
+    let l:s = '%#StatusLine#'
+    " let l:s = StatusHighlight(1, a:active)
 
     " let l:s .= '%(  %{fugitive#head()}  %)'
-
     " if expand('%t') !~# '/.git/'
     "     let l:s .= '%(  %{fugitive#statusline()}  %)'
     " endif
-
-    if a:active
-        let l:s .= '%#Visual#'
-    endif
-
+    let l:s .= StatusHighlight(1, a:active)
+    let l:s .= '%{get(b:, "coc_git_status", "")}'
     let l:s .= '%( %{Hunks()}  %)'
-
-    " let l:s .= Hunks()
-
-    if a:active
-        let l:s .= '%#CursorLine#'
-    endif
-
+    let l:s .= StatusHighlight(2, a:active)
     let l:s .= '  ' . s:GetAle(a:active)
     " let l:s .= '  ' . s:diagnostics_for_buffer()
-
-    if a:active
-        let l:s .= '%#CursorLine#'
-        " let l:s .= '%#Visual#'
-    endif
-
+    " Reset Ale Highlight
+    let l:s .= StatusHighlight(2, a:active)
     let l:s .= ' %= '
     let l:s .= '%<%0.60f%m%r'  " file.txt[+][RO]
     let l:s .= ' %= '
-
-    if a:active
-        let l:s .= '%#Visual#'
-        if exists("*WebDevIconsGetFileTypeSymbol")
-            let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
-        endif
-        let l:s .= '%#PmenuSel#'
-        if exists("*WebDevIconsGetFileFormatSymbol")
-            let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
-        endif
-        let l:s .= ' %p%% %l/%L %c ' " 80% 65/120 12
+    if exists('*WebDevIconsGetFileTypeSymbol')
+        let l:s .= StatusHighlight(2, a:active)
+        let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
     endif
-    " let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+    let l:s .= StatusHighlight(1, a:active)
+    if exists('*WebDevIconsGetFileFormatSymbol')
+        let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+    endif
+    " let l:s .= ' %p%% %l/%L %c ' " 80% 65/120 12
     let l:s .= ' %3p%% %3l(%02c)/%-3L ' " 80% 65[12]/120
-
     return l:s
 endfunction "}}}
 
 augroup status
-  autocmd!
-  autocmd WinEnter,FocusGained * setlocal statusline=%!Statusbar(1)
-  autocmd WinLeave,FocusLost   * setlocal statusline=%!Statusbar(0)
+    autocmd!
+    " Only set up WinEnter autocmd when the WinLeave autocmd runs
+    autocmd WinLeave,FocusLost *
+        \ setlocal statusline=%!Statusbar(0) |
+        \ autocmd status WinEnter,FocusGained *
+            \ setlocal statusline=%!Statusbar(1)
 augroup END
 
 set statusline=%!Statusbar(1)
@@ -923,7 +895,7 @@ function! MyTabLine() abort "{{{
         endif
 
         let l:s .= ' '
-        if exists("*WebDevIconsGetFileTypeSymbol")
+        if exists('*WebDevIconsGetFileTypeSymbol')
             let l:s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . l:t . '))}'
         endif
         let l:s .= ' %{MyTabLabel(' . l:t . ')}'
@@ -981,36 +953,4 @@ if has('nvim')
     " let g:terminal_color_17 = "#d56d6d"
 endif
 "}}}
-"Cursorword-highlight {{{
-function! Cursor_matchadd() abort
-    if exists('w:cursorword_id')
-        call matchdelete(w:cursorword_id)
-    endif
-    let l:line = getline('.')
-    let l:col = col('.') - 1
-    let l:word = matchstr(l:line[:l:col], '\k*$') . matchstr(l:line[l:col:], '^\k*')[1:]
-    let w:cursorword_id = matchadd('MatchParen', '\<' . escape(l:word, '~') . '\>', -1)
-endfunction
-
-if v:version >= 800
-    autocmd vimrc CursorMoved,CursorMovedI * call Cursor_matchadd()
-endif
-"}}}
-""Colorecho {{{
-"function! ColorEcho(str) abort
-"    let l:index = 0
-"    for l:item in split(a:str, '#')
-"        let l:index+=1
-"        if l:index % 2
-"            echon l:item
-"        else
-"            exec 'echohl ' . l:item
-"        endif
-"    endfor
-"endfunction
-
-
-"" :ColorEcho "I need some #Comment#Real Color"
-"com! -nargs=+ ColorEcho :call ColorEcho(<args>)
-""}}}
 " vim: foldmethod=marker

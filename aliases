@@ -4,4 +4,6 @@ alias gd="git d"
 
 alias rgi="rg --no-ignore"
 
+alias ta="tmux attach"
+
 # vim: set filetype=sh:

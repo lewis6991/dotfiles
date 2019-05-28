@@ -1,0 +1,15 @@
+{
+    "python.linting.enabled": false,
+    "python.venvPath": ".venv_7",
+    "python.linting.mypyEnabled" : true,
+    "suggest.enablePreview": true,
+
+    "git.addedSign.text": "│",
+    "git.changedSign.text": "│",
+    "git.removedSign.text": "│",
+    "git.addedSign.hlGroup": "GitGutterAdd",
+    "git.changedSign.hlGroup": "GitGutterChange",
+    "git.removedSign.hlGroup": "GitGutterDelete",
+    "git.topRemovedSign.hlGroup": "GitGutterDelete",
+    "git.changeRemovedSign.hlGroup": "GitGutterChangeDelete"
+}
