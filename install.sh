@@ -70,19 +70,20 @@ function install_dotfile {
     link_file "$1" "$HOME/.$1"
 }
 
-function install_vim {
+function install_vim_config {
+    message_install vim
     rm -rf ~/.vim
     mkdir -p ~/.vim/tmp/backup
 
-    install_dotfile vimrc
+    link_file nvim/init.vim "$HOME/.vimrc"
     install_dotfile gvimrc
+    message_done
 }
 
-function install_nvim {
+function install_nvim_config {
     message_install neovim
     rm -rf $XDG_CONFIG_HOME/nvim
-    mkdir -p $XDG_CONFIG_HOME/nvim
-    link_file vimrc $XDG_CONFIG_HOME/nvim/init.vim
+    link_file nvim "$XDG_CONFIG_HOME/nvim"
     nvim --headless +PlugInstall +quitall
     message_done
 }
@@ -164,8 +165,8 @@ function main {
     ./modules/fancy-prompt/install.sh >> install.log
     message_done
 
-    install_vim
-    install_nvim
+    install_vim_config
+    install_nvim_config
 
     if ! command -v brew >/dev/null; then
         message_error "Cannot install brew packages. Please install brew"

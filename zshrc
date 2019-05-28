@@ -44,7 +44,7 @@ zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion::complete:*' cache-path $XDG_CACHE_HOME
 
 # Set up ls colors
-# eval "$(dircolors -b)"
+eval "$(dircolors -b)"  # Needed to set up completion colors
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 # export LS_COLORS="$(ls_colors_generator)"
 
@@ -100,13 +100,13 @@ zplugin light zdharma/fast-syntax-highlighting
 # Other ----------------------------------------------------------------------
 
 autoload -U +X compinit && compinit
+# autoload -Uz compinit && compinit
 autoload -U +X bashcompinit && bashcompinit
 
 setopt NO_BEEP
 
 # Stop ctrl-d from closing the shell
 setopt IGNORE_EOF
-
 
 # Aliases ----------------------------------------------------------------------
 
@@ -163,15 +163,15 @@ bindkey -e
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
 
-function update-x11-forwarding {
-    if [ -z "$STY" -a -z "$TMUX" ]; then
-        echo $DISPLAY > ~/.display.txt
-    else
-        export DISPLAY=$(cat ~/.display.txt)
-    fi
-}
+# function update-x11-forwarding {
+#     if [ -z "$STY" -a -z "$TMUX" ]; then
+#         echo $DISPLAY > ~/.display.txt
+#     else
+#         export DISPLAY=$(cat ~/.display.txt)
+#     fi
+# }
 
-add-zsh-hook precmd update-x11-forwarding
+# add-zsh-hook precmd update-x11-forwarding
 
 ! [ -f ~/.aliases       ] || source ~/.aliases
 ! [ -f ~/.aliases_local ] || source ~/.aliases_local
