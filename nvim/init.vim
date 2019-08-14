@@ -1,10 +1,63 @@
 " Init {{{
+scriptencoding utf-8
+
 if empty($XDG_CONFIG_HOME)
     echoerr 'XDG_CONFIG_HOME is not defined'
     quitall
 endif
 
-scriptencoding utf-8
+if empty($XDG_DATA_HOME)
+    echoerr 'XDG_DATA_HOME is not defined'
+    quitall
+endif
+
+if !has('nvim')
+    set runtimepath=$XDG_CONFIG_HOME/vim,$XDG_DATA_HOME/vim/site,$VIMRUNTIME,$XDG_DATA_HOME/vim/site/after,$XDG_CONFIG_HOME/vim/after
+    set backupdir=$XDG_CACHE_HOME/vim,~/,/tmp
+    set directory=$XDG_CACHE_HOME/vim,~/,/tmp
+    set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
+endif
+
+" if has('vim_starting') && has('reltime')
+"   let g:startuptime = reltime()
+"   augroup vimrc-startuptime
+"     autocmd! VimEnter * let g:startuptime = reltime(g:startuptime)
+"     \                 | echomsg 'startuptime: ' . reltimestr(g:startuptime)
+"   augroup END
+" endif
+
+" }}}
+" Bootstrap {{{
+if has('nvim')
+    let s:tool = 'nvim'
+else
+    let s:tool = 'vim'
+endif
+
+let s:audir = expand('$XDG_DATA_HOME/'.s:tool.'/site/autoload')
+let s:pldir = expand('$XDG_DATA_HOME/'.s:tool.'/site/plugged')
+
+" Install vim-plug if we don't already have it
+if empty(glob(s:audir.'/plug.vim'))
+    call mkdir(s:audir, 'p')
+    call mkdir(s:pldir, 'p')
+    execute '!wget -nc -q github.com/junegunn/vim-plug/raw/master/plug.vim -P '.s:audir
+    autocmd! vimrc VimEnter * PlugInstall --sync | bd | source $MYVIMRC
+endif
+
+" Install vim-pathogen if we don't already have it
+if empty(glob(s:audir.'/pathogen.vim'))
+    call mkdir(s:audir, 'p')
+    execute '!curl -LSso '.s:audir.'/pathogen.vim https://tpo.pe/pathogen.vim'
+endif
+
+" }}}
+" Plugins {{{
+
+" Load any plugins which are work sensitive.
+silent execute pathogen#infect('~/gerrit/{}')
+
+let g:loaded_netrwPlugin = 1  " Stop netrw loading
 
 if v:version >= 800
     augroup vimrc | autocmd! | augroup END
@@ -16,32 +69,6 @@ if v:version >= 800
             \ | autocmd! lazy_plugin
     augroup END
 endif
-
-" }}}
-" Plugins {{{
-
-    " Install vim-plug if we don't already have it {{{
-    if empty(glob(expand('$XDG_CONFIG_HOME/nvim/autoload/plug.vim')))
-        !mkdir -p $XDG_CONFIG_HOME/nvim/tmp/
-        !mkdir -p $XDG_CONFIG_HOME/nvim/tmp/undo
-        !mkdir -p $XDG_CONFIG_HOME/nvim/tmp/backup
-        !mkdir -p $XDG_CONFIG_HOME/nvim/plugged
-        !mkdir -p $XDG_CONFIG_HOME/nvim/autoload
-        !wget -nc -q github.com/junegunn/vim-plug/raw/master/plug.vim -P $XDG_CONFIG_HOME/nvim/autoload/
-        autocmd! vimrc VimEnter * PlugInstall --sync | bd | source $MYVIMRC
-    endif
-
-    " Install vim-pathogen if we don't already have it
-    if empty(glob(expand('$XDG_CONFIG_HOME/nvim/autoload/pathogen.vim')))
-        !mkdir -p $XDG_CONFIG_HOME/nvim/autoload
-        !curl -LSso $XDG_CONFIG_HOME/nvim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
-    endif
-    "}}}
-
-let g:loaded_netrwPlugin = 1  " Stop netrw loading
-
-" Load any plugins which are work sensitive.
-silent execute pathogen#infect('~/gerrit/{}')
 
 function! PlugLazy(...) "{{{
     let l:name = a:1
@@ -65,85 +92,68 @@ endfunction "}}}
 
 command! -nargs=* PlugLazy call PlugLazy(<args>)
 
-call plug#begin(expand('$XDG_CONFIG_HOME/nvim/plugged'))
-    Plug 'junegunn/vim-plug'
+call plug#begin(s:pldir)
+    PlugLazy 'junegunn/vim-plug'
 
     Plug 'lewis6991/moonlight.vim'
 
     Plug 'powerman/vim-plugin-AnsiEsc'
 
-    Plug 'tpope/vim-fugitive'
-
+    Plug     'tpope/vim-fugitive'
     PlugLazy 'tpope/vim-commentary'
     PlugLazy 'tpope/vim-unimpaired'
-
-    Plug 'vim-scripts/visualrepeat'
-    Plug 'timakro/vim-searchant'
-
-    Plug 'martinda/Jenkinsfile-vim-syntax'
-
-    PlugLazy 'tpope/vim-surround'
+    Plug     'tpope/vim-surround'
     PlugLazy 'tpope/vim-repeat'
     PlugLazy 'tpope/vim-eunuch'
-
-    " Plug 'sheerun/vim-polyglot'
-    Plug 'tmhedberg/SimpylFold'       , { 'for': 'python'        }
-    Plug 'lewis6991/tcl.vim'          , { 'for': 'tcl'           }
-    Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
-    Plug 'tmux-plugins/vim-tmux'      , { 'for': 'tmux'          }
-    Plug 'dzeban/vim-log-syntax'
-
-    " Plug 'rhysd/conflict-marker.vim'
-
-    Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-    Plug 'junegunn/fzf.vim'
-    PlugLazy 'junegunn/vim-easy-align'
-    Plug 'whatyouhide/vim-lengthmatters'
-    Plug 'gaving/vim-textobj-argument'
-    Plug 'michaeljsmith/vim-indent-object'
-    Plug 'justinmk/vim-dirvish'
-    Plug 'christoomey/vim-tmux-navigator'
-    Plug 'dietsche/vim-lastplace'
-    Plug 'tmux-plugins/vim-tmux-focus-events'
-    Plug 'ryanoasis/vim-devicons'
-    Plug 'derekwyatt/vim-scala'
-    Plug 'raimon49/requirements.txt.vim', {'for': 'requirements'}
-
-
-    " Plug 'pangloss/vim-javascript'
-    " Plug 'mxw/vim-jsx'
-    " Plug 'neoclide/vim-jsx-improve'
-    " Plug 'othree/yajs.vim'
-    " Plug 'davidhalter/jedi-vim'
+    Plug     'vim-scripts/visualrepeat'
+    Plug     'timakro/vim-searchant'
+    Plug     'martinda/Jenkinsfile-vim-syntax'
+    Plug     'tmhedberg/SimpylFold' , { 'for': 'python' }
+    Plug     'lewis6991/tcl.vim'    , { 'for': 'tcl'    }
+    Plug     'tmux-plugins/vim-tmux', { 'for': 'tmux'   }
+    Plug     'dzeban/vim-log-syntax'
+    Plug     'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+    PlugLazy 'junegunn/fzf.vim'
+    Plug     'junegunn/vim-easy-align', { 'on' : '<Plug>(EasyAlign)' }
+    Plug     'whatyouhide/vim-lengthmatters'
+    PlugLazy 'gaving/vim-textobj-argument'
+    PlugLazy 'michaeljsmith/vim-indent-object'
+    Plug     'justinmk/vim-dirvish'
+    Plug     'christoomey/vim-tmux-navigator'
+    Plug     'dietsche/vim-lastplace'
+    Plug     'tmux-plugins/vim-tmux-focus-events'
+    Plug     'ryanoasis/vim-devicons'
+    Plug     'derekwyatt/vim-scala', {'for': 'scala'}
+    Plug     'raimon49/requirements.txt.vim', {'for': 'requirements'}
+    " PlugLazy 'w0rp/ale'
 
     if v:version >= 800
         Plug 'lewis6991/vim-clean-fold'
         " Plug 'airblade/vim-gitgutter'
     endif
 
+    Plug 'Shougo/neco-vim'
+    Plug 'neoclide/coc-neco'
+
+    " function! UpdateCoc()
+    "     call coc#util#install()
+    "     CocInstall
+    "         \ coc-dictionary
+    "         \ coc-git
+    "         \ coc-json
+    "         \ coc-python
+    "         \ coc-tag
+    "         \ coc-word
+    " endfunction
+
+    Plug 'neoclide/coc.nvim', { 'do': { -> coc#util#install()} }
+
     if has('nvim')
-        Plug 'Shougo/neco-vim'
-        Plug 'neoclide/coc-neco'
-
-        function UpdateCoc()
-            call coc#util#install()
-
-            CocInstall coc-git
-            CocInstall coc-python
-            CocInstall coc-json
-            CocInstall coc-tag
-            CocInstall coc-word
-            CocInstall coc-dictionary
-        endfunction
-
-        Plug 'neoclide/coc.nvim', { 'do': function('UpdateCoc') }
-
         " Workaround for: https://github.com/neovim/neovim/issues/1822
         Plug 'bfredl/nvim-miniyank'
         map p <Plug>(miniyank-autoput)
         map P <Plug>(miniyank-autoPut)
 
-        Plug 'w0rp/ale'
         Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
     endif
 
@@ -167,12 +177,15 @@ set clipboard+=unnamedplus
 set scrolloff=6
 set sidescroll=1
 set sidescrolloff=6
+set nostartofline
 set virtualedit=block " allow cursor to exist where there is no character
-set updatetime=100
+set updatetime=400
 set hidden
 set backup
 set backupdir-=.
 set lazyredraw
+set redrawtime=4000
+set shortmess+=I
 if v:version >= 800
     set completeopt=noinsert,menuone,noselect
 endif
@@ -182,6 +195,10 @@ if has('mouse')
 endif
 
 silent! set pumblend=20
+
+if has('nvim-0.3.2') || has("patch-8.1.0360")
+    set diffopt=filler,internal,algorithm:histogram,indent-heuristic
+endif
 
 set diffopt+=vertical  "Show diffs in vertical splits
 
@@ -323,6 +340,10 @@ let g:gitgutter_sign_modified_removed   = '│'  " '~_'
 " }}}
 " FZF {{{
 function! s:find_git_root() abort
+    let a = system('git rev-parse --show-superproject-working-tree')[:-2]
+    if a != ''
+        return a
+    endif
     return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
 endfunction
 
@@ -358,6 +379,13 @@ let g:fzf_colors = {
     \ 'spinner': ['fg', 'Label'],
     \ 'header':  ['fg', 'Comment'] }
 
+let g:fzf_action = {
+  \     'enter'  : 'drop',
+  \     'ctrl-t' : 'tab drop',
+  \     'ctrl-x' : 'split',
+  \     'ctrl-v' : 'vsplit'
+  \ }
+
 autocmd vimrc FileType fzf        set laststatus=0 noshowmode noruler
     \ | autocmd BufLeave <buffer> set laststatus=2   showmode   ruler
 autocmd vimrc FileType fzf tunmap <Esc>
@@ -378,15 +406,9 @@ let g:LanguageClient_settingsPath = '~/.lsp_settings.json'
 " Plug {{{
 let g:plug_window = 'tabnew'
 " }}}
-" Polyglot {{{
-let g:polyglot_disabled = ['yaml']
-" }}}
 " }}}
 " Colours {{{
-if has('termguicolors')
-    set termguicolors
-endif
-
+silent! set termguicolors
 silent! colorscheme moonlight
 " }}}
 " Vim {{{
@@ -430,7 +452,7 @@ if has('nvim')
     endif
 
     set inccommand=split
-    set previewheight=20
+    set previewheight=30
 
     silent highlight EndOfBuffer ctermfg=bg guifg=bg
 endif
@@ -455,8 +477,11 @@ nnoremap Y y$
 nnoremap Q :w<cr>
 vnoremap Q <nop>
 
+" I never use macros and more often mishit this key
+nnoremap q <nop>
+
 " Show syntax highlighting groups for word under cursor
-nnoremap <leader>z :call <SID>SynStack()<CR>
+nnoremap <leader>z :call <SID>syn_stack()<CR>
 
 nnoremap <Tab>   gt
 nnoremap <S-Tab> gT
@@ -496,15 +521,15 @@ if has('nvim')
     autocmd vimrc TermOpen * tnoremap <Esc> <c-\><c-n>
 endif
 
-cabbrev help tab help
-cabbrev h    tab h
+cnoreabbrev <expr> h    getcmdtype() == ":" && getcmdline() == 'h'    ? 'tab h'    : 'h'
+cnoreabbrev <expr> help getcmdtype() == ":" && getcmdline() == 'help' ? 'tab help' : 'help'
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
 
 if v:version >= 800
     "Delete trailing white space on save.
-    autocmd vimrc BufWrite * call DeleteTrailingWS()
+    autocmd vimrc BufWrite * call <SID>delete_trailing_ws()
 
     "Highlight trailing whitespace
     autocmd vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')
@@ -520,14 +545,8 @@ if has('folding')
 endif
 
 " }}}
-" Comments {{{
-augroup commentstring_group
-    autocmd!
-    autocmd Filetype sbt setlocal commentstring=//%s
-augroup END
-" }}}
 " Functions {{{
-function! DeleteTrailingWS() abort "{{{
+function! s:delete_trailing_ws() abort "{{{
     " Save cursor position
     let l:save = winsaveview()
 
@@ -542,14 +561,14 @@ function! DeleteTrailingWS() abort "{{{
     call winrestview(l:save)
 endfunction "}}}
 
-function! <SID>SynStack() abort "{{{
+function! s:syn_stack() abort "{{{
     if !exists('*synstack')
         return
     endif
     echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, ''name'')')
 endfunction "}}}
 
-function! QualifiedTagJump() abort "{{{
+function! s:qualified_tag_jump() abort "{{{
     let l:plain_tag = expand('<cword>')
     let l:orig_keyword = &iskeyword
     set iskeyword+=\.
@@ -573,7 +592,7 @@ function! QualifiedTagJump() abort "{{{
     endtry
 endfunction "}}}
 
-nnoremap <silent> <C-]> :<C-u>call QualifiedTagJump()<CR>
+nnoremap <silent> <C-]> :<C-u>call <SID>qualified_tag_jump()<CR>
 
 function! YamlFolds() abort "{{{
     let l:previous_level = indent(prevnonblank(v:lnum - 1)) / &shiftwidth
@@ -595,9 +614,9 @@ endfunction "}}}
 
 function! JsonFolds() abort "{{{
     let l:line = getline(v:lnum)
-    let l:lline = split(l:line, '\zs')
-    let l:inc = count(l:lline, '{')
-    let l:dec = count(l:lline, '}')
+    " let l:lline = split(l:line, '\zs')
+    let l:inc = count(l:line, '{')
+    let l:dec = count(l:line, '}')
     let l:level = inc - dec
     if l:level == 0
         return '='
@@ -624,17 +643,10 @@ endfunction "}}}
 let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
 let g:vimsyn_folding  = 'af' "Fold augroups and functions
 let g:vim_indent_cont = &shiftwidth
-"}}}
-" File Settings {{{
-"VimL
-let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
-let g:vimsyn_folding  = 'af' "Fold augroups and functions
-let g:vim_indent_cont = &shiftwidth
 
 let g:xml_syntax_folding=1
 
 augroup vimrc
-    " Filetype detections
     autocmd BufRead dotshrc,dotsh         setlocal filetype=sh
     autocmd BufRead dotcshrc              setlocal filetype=csh
     autocmd BufRead *.tmux                setlocal filetype=tmux
@@ -642,19 +654,38 @@ augroup vimrc
     autocmd BufRead setup.cfg             setlocal filetype=dosini
     autocmd BufRead gerrit_hooks          setlocal filetype=dosini
     autocmd BufRead requirements*.txt     setlocal filetype=requirements
-    " autocmd BufRead Jenkinsfile*          setlocal filetype=groovy
     autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
     autocmd BufRead gitconfig             setlocal filetype=gitconfig
 
-    autocmd BufRead * if getline(1) == '#%Module1.0'
+" Filetype detections
+    autocmd BufRead * if getline(1) =~ '^#%Module.*'
                   \ |     setlocal ft=tcl
                   \ | endif
+    autocmd BufRead coc-settings.json syntax match Comment +\/\/.\+$+
+    autocmd BufRead coc-settings.json setlocal commentstring=//%s
+    autocmd BufRead coc-settings.json syntax match Comment +\/\/.\+$+
+    autocmd BufRead coc-settings.json setlocal commentstring=//%s
+    autocmd BufRead modulefile            setlocal filetype=tcl
+augroup END
+
+" Commentstring
+augroup vimrc
+    autocmd Filetype sbt.scala setlocal commentstring=//%s
+augroup END
+
+" Filetype settings
+augroup vimrc
 
     " Scala
     autocmd Filetype scala         setlocal shiftwidth=4
         \                                   foldlevelstart=1
         \                                   foldnestmax=3
     " autocmd FileType scala         call SCTags()
+
+    autocmd FileType scala nmap <silent> <C-]> <Plug>(coc-definition)
+    autocmd FileType scala nmap <silent> <C-q> <Plug>(coc-diagnostic-info)
+    autocmd FileType scala nmap <leader>rn <Plug>(coc-rename)
+    autocmd CursorHold * silent call CocActionAsync('highlight')
 
     autocmd Filetype systemverilog setlocal shiftwidth=4
         \                                   tabstop=4
@@ -667,12 +698,9 @@ augroup vimrc
         \                                   foldmethod=marker
         \                                   foldmarker={,}
 
-    " autocmd FileType json          setlocal foldmethod=expr foldexpr=JsonFolds()
-
+    autocmd FileType json          setlocal foldmethod=expr foldexpr=JsonFolds()
     autocmd FileType make          setlocal foldmethod=expr foldexpr=MakeFolds()
     autocmd Filetype log           setlocal textwidth=1000
-    autocmd FileType yaml          setlocal foldmethod=expr
-        \                                   foldexpr=YamlFolds()
     autocmd FileType xml           setlocal foldnestmax=20
         \                                   foldcolumn=5
 
@@ -686,7 +714,6 @@ augroup vimrc
     autocmd Filetype groovy setlocal makeprg=java\ -jar\ ~/jenkins-cli.jar\ -s\ http://cem-jenkins.euhpc.arm.com\ declarative-linter\ <\ Jenkinsfile
 
 augroup END
-" highlight semshiSelected ctermbg=8 guibg=#444A54
 " }}}
 " Formatting {{{
 set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
@@ -694,6 +721,7 @@ set formatoptions+=o "Automatically insert comment leader after 'o' or 'O' in No
 set formatoptions+=l "Long lines are not broken in insert mode.
 set formatoptions-=t "Do not auto wrap text
 set formatoptions+=n "Recognise lists
+    autocmd FileType yaml          setlocal foldmethod=expr foldexpr=YamlFolds()
 if v:version >= 800
     set breakindent      "Indent wrapped lines to match start
 endif
@@ -704,41 +732,31 @@ iabbrev rev
     \' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):'<CR>
 " }}}
 " Statusline {{{
-function! Strip(input_string) "{{{
+function! s:strip(input_string) "{{{
     return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
 endfunction "}}}
 
 function! Hunks() abort "{{{
-    if v:version >= 704
-        try
-            let l:hunks = GitGutterGetHunkSummary()
-        catch
-            let l:hunks = [0,0,0]
-        endtry
-    else
-        let l:hunks = ''
+    if exists('b:coc_git_status')
+        return trim(b:coc_git_status)
+    endif
+    if !(v:version >= 704 && exists('*GitGutterGetHunkSummary'))
+        return ''
     endif
 
-    let l:added    = l:hunks[0]
-    let l:modified = l:hunks[1]
-    let l:deleted  = l:hunks[2]
+    let l:hunks = copy(GitGutterGetHunkSummary())
+    let l:map = {1: '~', 0: '+', 2: '-'}
 
-    let l:modified_s = ''
-    if l:modified !=# '0'
-        let l:modified_s = '~' . l:modified
-    endif
+    for l:key in keys(l:map)
+        let l:s = ''
+        let l:t = l:hunks[l:key]
+        if l:t !=# '0'
+            let l:s = l:map[l:key] . l:t
+        endif
+        let l:hunks[l:key] = l:s
+    endfor
 
-    let l:added_s = ''
-    if l:added !=# '0'
-        let l:added_s .= '+' . l:added
-    endif
-
-    let l:deleted_s = ''
-    if l:deleted !=# '0'
-        let l:deleted_s .= '-' . l:deleted
-    endif
-
-    return Strip(join([l:modified_s, l:added_s, l:deleted_s]))
+    return s:strip(join(l:hunks))
 endfunction "}}}
 
 function! EncodingAndFormat() abort "{{{
@@ -755,10 +773,32 @@ function! EncodingAndFormat() abort "{{{
         let l:f = '['.l:f.']'
     endif
 
-    return Strip(join([l:e, l:f]))
+    return s:strip(join([l:e, l:f]))
 endfunction "}}}
 
-function! s:GetAle(active) abort "{{{
+function! s:aleStatusLine(active) abort "{{{
+    let l:keydisp = {
+        \     'error'         : 'DiffRemoved',
+        \     'warning'       : 'DiffLine'   ,
+        \     'style_error'   : 'DiffRemoved',
+        \     'style_warning' : 'DiffLine'   ,
+        \     'info'          : 'DiffAdded'
+        \ }
+
+    let l:alestatus = []
+    for l:key in keys(l:keydisp)
+        let l:entry = ''
+        if a:active
+            let l:entry .= '%#' . l:keydisp[l:key] . '#'
+        endif
+        let l:entry .= '%( %{AleMsg("'.l:key.'")} %)'
+        let l:alestatus += [l:entry]
+    endfor
+
+    return join(l:alestatus, '')
+endfunction "}}}
+
+function! AleMsg(msgtype) abort "{{{
     try
         let l:aleinfo = ale#statusline#Count(bufnr('%'))
     catch
@@ -770,100 +810,85 @@ function! s:GetAle(active) abort "{{{
     endif
 
     let l:keydisp = {
-        \     'error'         : {'display' : 'E' , 'highlight' : 'DiffRemoved'},
-        \     'warning'       : {'display' : 'W' , 'highlight' : 'DiffLine'   },
-        \     'style_error'   : {'display' : 'SE', 'highlight' : 'DiffRemoved'},
-        \     'style_warning' : {'display' : 'SW', 'highlight' : 'DiffLine'   },
-        \     'info'          : {'display' : 'I' , 'highlight' : 'DiffAdded'  }
+        \     'error'         : 'E' ,
+        \     'warning'       : 'W' ,
+        \     'style_error'   : 'SE',
+        \     'style_warning' : 'SW',
+        \     'info'          : 'I'
         \ }
 
-    let l:alestatus = []
-    for l:key in keys(l:keydisp)
-        if l:aleinfo[l:key] > 0
-            let l:entry = ''
-            if a:active
-                let l:entry .= '%#' . l:keydisp[l:key]['highlight'] . '#'
-            endif
-            let l:entry .= l:keydisp[l:key]['display'] . ':' . l:aleinfo[l:key]
-            let l:alestatus += [l:entry]
-        endif
-    endfor
-
-    return Strip(join(l:alestatus))
-endfunction "}}}
-
-let s:diagnostics = {}
-
-function! s:record_diagnostics(state)
-  let result = json_decode(a:state.result)
-  let s:diagnostics = result.diagnostics
-endfunction
-
-function! s:diagnostics_for_buffer() "{{{
-
-    " let d = getqflist()
-    let d = getloclist(0)
-
-    let message = []
-
-    for [p, s, h] in [
-        \     ['E', 1, 'DiffRemoved'],
-        \     ['W', 2, 'DiffLine'],
-        \     ['I', 3, 'DiffAdded'],
-        \     ['H', 4, 'DiffRemoved']
-        \ ]
-        let l:count = 0
-        for i in d
-            if i.type == p
-                let l:count += 1
-            endif
-        endfor
-        if l:count > 0
-            let message += ['%#'.h.'#'.p.':'.l:count]
-        endif
-    endfor
-    return join(message, ' ')
-endfunction "}}}
-
-function! StatusHighlight(no, active) abort "{{{
-    if a:active
-        if     a:no == 1 | return '%#PmenuSel#'
-        elseif a:no == 2 | return '%#Visual#'
-        elseif a:no == 3 | return '%#CursorLine#'
-        endif
+    if l:aleinfo[a:msgtype] > 0
+        return l:keydisp[a:msgtype] . ':' . l:aleinfo[a:msgtype]
     endif
     return ''
 endfunction "}}}
 
-function! Statusbar(active) abort "{{{
-    let l:s = '%#StatusLine#'
-    " let l:s = StatusHighlight(1, a:active)
+function! s:status_highlight(no, active) abort "{{{
+    if a:active
+        if   a:no == 1 | return '%#PmenuSel#'
+        else           | return '%#Visual#'
+        endif
+    else
+        if   a:no == 3 | return '%#StatusLine#'
+        else           | return '%#VertSplit#'  " Hidden
+        endif
+    endif
+endfunction "}}}
 
-    " let l:s .= '%(  %{fugitive#head()}  %)'
-    " if expand('%t') !~# '/.git/'
-    "     let l:s .= '%(  %{fugitive#statusline()}  %)'
-    " endif
-    let l:s .= StatusHighlight(1, a:active)
-    let l:s .= '%{get(b:, "coc_git_status", "")}'
-    let l:s .= '%( %{Hunks()}  %)'
-    let l:s .= StatusHighlight(2, a:active)
-    let l:s .= '  ' . s:GetAle(a:active)
-    " let l:s .= '  ' . s:diagnostics_for_buffer()
-    " Reset Ale Highlight
-    let l:s .= StatusHighlight(2, a:active)
-    let l:s .= ' %= '
-    let l:s .= '%<%0.60f%m%r'  " file.txt[+][RO]
-    let l:s .= ' %= '
+function! s:recording() abort "{{{
+    let reg = reg_recording()
+    if reg !=# ''
+        return '%#ModeMsg#  RECORDING['.reg.']  '
+    else
+        return ''
+    endif
+endfunction "}}}
+
+function! StatusDiagnostic() abort
+    let info = get(b:, 'coc_diagnostic_info', {})
+    if empty(info)
+        return ''
+    endif
+    let msgs = []
+
+
+
+
+
+
+    if get(info, 'error', 0)
+        call add(msgs, 'E:' . info['error'])
+    endif
+    if get(info, 'warning', 0)
+        call add(msgs, 'W:' . info['warning'])
+    endif
+    if get(info, 'information', 0)
+        call add(msgs, 'I:' . info['warning'])
+    endif
+    if get(info, 'hint', 0)
+        call add(msgs, 'H:' . info['warning'])
+    endif
+    return join(msgs, ' ') . ' ' . get(g:, 'coc_status', '')
+endfunction
+
+
+function! Statusline_expr(active) abort "{{{
+    let l:s = '%#StatusLine#'
+    let l:s .= s:status_highlight(1, a:active) . s:recording()
+    let l:s .= s:status_highlight(1, a:active) . '%( %{Hunks()}  %)'
+    let l:s .= s:status_highlight(2, a:active) . s:aleStatusLine(a:active)
+    let l:s .= s:status_highlight(2, a:active) . '%( %{StatusDiagnostic()}  %)'
+    let l:s .= s:status_highlight(3, a:active) . '%='
+    let l:s .= s:status_highlight(3, a:active) . '%<%0.60f%m%r'  " file.txt[+][RO]
     if exists('*WebDevIconsGetFileTypeSymbol')
-        let l:s .= StatusHighlight(2, a:active)
-        let l:s .= '%(  %{&filetype} %{WebDevIconsGetFileTypeSymbol()}  %)'
+        let l:s .= '%( %{WebDevIconsGetFileTypeSymbol()} %)'
     endif
-    let l:s .= StatusHighlight(1, a:active)
+    let l:s .= ' %= '
+    let l:s .= s:status_highlight(2, a:active) . '%(  %{&filetype}  %)'
     if exists('*WebDevIconsGetFileFormatSymbol')
-        let l:s .= '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
+        let l:s .= s:status_highlight(1, a:active) . '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
     endif
-    " let l:s .= ' %p%% %l/%L %c ' " 80% 65/120 12
-    let l:s .= ' %3p%% %3l(%02c)/%-3L ' " 80% 65[12]/120
+    let l:s .= s:status_highlight(1, a:active) . ' %3p%% %3l(%02c)/%-3L ' " 80% 65[12]/120
     return l:s
 endfunction "}}}
 
@@ -871,12 +896,12 @@ augroup status
     autocmd!
     " Only set up WinEnter autocmd when the WinLeave autocmd runs
     autocmd WinLeave,FocusLost *
-        \ setlocal statusline=%!Statusbar(0) |
+        \ setlocal statusline=%!Statusline_expr(0) |
         \ autocmd status WinEnter,FocusGained *
-            \ setlocal statusline=%!Statusbar(1)
+            \ setlocal statusline=%!Statusline_expr(1)
 augroup END
 
-set statusline=%!Statusbar(1)
+set statusline=%!Statusline_expr(1)
 
 "}}}
 " Tabline {{{
