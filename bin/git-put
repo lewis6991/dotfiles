@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+set -e
+
+git branch -f ${1-master}
+git checkout ${1-master}
+
+branch=$(git rev-parse --abbrev-ref HEAD)
+remoteBranch=$(git config branch.$branch.merge)
+remoteBranch=${remoteBranch##refs/heads/}
+
+git track ${2-$remoteBranch}

@@ -1,4 +1,3 @@
-HAVE_BREW=0
 REPO_DIR=~/projects
 
 function have_cmd {
@@ -11,6 +10,8 @@ function have_cmd {
 if have_cmd brew; then
     HAVE_BREW=1
     BREW_PREFIX=$(brew --prefix)
+else
+    HAVE_BREW=0
 fi
 
 if ((HAVE_BREW)); then
@@ -19,6 +20,12 @@ if ((HAVE_BREW)); then
         PATH="$COREUTILS_PATH/gnubin:$PATH"
         MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
     fi
+fi
+
+if [[ -d $REPO_DIR/dotfiles/bin ]]; then
+    PATH="$REPO_DIR/dotfiles/bin:$PATH"
+else
+    echo "Error: Directory \"$REPO_DIR/dotfiles/bin\" does not exist"
 fi
 
 # Variables --------------------------------------------------------------------
@@ -50,6 +57,7 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # Pager ------------------------------------------------------------------------
 export PAGER="less"
+
 export LESS="\
     --RAW-CONTROL-CHARS \
     --ignore-case \
@@ -58,17 +66,17 @@ export LESS="\
     --chop-long-lines"
 
 export MANPAGER="\
-nvim \
--R \
--u NORC \
--c 'set ft=man nomod' \
--c 'set laststatus=0' \
--c 'map q :q<CR>' \
--c 'map <SPACE> <C-D>' \
--c 'map K :Man<CR>' \
--c 'map b <C-U>' \
--c 'map d <C-d>' \
--c 'map u <C-u>' -"
+    nvim \
+    -R \
+    -u NORC \
+    -c 'set ft=man nomod' \
+    -c 'set laststatus=0' \
+    -c 'map q :q<CR>' \
+    -c 'map <SPACE> <C-D>' \
+    -c 'map K :Man<CR>' \
+    -c 'map b <C-U>' \
+    -c 'map d <C-d>' \
+    -c 'map u <C-u>' -"
 
 # Plugins ----------------------------------------------------------------------
 
@@ -99,8 +107,8 @@ zplugin light zdharma/fast-syntax-highlighting
 
 # Other ----------------------------------------------------------------------
 
-autoload -U +X compinit && compinit
-# autoload -Uz compinit && compinit
+fpath=($HOME/zsh_completions $fpath)
+autoload -U +X compinit     && compinit
 autoload -U +X bashcompinit && bashcompinit
 
 setopt NO_BEEP
@@ -126,7 +134,7 @@ fi
 if have_cmd rg; then
     _rg () {
         if [[ -t 1 ]]; then
-            \rg --heading --ignore-case "$@" --color=always | less -RFX
+            \rg --line-number --heading --ignore-case "$@" --color=always | less -RFX
         else
             \rg "$@"
         fi
@@ -135,18 +143,13 @@ if have_cmd rg; then
     alias rg="_rg --colors 'match:bg:yellow' --colors 'match:fg:19' --colors 'line:fg:20' --colors 'path:fg:cyan'"
 fi
 
-if have_cmd highlight; then
-    alias ccat="highlight --out-format=ansi --force"
-fi
+# if have_cmd highlight; then
+#     alias ccat="highlight --out-format=ansi --force"
+# fi
 
 # if have_cmd rg; then
 #     export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" 2> /dev/null'
 # fi
-
-alias re-csh="exec zsh -l"
-alias tree="tree -AC"
-
-alias gcd='cd $(git rev-parse --show-toplevel)'
 
 export LESS="\
     --RAW-CONTROL-CHARS \
@@ -162,16 +165,6 @@ source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
 bindkey -e
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
-
-# function update-x11-forwarding {
-#     if [ -z "$STY" -a -z "$TMUX" ]; then
-#         echo $DISPLAY > ~/.display.txt
-#     else
-#         export DISPLAY=$(cat ~/.display.txt)
-#     fi
-# }
-
-# add-zsh-hook precmd update-x11-forwarding
 
 ! [ -f ~/.aliases       ] || source ~/.aliases
 ! [ -f ~/.aliases_local ] || source ~/.aliases_local

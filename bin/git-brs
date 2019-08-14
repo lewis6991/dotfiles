@@ -1,0 +1,16 @@
+#! /usr/bin/env bash
+
+git for-each-ref --shell --format="ref=%(refname)" refs/heads |
+    while read entry; do
+        eval "$entry"
+        branch=${ref##refs/heads/}
+        remoteBranch=$(git config branch.$branch.merge)
+        remoteBranch=${remoteBranch##refs/heads/}
+        git branch \
+            --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:yellow)%(refname:strip=2)%(color:reset) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)' \
+            --list \
+            $branch
+        git --no-pager log \
+            --format="      %s" \
+            origin/$remoteBranch..$branch
+    done

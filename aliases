@@ -1,9 +1,24 @@
-alias gs="git st"
 alias ga="git a"
 alias gd="git d"
+alias gf="git fetch"
+alias grg="git rg"
+alias gs="git st --ignore-submodules"
+alias gss="git st"
+
+alias re-csh="exec zsh -l"
+alias tree="tree -AC"
+
+alias gcd='cd $(git rev-parse --show-toplevel)'
 
 alias rgi="rg --no-ignore"
 
 alias ta="tmux attach"
+
+alias vimin="vim -u ~/.vimrcmin"
+
+alias lssize="du -h -d 1"
+
+alias gitconfig='vim $XDG_CONFIG_HOME/git/config'
+
 
 # vim: set filetype=sh:
