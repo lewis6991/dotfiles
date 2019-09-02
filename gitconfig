@@ -4,7 +4,7 @@
 
 [diff]
 	tool = vimdiff
-	algorithm = patience
+	algorithm = histogram
 
 [difftool]
 	prompt = false
@@ -14,55 +14,29 @@
 	ai   = !nvim -c 'Gstatus | wincmd o' .
 	au   = add -u
 	br   = branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:reset)%(align:10,left)%(refname:strip=2)%(end) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)'
-	brs = "!f() { \
-			git for-each-ref --shell --format=\"ref=%(refname)\" refs/heads | \
-				while read entry; do \
-					eval \"$entry\";\
-					branch=${ref##refs/heads/}; \
-					remoteBranch=$(git config branch.$branch.merge); \
-					remoteBranch=${remoteBranch##refs/heads/}; \
-					git branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:yellow)%(refname:strip=2)%(color:reset) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)' \
-					--list $branch; \
-					git --no-pager log --format=\"      %s\" origin/$remoteBranch..$branch;\
-				done \
-		}; f"
 	bd   = branch -D
 	cam  = commit --amend
-	ca   = commit --amend --no-edit
 	cap  = !git ca && git publish
 	ci   = commit
+	cij  = !sh -c 'export GIT_ADD_JIRA=1 && git commit $@'
+	ca   = commit --amend --no-edit
+	; caj  = cij --amend --no-edit
+	caj  = !sh -c 'export GIT_ADD_JIRA=1 && git commit --amend --no-edit $@'
 	co   = checkout
 	cp   = cherry-pick
 	cpc  = cherry-pick --continue
 	d    = diff --ignore-submodules
 	ciff = diff --cached
-	# d    = "!f() { \
-	# 		nvim -p $(git diff --name-only) +\"tabdo Gdiff $@\" +tabfirst;\
-	# 	}; f"
 	drop = !sh -c 'git reset --hard HEAD~${1-1}' -
 	r    = rebase
 	ra   = rebase --abort
 	rc   = rebase --continue
 	ri   = rebase --interactive
 	rs   = rebase --skip
-	st   = status --short --show-stash --ignore-submodules
 	sp   = stash show -p
-	lg = "!f() {\
-			hash_length=$(expr length $(git rev-parse --short HEAD)) \
-			width=$(($(tput cols) - 10)); \
-			width2=$(expr 54 - $hash_length); \
-			git log --graph --format=\"%w($width,,$width2)%C(bold yellow)%h %C(bold blue)%<(18,trunc)%an %C(bold green)%<(14)%cr %C(auto)%d %Creset%s\" $@; \
-		}; f"
-	lgs = !git lg HEAD..origin
-	put = "!f() {\
-			branch=$(git rev-parse --abbrev-ref HEAD); \
-			remoteBranch=$(git config branch.$branch.merge); \
-			remoteBranch=${remoteBranch##refs/heads/}; \
-			git branch -f ${1-master}; \
-			git checkout ${1-master}; \
-			git track ${2-$remoteBranch}; \
-		}; f"
+	lgs = lg HEAD..origin
 	new = "!f() {\
+		    set -e; \
 			branch=$(git rev-parse --abbrev-ref HEAD); \
 			remoteBranch=$(git config branch.$branch.merge); \
 			remote=$(git config branch.$branch.remote); \
@@ -73,35 +47,36 @@
 		}; f"
 	reh = reset --hard
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
-	who = shortlog -sne
-
-	# Gerrit aliases
-	publish = "!f() {\
-			branch=$(git rev-parse --abbrev-ref HEAD); \
-			remoteBranch=$(git config branch.$branch.merge); \
-			remoteBranch=${remoteBranch##refs/heads/}; \
-			git push origin HEAD:refs/for/${1-$remoteBranch}; \
-		}; f"
-	p = !git publish
+	who = shortlog --summary --numbered
+	p = publish
 
 	draft = "!f() {\
+		    set -e; \
 			branch=$(git rev-parse --abbrev-ref HEAD); \
 			remoteBranch=$(git config branch.$branch.merge); \
 			remoteBranch=${remoteBranch##refs/heads/}; \
 			git push origin HEAD:refs/drafts/${1-$remoteBranch}; \
 		}; f"
 
+	fix-fetch = config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+
 	# Get the latest patchset for a given change number it checkout to a local
 	# branch
 	# $1: change number
 	# $2: (optional) branch name, defaults to $1
-	get = !sh -c 'gerrit_url $1 $2' -
-	setup-hooks = !sh -c 'scp -p $1:hooks/commit-msg ${2}/.git/hooks/' -
+	setup-hooks = !sh -c 'cp -r $HOME/git-templates/* $(git rev-parse --git-dir)/' -
+	; setup-hooks = !sh -c 'scp -p $1:hooks/commit-msg ${2}/.git/hooks/' -
+
+	rg = -c color.grep.linenumber=\"bold yellow\" \
+		-c color.grep.filename=\"bold cyan\" \
+		-c color.grep.match=\"reverse yellow\" \
+		grep --break --heading --line-number
 
 [core]
+	commitGraph  = true
 	editor       = nvim
 	excludesfile = ~/.gitignore
-	pager        = diff-so-fancy | less --no-init --tabs=4 -R
+	pager        = diff-so-fancy | TERM=xterm-256color less --no-init --tabs=4 -R
 
 [pull]
 	rebase = true
@@ -126,4 +101,5 @@
 	new        = green   bold
 	whitespace = red     reverse
 
-# vim: filetype=gitconfig :
+[init]
+	templatedir = ~/git-templates
