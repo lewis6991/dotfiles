@@ -65,18 +65,7 @@ export LESS="\
     --quit-if-one-screen \
     --chop-long-lines"
 
-export MANPAGER="\
-    nvim \
-    -R \
-    -u NORC \
-    -c 'set ft=man nomod' \
-    -c 'set laststatus=0' \
-    -c 'map q :q<CR>' \
-    -c 'map <SPACE> <C-D>' \
-    -c 'map K :Man<CR>' \
-    -c 'map b <C-U>' \
-    -c 'map d <C-d>' \
-    -c 'map u <C-u>' -"
+export MANPAGER="nvim -c 'set ft=man' -"
 
 # Plugins ----------------------------------------------------------------------
 

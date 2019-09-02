@@ -1,30 +1,30 @@
 " Init {{{
-scriptencoding utf-8
 
-if empty($XDG_CONFIG_HOME)
-    echoerr 'XDG_CONFIG_HOME is not defined'
-    quitall
-endif
-
-if empty($XDG_DATA_HOME)
-    echoerr 'XDG_DATA_HOME is not defined'
-    quitall
-endif
+function! s:CheckVar(var)
+    if eval(printf('empty($%s)', a:var))
+        echoerr a:var.' is not defined'
+        return 0
+    endif
+    return 1
+endfunction
 
 if !has('nvim')
-    set runtimepath=$XDG_CONFIG_HOME/vim,$XDG_DATA_HOME/vim/site,$VIMRUNTIME,$XDG_DATA_HOME/vim/site/after,$XDG_CONFIG_HOME/vim/after
-    set backupdir=$XDG_CACHE_HOME/vim,~/,/tmp
-    set directory=$XDG_CACHE_HOME/vim,~/,/tmp
-    set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
+    if s:CheckVar("XDG_CONFIG_HOME") && s:CheckVar("XDG_DATA_HOME")
+        set runtimepath=
+            \$XDG_CONFIG_HOME/vim,
+            \$XDG_DATA_HOME/vim/site,
+            \$VIMRUNTIME,
+            \$XDG_DATA_HOME/vim/site/after,
+            \$XDG_CONFIG_HOME/vim/after
+    endif
+    if s:CheckVar("XDG_DATA_HOME")
+        set directory=$XDG_DATA_HOME/vim/swap
+    endif
+    if s:CheckVar("XDG_CACHE_HOME")
+        set backupdir=$XDG_CACHE_HOME/vim/backup
+        set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
+    endif
 endif
-
-" if has('vim_starting') && has('reltime')
-"   let g:startuptime = reltime()
-"   augroup vimrc-startuptime
-"     autocmd! VimEnter * let g:startuptime = reltime(g:startuptime)
-"     \                 | echomsg 'startuptime: ' . reltimestr(g:startuptime)
-"   augroup END
-" endif
 
 " }}}
 " Bootstrap {{{
@@ -59,16 +59,16 @@ silent execute pathogen#infect('~/gerrit/{}')
 
 let g:loaded_netrwPlugin = 1  " Stop netrw loading
 
-if v:version >= 800
-    augroup vimrc | autocmd! | augroup END
+augroup vimrc
+    autocmd!
+augroup END
 
-    augroup lazy_plugin
-        autocmd!
-        autocmd CursorHold *
-            \   doautocmd User LazyPlugin
-            \ | autocmd! lazy_plugin
-    augroup END
-endif
+augroup lazy_plugin
+    autocmd!
+    autocmd CursorHold *
+        \   doautocmd User LazyPlugin
+        \ | autocmd! lazy_plugin
+augroup END
 
 function! PlugLazy(...) "{{{
     let l:name = a:1
@@ -95,9 +95,9 @@ command! -nargs=* PlugLazy call PlugLazy(<args>)
 call plug#begin(s:pldir)
     PlugLazy 'junegunn/vim-plug'
 
-    Plug 'lewis6991/moonlight.vim'
-
-    Plug 'powerman/vim-plugin-AnsiEsc'
+    Plug     '~/projects/dotfiles/modules/moonlight.vim'
+    " Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
+    Plug     '~/projects/systemverilog.vim', { 'for': 'systemverilog' }
 
     Plug     'tpope/vim-fugitive'
     PlugLazy 'tpope/vim-commentary'
@@ -125,7 +125,7 @@ call plug#begin(s:pldir)
     Plug     'ryanoasis/vim-devicons'
     Plug     'derekwyatt/vim-scala', {'for': 'scala'}
     Plug     'raimon49/requirements.txt.vim', {'for': 'requirements'}
-    " PlugLazy 'w0rp/ale'
+    PlugLazy 'dense-analysis/ale'
 
     if v:version >= 800
         Plug 'lewis6991/vim-clean-fold'
@@ -135,18 +135,14 @@ call plug#begin(s:pldir)
     Plug 'Shougo/neco-vim'
     Plug 'neoclide/coc-neco'
 
-    " function! UpdateCoc()
-    "     call coc#util#install()
-    "     CocInstall
-    "         \ coc-dictionary
-    "         \ coc-git
-    "         \ coc-json
-    "         \ coc-python
-    "         \ coc-tag
-    "         \ coc-word
-    " endfunction
+    " coc-dictionary
+    " coc-git
+    " coc-json
+    " coc-python
+    " coc-tag
+    " coc-word
 
-    Plug 'neoclide/coc.nvim', { 'do': { -> coc#util#install()} }
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
     if has('nvim')
         " Workaround for: https://github.com/neovim/neovim/issues/1822
@@ -179,7 +175,7 @@ set sidescroll=1
 set sidescrolloff=6
 set nostartofline
 set virtualedit=block " allow cursor to exist where there is no character
-set updatetime=400
+set updatetime=200
 set hidden
 set backup
 set backupdir-=.
@@ -197,7 +193,7 @@ endif
 silent! set pumblend=20
 
 if has('nvim-0.3.2') || has("patch-8.1.0360")
-    set diffopt=filler,internal,algorithm:histogram,indent-heuristic
+    set diffopt=filler,algorithm:histogram,indent-heuristic
 endif
 
 set diffopt+=vertical  "Show diffs in vertical splits
@@ -219,10 +215,17 @@ endif
 set splitright
 set splitbelow
 set spell
+if s:CheckVar("XDG_CONFIG_HOME")
+    set spellfile=$XDG_CONFIG_HOME/nvim/spell/en.utf-8.add
+endif
 
 " }}}
 " Plugin Settings {{{
 "Ale {{{
+let g:ale_pattern_options = {
+    \     '\.scala$': {'ale_enabled': 0}
+    \ }
+
 " let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
 let g:ale_lint_on_enter = 0
 let g:ale_lint_on_text_changed = 'never'
@@ -236,9 +239,11 @@ let g:ale_echo_msg_format = '%severity%->%linter%->%code: %%s'
 
 let g:ale_linters = {}
 " let g:ale_linters.python = ['vulture', 'mypy', 'pylint']
-let g:ale_linters.python = ['mypy', 'pylint', 'flake8']
 " let g:ale_linters.python = ['pyls', 'pylint']
-let g:ale_linters.scala = ['fsc', 'sbtserver', 'scalastyle']
+let g:ale_linters.python = ['mypy', 'pylint', 'flake8']
+" let g:ale_linters.scala = ['fsc', 'sbtserver', 'scalastyle']
+" let g:ale_linters.scala = ['fsc', 'scalastyle']
+let g:ale_linters.scala = []
 
 if has('nvim')
     let g:ale_python_pyls_config = {
@@ -252,14 +257,10 @@ if has('nvim')
         \ }
 endif
 
-
 let g:ale_virtualenv_dir_names = ['venv_7', '.venv_7']
 
 let g:ale_python_pylint_options = '--disable=bad-whitespace,invalid-name'
 " let g:ale_python_pylint_options = '--disable=bad-whitespace,missing-docstring,line-too-long,invalid-name'
-
-" let g:ale_virtualtext_cursor = v:true
-" highlight link ALEVirtualTextError ErrorMsg
 " }}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
@@ -292,8 +293,7 @@ function! s:dirvish_open(cmd) abort "{{{
     execute a:cmd.' '.l:path
 endfunction "}}}
 
-augroup dirvish_commands
-    autocmd!
+augroup vimrc "{{{
     autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U>.call <SID>dirvish_open('edit')<CR>
     autocmd FileType dirvish nmap     <silent> <buffer> -     <Plug>(dirvish_up)
     autocmd FileType dirvish nmap     <silent> <buffer> <ESC> :bd<CR>
@@ -305,7 +305,7 @@ augroup dirvish_commands
     autocmd Filetype dirvish setlocal statusline=%f
     autocmd Filetype dirvish setlocal nonumber
     autocmd Filetype dirvish setlocal norelativenumber
-augroup END
+augroup END "}}}
 " }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
@@ -326,12 +326,18 @@ let g:easy_align_delimiters = {
     \ '\': { 'pattern': '\\'     , 'left_margin': 1, 'right_margin': 0 },
     \ '+': { 'pattern': '+'      , 'left_margin': 1, 'right_margin': 1 }
     \ }
+
+augroup vimrc
+    autocmd FileType make let g:easy_align_delimiters['='] = {
+        \     'pattern': '[:?]\?=', 'left_margin': 1, 'right_margin': 1
+        \ }
+augroup END
 "}}}
 " Vim-lengthmatters {{{
 let g:lengthmatters_highlight_one_column = 1
 " }}}
 " Gitgutter {{{
-let g:gitgutter_max_signs=4000
+let g:gitgutter_max_signs=3000
 let g:gitgutter_sign_added              = '│'  " '+'
 let g:gitgutter_sign_modified           = '│'  " '~'
 let g:gitgutter_sign_removed            = '_'  " '_'
@@ -386,22 +392,31 @@ let g:fzf_action = {
   \     'ctrl-v' : 'vsplit'
   \ }
 
-autocmd vimrc FileType fzf        set laststatus=0 noshowmode noruler
-    \ | autocmd BufLeave <buffer> set laststatus=2   showmode   ruler
-autocmd vimrc FileType fzf tunmap <Esc>
+augroup vimrc
+    autocmd FileType fzf        set laststatus=0 noshowmode noruler
+        \ | autocmd BufLeave <buffer> set laststatus=2   showmode   ruler
+    autocmd FileType fzf tunmap <Esc>
+augroup END
 
 " }}}
 " LanguageClient {{{
-let g:LanguageClient_serverCommands = {
-    \ 'python': ['pyls'],
-    \ }
-let g:LanguageClient_diagnosticsEnable = 0
+" let g:LanguageClient_diagnosticsEnable = 0
 
-let g:LanguageClient_rootMarkers = {
-    \ 'python': ['setup.cfg']
-    \ }
+" let g:LanguageClient_settingsPath = '~/.lsp_settings.json'
+" let g:LanguageClient_serverCommands = {
+"     \     'scala': ['metals-vim'],
+"     \     'python': ['setup.cfg']
+"     \ }
 
-let g:LanguageClient_settingsPath = '~/.lsp_settings.json'
+" let g:LanguageClient_loggingFile = expand('~/LanguageClient.log')
+" let g:LanguageClient_useFloatingHover = 1
+" let g:LanguageClient_windowLogMessageLevel = 'Log'
+
+" " " Having LogMessageLevel set to Log interferes with non-preview
+" " " displaying of Hover
+" " let g:LanguageClient_hoverPreview = 'Never'
+" nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
+" nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 " }}}
 " Plug {{{
 let g:plug_window = 'tabnew'
@@ -495,7 +510,7 @@ cnoremap <C-N> <down>
 cnoremap <C-A> <Home>
 cnoremap <C-D> <Del>
 
-" inoremap <expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
+" inoremap <silent><expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
 inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
       \ <SID>check_back_space() ? "\<TAB>" :
@@ -511,11 +526,12 @@ inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
 nnoremap & /\<<C-R><C-w>\>\C<CR>
 
-" navigate chunks of current buffer
 nmap [c <Plug>(coc-git-prevchunk)
 nmap ]c <Plug>(coc-git-nextchunk)
-nmap <leader>hi <Plug>(coc-git-chunkinfo)
+
 nmap <leader>hs :CocCommand git.chunkStage<cr>
+nmap <leader>hu :CocCommand git.chunkUndo<cr>
+nmap <leader>hv <Plug>(coc-git-chunkinfo)
 
 if has('nvim')
     autocmd vimrc TermOpen * tnoremap <Esc> <c-\><c-n>
@@ -542,6 +558,7 @@ if has('folding')
     set foldmethod=syntax
     set foldcolumn=0
     set foldnestmax=2
+    set foldopen+=jump
 endif
 
 " }}}
@@ -646,6 +663,7 @@ let g:vim_indent_cont = &shiftwidth
 
 let g:xml_syntax_folding=1
 
+" Filetype detections
 augroup vimrc
     autocmd BufRead dotshrc,dotsh         setlocal filetype=sh
     autocmd BufRead dotcshrc              setlocal filetype=csh
@@ -656,15 +674,12 @@ augroup vimrc
     autocmd BufRead requirements*.txt     setlocal filetype=requirements
     autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
     autocmd BufRead gitconfig             setlocal filetype=gitconfig
+    autocmd BufRead coc-settings.json syntax match Comment +\/\/.\+$+
+    autocmd BufRead coc-settings.json setlocal commentstring=//%s
 
-" Filetype detections
     autocmd BufRead * if getline(1) =~ '^#%Module.*'
                   \ |     setlocal ft=tcl
                   \ | endif
-    autocmd BufRead coc-settings.json syntax match Comment +\/\/.\+$+
-    autocmd BufRead coc-settings.json setlocal commentstring=//%s
-    autocmd BufRead coc-settings.json syntax match Comment +\/\/.\+$+
-    autocmd BufRead coc-settings.json setlocal commentstring=//%s
     autocmd BufRead modulefile            setlocal filetype=tcl
 augroup END
 
@@ -674,46 +689,87 @@ augroup vimrc
 augroup END
 
 " Filetype settings
-augroup vimrc
 
-    " Scala
-    autocmd Filetype scala         setlocal shiftwidth=4
-        \                                   foldlevelstart=1
-        \                                   foldnestmax=3
-    " autocmd FileType scala         call SCTags()
+function! s:man_settings() abort "{{{
+    setlocal laststatus=0
+    setlocal nomodified
+    map <nowait> q :q<CR>
+    map <nowait> d <C-d>
+    map <nowait> u <C-u>
+endfunction "}}}
 
-    autocmd FileType scala nmap <silent> <C-]> <Plug>(coc-definition)
-    autocmd FileType scala nmap <silent> <C-q> <Plug>(coc-diagnostic-info)
-    autocmd FileType scala nmap <leader>rn <Plug>(coc-rename)
-    autocmd CursorHold * silent call CocActionAsync('highlight')
+function! s:enable_coc_mappings() abort "{{{
+    nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
+    nmap <buffer> <silent> <C-q> <Plug>(coc-diagnostic-info)
+    nmap <buffer> <silent> [d    <Plug>(coc-diagnostic-prev)
+    nmap <buffer> <silent> ]d    <Plug>(coc-diagnostic-next)
+    nmap <buffer> <silent> gr    <Plug>(coc-references)
 
+    function! s:show_documentation() abort
+        if &filetype == 'vim'
+            execute 'h '.expand('<cword>')
+        else
+            call CocAction('doHover')
+        endif
+    endfunction
+    nnoremap <silent> K :call <SID>show_documentation()<CR>
+endfunction "}}}
+
+function! s:python_settings() abort "{{{
+    call s:enable_coc_mappings()
+
+    highlight semshiSelected ctermbg=8 guibg=#444A54
+endfunction "}}}
+
+function! s:scala_settings() abort "{{{
+    setlocal shiftwidth=4
+    setlocal foldlevelstart=1
+    setlocal foldnestmax=3
+
+    call s:enable_coc_mappings()
+endfunction "}}}
+
+function! s:json_settings() abort "{{{
+    setlocal conceallevel=0
+    setlocal foldnestmax=5
+    setlocal foldmethod=marker
+    setlocal foldmarker={,}
+
+    setlocal foldmethod=expr
+    setlocal foldexpr=JsonFolds()
+endfunction "}}}
+
+augroup vimrc "{{{
     autocmd Filetype systemverilog setlocal shiftwidth=4
         \                                   tabstop=4
         \                                   softtabstop=4
-    autocmd Filetype tags          setlocal tabstop=30
-    autocmd Filetype make          setlocal noexpandtab
-    autocmd Filetype gitconfig     setlocal noexpandtab
-    autocmd FileType json          setlocal conceallevel=0
-        \                                   foldnestmax=5
-        \                                   foldmethod=marker
-        \                                   foldmarker={,}
 
-    autocmd FileType json          setlocal foldmethod=expr foldexpr=JsonFolds()
-    autocmd FileType make          setlocal foldmethod=expr foldexpr=MakeFolds()
+    autocmd Filetype tags          setlocal tabstop=30
+    autocmd Filetype gitconfig     setlocal noexpandtab
+
+    autocmd Filetype make          setlocal noexpandtab
+        \                                   foldmethod=expr
+        \                                   foldexpr=MakeFolds()
+
+    autocmd FileType yaml          setlocal foldmethod=expr
+        \                                   foldexpr=YamlFolds()
+
     autocmd Filetype log           setlocal textwidth=1000
     autocmd FileType xml           setlocal foldnestmax=20
         \                                   foldcolumn=5
-
-    autocmd FileType python nmap <silent> <C-]> <Plug>(coc-definition)
-    autocmd FileType python nmap <silent> <C-q> <Plug>(coc-diagnostic-info)
-    autocmd FileType python highlight semshiSelected ctermbg=8 guibg=#444A54
 
     autocmd Filetype groovy setlocal errorformat+=
         \%PErrors\ encountered\ validating\ %f:,
         \%EWorkflowScript:\ %l:\ %m\ column\ %c.,%-C%.%#,%Z
     autocmd Filetype groovy setlocal makeprg=java\ -jar\ ~/jenkins-cli.jar\ -s\ http://cem-jenkins.euhpc.arm.com\ declarative-linter\ <\ Jenkinsfile
 
-augroup END
+    autocmd FileType man    call s:man_settings()
+    autocmd FileType python call s:python_settings()
+    autocmd Filetype scala  call s:scala_settings()
+    autocmd Filetype json   call s:json_settings()
+
+    autocmd Filetype fugitiveblame  set cursorline
+augroup END "}}}
 " }}}
 " Formatting {{{
 set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
@@ -721,7 +777,6 @@ set formatoptions+=o "Automatically insert comment leader after 'o' or 'O' in No
 set formatoptions+=l "Long lines are not broken in insert mode.
 set formatoptions-=t "Do not auto wrap text
 set formatoptions+=n "Recognise lists
-    autocmd FileType yaml          setlocal foldmethod=expr foldexpr=YamlFolds()
 if v:version >= 800
     set breakindent      "Indent wrapped lines to match start
 endif
@@ -820,6 +875,7 @@ function! AleMsg(msgtype) abort "{{{
     if l:aleinfo[a:msgtype] > 0
         return l:keydisp[a:msgtype] . ':' . l:aleinfo[a:msgtype]
     endif
+
     return ''
 endfunction "}}}
 
@@ -836,6 +892,10 @@ function! s:status_highlight(no, active) abort "{{{
 endfunction "}}}
 
 function! s:recording() abort "{{{
+    if !exists('*reg_recording')
+        return ''
+    endif
+
     let reg = reg_recording()
     if reg !=# ''
         return '%#ModeMsg#  RECORDING['.reg.']  '
@@ -850,12 +910,6 @@ function! StatusDiagnostic() abort
         return ''
     endif
     let msgs = []
-
-
-
-
-
-
     if get(info, 'error', 0)
         call add(msgs, 'E:' . info['error'])
     endif
@@ -870,7 +924,6 @@ function! StatusDiagnostic() abort
     endif
     return join(msgs, ' ') . ' ' . get(g:, 'coc_status', '')
 endfunction
-
 
 function! Statusline_expr(active) abort "{{{
     let l:s = '%#StatusLine#'
@@ -892,12 +945,11 @@ function! Statusline_expr(active) abort "{{{
     return l:s
 endfunction "}}}
 
-augroup status
-    autocmd!
+augroup vimrc
     " Only set up WinEnter autocmd when the WinLeave autocmd runs
     autocmd WinLeave,FocusLost *
         \ setlocal statusline=%!Statusline_expr(0) |
-        \ autocmd status WinEnter,FocusGained *
+        \ autocmd vimrc WinEnter,FocusGained *
             \ setlocal statusline=%!Statusline_expr(1)
 augroup END
 
@@ -906,7 +958,6 @@ set statusline=%!Statusline_expr(1)
 "}}}
 " Tabline {{{
 set tabline=%!MyTabLine()
-" set showtabline=2
 
 function! MyTabLine() abort "{{{
     let l:s = ''
@@ -948,34 +999,11 @@ endfunction "}}}
 " }}}
 " Terminal {{{
 if has('nvim')
-    augroup terminal_settings
-        au!
-        au TermOpen * setlocal nonumber
-        au TermOpen * setlocal norelativenumber
-        au TermOpen * setlocal nospell
+    augroup vimrc
+        autocmd TermOpen * setlocal nonumber
+        autocmd TermOpen * setlocal norelativenumber
+        autocmd TermOpen * setlocal nospell
     augroup END
-    " let g:terminal_color_0  = "#051018"
-    " let g:terminal_color_18 = "#0F1A22"
-    " let g:terminal_color_19 = "#253038"
-    " let g:terminal_color_8  = "#556068"
-    " let g:terminal_color_20 = "#657078"
-    " let g:terminal_color_7  = "#C5D0D8"
-    " let g:terminal_color_21 = "#D5E0E8"
-    " let g:terminal_color_15 = "#FFFFFF"
-    " let g:terminal_color_1  = "#d5996d"
-    " let g:terminal_color_9  = "#d5996d"
-    " let g:terminal_color_16 = "#d5d56d"
-    " let g:terminal_color_11 = "#99d56d"
-    " let g:terminal_color_3  = "#99d56d"
-    " let g:terminal_color_10 = "#6dd599"
-    " let g:terminal_color_02 = "#6dd599"
-    " let g:terminal_color_14 = "#6d99d5"
-    " let g:terminal_color_6  = "#6d99d5"
-    " let g:terminal_color_12 = "#996dd5"
-    " let g:terminal_color_4  = "#996dd5"
-    " let g:terminal_color_13 = "#d56d99"
-    " let g:terminal_color_5  = "#d56d99"
-    " let g:terminal_color_17 = "#d56d6d"
 endif
 "}}}
 " vim: foldmethod=marker
