@@ -35,6 +35,7 @@
 	rs   = rebase --skip
 	sp   = stash show -p
 	lgs = lg HEAD..origin
+	sub = submodule
 	new = "!f() {\
 		    set -e; \
 			branch=$(git rev-parse --abbrev-ref HEAD); \
@@ -48,7 +49,12 @@
 	reh = reset --hard
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
 	who = shortlog --summary --numbered
+	who2 = shortlog --summary --numbered --since=2year
 	p = publish
+
+	undo = "!f() { \
+			git reset --hard $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; \
+		}; f"
 
 	draft = "!f() {\
 		    set -e; \
@@ -81,6 +87,9 @@
 [pull]
 	rebase = true
 
+[push]
+	default = upstream
+
 [rebase]
 	autoStash = true
 
@@ -103,3 +112,5 @@
 
 [init]
 	templatedir = ~/git-templates
+[log]
+	date = short

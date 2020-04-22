@@ -1,11 +1,11 @@
 #! /usr/bin/env bash
 set -e
 
-git branch -f ${1-master}
-git checkout ${1-master}
+to_branch=${1-master}
 
-branch=$(git rev-parse --abbrev-ref HEAD)
-remoteBranch=$(git config branch.$branch.merge)
+orig_branch=$(git rev-parse --abbrev-ref HEAD)
+git branch -f "$to_branch"
+git checkout "$to_branch"
+remoteBranch=$(git config branch."$orig_branch".merge)
 remoteBranch=${remoteBranch##refs/heads/}
-
 git track ${2-$remoteBranch}

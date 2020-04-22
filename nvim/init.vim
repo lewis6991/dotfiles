@@ -1,15 +1,14 @@
 " Init {{{
-
-function! s:CheckVar(var)
-    if eval(printf('empty($%s)', a:var))
-        echoerr a:var.' is not defined'
-        return 0
+function! s:exists(var)
+    if exists(a:var)
+        return 1
     endif
-    return 1
+    echoerr a:var.' is not defined'
+    return 0
 endfunction
 
 if !has('nvim')
-    if s:CheckVar("XDG_CONFIG_HOME") && s:CheckVar("XDG_DATA_HOME")
+    if s:exists('$XDG_CONFIG_HOME') && s:exists('$XDG_DATA_HOME')
         set runtimepath=
             \$XDG_CONFIG_HOME/vim,
             \$XDG_DATA_HOME/vim/site,
@@ -17,10 +16,10 @@ if !has('nvim')
             \$XDG_DATA_HOME/vim/site/after,
             \$XDG_CONFIG_HOME/vim/after
     endif
-    if s:CheckVar("XDG_DATA_HOME")
+    if s:exists('$XDG_DATA_HOME')
         set directory=$XDG_DATA_HOME/vim/swap
     endif
-    if s:CheckVar("XDG_CACHE_HOME")
+    if s:exists('$XDG_CACHE_HOME')
         set backupdir=$XDG_CACHE_HOME/vim/backup
         set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
     endif
@@ -70,23 +69,13 @@ augroup lazy_plugin
         \ | autocmd! lazy_plugin
 augroup END
 
-function! PlugLazy(...) "{{{
-    let l:name = a:1
+function! PlugLazy(name) "{{{
     if v:version >= 800
-        Plug l:name, {'on' : []}
-        let l:au_prefix = 'autocmd lazy_plugin User LazyPlugin'
-
-        let l:base = split(l:name, '/')[1]
-        execute printf('%s call plug#load("%s")', l:au_prefix, l:base)
-
-        if a:0 > 1
-            let l:post_cmds = a:000[2:]
-            for cmd in l:post_cmds
-                execute printf('%s %s', l:au_prefix, cmd)
-            endfor
-        endif
+        Plug a:name, {'on' : []}
+        let l:base = split(a:name, '/')[1]
+        execute printf('autocmd lazy_plugin User LazyPlugin call plug#load("%s")', l:base)
     else
-        Plug l:name
+        Plug a:name
     endif
 endfunction "}}}
 
@@ -94,61 +83,54 @@ command! -nargs=* PlugLazy call PlugLazy(<args>)
 
 call plug#begin(s:pldir)
     PlugLazy 'junegunn/vim-plug'
-
-    Plug     '~/projects/dotfiles/modules/moonlight.vim'
-    " Plug 'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
-    Plug     '~/projects/systemverilog.vim', { 'for': 'systemverilog' }
-
-    Plug     'tpope/vim-fugitive'
+    PlugLazy 'triglav/vim-visual-increment'
     PlugLazy 'tpope/vim-commentary'
+    PlugLazy 'tpope/vim-surround'
+    PlugLazy 'wellle/targets.vim'
+    PlugLazy 'michaeljsmith/vim-indent-object'
+    Plug     'dstein64/vim-startuptime'
+    Plug     'lewis6991/moonlight.vim'
+    Plug     'lewis6991/systemverilog.vim', { 'for': 'systemverilog' }
+    Plug     'tpope/vim-fugitive'
     PlugLazy 'tpope/vim-unimpaired'
-    Plug     'tpope/vim-surround'
     PlugLazy 'tpope/vim-repeat'
     PlugLazy 'tpope/vim-eunuch'
     Plug     'vim-scripts/visualrepeat'
-    Plug     'timakro/vim-searchant'
+    Plug     'timakro/vim-searchant' " Highlight the current search result
+    Plug     'AndrewRadev/bufferize.vim' " Dump ex command output to a buffer. e.g: ':Bufferize messages'
+    Plug     'zefei/vim-wintabs'
+    Plug     'tmhedberg/SimpylFold'         , { 'for': 'python'       }
+    Plug     'lewis6991/tcl.vim'            , { 'for': 'tcl'          }
+    Plug     'tmux-plugins/vim-tmux'        , { 'for': 'tmux'         }
+    Plug     'derekwyatt/vim-scala'         , { 'for': 'scala'        }
+    Plug     'raimon49/requirements.txt.vim', { 'for': 'requirements' }
     Plug     'martinda/Jenkinsfile-vim-syntax'
-    Plug     'tmhedberg/SimpylFold' , { 'for': 'python' }
-    Plug     'lewis6991/tcl.vim'    , { 'for': 'tcl'    }
-    Plug     'tmux-plugins/vim-tmux', { 'for': 'tmux'   }
     Plug     'dzeban/vim-log-syntax'
+    Plug     'vim-scripts/scons.vim'
+    Plug     'Vimjas/vim-python-pep8-indent'
     Plug     'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-    PlugLazy 'junegunn/fzf.vim'
+    Plug     'junegunn/fzf.vim'
     Plug     'junegunn/vim-easy-align', { 'on' : '<Plug>(EasyAlign)' }
     Plug     'whatyouhide/vim-lengthmatters'
-    PlugLazy 'gaving/vim-textobj-argument'
-    PlugLazy 'michaeljsmith/vim-indent-object'
     Plug     'justinmk/vim-dirvish'
-    Plug     'christoomey/vim-tmux-navigator'
     Plug     'dietsche/vim-lastplace'
+    Plug     'christoomey/vim-tmux-navigator'
     Plug     'tmux-plugins/vim-tmux-focus-events'
     Plug     'ryanoasis/vim-devicons'
-    Plug     'derekwyatt/vim-scala', {'for': 'scala'}
-    Plug     'raimon49/requirements.txt.vim', {'for': 'requirements'}
-    PlugLazy 'dense-analysis/ale'
+    Plug     'dense-analysis/ale'
+    Plug     'powerman/vim-plugin-AnsiEsc'
+    Plug     'chrisbra/Colorizer'
+    Plug     'neoclide/coc.nvim', {'branch': 'release'}
 
     if v:version >= 800
         Plug 'lewis6991/vim-clean-fold'
-        " Plug 'airblade/vim-gitgutter'
     endif
 
-    Plug 'Shougo/neco-vim'
-    Plug 'neoclide/coc-neco'
-
-    " coc-dictionary
-    " coc-git
-    " coc-json
-    " coc-python
-    " coc-tag
-    " coc-word
-
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-
     if has('nvim')
-        " Workaround for: https://github.com/neovim/neovim/issues/1822
-        Plug 'bfredl/nvim-miniyank'
-        map p <Plug>(miniyank-autoput)
-        map P <Plug>(miniyank-autoPut)
+        " " Workaround for: https://github.com/neovim/neovim/issues/1822
+        " Plug 'bfredl/nvim-miniyank'
+        " map p <Plug>(miniyank-autoput)
+        " map P <Plug>(miniyank-autoPut)
 
         Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
     endif
@@ -171,7 +153,7 @@ set ignorecase
 set smartcase
 set clipboard+=unnamedplus
 set scrolloff=6
-set sidescroll=1
+set sidescroll=6
 set sidescrolloff=6
 set nostartofline
 set virtualedit=block " allow cursor to exist where there is no character
@@ -186,13 +168,15 @@ if v:version >= 800
     set completeopt=noinsert,menuone,noselect
 endif
 
+let &showbreak='↳ '
+
 if has('mouse')
     set mouse=a
 endif
 
-silent! set pumblend=20
+silent! set pumblend=15
 
-if has('nvim-0.3.2') || has("patch-8.1.0360")
+if has('nvim-0.3.2') || has('patch-8.1.0360')
     set diffopt=filler,algorithm:histogram,indent-heuristic
 endif
 
@@ -203,7 +187,7 @@ if !empty($SSH_TTY)
           \   'name': 'pb-remote',
           \   'copy':  {'+': 'pbcopy-remote' , '*': 'pbcopy-remote' },
           \   'paste': {'+': 'pbpaste-remote', '*': 'pbpaste-remote'},
-          \   'cache_enabled': 1,
+          \   'cache_enabled': 0,
           \ }
 endif
 
@@ -215,7 +199,7 @@ endif
 set splitright
 set splitbelow
 set spell
-if s:CheckVar("XDG_CONFIG_HOME")
+if s:exists('$XDG_CONFIG_HOME')
     set spellfile=$XDG_CONFIG_HOME/nvim/spell/en.utf-8.add
 endif
 
@@ -229,7 +213,8 @@ let g:ale_pattern_options = {
 " let g:ale_echo_msg_error_str = '%linter%:%severity% %s'
 let g:ale_lint_on_enter = 0
 let g:ale_lint_on_text_changed = 'never'
-let g:ale_python_mypy_options = '--config-file setup.cfg'
+" let g:ale_python_mypy_options = '--config-file setup.cfg --follow-imports silent'
+let g:ale_python_mypy_options = '--follow-imports silent'
 let g:ale_set_highlights = 1
 let g:ale_sh_shellcheck_options = '-x'
 let g:ale_sign_info = '>'
@@ -238,12 +223,7 @@ let g:ale_type_map = {'flake8': {'ES': 'WS', 'E': 'E'}}
 let g:ale_echo_msg_format = '%severity%->%linter%->%code: %%s'
 
 let g:ale_linters = {}
-" let g:ale_linters.python = ['vulture', 'mypy', 'pylint']
-" let g:ale_linters.python = ['pyls', 'pylint']
 let g:ale_linters.python = ['mypy', 'pylint', 'flake8']
-" let g:ale_linters.scala = ['fsc', 'sbtserver', 'scalastyle']
-" let g:ale_linters.scala = ['fsc', 'scalastyle']
-let g:ale_linters.scala = []
 
 if has('nvim')
     let g:ale_python_pyls_config = {
@@ -260,52 +240,83 @@ endif
 let g:ale_virtualenv_dir_names = ['venv_7', '.venv_7']
 
 let g:ale_python_pylint_options = '--disable=bad-whitespace,invalid-name'
-" let g:ale_python_pylint_options = '--disable=bad-whitespace,missing-docstring,line-too-long,invalid-name'
+" }}}
+" Coc {{{
+call coc#add_extension(
+    \    'coc-dictionary',
+    \    'coc-git',
+    \    'coc-json',
+    \    'coc-python',
+    \    'coc-tag',
+    \    'coc-word',
+    \    'coc-vimlsp',
+    \    'coc-metals'
+    \)
 " }}}
 " Dirvish {{{
 let g:dirvish_mode = ':sort ,^.*[\/],'
 
 nmap <silent> - :<C-U>call <SID>dirvish_toggle()<CR>
 
-function! s:dirvish_toggle() abort "{{{
-    " Close any existing dirvish buffers
-    for l:i in range(1, bufnr('$'))
-        if bufexists(l:i) && bufloaded(l:i) && getbufvar(l:i, '&filetype') ==? 'dirvish'
-            execute ':'.l:i.'bd!'
+function! s:dirvish_open(cmd, bg) abort "{{{
+    let path = getline('.')
+    if isdirectory(path)
+        if a:cmd ==# 'edit' && a:bg ==# '0'
+            call dirvish#open(a:cmd, 0)
         endif
-    endfor
-
-    if expand('%') ==# ''
-        Dirvish
     else
-        30vsp
-        Dirvish %
-    endif
-endfunction "}}}
-
-function! s:dirvish_open(cmd) abort "{{{
-    let l:path = getline('.')
-    if !isdirectory(l:path)
-        if bufname(bufnr('#')) !=? ''
-            execute 'bd'
+        if a:bg
+            call dirvish#open(a:cmd, 1)
+        else
+            bwipeout
+            execute a:cmd ' ' path
         endif
     endif
-    execute a:cmd.' '.l:path
 endfunction "}}}
 
-augroup vimrc "{{{
-    autocmd FileType dirvish nnoremap <silent> <buffer> <CR>  :<C-U>.call <SID>dirvish_open('edit')<CR>
-    autocmd FileType dirvish nmap     <silent> <buffer> -     <Plug>(dirvish_up)
-    autocmd FileType dirvish nmap     <silent> <buffer> <ESC> :bd<CR>
-    autocmd FileType dirvish nmap     <silent> <buffer> q     :bd<CR>
-    autocmd FileType dirvish nmap     <silent> <buffer> v     :<C-U>call <SID>dirvish_open('vsplit')<CR>
-    autocmd FileType dirvish nmap     <silent> <buffer> s     :<C-U>call <SID>dirvish_open('split')<CR>
+" call dirvish#add_icon_fn({p -> WebDevIconsGetFileTypeSymbol(p)})
 
-    autocmd Filetype dirvish setlocal nospell
-    autocmd Filetype dirvish setlocal statusline=%f
-    autocmd Filetype dirvish setlocal nonumber
-    autocmd Filetype dirvish setlocal norelativenumber
-augroup END "}}}
+function! s:dirvish_toggle() abort "{{{
+    let width  = float2nr(&columns * 0.5)
+    let height = float2nr(&lines * 0.8)
+    let top    = ((&lines - height) / 2) - 1
+    let left   = (&columns - width) / 2
+    let opts   = {'relative': 'editor', 'row': top, 'col': left, 'width': width, 'height': height, 'style': 'minimal' }
+    let fdir = expand('%:h')
+    let path = expand('%:p')
+    call nvim_open_win(nvim_create_buf(v:false, v:true), v:true, opts)
+    if fdir ==# ''
+        let fdir = '.'
+    endif
+
+    call dirvish#open(fdir)
+
+    if !empty(path)
+        call search('\V\^'.escape(path, '\').'\$', 'cw')
+    endif
+endfunction "}}}
+
+augroup vimrc
+    autocmd FileType dirvish nmap <silent> <buffer> <CR>  :<C-U>call <SID>dirvish_open('edit'   , 0)<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> v     :<C-U>call <SID>dirvish_open('vsplit' , 0)<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> V     :<C-U>call <SID>dirvish_open('vsplit' , 1)<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> s     :<C-U>call <SID>dirvish_open('split'  , 0)<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> S     :<C-U>call <SID>dirvish_open('split'  , 1)<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> t     :<C-U>call <SID>dirvish_open('tabedit', 0)<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> T     :<C-U>call <SID>dirvish_open('tabedit', 1)<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> -     <Plug>(dirvish_up)
+    autocmd FileType dirvish nmap <silent> <buffer> <ESC> :bd<CR>
+    autocmd FileType dirvish nmap <silent> <buffer> q     :bd<CR>
+
+    autocmd FileType dirvish nmap <buffer> <C-w> <nop>
+    autocmd FileType dirvish nmap <buffer> <C-h> <nop>
+    autocmd FileType dirvish nmap <buffer> <C-j> <nop>
+    autocmd FileType dirvish nmap <buffer> <C-k> <nop>
+    autocmd FileType dirvish nmap <buffer> <C-l> <nop>
+
+    autocmd FileType dirvish setlocal winhl=Normal:Floating
+    autocmd FileType dirvish setlocal nocursorline
+augroup END
 " }}}
 " Easy-align {{{
 xmap ga <Plug>(EasyAlign)
@@ -331,92 +342,86 @@ augroup vimrc
     autocmd FileType make let g:easy_align_delimiters['='] = {
         \     'pattern': '[:?]\?=', 'left_margin': 1, 'right_margin': 1
         \ }
+    autocmd FileType scala let g:easy_align_delimiters['='] = {
+        \     'pattern': '=>\?', 'left_margin': 1, 'right_margin': 1
+        \ }
 augroup END
 "}}}
 " Vim-lengthmatters {{{
 let g:lengthmatters_highlight_one_column = 1
 " }}}
-" Gitgutter {{{
-let g:gitgutter_max_signs=3000
-let g:gitgutter_sign_added              = '│'  " '+'
-let g:gitgutter_sign_modified           = '│'  " '~'
-let g:gitgutter_sign_removed            = '_'  " '_'
-let g:gitgutter_sign_removed_first_line = '‾'  " '‾'
-let g:gitgutter_sign_modified_removed   = '│'  " '~_'
+" Wintabs {{{
+let g:wintabs_ui_sep_leftmost = ' '
+let g:wintabs_ui_sep_inbetween = ' '
+let g:wintabs_ui_sep_rightmost = ' '
+" let g:wintabs_ui_vimtab_name_format = ' %t '
 " }}}
 " FZF {{{
 function! s:find_git_root() abort
-    let a = system('git rev-parse --show-superproject-working-tree')[:-2]
-    if a != ''
+    let a = system('git rev-parse --show-superproject-working-tree 2> /dev/null')[:-2]
+    if a !=? ''
         return a
     endif
-    return system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+    let a = system('git rev-parse --show-toplevel 2> /dev/null')[:-2]
+    if a !=? ''
+        return a
+    endif
+    return getcwd()
 endfunction
 
-command! FZFMix call fzf#run(fzf#wrap('my_cmd', {
-    \ 'dir' : s:find_git_root(),
-    \ }))
+" 'source' : 'git ls-files --recurse-submodules --cached --exclude-standard || rg --no-ignore --files',
+command! -bang -nargs=? -complete=dir GFiles2
+    \ call fzf#vim#files(
+    \     <q-args>,
+    \     {
+    \         'source' : 'rg --no-ignore --files',
+    \         'dir'    : s:find_git_root(),
+    \         'options': [
+    \             '--layout=reverse',
+    \             '--info=inline',
+    \             '--preview',
+    \             'highlight --out-format=ansi --style=base16/harmonic-dark --force {}'
+    \         ]
+    \     },
+    \     <bang>0
+    \ )
 
-command! GFiles2 call fzf#run(fzf#wrap('my_cmd', {
-    \ 'source': 'git ls-files --recurse-submodules && git ls-files --others --exclude-standard',
-    \ 'dir' : s:find_git_root(),
-    \ }))
+nnoremap <c-p> :<C-u>GFiles2<cr>
+nnoremap <c-s> :<C-u>Ag<cr>
+nnoremap <m-p> :<C-u>CocList -I symbols<cr>
 
-" nnoremap <c-p> :FZFMix<cr>
-nnoremap <c-p> :GFiles2<cr>
-nnoremap <c-space> :FZFMix<cr>
-nnoremap <c-s> :Ag<cr>
-
-let g:fzf_layout = { 'window': '12split enew' }
+" let g:fzf_layout = { 'window': '12split enew' }
+let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.6 } }
 let g:fzf_buffers_jump = 1
 
 let g:fzf_colors = {
-    \ 'fg':      ['fg', 'Normal'],
-    \ 'bg':      ['bg', 'Normal'],
-    \ 'hl':      ['fg', 'Question'],
-    \ 'fg+':     ['fg', 'Visual'],
-    \ 'bg+':     ['bg', 'Visual'],
-    \ 'hl+':     ['fg', 'Question'],
-    \ 'info':    ['fg', 'PreProc'],
-    \ 'border':  ['fg', 'Ignore'],
-    \ 'prompt':  ['fg', 'Conditional'],
-    \ 'pointer': ['fg', 'MoreMsg'],
-    \ 'marker':  ['fg', 'MoreMsg'],
-    \ 'spinner': ['fg', 'Label'],
-    \ 'header':  ['fg', 'Comment'] }
+    \     'fg':      ['fg', 'Normal'],
+    \     'bg':      ['bg', 'Normal'],
+    \     'hl':      ['fg', 'Question'],
+    \     'fg+':     ['fg', 'Visual'],
+    \     'bg+':     ['bg', 'Visual'],
+    \     'hl+':     ['fg', 'Question'],
+    \     'info':    ['fg', 'PreProc'],
+    \     'border':  ['fg', 'Ignore'],
+    \     'prompt':  ['fg', 'Conditional'],
+    \     'pointer': ['fg', 'MoreMsg'],
+    \     'marker':  ['fg', 'MoreMsg'],
+    \     'spinner': ['fg', 'Label'],
+    \     'header':  ['fg', 'Comment']
+    \ }
 
 let g:fzf_action = {
-  \     'enter'  : 'drop',
-  \     'ctrl-t' : 'tab drop',
-  \     'ctrl-x' : 'split',
-  \     'ctrl-v' : 'vsplit'
-  \ }
+    \     'enter'  : 'drop',
+    \     'ctrl-t' : 'tab drop',
+    \     'ctrl-s' : 'split',
+    \     'ctrl-v' : 'vsplit'
+    \ }
 
 augroup vimrc
-    autocmd FileType fzf        set laststatus=0 noshowmode noruler
-        \ | autocmd BufLeave <buffer> set laststatus=2   showmode   ruler
+    autocmd FileType fzf setlocal laststatus=0 noshowmode noruler
     autocmd FileType fzf tunmap <Esc>
 augroup END
 
-" }}}
-" LanguageClient {{{
-" let g:LanguageClient_diagnosticsEnable = 0
-
-" let g:LanguageClient_settingsPath = '~/.lsp_settings.json'
-" let g:LanguageClient_serverCommands = {
-"     \     'scala': ['metals-vim'],
-"     \     'python': ['setup.cfg']
-"     \ }
-
-" let g:LanguageClient_loggingFile = expand('~/LanguageClient.log')
-" let g:LanguageClient_useFloatingHover = 1
-" let g:LanguageClient_windowLogMessageLevel = 'Log'
-
-" " " Having LogMessageLevel set to Log interferes with non-preview
-" " " displaying of Hover
-" " let g:LanguageClient_hoverPreview = 'Never'
-" nnoremap <silent> K :call LanguageClient#textDocument_hover()<CR>
-" nnoremap <silent> gd :call LanguageClient#textDocument_definition()<CR>
 " }}}
 " Plug {{{
 let g:plug_window = 'tabnew'
@@ -459,7 +464,6 @@ endif
 if has('nvim')
     let g:loaded_python_provider = 1 " Disable python2
     let g:loaded_ruby_provider   = 1 " Disable ruby
-    let g:loaded_node_provider   = 1 " Disable node
 
     let hostname = substitute(system('hostname'), '\n', '', '')
     if hostname ==# 'cem-dev'
@@ -469,11 +473,12 @@ if has('nvim')
     set inccommand=split
     set previewheight=30
 
-    silent highlight EndOfBuffer ctermfg=bg guifg=bg
+    " Remove tilda from signcolumn
+    let &fillchars='eob: '
 endif
 " }}}
 " Mappings {{{
-nnoremap <leader>ev :tabnew $MYVIMRC<CR>
+nnoremap <leader>ev :edit $MYVIMRC<CR>
 nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>\C//g<left><left>
 nnoremap <leader>c 1z=
@@ -481,8 +486,6 @@ nnoremap <leader>w :execute "resize ".line('$')<cr>
 
 nnoremap <leader>gd :Gdiff<CR>
 nnoremap <leader>gs :Gstatus<CR>
-
-nnoremap <M-]> <C-w><c-]><C-w>T
 
 nnoremap j gj
 nnoremap k gk
@@ -492,14 +495,19 @@ nnoremap Y y$
 nnoremap Q :w<cr>
 vnoremap Q <nop>
 
-" I never use macros and more often mishit this key
+" I never use macros and more often mis-hit this key
 nnoremap q <nop>
 
 " Show syntax highlighting groups for word under cursor
 nnoremap <leader>z :call <SID>syn_stack()<CR>
 
-nnoremap <Tab>   gt
-nnoremap <S-Tab> gT
+" nnoremap <Tab>   gt
+" nnoremap <S-Tab> gT
+
+nmap <Tab>   <Plug>(wintabs_next)
+nmap <S-Tab> <Plug>(wintabs_previous)
+" nmap <Tab>   :bnext<CR>
+" nmap <S-Tab> :bprev<CR>
 
 nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
 nnoremap <expr><silent> _  !v:count ? "<C-W>s<C-W><Down>"  : '_'
@@ -510,11 +518,16 @@ cnoremap <C-N> <down>
 cnoremap <C-A> <Home>
 cnoremap <C-D> <Del>
 
-" inoremap <silent><expr> <TAB>   pumvisible() ? "\<C-n>" : "\<TAB>"
 inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
+      \ pumvisible()            ? "\<C-n>" :
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
+
+" Notify coc.nvim that <enter> has been pressed.
+" Currently used for the formatOnType feature.
+inoremap <silent><expr> <CR>
+    \ pumvisible() ? coc#_select_confirm() :
+    \ "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
 
 function! s:check_back_space() abort
   let col = col('.') - 1
@@ -522,9 +535,8 @@ function! s:check_back_space() abort
 endfunction
 
 inoremap <expr> <S-TAB> pumvisible() ? "\<C-p>" : "\<S-TAB>"
-inoremap <expr> <CR>    pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 
-nnoremap & /\<<C-R><C-w>\>\C<CR>
+" nnoremap & /\<<C-R><C-w>\>\C<CR>
 
 nmap [c <Plug>(coc-git-prevchunk)
 nmap ]c <Plug>(coc-git-nextchunk)
@@ -533,12 +545,6 @@ nmap <leader>hs :CocCommand git.chunkStage<cr>
 nmap <leader>hu :CocCommand git.chunkUndo<cr>
 nmap <leader>hv <Plug>(coc-git-chunkinfo)
 
-if has('nvim')
-    autocmd vimrc TermOpen * tnoremap <Esc> <c-\><c-n>
-endif
-
-cnoreabbrev <expr> h    getcmdtype() == ":" && getcmdline() == 'h'    ? 'tab h'    : 'h'
-cnoreabbrev <expr> help getcmdtype() == ":" && getcmdline() == 'help' ? 'tab help' : 'help'
 " }}}
 " Whitespace {{{
 set list listchars=tab:▸\  "Show tabs as '▸   ▸   '
@@ -550,6 +556,17 @@ if v:version >= 800
     "Highlight trailing whitespace
     autocmd vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')
 endif
+
+function! s:delete_trailing_ws() abort
+    " Save cursor position
+    let l:save = winsaveview()
+
+    " Remove trailing whitespace
+    %s/\s\+$//ge
+
+    " Move cursor to original position
+    call winrestview(l:save)
+endfunction
 " }}}
 " Folding {{{
 if has('folding')
@@ -557,26 +574,13 @@ if has('folding')
     let g:sh_fold_enabled = 1
     set foldmethod=syntax
     set foldcolumn=0
-    set foldnestmax=2
+    set foldnestmax=3
     set foldopen+=jump
+    set foldminlines=10
 endif
 
 " }}}
 " Functions {{{
-function! s:delete_trailing_ws() abort "{{{
-    " Save cursor position
-    let l:save = winsaveview()
-
-    " vint: -ProhibitCommandWithUnintendedSideEffect
-    " vint: -ProhibitCommandRelyOnUser
-    " Remove trailing whitespace
-    %s/\s\+$//ge
-    " vint: +ProhibitCommandWithUnintendedSideEffect
-    " vint: +ProhibitCommandRelyOnUser
-
-    " Move cursor to original position
-    call winrestview(l:save)
-endfunction "}}}
 
 function! s:syn_stack() abort "{{{
     if !exists('*synstack')
@@ -584,32 +588,6 @@ function! s:syn_stack() abort "{{{
     endif
     echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, ''name'')')
 endfunction "}}}
-
-function! s:qualified_tag_jump() abort "{{{
-    let l:plain_tag = expand('<cword>')
-    let l:orig_keyword = &iskeyword
-    set iskeyword+=\.
-    let l:word = expand('<cword>')
-    let &iskeyword = l:orig_keyword
-
-    let l:splitted = split(l:word, '\.')
-    let l:acc = []
-    for wo in l:splitted
-        let l:acc = add(l:acc, wo)
-        if wo ==# l:plain_tag
-            break
-        endif
-    endfor
-
-    let l:combined = join(l:acc, '.')
-    try
-        execute 'ta ' . l:combined
-    catch /.*E426.*/ " Tag not found
-        execute 'ta ' . l:plain_tag
-    endtry
-endfunction "}}}
-
-nnoremap <silent> <C-]> :<C-u>call <SID>qualified_tag_jump()<CR>
 
 function! YamlFolds() abort "{{{
     let l:previous_level = indent(prevnonblank(v:lnum - 1)) / &shiftwidth
@@ -657,7 +635,7 @@ endfunction "}}}
 "}}}
 " File Settings {{{
 "VimL
-let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
+" let g:vimsyn_embed    = 0    "Don't highlight any embedded languages.
 let g:vimsyn_folding  = 'af' "Fold augroups and functions
 let g:vim_indent_cont = &shiftwidth
 
@@ -674,6 +652,7 @@ augroup vimrc
     autocmd BufRead requirements*.txt     setlocal filetype=requirements
     autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
     autocmd BufRead gitconfig             setlocal filetype=gitconfig
+    autocmd BufRead SConstruct            setlocal filetype=scons
     autocmd BufRead coc-settings.json syntax match Comment +\/\/.\+$+
     autocmd BufRead coc-settings.json setlocal commentstring=//%s
 
@@ -685,18 +664,11 @@ augroup END
 
 " Commentstring
 augroup vimrc
-    autocmd Filetype sbt.scala setlocal commentstring=//%s
+    autocmd Filetype sbt.scala   setlocal commentstring=//%s
+    autocmd Filetype Jenkinsfile setlocal commentstring=//%s
 augroup END
 
 " Filetype settings
-
-function! s:man_settings() abort "{{{
-    setlocal laststatus=0
-    setlocal nomodified
-    map <nowait> q :q<CR>
-    map <nowait> d <C-d>
-    map <nowait> u <C-u>
-endfunction "}}}
 
 function! s:enable_coc_mappings() abort "{{{
     nmap <buffer> <silent> <C-]> <Plug>(coc-definition)
@@ -706,23 +678,40 @@ function! s:enable_coc_mappings() abort "{{{
     nmap <buffer> <silent> gr    <Plug>(coc-references)
 
     function! s:show_documentation() abort
-        if &filetype == 'vim'
+        if &filetype ==# 'vim'
             execute 'h '.expand('<cword>')
         else
-            call CocAction('doHover')
+            call CocActionAsync('doHover')
         endif
     endfunction
     nnoremap <silent> K :call <SID>show_documentation()<CR>
+
+    autocmd! CursorHold * silent call CocActionAsync('highlight')
+    highlight CocHighlightText ctermbg=8 guibg=#444650
+endfunction "}}}
+
+function! s:man_settings() abort "{{{
+    setlocal laststatus=0
+    setlocal nomodified
+    setlocal showbreak=
+    map <buffer><nowait> d <C-d>
+    map <buffer><nowait> u <C-u>
 endfunction "}}}
 
 function! s:python_settings() abort "{{{
     call s:enable_coc_mappings()
+
+    let g:ale_enabled = v:false
+
+    setlocal foldminlines=0
 
     highlight semshiSelected ctermbg=8 guibg=#444A54
 endfunction "}}}
 
 function! s:scala_settings() abort "{{{
     setlocal shiftwidth=4
+    setlocal softtabstop=4
+    setlocal tabstop=4
     setlocal foldlevelstart=1
     setlocal foldnestmax=3
 
@@ -737,19 +726,28 @@ function! s:json_settings() abort "{{{
 
     setlocal foldmethod=expr
     setlocal foldexpr=JsonFolds()
+    setlocal nofoldenable
+endfunction "}}}
+
+function! s:make_settings() abort "{{{
+    setlocal noexpandtab
+    setlocal foldmethod=expr
+    setlocal foldexpr=MakeFolds()
+endfunction "}}}
+
+function! s:tcl_settings() abort "{{{
+    setlocal keywordprg=:FloatingTclMan
+endfunction "}}}
+
+function! s:systemverilog_settings() abort "{{{
+    setlocal shiftwidth=4
+    setlocal tabstop=4
+    setlocal softtabstop=4
 endfunction "}}}
 
 augroup vimrc "{{{
-    autocmd Filetype systemverilog setlocal shiftwidth=4
-        \                                   tabstop=4
-        \                                   softtabstop=4
-
     autocmd Filetype tags          setlocal tabstop=30
     autocmd Filetype gitconfig     setlocal noexpandtab
-
-    autocmd Filetype make          setlocal noexpandtab
-        \                                   foldmethod=expr
-        \                                   foldexpr=MakeFolds()
 
     autocmd FileType yaml          setlocal foldmethod=expr
         \                                   foldexpr=YamlFolds()
@@ -763,13 +761,21 @@ augroup vimrc "{{{
         \%EWorkflowScript:\ %l:\ %m\ column\ %c.,%-C%.%#,%Z
     autocmd Filetype groovy setlocal makeprg=java\ -jar\ ~/jenkins-cli.jar\ -s\ http://cem-jenkins.euhpc.arm.com\ declarative-linter\ <\ Jenkinsfile
 
-    autocmd FileType man    call s:man_settings()
-    autocmd FileType python call s:python_settings()
-    autocmd Filetype scala  call s:scala_settings()
-    autocmd Filetype json   call s:json_settings()
-
     autocmd Filetype fugitiveblame  set cursorline
 augroup END "}}}
+
+for ft in [
+    \     'systemverilog',
+    \     'make',
+    \     'man',
+    \     'python',
+    \     'scala',
+    \     'json',
+    \     'tcl'
+    \ ]
+    execute 'autocmd vimrc Filetype '.ft.' call s:'.ft.'_settings()'
+endfor
+
 " }}}
 " Formatting {{{
 set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
@@ -782,7 +788,7 @@ if v:version >= 800
 endif
 "}}}
 " Snippets {{{
-iabbrev rev
+iabbrev :rev:
     \ <c-r>=substitute(&commentstring, '%s', '', '').
     \' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):'<CR>
 " }}}
@@ -795,23 +801,6 @@ function! Hunks() abort "{{{
     if exists('b:coc_git_status')
         return trim(b:coc_git_status)
     endif
-    if !(v:version >= 704 && exists('*GitGutterGetHunkSummary'))
-        return ''
-    endif
-
-    let l:hunks = copy(GitGutterGetHunkSummary())
-    let l:map = {1: '~', 0: '+', 2: '-'}
-
-    for l:key in keys(l:map)
-        let l:s = ''
-        let l:t = l:hunks[l:key]
-        if l:t !=# '0'
-            let l:s = l:map[l:key] . l:t
-        endif
-        let l:hunks[l:key] = l:s
-    endfor
-
-    return s:strip(join(l:hunks))
 endfunction "}}}
 
 function! EncodingAndFormat() abort "{{{
@@ -886,7 +875,7 @@ function! s:status_highlight(no, active) abort "{{{
         endif
     else
         if   a:no == 3 | return '%#StatusLine#'
-        else           | return '%#VertSplit#'  " Hidden
+        else           | return '%#StatusLine#'
         endif
     endif
 endfunction "}}}
@@ -933,11 +922,11 @@ function! Statusline_expr(active) abort "{{{
     let l:s .= s:status_highlight(2, a:active) . '%( %{StatusDiagnostic()}  %)'
     let l:s .= s:status_highlight(3, a:active) . '%='
     let l:s .= s:status_highlight(3, a:active) . '%<%0.60f%m%r'  " file.txt[+][RO]
-    if exists('*WebDevIconsGetFileTypeSymbol')
-        let l:s .= '%( %{WebDevIconsGetFileTypeSymbol()} %)'
-    endif
     let l:s .= ' %= '
-    let l:s .= s:status_highlight(2, a:active) . '%(  %{&filetype}  %)'
+    let l:s .= s:status_highlight(2, a:active) . '%(  %{&filetype} %)'
+    if exists('*WebDevIconsGetFileTypeSymbol')
+        let l:s .= '%( %{WebDevIconsGetFileTypeSymbol()}  %)'
+    endif
     if exists('*WebDevIconsGetFileFormatSymbol')
         let l:s .= s:status_highlight(1, a:active) . '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
     endif
@@ -957,53 +946,165 @@ set statusline=%!Statusline_expr(1)
 
 "}}}
 " Tabline {{{
-set tabline=%!MyTabLine()
+" set tabline=%!MyTabLine()
 
-function! MyTabLine() abort "{{{
-    let l:s = ''
-    for l:i in range(tabpagenr('$'))
-        let l:t = l:i + 1
-        " select the highlighting
-        if l:t == tabpagenr()
-            let l:s .= '%#TabLineSel#'
-        else
-            let l:s .= '%#TabLine#'
-        endif
+" function! MyTabLine() abort "{{{
+"     let l:s = ''
+"     for l:i in range(tabpagenr('$'))
+"         let l:t = l:i + 1
+"         " select the highlighting
+"         if l:t == tabpagenr()
+"             let l:s .= '%#TabLineSel#'
+"         else
+"             let l:s .= '%#TabLine#'
+"         endif
 
-        let l:s .= ' '
-        if exists('*WebDevIconsGetFileTypeSymbol')
-            let l:s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . l:t . '))}'
-        endif
-        let l:s .= ' %{MyTabLabel(' . l:t . ')}'
-        let l:s .= ' '
-    endfor
+"         let l:s .= ' '
+"         if exists('*WebDevIconsGetFileTypeSymbol')
+"             let l:s .= '%{WebDevIconsGetFileTypeSymbol(MyTabLabel(' . l:t . '))}'
+"         endif
+"         let l:s .= ' %{MyTabLabel(' . l:t . ')}'
+"         let l:s .= ' '
+"     endfor
 
-    " after the last tab fill with TabLineFill and reset tab page nr
-    let l:s .= '%#TabLineFill#%T'
+"     " after the last tab fill with TabLineFill and reset tab page nr
+"     let l:s .= '%#TabLineFill#%T'
 
-    return l:s
-endfunction "}}}
+"     return l:s
+" endfunction "}}}
 
-function! MyTabLabel(n) abort "{{{
-    let l:buflist = tabpagebuflist(a:n)
-    let l:winnr = tabpagewinnr(a:n)
-    let l:path = bufname(l:buflist[l:winnr - 1])
-    let l:label = fnamemodify(l:path, ':t')
+" function! MyTabLabel(n) abort "{{{
+"     let l:buflist = tabpagebuflist(a:n)
+"     let l:winnr = tabpagewinnr(a:n)
+"     let l:path = bufname(l:buflist[l:winnr - 1])
+"     let l:label = fnamemodify(l:path, ':t')
 
-    if l:label ==# ''
-        let l:label = '[NONE]'
-    endif
+"     if l:label ==# ''
+"         let l:label = '[NONE]'
+"     endif
 
-    return l:label
-endfunction "}}}
+"     return l:label
+" endfunction "}}}
 " }}}
 " Terminal {{{
 if has('nvim')
     augroup vimrc
-        autocmd TermOpen * setlocal nonumber
-        autocmd TermOpen * setlocal norelativenumber
-        autocmd TermOpen * setlocal nospell
+        autocmd TermOpen * setlocal
+            \ nonumber
+            \ norelativenumber
+            \ nospell
+        autocmd TermOpen * startinsert
     augroup END
+
+    tnoremap <Esc> <c-\><c-n>
 endif
 "}}}
-" vim: foldmethod=marker
+"Commands {{{
+
+function! Hashbang() abort "{{{
+    let shells = {
+        \     'sh': 'bash',
+        \     'py': 'python3',
+        \  'scala': 'scala',
+        \    'tcl': 'tclsh'
+        \ }
+
+    let extension = expand('%:e')
+
+    if has_key(shells, extension)
+        0put = '#! /usr/bin/env ' . shells[extension]
+        2put = ''
+        autocmd vimrc BufWritePost <buffer> * silent !chmod u+x %
+    endif
+endfunction "}}}
+
+command! Hashbang call Hashbang()
+
+command! -nargs=* FloatingMan call ToggleCommand('execute ":r !man -D '.<q-args>. '" | Man!')
+
+set keywordprg=:FloatingMan
+
+function! MyLazy()
+    call ToggleTerm('lazygit')
+endfunction
+
+command! -nargs=* FloatingTclMan call ToggleCommand('execute ":r !man -D n '.<q-args>. '" | Man!')
+
+function! CreateCenteredFloatingWindow() "{{{
+    let width  = float2nr(&columns * 0.8)
+    let height = float2nr(&lines * 0.8)
+    let top    = ((&lines - height) / 2) - 1
+    let left   = (&columns - width) / 2
+    let opts   = { 'relative': 'editor', 'row': top, 'col': left, 'width': width, 'height': height, 'style': 'minimal' }
+    call nvim_open_win(nvim_create_buf(v:false, v:true), v:true, opts)
+endfunction "}}}
+
+" Floating window with a border
+function! CreateCenteredFloatingWindow2() "{{{
+    let width  = float2nr(&columns * 0.8)
+    let height = float2nr(&lines * 0.8)
+    let top    = ((&lines - height) / 2) - 1
+    let left   = (&columns - width) / 2
+    let opts   = { 'relative': 'editor', 'row': top, 'col': left, 'width': width, 'height': height, 'style': 'minimal' }
+    let top    = "╭" . repeat("─", width - 2) . "╮"
+    let mid    = "│" . repeat(" ", width - 2) . "│"
+    let bot    = "╰" . repeat("─", width - 2) . "╯"
+    let lines  = [top] + repeat([mid], height - 2) + [bot]
+    let s:buf  = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(s:buf, 0, -1, v:true, lines)
+    call nvim_open_win(s:buf, v:true, opts)
+    setlocal winhl=Normal:Normal
+    call nvim_open_win(nvim_create_buf(v:false, v:true), v:true, CreatePadding(opts))
+    setlocal winhl=Normal:Normal
+    autocmd BufWipeout <buffer> exe 'bwipeout '.s:buf
+endfunction "}}}
+
+function! CreatePadding(opts) abort "{{{
+    let a:opts.row    += 1
+    let a:opts.height -= 2
+    let a:opts.col    += 2
+    let a:opts.width  -= 4
+    return a:opts
+endfunction "}}}
+
+function! ToggleCommand(cmd) abort "{{{
+    call CreateCenteredFloatingWindow()
+    execute a:cmd
+    nmap <buffer><silent> q     :bwipeout!<cr>
+    nmap <buffer><silent> <esc> :bwipeout!<cr>
+
+    " Disable window movement
+    nmap <buffer> <C-w> <nop>
+    nmap <buffer> <C-h> <nop>
+    nmap <buffer> <C-j> <nop>
+    nmap <buffer> <C-k> <nop>
+    nmap <buffer> <C-l> <nop>
+endfunction "}}}
+
+function! ToggleTerm(cmd) abort "{{{
+    if empty(bufname(a:cmd))
+        call CreateCenteredFloatingWindow()
+        call termopen(a:cmd, { 'on_exit': function('OnTermExit') })
+    else
+        bwipeout!
+    endif
+endfunction "}}}
+
+function! OnTermExit(job_id, code, event) dict "{{{
+    if a:code == 0
+        bwipeout!
+    endif
+endfunction "}}}
+"}}}
+"
+let g:bufferize_command = 'enew'
+augroup vimrc
+    autocmd FileType bufferize setlocal wrap
+augroup END
+
+" Brighten coc floating windows
+highlight link NormalFloat StatusLine
+
+let g:man_hardwrap=1
+
+"" vim: foldmethod=marker foldminlines=0
