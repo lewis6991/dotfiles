@@ -127,10 +127,10 @@ call plug#begin(s:pldir)
     endif
 
     if has('nvim')
-        " " Workaround for: https://github.com/neovim/neovim/issues/1822
-        " Plug 'bfredl/nvim-miniyank'
-        " map p <Plug>(miniyank-autoput)
-        " map P <Plug>(miniyank-autoPut)
+        " Workaround for: https://github.com/neovim/neovim/issues/1822
+        Plug 'bfredl/nvim-miniyank'
+        map p <Plug>(miniyank-autoput)
+        map P <Plug>(miniyank-autoPut)
 
         Plug 'numirias/semshi', {'do': ':UpdateRemotePlugins'}
     endif
