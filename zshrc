@@ -80,25 +80,23 @@ autoload -Uz _zplugin
 (( ${+_comps} )) && _comps[zinit]=_zplugin
 ### End of Zinit's installer chunk
 
-zinit ice wait blockf lucid
-zinit light zsh-users/zsh-history-substring-search
+zinit lucid light-mode for \
+    mafredri/zsh-async \
+    wait hlissner/zsh-autopair \
+    wait zsh-users/zsh-history-substring-search \
+    wait blockf atpull'zinit creinstall -q .' \
+        zsh-users/zsh-completions \
+    wait atload'_zsh_autosuggest_start' \
+        zsh-users/zsh-autosuggestions \
+    atinit"ZINIT[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay" \
+        zdharma/fast-syntax-highlighting \
 
-zinit ice blockf pick"./init.sh"
-zinit light b4b4r07/enhancd
+# marlonrichert/zsh-autocomplete
 
-zinit light mafredri/zsh-async
-
-# zinit snippet https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/plugins/timer/timer.plugin.zsh
-
-# Fast-syntax-highlighting & autosuggestions
-zinit wait lucid for \
- atinit"ZINIT[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay" \
-    zdharma/fast-syntax-highlighting \
- atload"!_zsh_autosuggest_start" \
-    zsh-users/zsh-autosuggestions \
- blockf \
-    zsh-users/zsh-completions
-
+zstyle ':autocomplete:list-choices:*' min-input 3
+zstyle ':autocomplete:list-choices:*' max-lines 4
+zstyle ':autocomplete:tab:*' completion select
+zstyle ':autocomplete:tab:*' completion cycle
 
 
 # Other ----------------------------------------------------------------------
@@ -127,27 +125,20 @@ if have_cmd rlwrap; then
 fi
 
 if have_cmd rg; then
-    _rg () {
+    rg() {
         if [[ -t 1 ]]; then
-            \rg --line-number --heading --smart-case "$@" --color=always | less -RFX
+            command rg --pretty --smart-case "$@" | less
         else
-            \rg "$@"
+            command rg "$@"
         fi
     }
 
-    alias rg="_rg --colors 'match:bg:yellow' --colors 'match:fg:19' --colors 'line:fg:20' --colors 'path:fg:cyan'"
-fi
-
-# if have_cmd highlight; then
-#     alias ccat="highlight --out-format=ansi --force"
-# fi
-
-if have_cmd rg; then
     export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" 2> /dev/null'
 fi
 
+# --RAW-CONTROL-CHARS cause --quit-if-one-screen to not work
 export LESS="\
-    --RAW-CONTROL-CHARS \
+    --raw-control-chars \
     --ignore-case \
     --LONG-PROMPT \
     --quit-if-one-screen \
@@ -200,6 +191,12 @@ refresh_tmux() {
 }
 
 add-zsh-hook precmd refresh_tmux
+
+ring_bell() {
+    echo -n -e '\a'
+}
+
+add-zsh-hook precmd ring_bell
 
 ! [ -f ~/.aliases       ] || source ~/.aliases
 ! [ -f ~/.aliases_local ] || source ~/.aliases_local

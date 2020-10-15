@@ -1,19 +1,26 @@
 {
+    "codeLens.enable": true,
+
     "coc.preferences.formatOnType": true,
     "coc.preferences.useQuickfixForLocations": true,
+    "coc.preferences.currentFunctionSymbolAutoUpdate": true,
+
     "python.linting.pylintUseMinimalCheckers": false,
 
-    "python.pythonPath": "python3",
+    "python.pythonPath": "/devtools/linuxbrew/bin/python3",
     "python.linting.enabled": true,
-    "python.linting.pylintArgs": [
-        "--rcfile=~/.coc.pylintrc"
-    ],
+    // "python.linting.pylintArgs": [
+    //     "--rcfile=~/.coc.pylintrc"
+    // ],
     "python.linting.mypyEnabled" : true,
 
     "suggest.triggerCompletionWait": 50,
     "suggest.enablePreview": true,
-    "suggest.maxPreviewWidth": 120,
-    "diagnostic.maxWindowHeight": 50,
+    "suggest.maxPreviewWidth": 200,
+    "signature.floatMaxWidth": 200,
+    // "suggest.maxPreviewWidth": 120,
+    "diagnostic.maxWindowHeight": 80,
+    // "diagnostic.maxWindowHeight": 50,
 
     "suggest.completionItemKindLabels": {
         "keyword": "\uf1de",
@@ -43,8 +50,9 @@
         "default": "\uf29c"
     },
 
-    "git.addedSign.text": "│",
-    "git.changedSign.text": "│",
+    // "git.addedSign.text": "│",
+    "git.addedSign.text": "▐",
+    "git.changedSign.text": "▐",
     "git.removedSign.text": "_",
     "git.addedSign.hlGroup": "GitGutterAdd",
     "git.changedSign.hlGroup": "GitGutterChange",
@@ -53,4 +61,6 @@
     "git.changeRemovedSign.hlGroup": "GitGutterChangeDelete",
     // "git.addGBlameToBufferVar": true,
     // "git.addGBlameToVirtualText": true,
+
+    "metals.statusBarEnabled": true
 }
