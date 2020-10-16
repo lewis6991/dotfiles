@@ -71,7 +71,7 @@ call plug#begin(s:pldir)
     Plug ppath.'/systemverilog.vim'     , { 'for': 'systemverilog' }
     Plug ppath.'/tcl.vim'               , { 'for': 'tcl'           }
     Plug 'raimon49/requirements.txt.vim', { 'for': 'requirements'  }
-    Plug 'neoclide/coc.nvim'            , { 'branch': 'release'    }
+    " Plug 'neoclide/coc.nvim'            , { 'branch': 'release'    }
 call plug#end()
 " }}}
 " General {{{
@@ -363,7 +363,9 @@ function! s:strip(input_string) "{{{
 endfunction "}}}
 
 function! Hunks() abort "{{{
-    if exists('b:coc_git_status')
+    if exists('b:git_signs_status')
+        return b:git_signs_status
+    elseif exists('b:coc_git_status')
         return trim(b:coc_git_status)
     endif
 endfunction "}}}
