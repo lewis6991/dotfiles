@@ -66,7 +66,7 @@ augroup END
 let ppath = '~/projects'
 
 call plug#begin(s:pldir)
-    Plug '~/projects/dotfiles/modules/moonlight.vim'
+    Plug ppath.'/dotfiles/modules/moonlight.vim'
     Plug 'junegunn/vim-plug'
     Plug ppath.'/systemverilog.vim'     , { 'for': 'systemverilog' }
     Plug ppath.'/tcl.vim'               , { 'for': 'tcl'           }

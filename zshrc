@@ -1,4 +1,4 @@
-REPO_DIR=~/projects
+REPO_DIR="$HOME/$(dirname $(dirname $(readlink $(print -P %N))))"
 
 function have_cmd {
     if ! hash $1 2>/dev/null; then
