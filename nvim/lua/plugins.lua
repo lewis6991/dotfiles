@@ -108,5 +108,7 @@ return require('packer').startup(function()
   use 'nvim-lua/plenary.nvim'
   use 'kyazdani42/nvim-web-devicons'
 
+  use '~/projects/gitsigns.nvim'
+
   use 'nvim-treesitter/nvim-treesitter'
 end)

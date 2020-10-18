@@ -23,11 +23,23 @@ local custom_on_attach = function(client)
   keymap('n', '[d'        , '<cmd>lua vim.lsp.structures.Diagnostic.buf_move_prev_diagnostic()<CR>')
   keymap('n', 'go'        , ':OpenDiagnostic<CR>')
 
-  vim.cmd("setlocal omnifunc=v:lua.vim.lsp.omnifunc")
+  vim.bo.omnifunc = 'v:lua.vim.lsp.omnifunc'
 end
 
-nvim_lsp.vimls.setup  { on_attach = custom_on_attach }
+local executable = function(x)
+  return vim.fn.executable(x) ~= 0
+end
+
+if executable('vim-language-server') then
+  nvim_lsp.vimls.setup  { on_attach = custom_on_attach }
+end
+
+-- if executable('bash-language-server') then
+--   nvim_lsp.bashls.setup { on_attach = custom_on_attach }
+-- end
+-- LspInstall bashls
 nvim_lsp.bashls.setup { on_attach = custom_on_attach }
+
 -- nvim_lsp.jedi_language_server.setup{ on_attach = custom_on_attach; }
 -- nvim_lsp.pyls.setup   {
 --   on_attach = custom_on_attach,
@@ -113,14 +125,16 @@ nvim_lsp.metals.setup{
 
 local configs = require 'nvim_lsp/configs'
 
-configs.lua_lsp2 = {
-  default_config = {
-    cmd = {"lua-lsp"},
-    filetypes = {"lua"},
-    root_dir = function(fname)
-      return vim.fn.getcwd()
-    end
-  }
-}
 
-configs.lua_lsp2.setup { on_attach = custom_on_attach }
+if executable('lua-lsp') then
+  configs.lua_lsp2 = {
+    default_config = {
+      cmd = {"lua-lsp"},
+      filetypes = {"lua"},
+      root_dir = function(fname)
+        return vim.fn.getcwd()
+      end
+    }
+  }
+  configs.lua_lsp2.setup { on_attach = custom_on_attach }
+end
