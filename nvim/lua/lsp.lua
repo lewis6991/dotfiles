@@ -20,6 +20,7 @@ local custom_on_attach = function(client)
   keymap('n', 'gr'        , '<cmd>lua vim.lsp.buf.references()<CR>')
   keymap('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
   keymap('n', ']d'        , '<cmd>lua vim.lsp.structures.Diagnostic.buf_move_next_diagnostic()<CR>')
+
   keymap('n', '[d'        , '<cmd>lua vim.lsp.structures.Diagnostic.buf_move_prev_diagnostic()<CR>')
   keymap('n', 'go'        , ':OpenDiagnostic<CR>')
 

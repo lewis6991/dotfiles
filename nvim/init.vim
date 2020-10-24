@@ -363,8 +363,8 @@ function! s:strip(input_string) "{{{
 endfunction "}}}
 
 function! Hunks() abort "{{{
-    if exists('b:git_signs_status')
-        return b:git_signs_status
+    if exists('b:gitsigns_status')
+        return b:gitsigns_status
     elseif exists('b:coc_git_status')
         return trim(b:coc_git_status)
     endif
