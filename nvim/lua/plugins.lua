@@ -29,15 +29,22 @@ local init = function()
   use {'wbthomason/packer.nvim', opt = true}
 
   use {
-      'tpope/vim-commentary',
-      'tpope/vim-fugitive',
-      'tpope/vim-unimpaired',
-      'tpope/vim-repeat',
-      'tpope/vim-eunuch',
-      'tpope/vim-surround',
-    }
+    'tpope/vim-commentary',
+    'tpope/vim-fugitive',
+    'tpope/vim-unimpaired',
+    'tpope/vim-repeat',
+    'tpope/vim-eunuch',
+    'tpope/vim-surround',
+  }
 
-  use 'AndrewRadev/bufferize.vim'
+  use {
+    'AndrewRadev/bufferize.vim',
+    cmd = 'Bufferize',
+    config = function()
+      vim.g.bufferize_command = 'enew'
+      vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
+    end
+  }
 
   use 'vim-scripts/visualrepeat'
   use 'timakro/vim-searchant' -- Highlight the current search result

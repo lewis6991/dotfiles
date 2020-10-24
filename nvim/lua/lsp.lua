@@ -2,7 +2,7 @@ local nvim_lsp   = require'nvim_lsp'
 local metals     = require'metals'
 local completion = require'completion'
 local diagnostic = require'diagnostic'
-local M = {}
+local configs    = require 'nvim_lsp/configs'
 
 vim.lsp.set_log_level(0)
 
@@ -124,8 +124,6 @@ nvim_lsp.metals.setup{
   };
 }
 
-local configs = require 'nvim_lsp/configs'
-
 
 if executable('lua-lsp') then
   configs.lua_lsp2 = {
@@ -139,3 +137,12 @@ if executable('lua-lsp') then
   }
   configs.lua_lsp2.setup { on_attach = custom_on_attach }
 end
+
+vim.g.diagnostic_enable_virtual_text = 1
+vim.g.diagnostic_enable_underline = 0
+vim.g.diagnostic_virtual_text_prefix = ' '
+
+vim.fn.sign_define("LspDiagnosticsErrorSign"  , {"text" : "✘", "texthl" : "LspDiagnosticsErrorSign"})
+vim.fn.sign_define("LspDiagnosticsWarningSign", {"text" : "!", "texthl" : "LspDiagnosticsWarningSign"})
+
+vim.cmd('autocmd vimrc FileType zsh TSDisableAll highlight zsh')

@@ -113,7 +113,7 @@ if has('mouse')
     set mouse=a
 endif
 
-set signcolumn=auto:3
+silent! set signcolumn=auto:3
 silent! set pumblend=10
 silent! set winblend=10
 
@@ -145,44 +145,9 @@ if s:exists('$XDG_CONFIG_HOME')
 endif
 
 " }}}
-" Plugin Settings {{{
-" Bufferize {{{
-let g:bufferize_command = 'enew'
-autocmd vimrc FileType bufferize setlocal wrap
-" }}}
-" }}}
 " Colours {{{
 silent! set termguicolors
 silent! colorscheme moonlight
-" }}}
-" Vim {{{
-" Make normal Vim behave like Neovim
-" Comment settings we set elsewhere in this file
-if !has('nvim')
-    set autoindent
-    set autoread
-    set backspace=indent,eol,start
-    set complete-=i
-    set display=lastline
-    if v:version >= 704
-        set formatoptions=tcqj
-    endif
-    set history=10000
-    set incsearch
-    set showcmd
-    set smarttab
-    set tabpagemax=50
-    set hlsearch
-    set ruler
-    set laststatus=2
-    set wildmenu
-
-    " Tell vim how to use true colour.
-    if v:version >= 800
-        let &t_8f = '[38;2;%lu;%lu;%lum'
-        let &t_8b = '[48;2;%lu;%lu;%lum'
-    endif
-endif
 " }}}
 " Nvim {{{
 if has('nvim')
@@ -244,13 +209,6 @@ imap <tab>   <Plug>(completion_smart_tab)
 imap <s-tab> <Plug>(completion_smart_s_tab)
 
 " nnoremap & /\<<C-R><C-w>\>\C<CR>
-
-nmap [c <Plug>(coc-git-prevchunk)
-nmap ]c <Plug>(coc-git-nextchunk)
-
-nmap <leader>hs :CocCommand git.chunkStage<cr>
-nmap <leader>hu :CocCommand git.chunkUndo<cr>
-nmap <leader>hv <Plug>(coc-git-chunkinfo)
 
 " }}}
 " Whitespace {{{
@@ -413,6 +371,10 @@ function! s:recording() abort "{{{
 endfunction "}}}
 
 function! LspStatus() abort "{{{
+    if !has('nvim')
+        return ''
+    end
+
     return ' %{metals#errors()} %{metals#warnings()}'
 
     let sl = ''
@@ -452,7 +414,9 @@ function! Statusline_expr(active) abort "{{{
     let l:s .= s:status_highlight(1, a:active) . '%( %{Hunks()}  %)'
     let l:s .= s:status_highlight(2, a:active) . LspStatus()
     let l:s .= s:status_highlight(2, a:active) . '%( %{StatusDiagnostic()}  %)'
-    let l:s .= s:status_highlight(2, a:active) . '%( %{metals#status()}  %)'
+    if exists('*metals#status')
+        let l:s .= s:status_highlight(2, a:active) . '%( %{metals#status()}  %)'
+    end
     let l:s .= s:status_highlight(3, a:active) . '%='
     let l:s .= s:status_highlight(3, a:active) . '%<%0.60f%m%r'  " file.txt[+][RO]
     let l:s .= ' %= '
@@ -479,19 +443,6 @@ augroup END
 
 set statusline=%!Statusline_expr(1)
 
-"}}}
-" Terminal {{{
-if has('nvim')
-    augroup vimrc
-        autocmd TermOpen * setlocal
-            \ nonumber
-            \ norelativenumber
-            \ nospell
-        autocmd TermOpen * startinsert
-    augroup END
-
-    tnoremap <Esc> <c-\><c-n>
-endif
 "}}}
 "Commands {{{
 
@@ -550,18 +501,6 @@ function! ToggleCommand(cmd) abort "{{{
 endfunction "}}}
 
 "}}}
-" LSP & TreeSitter {{{
-
-let g:diagnostic_enable_virtual_text = 1
-let g:diagnostic_enable_underline = 0
-let g:diagnostic_virtual_text_prefix = ' '
-
-call sign_define("LspDiagnosticsErrorSign"  , {"text" : "✘", "texthl" : "LspDiagnosticsErrorSign"})
-call sign_define("LspDiagnosticsWarningSign", {"text" : "!", "texthl" : "LspDiagnosticsWarningSign"})
-
-autocmd vimrc FileType zsh TSDisableAll highlight zsh
-
-" }}}
 
 " Brighten lsp floating windows
 highlight link NormalFloat StatusLine
