@@ -1,7 +1,5 @@
 local langs = {
-  "scala",
   "python",
-  "yaml",
   "json",
   "html",
   "bash",
