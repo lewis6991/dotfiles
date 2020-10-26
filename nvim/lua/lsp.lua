@@ -142,7 +142,7 @@ vim.g.diagnostic_enable_virtual_text = 1
 vim.g.diagnostic_enable_underline = 0
 vim.g.diagnostic_virtual_text_prefix = ' '
 
-vim.fn.sign_define("LspDiagnosticsErrorSign"  , {"text" : "✘", "texthl" : "LspDiagnosticsErrorSign"})
-vim.fn.sign_define("LspDiagnosticsWarningSign", {"text" : "!", "texthl" : "LspDiagnosticsWarningSign"})
+vim.fn.sign_define("LspDiagnosticsErrorSign"  , {text = "✘", texthl = "LspDiagnosticsErrorSign"})
+vim.fn.sign_define("LspDiagnosticsWarningSign", {text = "!", texthl = "LspDiagnosticsWarningSign"})
 
 vim.cmd('autocmd vimrc FileType zsh TSDisableAll highlight zsh')

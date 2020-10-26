@@ -79,7 +79,7 @@ local init = function()
   use 'rhysd/conflict-marker.vim'
 
   use {'junegunn/vim-easy-align',
-      keys = '<Plug>(EasyAlign)',
+      keys = 'ga',
       config = function()
         vim.api.nvim_set_keymap('x', 'ga', '<Plug>(EasyAlign)', {})
         vim.api.nvim_set_keymap('n', 'ga', '<Plug>(EasyAlign)', {})
@@ -119,7 +119,7 @@ local init = function()
   use 'tjdevries/nlua.nvim'
 
   use {'neovim/nvim-lspconfig',
-      config = "require('telescope_config')"
+      config = "require('lsp')"
     }
 
   use 'nvim-lua/completion-nvim'
