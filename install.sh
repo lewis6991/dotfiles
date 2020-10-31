@@ -76,7 +76,7 @@ function install_vim_config {
     mkdir -p ~/.vim/tmp/backup
 
     link_file nvim/init.vim "$HOME/.vimrc"
-    link_file vim "$XDG_CONFIG_HOME/vim"
+    link_file vim "$XDG_CONFIG_HOME/nvim"
     install_dotfile gvimrc
     message_done
 }

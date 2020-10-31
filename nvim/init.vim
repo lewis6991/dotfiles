@@ -71,7 +71,6 @@ call plug#begin(s:pldir)
     Plug ppath.'/systemverilog.vim'     , { 'for': 'systemverilog' }
     Plug ppath.'/tcl.vim'               , { 'for': 'tcl'           }
     Plug 'raimon49/requirements.txt.vim', { 'for': 'requirements'  }
-    " Plug 'neoclide/coc.nvim'            , { 'branch': 'release'    }
 call plug#end()
 " }}}
 " General {{{
@@ -274,8 +273,6 @@ augroup vimrc
     autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
     autocmd BufRead gitconfig             setlocal filetype=gitconfig
     autocmd BufRead SConstruct            setlocal filetype=scons
-    autocmd BufRead coc-settings.json syntax match Comment +\/\/.\+$+
-    autocmd BufRead coc-settings.json setlocal commentstring=//%s
 
     autocmd BufRead * if getline(1) =~ '^#%Module.*'
                   \ |     setlocal ft=tcl
@@ -315,135 +312,6 @@ iabbrev :rev:
     \ <c-r>=substitute(&commentstring, '%s', '', '').
     \' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):'<CR>
 " }}}
-" Statusline {{{
-function! s:strip(input_string) "{{{
-    return substitute(a:input_string, '^\s*\(.\{-}\)\s*$', '\1', '')
-endfunction "}}}
-
-function! Hunks() abort "{{{
-    if exists('b:gitsigns_status')
-        return b:gitsigns_status
-    elseif exists('b:coc_git_status')
-        return trim(b:coc_git_status)
-    endif
-endfunction "}}}
-
-function! EncodingAndFormat() abort "{{{
-    let l:e = &fileencoding ? &fileencoding : &encoding
-    let l:f = &fileformat
-
-    if l:e ==# 'utf-8'
-        let l:e = ''
-    endif
-
-    if l:f ==# 'unix'
-        let l:f = ''
-    else
-        let l:f = '['.l:f.']'
-    endif
-
-    return s:strip(join([l:e, l:f]))
-endfunction "}}}
-
-function! s:status_highlight(no, active) abort "{{{
-    if a:active
-        if   a:no == 1 | return '%#PmenuSel#'
-        else           | return '%#StatusLine#'
-        endif
-    else
-        if   a:no == 3 | return '%#StatusLineNC#'
-        else           | return '%#StatusLineNC#'
-        endif
-    endif
-endfunction "}}}
-
-function! s:recording() abort "{{{
-    if !exists('*reg_recording')
-        return ''
-    endif
-
-    let reg = reg_recording()
-    if reg !=# ''
-        return '%#ModeMsg#  RECORDING['.reg.']  '
-    else
-        return ''
-    endif
-endfunction "}}}
-
-function! LspStatus() abort "{{{
-    if !has('nvim')
-        return ''
-    end
-
-    return ' %{metals#errors()} %{metals#warnings()}'
-
-    let sl = ''
-    if luaeval('not vim.tbl_isempty(vim.lsp.buf_get_clients(0))')
-        let sl.=' E:'
-        let sl.='%{luaeval("vim.lsp.util.buf_diagnostics_count([[Error]])")}'
-        let sl.=' W:'
-        let sl.='%{luaeval("vim.lsp.util.buf_diagnostics_count([[Warning]])")}'
-    endif
-    return sl
-endfunction "}}}
-
-function! StatusDiagnostic() abort
-    let info = get(b:, 'coc_diagnostic_info', {})
-    if empty(info)
-        return ''
-    endif
-    let msgs = []
-    if get(info, 'error', 0)
-        call add(msgs, 'E:' . info['error'])
-    endif
-    if get(info, 'warning', 0)
-        call add(msgs, 'W:' . info['warning'])
-    endif
-    if get(info, 'information', 0)
-        call add(msgs, 'I:' . info['information'])
-    endif
-    if get(info, 'hint', 0)
-        call add(msgs, 'H:' . info['hint'])
-    endif
-    return join(msgs, ' ') . ' ' . get(g:, 'coc_status', '')
-endfunction
-
-function! Statusline_expr(active) abort "{{{
-    let l:s = '%#StatusLine#'
-    let l:s .= s:status_highlight(1, a:active) . s:recording()
-    let l:s .= s:status_highlight(1, a:active) . '%( %{Hunks()}  %)'
-    let l:s .= s:status_highlight(2, a:active) . LspStatus()
-    let l:s .= s:status_highlight(2, a:active) . '%( %{StatusDiagnostic()}  %)'
-    if exists('*metals#status')
-        let l:s .= s:status_highlight(2, a:active) . '%( %{metals#status()}  %)'
-    end
-    let l:s .= s:status_highlight(3, a:active) . '%='
-    let l:s .= s:status_highlight(3, a:active) . '%<%0.60f%m%r'  " file.txt[+][RO]
-    let l:s .= ' %= '
-    let l:s .= s:status_highlight(2, a:active)
-    let l:s .= "%{get(b:,'coc_current_function','')}"
-    let l:s .= '%(  %{&filetype} %)'
-    if exists('*WebDevIconsGetFileTypeSymbol')
-        let l:s .= '%( %{WebDevIconsGetFileTypeSymbol()}  %)'
-    endif
-    if exists('*WebDevIconsGetFileFormatSymbol')
-        let l:s .= s:status_highlight(1, a:active) . '%(  %{EncodingAndFormat()}%{WebDevIconsGetFileFormatSymbol()}%)'
-    endif
-    let l:s .= s:status_highlight(1, a:active) . ' %3p%% %3l(%02c)/%-3L ' " 80% 65[12]/120
-    return l:s
-endfunction "}}}
-
-augroup vimrc
-    " Only set up WinEnter autocmd when the WinLeave autocmd runs
-    autocmd WinLeave,FocusLost *
-        \ setlocal statusline=%!Statusline_expr(0) |
-        \ autocmd vimrc WinEnter,FocusGained *
-            \ setlocal statusline=%!Statusline_expr(1)
-augroup END
-
-set statusline=%!Statusline_expr(1)
-
-"}}}
 "Commands {{{
 
 function! Hashbang() abort "{{{
