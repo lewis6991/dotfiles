@@ -1,1 +1,3 @@
-execute 'luafile ' . stdpath('config') . '/lua/plugins.lua'
+if has('nvim')
+    execute 'luafile ' . stdpath('config') . '/lua/plugins.lua'
+end

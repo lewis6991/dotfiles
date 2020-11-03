@@ -95,9 +95,9 @@ function! Statusline_expr(active) abort
     let s .= '%<%0.60f%m%r'  " file.txt[+][RO]
     let s .= ' %= '
     let s .= s:filetype()
-    let s .= ' '.s:status_highlight(1, a:active)
+    let s .= ' '.s:status_highlight(1, a:active).' '
     let s .= s:fileformat()
-    let s .= '%3p%% %3l(%02c)/%-3L ' " 80% 65[12]/120
+    let s .= '%3p%% %2l(%02c)/%-3L ' " 80% 65[12]/120
     return s
 endfunction
 
