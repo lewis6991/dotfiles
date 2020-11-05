@@ -373,4 +373,27 @@ endfunction "}}}
 " Brighten lsp floating windows
 highlight link NormalFloat StatusLine
 
+let bufferline = {}
+let bufferline.closable = v:false
+let bufferline.shadow = v:false
+" let bufferline.maximum_padding = 2
+
+nnoremap <silent> <Tab>   :BufferNext<CR>
+nnoremap <silent> <S-Tab> :BufferPrevious<CR>
+
+" hi def link BufferCurrent         Title
+" hi def link BufferCurrentMod      Title
+" hi def link BufferCurrentSign     Title
+" hi def link BufferCurrentTarget   Title
+" hi def link BufferVisible         Title
+" hi def link BufferVisibleMod      Title
+" hi def link BufferVisibleSign     Error
+" hi def link BufferVisibleTarget   Error
+" hi def link BufferInactive        Title
+" hi def link BufferInactiveMod     Title
+" hi def link BufferInactiveSign    Title
+" hi def link BufferInactiveTarget  Title
+" hi def link BufferShadow          Error
+
+
 " vim: foldmethod=marker foldminlines=0:

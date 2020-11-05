@@ -25,135 +25,131 @@ if not packer_exists then
   return
 end
 
-local init = function()
-  use {'wbthomason/packer.nvim', opt = true}
+local init = {
+  {'wbthomason/packer.nvim', opt = true},
 
-  use {
-    'tpope/vim-commentary',
-    'tpope/vim-fugitive',
-    'tpope/vim-unimpaired',
-    'tpope/vim-repeat',
-    'tpope/vim-eunuch',
-    'tpope/vim-surround',
-  }
+  {'tpope/vim-commentary', keys = {'gc'}},
+  'tpope/vim-fugitive',
+  'tpope/vim-unimpaired',
+  'tpope/vim-repeat',
+  'tpope/vim-eunuch',
+  'tpope/vim-surround',
 
-  use {
-    'AndrewRadev/bufferize.vim',
+  {'AndrewRadev/bufferize.vim',
     cmd = 'Bufferize',
     config = function()
       vim.g.bufferize_command = 'enew'
       vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
     end
-  }
+  },
 
-  use 'vim-scripts/visualrepeat'
-  use 'timakro/vim-searchant' -- Highlight the current search result
+  'vim-scripts/visualrepeat',
+  'timakro/vim-searchant', -- Highlight the current search result
 
-  use  {'tmhedberg/SimpylFold' , ft = 'python'}
-  use  {'tmux-plugins/vim-tmux', ft = 'tmux'  }
-  use  {'derekwyatt/vim-scala' , ft = 'scala' }
+  {'tmhedberg/SimpylFold' , ft = 'python'},
+  {'tmux-plugins/vim-tmux', ft = 'tmux'  },
+  {'derekwyatt/vim-scala' , ft = 'scala' },
 
-  use 'martinda/Jenkinsfile-vim-syntax'
+  'martinda/Jenkinsfile-vim-syntax',
 
-  use 'ap/vim-buftabline'
+  {'ap/vim-buftabline', disable=true},
 
-  use 'dietsche/vim-lastplace'
-  use 'christoomey/vim-tmux-navigator'
-  use 'tmux-plugins/vim-tmux-focus-events'
-  use 'ryanoasis/vim-devicons'
-  use 'powerman/vim-plugin-AnsiEsc'
+  'dietsche/vim-lastplace',
+  'christoomey/vim-tmux-navigator',
+  'tmux-plugins/vim-tmux-focus-events',
+  'ryanoasis/vim-devicons',
+  'powerman/vim-plugin-AnsiEsc',
 
-  use 'wellle/targets.vim'
-  use 'michaeljsmith/vim-indent-object'
+  'wellle/targets.vim',
+  'michaeljsmith/vim-indent-object',
 
-  use {'whatyouhide/vim-lengthmatters',
-      config = function()
-        vim.g.lengthmatters_highlight_one_column = 1
-      end
-    }
+  {'whatyouhide/vim-lengthmatters',
+    config = function()
+      vim.g.lengthmatters_highlight_one_column = 1
+    end
+  },
 
-  use 'justinmk/vim-dirvish'
+  'justinmk/vim-dirvish',
 
-  use 'lewis6991/vim-clean-fold'
+  'lewis6991/vim-clean-fold',
 
-  use 'rhysd/conflict-marker.vim'
+  'rhysd/conflict-marker.vim',
 
-  use {'junegunn/vim-easy-align',
-      keys = 'ga',
-      config = function()
-        vim.api.nvim_set_keymap('x', 'ga', '<Plug>(EasyAlign)', {})
-        vim.api.nvim_set_keymap('n', 'ga', '<Plug>(EasyAlign)', {})
-        vim.g.easy_align_delimiters = {
-          [';']  = { pattern = ';'        , left_margin = 0 },
-          ['[']  = { pattern = '['        , left_margin = 1, right_margin = 0 },
-          [']']  = { pattern = ']'        , left_margin = 0, right_margin = 1 },
-          [',']  = { pattern = ','        , left_margin = 0, right_margin = 1 },
-          [')']  = { pattern = ')'        , left_margin = 0, right_margin = 0 },
-          ['(']  = { pattern = '('        , left_margin = 0, right_margin = 0 },
-          ['=']  = { pattern = [[<\?=>\?]], left_margin = 1, right_margin = 1 },
-          ['|']  = { pattern = [[|\?|]]   , left_margin = 1, right_margin = 1 },
-          ['&']  = { pattern = [[&\?&]]   , left_margin = 1, right_margin = 1 },
-          [':']  = { pattern = ':'        , left_margin = 1, right_margin = 1 },
-          ['?']  = { pattern = '?'        , left_margin = 1, right_margin = 1 },
-          ['<']  = { pattern = '<'        , left_margin = 1, right_margin = 0 },
-          ['\\'] = { pattern = '\\'       , left_margin = 1, right_margin = 0 },
-          ['+']  = { pattern = '+'        , left_margin = 1, right_margin = 1 }
-        }
-      end
-    }
+  {'junegunn/vim-easy-align',
+    keys = 'ga',
+    config = function()
+      vim.api.nvim_set_keymap('x', 'ga', '<Plug>(EasyAlign)', {})
+      vim.api.nvim_set_keymap('n', 'ga', '<Plug>(EasyAlign)', {})
+      vim.g.easy_align_delimiters = {
+        [';']  = { pattern = ';'        , left_margin = 0 },
+        ['[']  = { pattern = '['        , left_margin = 1, right_margin = 0 },
+        [']']  = { pattern = ']'        , left_margin = 0, right_margin = 1 },
+        [',']  = { pattern = ','        , left_margin = 0, right_margin = 1 },
+        [')']  = { pattern = ')'        , left_margin = 0, right_margin = 0 },
+        ['(']  = { pattern = '('        , left_margin = 0, right_margin = 0 },
+        ['=']  = { pattern = [[<\?=>\?]], left_margin = 1, right_margin = 1 },
+        ['|']  = { pattern = [[|\?|]]   , left_margin = 1, right_margin = 1 },
+        ['&']  = { pattern = [[&\?&]]   , left_margin = 1, right_margin = 1 },
+        [':']  = { pattern = ':'        , left_margin = 1, right_margin = 1 },
+        ['?']  = { pattern = '?'        , left_margin = 1, right_margin = 1 },
+        ['<']  = { pattern = '<'        , left_margin = 1, right_margin = 0 },
+        ['\\'] = { pattern = '\\'       , left_margin = 1, right_margin = 0 },
+        ['+']  = { pattern = '+'        , left_margin = 1, right_margin = 1 }
+      }
+    end
+  },
 
+  {'bfredl/nvim-miniyank',
+    config = function()
+      vim.api.nvim_set_keymap('n', 'p', '<Plug>(miniyank-autoput)', {})
+      vim.api.nvim_set_keymap('n', 'P', '<Plug>(miniyank-autoPut)', {})
+    end
+  },
 
-  use {'bfredl/nvim-miniyank',
-      config = function()
-        vim.api.nvim_set_keymap('n', 'p', '<Plug>(miniyank-autoput)', {})
-        vim.api.nvim_set_keymap('n', 'P', '<Plug>(miniyank-autoPut)', {})
-      end
-    }
+  'tjdevries/nlua.nvim',
 
-  use {'bfredl/nvim-luadev',
-      config = function()
-        vim.api.nvim_set_keymap('v', '<leader>l', '<Plug>(Luadev-Run)', {});
-      end
-    }
+  {'neovim/nvim-lspconfig',
+    config = "require('lsp')"
+  },
 
-  use 'tjdevries/nlua.nvim'
+  'nvim-lua/completion-nvim',
 
-  use {'neovim/nvim-lspconfig',
-      config = "require('lsp')"
-    }
+  'nvim-lua/diagnostic-nvim',
 
-  use 'nvim-lua/completion-nvim'
-  use 'nvim-lua/diagnostic-nvim'
+  {'nvim-lua/telescope.nvim',
+    requires = { 'nvim-lua/plenary.nvim' },
+    config = "require('telescope_config')"
+  },
 
-  use {'nvim-lua/telescope.nvim',
-      requires = { 'nvim-lua/plenary.nvim' },
-      config = "require('telescope_config')"
-    }
+  'scalameta/nvim-metals',
 
-  use 'scalameta/nvim-metals'
+  'nvim-lua/popup.nvim',
+  'kyazdani42/nvim-web-devicons',
 
-  use 'nvim-lua/popup.nvim'
-  use 'kyazdani42/nvim-web-devicons'
-
-  use {'~/projects/gitsigns.nvim',
-      requires = { 'nvim-lua/plenary.nvim' },
-      config = function()
-        require('gitsigns').setup{
-            -- debug_mode = true,
-            signs = {
-              add          = {hl = 'GitGutterAdd'   },
-              change       = {hl = 'GitGutterChange'},
-              delete       = {hl = 'GitGutterDelete'},
-              topdelete    = {hl = 'GitGutterDelete'},
-              changedelete = {hl = 'GitGutterChange'},
-            }
+  {'~/projects/gitsigns.nvim',
+    requires = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      require('gitsigns').setup{
+          -- debug_mode = true,
+          signs = {
+            add          = {hl = 'GitGutterAdd'   },
+            change       = {hl = 'GitGutterChange'},
+            delete       = {hl = 'GitGutterDelete'},
+            topdelete    = {hl = 'GitGutterDelete'},
+            changedelete = {hl = 'GitGutterChange'},
           }
-      end
-    }
+        }
+    end
+  },
 
-  use {'nvim-treesitter/nvim-treesitter',
-      config = "require('treesitter')"
-    }
-end
+  {'nvim-treesitter/nvim-treesitter',
+    config = "require('treesitter')",
+    event = 'VimEnter *'
+  },
 
-return require('packer').startup(init)
+  'romgrk/barbar.nvim'
+}
+
+vim.cmd('autocmd BufWritePost plugins.lua PackerCompile')
+
+return require('packer').startup({init})

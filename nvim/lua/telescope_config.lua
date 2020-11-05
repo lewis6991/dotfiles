@@ -22,10 +22,10 @@ require'telescope'.setup {
 
 my_git_files = function()
   local git_root = (function()
-    local a = vim.split(vim.fn.system('git rev-parse --show-superproject-working-tree 2> /dev/null'), '\n')[1]
-    if a ~= '' then
-      return a
-    end
+    -- local a = vim.split(vim.fn.system('git rev-parse --show-superproject-working-tree 2> /dev/null'), '\n')[1]
+    -- if a ~= '' then
+    --   return a
+    -- end
     local b = vim.split(vim.fn.system('git rev-parse --show-toplevel 2> /dev/null'), '\n')[1]
     if b ~= '' then
       return b

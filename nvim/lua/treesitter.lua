@@ -3,9 +3,9 @@ local langs = {
   "json",
   "html",
   "bash",
-  "markdown",
   "lua",
-  "rst"
+  "rst",
+  "verilog"
 }
 
 require'nvim-treesitter.configs'.setup {
@@ -27,3 +27,5 @@ for _, l in pairs(langs) do
     ' foldexpr=nvim_treesitter#foldexpr()'
   )
 end
+
+vim.cmd('autocmd vimrc FileType systemverilog set foldmethod=expr foldexpr=nvim_treesitter#foldexpr()')
