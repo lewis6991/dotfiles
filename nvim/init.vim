@@ -100,9 +100,10 @@ set backupdir-=.
 set lazyredraw
 set redrawtime=4000
 set shortmess+=I
-" Avoid showing message extra message when using completion
-set shortmess+=c
+
 if v:version >= 800
+    " Avoid showing message extra message when using completion
+    set shortmess+=c
     set completeopt=noinsert,menuone,noselect
 endif
 
@@ -147,24 +148,6 @@ endif
 " Colours {{{
 silent! set termguicolors
 silent! colorscheme moonlight
-" }}}
-" Nvim {{{
-if has('nvim')
-    let g:loaded_python_provider = 1 " Disable python2
-    let g:loaded_ruby_provider   = 1 " Disable ruby
-
-    if glob('/devtools/linuxbrew/bin/python3') != ''
-        let g:python3_host_prog = '/devtools/linuxbrew/bin/python3'
-    else
-        let g:python3_host_prog = systemlist('which python3')[0]
-    endif
-
-    set inccommand=split
-    set previewheight=30
-
-    " Remove tilda from signcolumn
-    let &fillchars='eob: '
-endif
 " }}}
 " Mappings {{{
 nnoremap <leader>ev :edit $MYVIMRC<CR>

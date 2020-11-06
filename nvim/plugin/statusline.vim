@@ -20,7 +20,13 @@ function! EncodingAndFormat() abort
         let l:f = '['.l:f.']'
     endif
 
-    return trim(join([l:e, l:f]))
+    let r = join([l:e, l:f])
+
+    if v:version >= 800
+        let r = trim(r)
+    end
+
+    return r
 endfunction
 
 function! s:status_highlight(num, active) abort

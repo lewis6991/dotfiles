@@ -147,7 +147,16 @@ local init = {
     event = 'VimEnter *'
   },
 
-  'romgrk/barbar.nvim'
+  {'romgrk/barbar.nvim',
+    config = function()
+      vim.g.bufferline = {
+        closable = false,
+        shadow   = false
+      }
+      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {silent=true})
+      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {silent=true})
+    end
+  },
 }
 
 vim.cmd('autocmd BufWritePost plugins.lua PackerCompile')
