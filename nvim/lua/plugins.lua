@@ -46,7 +46,7 @@ local init = {
   'vim-scripts/visualrepeat',
   'timakro/vim-searchant', -- Highlight the current search result
 
-  {'tmhedberg/SimpylFold' , ft = 'python'},
+  {'tmhedberg/SimpylFold' , disable=true, ft = 'python'},
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
   {'derekwyatt/vim-scala' , ft = 'scala' },
 
@@ -114,8 +114,6 @@ local init = {
 
   'nvim-lua/completion-nvim',
 
-  'nvim-lua/diagnostic-nvim',
-
   {'nvim-lua/telescope.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = "require('telescope_config')"
@@ -137,28 +135,30 @@ local init = {
             delete       = {hl = 'GitGutterDelete'},
             topdelete    = {hl = 'GitGutterDelete'},
             changedelete = {hl = 'GitGutterChange'},
-          }
+          },
         }
     end
   },
 
   {'nvim-treesitter/nvim-treesitter',
     config = "require('treesitter')",
-    event = 'VimEnter *'
   },
+
+  'romgrk/nvim-treesitter-context',
 
   {'romgrk/barbar.nvim',
     config = function()
-      vim.g.bufferline = {
-        closable = false,
-        shadow   = false
-      }
+      vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
+        closable = false
+      })
       vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {silent=true})
       vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {silent=true})
     end
-  },
+  }
 }
 
-vim.cmd('autocmd BufWritePost plugins.lua PackerCompile')
+local packer = require('packer')
 
-return require('packer').startup({init})
+packer.startup{init}
+
+return packer

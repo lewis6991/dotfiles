@@ -12,11 +12,23 @@ require'nvim-treesitter.configs'.setup {
   ensure_installed = langs,
   highlight = {
     enable = true,
+    use_languagetree = true,
   },
   indent = {
     enable = true,
   },
-
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection    = "gnn",
+      node_incremental  = "grn",
+      scope_incremental = "grc",
+      node_decremental  = "grm",
+    },
+  },
+  -- context = {
+  --   disable = { "python" },
+  -- }
 }
 
 for _, l in pairs(langs) do
@@ -24,6 +36,7 @@ for _, l in pairs(langs) do
     'autocmd vimrc FileType '..l..
     ' set'..
     ' foldmethod=expr'..
+    ' nospell'..
     ' foldexpr=nvim_treesitter#foldexpr()'
   )
 end

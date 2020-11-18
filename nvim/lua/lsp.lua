@@ -1,8 +1,7 @@
-local nvim_lsp   = require'nvim_lsp'
-local metals     = require'metals'
-local completion = require'completion'
-local diagnostic = require'diagnostic'
-local configs    = require 'nvim_lsp/configs'
+local nvim_lsp   = require 'lspconfig'
+local metals     = require 'metals'
+local completion = require 'completion'
+local configs    = require 'lspconfig/configs'
 
 vim.lsp.set_log_level(0)
 
@@ -11,7 +10,6 @@ local keymap = function(mode, key, result)
 end
 
 local custom_on_attach = function(client)
-  diagnostic.on_attach(client)
   completion.on_attach(client)
 
   keymap('n', '<C-]>'     , '<cmd>lua vim.lsp.buf.definition()<CR>')
@@ -19,10 +17,9 @@ local custom_on_attach = function(client)
   keymap('n', 'gK'        , '<cmd>lua vim.lsp.buf.signature_help()<CR>')
   keymap('n', 'gr'        , '<cmd>lua vim.lsp.buf.references()<CR>')
   keymap('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
-  keymap('n', ']d'        , '<cmd>lua vim.lsp.structures.Diagnostic.buf_move_next_diagnostic()<CR>')
-
-  keymap('n', '[d'        , '<cmd>lua vim.lsp.structures.Diagnostic.buf_move_prev_diagnostic()<CR>')
-  keymap('n', 'go'        , ':OpenDiagnostic<CR>')
+  keymap('n', ']d'        , '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
+  keymap('n', '[d'        , '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
+  keymap('n', 'go'        , '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
 
   vim.bo.omnifunc = 'v:lua.vim.lsp.omnifunc'
 end
