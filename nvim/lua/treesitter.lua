@@ -31,6 +31,9 @@ require'nvim-treesitter.configs'.setup {
   -- }
 }
 
+table.insert(langs, 'systemverilog')
+table.insert(langs, 'sh')
+
 for _, l in pairs(langs) do
   vim.cmd(
     'autocmd vimrc FileType '..l..
@@ -40,5 +43,3 @@ for _, l in pairs(langs) do
     ' foldexpr=nvim_treesitter#foldexpr()'
   )
 end
-
-vim.cmd('autocmd vimrc FileType systemverilog set foldmethod=expr foldexpr=nvim_treesitter#foldexpr()')
