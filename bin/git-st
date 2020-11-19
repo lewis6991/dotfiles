@@ -16,7 +16,7 @@ function run {
         exit
     fi
 
-    mapfile -t diff < <(git diff --color $extra_diff_opts --stat HEAD 2> /dev/null | sed '$d; s/^ //' | cut -d '|' -f 2)
+    mapfile -t diff < <(git diff --color $extra_diff_opts --stat HEAD $@ 2> /dev/null | sed '$d; s/^ //' | cut -d '|' -f 2)
 
     len=-1
     for i in "${!status[@]}"; do
