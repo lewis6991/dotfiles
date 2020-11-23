@@ -1,60 +1,12 @@
-" Init {{{
-function! s:exists(var)
-    if exists(a:var)
-        return 1
-    endif
-    echoerr a:var.' is not defined'
-    return 0
-endfunction
-
-if !has('nvim')
-    if s:exists('$XDG_CONFIG_HOME') && s:exists('$XDG_DATA_HOME')
-        set runtimepath=
-            \$XDG_CONFIG_HOME/vim,
-            \$XDG_DATA_HOME/vim/site,
-            \$VIMRUNTIME,
-            \$XDG_DATA_HOME/vim/site/after,
-            \$XDG_CONFIG_HOME/vim/after
-    endif
-    if s:exists('$XDG_DATA_HOME')
-        set directory=$XDG_DATA_HOME/vim/swap
-    endif
-    if s:exists('$XDG_CACHE_HOME')
-        set backupdir=$XDG_CACHE_HOME/vim/backup
-        set viminfo+=n$XDG_CACHE_HOME/vim/viminfo
-    endif
-endif
-
-" }}}
-" Bootstrap {{{
-if has('nvim')
-    let s:tool = 'nvim'
-else
-    let s:tool = 'vim'
-endif
-
-let s:audir = expand('$XDG_DATA_HOME/'.s:tool.'/site/autoload')
-let s:pldir = expand('$XDG_DATA_HOME/'.s:tool.'/site/plugged')
-
-" Install vim-plug if we don't already have it
-if empty(glob(s:audir.'/plug.vim'))
-    call mkdir(s:audir, 'p')
-    call mkdir(s:pldir, 'p')
-    execute '!wget -nc -q github.com/junegunn/vim-plug/raw/master/plug.vim -P '.s:audir
-    autocmd vimrc VimEnter * PlugInstall --sync | bd | source $MYVIMRC
-endif
-
-" Install vim-pathogen if we don't already have it
-if empty(glob(s:audir.'/pathogen.vim'))
-    call mkdir(s:audir, 'p')
-    execute '!curl -LSso '.s:audir.'/pathogen.vim https://tpo.pe/pathogen.vim'
-endif
-
-" }}}
 " Plugins {{{
 
 " Load any plugins which are work sensitive.
-silent execute pathogen#infect('~/gerrit/{}')
+for f in split(globpath('~/gerrit/', '*'), '\n') + [
+    \ '~/projects/dotfiles/modules/moonlight.vim',
+    \ '~/projects/tcl.vim'
+    \ ]
+    let &rtp.=','.f
+endfor
 
 let g:loaded_netrwPlugin = 1  " Stop netrw loading
 
@@ -62,16 +14,6 @@ augroup vimrc
     autocmd!
 augroup END
 
-" let ppath = 'lewis6991'
-let ppath = '~/projects'
-
-call plug#begin(s:pldir)
-    Plug ppath.'/dotfiles/modules/moonlight.vim'
-    Plug 'junegunn/vim-plug'
-    Plug ppath.'/systemverilog.vim'     , { 'for': 'systemverilog' }
-    Plug ppath.'/tcl.vim'               , { 'for': 'tcl'           }
-    Plug 'raimon49/requirements.txt.vim', { 'for': 'requirements'  }
-call plug#end()
 " }}}
 " General {{{
 set number
@@ -113,10 +55,6 @@ if has('mouse')
     set mouse=a
 endif
 
-silent! set signcolumn=auto:3
-silent! set pumblend=10
-silent! set winblend=10
-
 " if has('nvim-0.3.2') || has('patch-8.1.0360')
 "     set diffopt=filler,algorithm:histogram,indent-heuristic
 " endif
@@ -139,15 +77,34 @@ endif
 
 set splitright
 set splitbelow
-" set spell
-if s:exists('$XDG_CONFIG_HOME')
+set spell
+
+if exists('$XDG_CONFIG_HOME')
     set spellfile=$XDG_CONFIG_HOME/nvim/spell/en.utf-8.add
 endif
 
-" }}}
-" Colours {{{
 silent! set termguicolors
 silent! colorscheme moonlight
+
+if has('folding')
+    let g:vimsyn_folding = 'af' "Fold augroups and functions
+    let g:sh_fold_enabled = 1
+    set foldmethod=syntax
+    set foldcolumn=0
+    set foldnestmax=3
+    set foldopen+=jump
+    " set foldminlines=10
+endif
+
+set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
+set formatoptions+=o "Automatically insert comment leader after 'o' or 'O' in Normal mode.
+set formatoptions+=l "Long lines are not broken in insert mode.
+set formatoptions-=t "Do not auto wrap text
+set formatoptions+=n "Recognise lists
+if v:version >= 800
+    set breakindent      "Indent wrapped lines to match start
+endif
+
 " }}}
 " Mappings {{{
 nnoremap <leader>ev :edit $MYVIMRC<CR>
@@ -158,6 +115,8 @@ nnoremap <leader>w :execute "resize ".line('$')<cr>
 
 nnoremap <leader>gd :Gdiff<CR>
 nnoremap <leader>gs :Gstatus<CR>
+
+nnoremap T :sp<space><bar><space>term<space>
 
 nnoremap j gj
 nnoremap k gk
@@ -215,18 +174,6 @@ function! s:delete_trailing_ws() abort
     call winrestview(l:save)
 endfunction
 " }}}
-" Folding {{{
-if has('folding')
-    let g:vimsyn_folding = 'af' "Fold augroups and functions
-    let g:sh_fold_enabled = 1
-    set foldmethod=syntax
-    set foldcolumn=0
-    set foldnestmax=3
-    set foldopen+=jump
-    " set foldminlines=10
-endif
-
-" }}}
 " Functions {{{
 
 function! s:syn_stack() abort "{{{
@@ -265,11 +212,6 @@ augroup vimrc
     autocmd FileType markdown setlocal textwidth=10000
 augroup END
 
-" Commentstring
-augroup vimrc
-    autocmd Filetype sbt.scala   setlocal commentstring=//%s
-augroup END
-
 " Filetype settings
 
 augroup vimrc
@@ -279,16 +221,6 @@ augroup vimrc
     autocmd FileType xml           setlocal foldnestmax=20
     autocmd Filetype fugitiveblame  set cursorline
 augroup END
-" }}}
-" Formatting {{{
-set formatoptions+=r "Automatically insert comment leader after <Enter> in Insert mode.
-set formatoptions+=o "Automatically insert comment leader after 'o' or 'O' in Normal mode.
-set formatoptions+=l "Long lines are not broken in insert mode.
-set formatoptions-=t "Do not auto wrap text
-set formatoptions+=n "Recognise lists
-if v:version >= 800
-    set breakindent      "Indent wrapped lines to match start
-endif
 " }}}
 " Snippets {{{
 iabbrev :rev:
@@ -355,28 +287,5 @@ endfunction "}}}
 
 " Brighten lsp floating windows
 highlight link NormalFloat StatusLine
-
-let bufferline = {}
-let bufferline.closable = v:false
-let bufferline.shadow = v:false
-" let bufferline.maximum_padding = 2
-
-nnoremap <silent> <Tab>   :BufferNext<CR>
-nnoremap <silent> <S-Tab> :BufferPrevious<CR>
-
-" hi def link BufferCurrent         Title
-" hi def link BufferCurrentMod      Title
-" hi def link BufferCurrentSign     Title
-" hi def link BufferCurrentTarget   Title
-" hi def link BufferVisible         Title
-" hi def link BufferVisibleMod      Title
-" hi def link BufferVisibleSign     Error
-" hi def link BufferVisibleTarget   Error
-" hi def link BufferInactive        Title
-" hi def link BufferInactiveMod     Title
-" hi def link BufferInactiveSign    Title
-" hi def link BufferInactiveTarget  Title
-" hi def link BufferShadow          Error
-
 
 " vim: foldmethod=marker foldminlines=0:

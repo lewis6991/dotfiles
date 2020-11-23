@@ -13,3 +13,7 @@ vim.o.previewheight = 30
 
 -- Remove tilda from signcolumn
 vim.o.fillchars = 'eob: '
+
+vim.o.signcolumn='auto:3'
+vim.o.pumblend=10
+vim.o.winblend=10
