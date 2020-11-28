@@ -108,7 +108,7 @@ endif
 " }}}
 " Mappings {{{
 nnoremap <leader>ev :edit $MYVIMRC<CR>
-nnoremap <leader>rv :source $MYVIMRC<bar>edit!<CR>
+nnoremap <leader>el :edit $XDG_CONFIG_HOME/nvim/lua/plugins.lua<CR>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>\C//g<left><left>
 nnoremap <leader>c 1z=
 nnoremap <leader>w :execute "resize ".line('$')<cr>
@@ -134,7 +134,7 @@ nnoremap q <nop>
 " Show syntax highlighting groups for word under cursor
 nnoremap <leader>z :call <SID>syn_stack()<CR>
 
-nmap <Tab>   :bnext<CR>
+nmap   <Tab> :bnext<CR>
 nmap <S-Tab> :bprev<CR>
 
 nnoremap <expr><silent> \| !v:count ? "<C-W>v<C-W><Right>" : '\|'
@@ -146,10 +146,8 @@ cnoremap <C-N> <down>
 cnoremap <C-A> <Home>
 cnoremap <C-D> <Del>
 
-imap <tab>   <Plug>(completion_smart_tab)
-imap <s-tab> <Plug>(completion_smart_s_tab)
-
-" nnoremap & /\<<C-R><C-w>\>\C<CR>
+imap   <Tab> <Plug>(completion_smart_tab)
+imap <S-Tab> <Plug>(completion_smart_s_tab)
 
 " }}}
 " Whitespace {{{
@@ -203,13 +201,10 @@ augroup vimrc
     autocmd BufRead lit.cfg,lit.local.cfg setlocal filetype=python
     autocmd BufRead gitconfig             setlocal filetype=gitconfig
     autocmd BufRead SConstruct            setlocal filetype=scons
-
     autocmd BufRead * if getline(1) =~ '^#%Module.*'
                   \ |     setlocal ft=tcl
                   \ | endif
     autocmd BufRead modulefile            setlocal filetype=tcl
-    autocmd FileType markdown setlocal wrap
-    autocmd FileType markdown setlocal textwidth=10000
 augroup END
 
 " Filetype settings
@@ -219,15 +214,17 @@ augroup vimrc
     autocmd Filetype gitconfig     setlocal noexpandtab
     autocmd Filetype log           setlocal textwidth=1000
     autocmd FileType xml           setlocal foldnestmax=20
-    autocmd Filetype fugitiveblame  set cursorline
+    autocmd Filetype fugitiveblame setlocal cursorline
+    autocmd FileType markdown      setlocal wrap
+    autocmd FileType markdown      setlocal textwidth=10000
 augroup END
 " }}}
 " Snippets {{{
 iabbrev :rev:
-    \ <c-r>=substitute(&commentstring, '%s', '', '').
-    \' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):'<CR>
+    \ <c-r>=printf(&commentstring,
+    \     ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>
 " }}}
-"Commands {{{
+" Commands {{{
 
 function! Hashbang() abort "{{{
     let shells = {
@@ -259,14 +256,6 @@ function! CreateCenteredFloatingWindow() "{{{
     let left   = (&columns - width) / 2
     let opts   = { 'relative': 'editor', 'row': top, 'col': left, 'width': width, 'height': height, 'style': 'minimal' }
     call nvim_open_win(nvim_create_buf(v:false, v:true), v:true, opts)
-endfunction "}}}
-
-function! CreatePadding(opts) abort "{{{
-    let a:opts.row    += 1
-    let a:opts.height -= 2
-    let a:opts.col    += 2
-    let a:opts.width  -= 4
-    return a:opts
 endfunction "}}}
 
 function! ToggleCommand(cmd) abort "{{{

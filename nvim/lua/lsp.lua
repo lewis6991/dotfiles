@@ -32,11 +32,10 @@ if executable('vim-language-server') then
   nvim_lsp.vimls.setup  { on_attach = custom_on_attach }
 end
 
--- if executable('bash-language-server') then
---   nvim_lsp.bashls.setup { on_attach = custom_on_attach }
--- end
+if executable('bash-language-server') then
+  nvim_lsp.bashls.setup { on_attach = custom_on_attach }
+end
 -- LspInstall bashls
-nvim_lsp.bashls.setup { on_attach = custom_on_attach }
 
 -- nvim_lsp.jedi_language_server.setup{ on_attach = custom_on_attach; }
 -- nvim_lsp.pyls.setup   {
