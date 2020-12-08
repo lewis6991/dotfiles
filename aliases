@@ -6,7 +6,6 @@ alias gs="git st --ignore-submodules"
 alias gss="git st"
 
 alias re-csh="exec zsh -l"
-alias tree="tree -AC"
 
 alias gcd='cd $(git rev-parse --show-toplevel)'
 
@@ -16,7 +15,7 @@ alias ta="tmux attach"
 
 alias vimin="vim -u ~/.vimrcmin"
 
-alias lssize="du -h -d 1"
+alias lssize="du -h -d 1 --exclude .snapshot"
 
 alias gitconfig='vim $XDG_CONFIG_HOME/git/config'
 
