@@ -1,4 +1,4 @@
-REPO_DIR="$HOME/$(dirname $(dirname $(readlink $(print -P %N))))"
+DOTFILES="$HOME/$(dirname $(readlink $(print -P %N)))"
 
 function have_cmd {
     if ! hash $1 2>/dev/null; then
@@ -22,10 +22,10 @@ if ((HAVE_BREW)); then
     fi
 fi
 
-if [[ -d $REPO_DIR/dotfiles/bin ]]; then
-    PATH="$REPO_DIR/dotfiles/bin:$PATH"
+if [[ -d $DOTFILES/bin ]]; then
+    PATH="$DOTFILES/bin:$PATH"
 else
-    echo "Error: Directory \"$REPO_DIR/dotfiles/bin\" does not exist"
+    echo "Error: Directory \"$DOTFILES/bin\" does not exist"
 fi
 
 # Variables --------------------------------------------------------------------
@@ -45,7 +45,7 @@ setopt SHARE_HISTORY
 setopt HIST_REDUCE_BLANKS
 
 # Completion -------------------------------------------------------------------
-# enable meanu completion and highlighting current option
+# enable menu completion and highlighting current option
 zstyle ':completion:*' menu yes select
 zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion::complete:*' cache-path $XDG_CACHE_HOME
@@ -91,6 +91,10 @@ zinit lucid light-mode for \
     atinit"ZINIT[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay" \
         zdharma/fast-syntax-highlighting \
 
+if [[ -f $DOTFILES/mouse.zsh ]]; then
+    . $DOTFILES/mouse.zsh
+fi
+
 # marlonrichert/zsh-autocomplete
 
 zstyle ':autocomplete:list-choices:*' min-input 3
@@ -121,7 +125,12 @@ fi
 
 # Give command history to tclsh
 if have_cmd rlwrap; then
-    alias tclsh="rlwrap -Ar -pcyan tclsh"
+    if have_cmd tclsh; then
+        alias tclsh="rlwrap -Ar -pcyan tclsh"
+    fi
+    if have_cmd lua; then
+        alias lua="rlwrap -Ar -pcyan lua"
+    fi
 fi
 
 if have_cmd rg; then
@@ -145,7 +154,7 @@ export LESS="\
     --chop-long-lines"
 
 # Async prompt -----------------------------------------------------------------
-source "$REPO_DIR/dotfiles/modules/fancy-prompt/prompt.zsh"
+source "$DOTFILES/modules/fancy-prompt/prompt.zsh"
 
 # Use default emacs bindings
 bindkey -e
