@@ -5,7 +5,7 @@ for f in split(globpath('~/gerrit/', '*'), '\n') + [
     \ '~/projects/dotfiles/modules/moonlight.vim',
     \ '~/projects/tcl.vim'
     \ ]
-    let &rtp.=','.f
+    let &rtp=f.','.&rtp
 endfor
 
 let g:loaded_netrwPlugin = 1  " Stop netrw loading
@@ -49,7 +49,7 @@ if v:version >= 800
     set completeopt=noinsert,menuone,noselect
 endif
 
-let &showbreak='↳ '
+let &showbreak='    ↳ '
 
 if has('mouse')
     set mouse=a

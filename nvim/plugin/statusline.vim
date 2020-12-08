@@ -58,8 +58,8 @@ function! s:lsp_status() abort
     end
 
    " if exists('*metals#errors')
-    "     return ' %{metals#errors()} %{metals#warnings()}'
-    " end
+   "      return ' %{metals#errors()} %{metals#warnings()}'
+   "  end
 
     let sl = ''
     if luaeval('not vim.tbl_isempty(vim.lsp.buf_get_clients(0))')
