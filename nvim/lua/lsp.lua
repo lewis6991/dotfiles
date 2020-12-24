@@ -18,6 +18,10 @@ local custom_on_attach = function()
   vim.bo.omnifunc = 'v:lua.vim.lsp.omnifunc'
 end
 
+local function executable(path)
+  return vim.loop.fs_access(path, 'X')
+end
+
 local function is_installed(config)
   if config.install_info then
     local info = config.install_info()
@@ -25,7 +29,7 @@ local function is_installed(config)
       return true
     elseif info.binaries then
       for k, _ in pairs(info.binaries) do
-        if vim.fn.executable(k) == 0 then
+        if executable(k) == 0 then
           return false
         end
       end
@@ -33,7 +37,7 @@ local function is_installed(config)
     end
   else
     local cmd = config.document_config.default_config.cmd[1]
-    return vim.fn.executable(cmd) == 0
+    return executable(cmd) == 0
   end
   return false
 end
