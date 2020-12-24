@@ -2,7 +2,6 @@ local actions = require'telescope.actions'
 local finders = require'telescope.finders'
 local pickers = require'telescope.pickers'
 local sorters = require'telescope.sorters'
-local make_entry = require'telescope.make_entry'
 
 require'telescope'.setup {
   defaults = {
@@ -35,7 +34,6 @@ my_git_files = function()
 
   pickers.new({}, {
     prompt = 'Git Files',
-    -- finder = finders.new_oneshot_job({ "git", "ls-tree", "--full-tree", "-r", "--name-only", "HEAD"}),
     finder = finders.new_oneshot_job({
       "git", "ls-files", "-o", "--exclude-standard", "-c", git_root
     }),
@@ -43,26 +41,6 @@ my_git_files = function()
   }):find()
 end
 
-buffers = function()
-  local opts = {}
-  local buffers = vim.tbl_filter(function(b)
-    return (opts.show_all_buffers or vim.api.nvim_buf_is_loaded(b)) and 1 == vim.fn.buflisted(b)
-  end, vim.api.nvim_list_bufs())
-
-  local max_bufnr = math.max(unpack(buffers))
-  opts.bufnr_width = #tostring(max_bufnr)
-
-  pickers.new({}, {
-    prompt = 'Buffers',
-    finder    = finders.new_table {
-      results = buffers,
-      entry_maker = make_entry.gen_from_buffer(opts)
-    },
-    sorter = sorters.get_fuzzy_file(),
-  }):find()
-end
-
 vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>lua my_git_files()<cr>', {})
-vim.api.nvim_set_keymap('n', '<C-b>', '<cmd>lua buffers()<cr>'     , {})
 
 

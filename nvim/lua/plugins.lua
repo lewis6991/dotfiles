@@ -1,17 +1,9 @@
-local execute = vim.api.nvim_command
-local fn = vim.fn
+local install_path = vim.fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
 
-local install_path = fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
-
-if fn.empty(fn.glob(install_path)) > 0 then
+if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   if vim.fn.input("Download Packer? (y for yes): ") ~= "y" then
     return
   end
-
-  local directory = string.format(
-    '%s/site/pack/packer/opt/',
-    vim.fn.stdpath('data')
-  )
 
   local out = vim.fn.system(string.format(
     'git clone %s %s',
@@ -23,7 +15,7 @@ if fn.empty(fn.glob(install_path)) > 0 then
   print("Downloading packer.nvim...")
 end
 
-execute 'packadd packer.nvim'
+vim.cmd 'packadd packer.nvim'
 
 local init = {
   {'wbthomason/packer.nvim', opt = true},
@@ -106,16 +98,36 @@ local init = {
     end
   },
 
-  'tjdevries/nlua.nvim',
-
   {'neovim/nvim-lspconfig',
+    requires = {
+      'scalameta/nvim-metals',
+      'tjdevries/nlua.nvim'
+    },
     config = "require('lsp')"
   },
 
-  'nvim-lua/completion-nvim',
+  {'nvim-lua/completion-nvim',
+    requires = {
+      'steelsojka/completion-buffers',
+      {'aca/completion-tabnine', run = './install.sh'},
+    },
+    config = function()
+      vim.g.completion_chain_complete_list = {
+        default = {
+          { complete_items = { 'lsp', 'buffers' } },
+          { mode = { '<c-p>' } },
+          { mode = { '<c-n>' } }
+        }
+      }
+      vim.cmd("autocmd BufEnter * lua require'completion'.on_attach()")
+    end
+  },
 
   {'nvim-lua/telescope.nvim',
-    requires = { 'nvim-lua/plenary.nvim' },
+    requires = {
+      'nvim-lua/popup.nvim',
+      'nvim-lua/plenary.nvim'
+    },
     config = "require('telescope_config')"
   },
 
@@ -128,25 +140,37 @@ local init = {
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
       require('gitsigns').setup{
-          -- debug_mode = true,
-          signs = {
-            add          = {hl = 'GitGutterAdd'   },
-            change       = {hl = 'GitGutterChange'},
-            delete       = {hl = 'GitGutterDelete'},
-            topdelete    = {hl = 'GitGutterDelete'},
-            changedelete = {hl = 'GitGutterChange'},
-          },
+        -- debug_mode = true,
+        signs = {
+          add          = {hl = 'GitGutterAdd'   },
+          change       = {hl = 'GitGutterChange'},
+          delete       = {hl = 'GitGutterDelete'},
+          topdelete    = {hl = 'GitGutterDelete'},
+          changedelete = {hl = 'GitGutterChange'},
         }
+      }
+    end
+  },
+
+  {'norcalli/nvim-colorizer.lua',
+    disable = true,
+    config = function()
+      require'colorizer'.setup()
     end
   },
 
   {'nvim-treesitter/nvim-treesitter',
+    requires = {
+      'romgrk/nvim-treesitter-context',
+      'nvim-treesitter/playground',
+    },
     config = "require('treesitter')",
   },
 
-  'romgrk/nvim-treesitter-context',
+  'euclidianAce/BetterLua.vim',
 
   {'romgrk/barbar.nvim',
+    requires = { 'kyazdani42/nvim-web-devicons' },
     config = function()
       vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
         closable = false
