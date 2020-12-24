@@ -63,8 +63,6 @@ local init = {
 
   'justinmk/vim-dirvish',
 
-  'lewis6991/vim-clean-fold',
-
   'rhysd/conflict-marker.vim',
 
   {'junegunn/vim-easy-align',
@@ -131,10 +129,7 @@ local init = {
     config = "require('telescope_config')"
   },
 
-  'scalameta/nvim-metals',
-
-  'nvim-lua/popup.nvim',
-  'kyazdani42/nvim-web-devicons',
+  {'lewis6991/cleanfold.nvim', config = "require('cleanfold').setup()" },
 
   {'~/projects/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
