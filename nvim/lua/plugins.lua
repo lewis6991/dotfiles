@@ -107,7 +107,6 @@ local init = {
   {'nvim-lua/completion-nvim',
     requires = {
       'steelsojka/completion-buffers',
-      {'aca/completion-tabnine', run = './install.sh'},
     },
     config = function()
       vim.g.completion_chain_complete_list = {
