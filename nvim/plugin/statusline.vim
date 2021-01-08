@@ -57,17 +57,10 @@ function! s:lsp_status() abort
         return ''
     end
 
-   " if exists('*metals#errors')
-   "      return ' %{metals#errors()} %{metals#warnings()}'
-   "  end
-
-    let sl = ''
-    if luaeval('not vim.tbl_isempty(vim.lsp.buf_get_clients(0))')
-        let sl .= ' E:'
-        let sl .= '%{luaeval("vim.lsp.diagnostic.get_count([[Error]])")}'
-        let sl .= ' W:'
-        let sl .= '%{luaeval("vim.lsp.diagnostic.get_count([[Warning]])")}'
-    endif
+    let sl = luaeval('lsp_status()')
+    if sl !=# ''
+        let sl = '  '.sl.'  '
+    end
     return sl
 endfunction
 

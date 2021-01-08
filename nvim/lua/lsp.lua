@@ -85,43 +85,79 @@ setup(nvim_lsp.jedi_language_server)
 -- https://github.com/sumneko/lua-language-server/wiki/Build-and-Run-(Standalone)
 setup_sumneko_ls()
 
--- setup(nvim_lsp.diagnosticls, {
---   root_dir = nvim_lsp.util.root_pattern("pylintrc", "setup.cfg", ".git"),
---   filetypes = {"python"},
---   init_options = {
---     filetypes = {
---       python = "pylint"
---     },
---     linters = {
---       pylint = {
---         sourceName = "pylint",
---         command = "pylint",
---         args = {
---           "--output-format", "text",
---           "--score"        , "no",
---           "--msg-template" , "'{line}:{column}:{category}:{msg} ({msg_id}:{symbol})'",
---           "%file"
---         },
---         formatPattern = {
---           "^(\\d+?):(\\d+?):([a-z]+?):(.*)$",
---           { line = 1, column = 2, security = 3, message = 4 }
---         },
---         rootPatterns = {".git", "pylintrc", "setup.py"},
---         securities = {
---           informational = "hint",
---           refactor = "info",
---           convention = "info",
---           warning = "warning",
---           error = "error",
---           fatal = "error"
---         },
---         offsetColumn = 1,
---         formatLines = 1,
---         required_files = {"pylintrc"}
---       }
---     }
---   }
--- })
+setup(nvim_lsp.diagnosticls, {
+  filetypes = {'python', 'sh'},
+  init_options = {
+    filetypes = {
+      python = {'pylint', 'mypy'},
+      sh     = {'shellcheck'}
+    },
+    linters = {
+      pylint = {
+        sourceName = "pylint",
+        command = "pylint",
+        args = {"--output-format=json", '--from-stdin', '%filename'},
+        rootPatterns = {"pylintrc", "pyproject.toml", ".git"},
+        parseJson = {
+          line       = 'line',
+          column     = 'column',
+          security   = 'type',
+          sourceName = 'path',
+          message    = '${message-id}: ${message}'
+        },
+        offsetColumn = 1,
+        securities = {
+          informational = "hint",
+          refactor      = "info",
+          convention    = "warning",
+          warning       = "warning",
+          error         = "error",
+          fatal         = "error"
+        },
+      },
+      mypy = {
+        offsetColumn = 0,
+        sourceName = "mypy",
+        command = "mypy",
+        args = {'%tempfile'},
+        rootPatterns = {"setup.cfg", ".git"},
+        formatLines = 1,
+        formatPattern = {
+          '^([^:]+):(\\d+): ([^:]+): (.*)$',
+          {
+            sourceName = 1,
+            line = 2,
+            security = 3,
+            message = 4
+          }
+        },
+        securities = {
+          error = "error",
+        },
+      },
+      shellcheck = {
+        sourceName = "shellcheck",
+        command = "shellcheck",
+        args = {'-f', 'json', '--exclude=1091', '-'},
+        parseJson = {
+          sourceName = 'file',
+          line       = 'line',
+          endLine    = 'endLine',
+          column     = 'column',
+          endColumn  = 'endColumn',
+          security   = 'level',
+          message    = '${message} [${code}]'
+        },
+        securities = {
+          error   = "error",
+          warning = "warning",
+          info    = "info",
+          hint    = "style",
+        },
+      }
+    }
+  }
+})
 
 vim.g.diagnostic_enable_virtual_text = 1
 vim.g.diagnostic_enable_underline = 0
@@ -129,3 +165,19 @@ vim.g.diagnostic_virtual_text_prefix = ' '
 
 vim.fn.sign_define("LspDiagnosticsErrorSign"  , {text = "✘", texthl = "LspDiagnosticsErrorSign"})
 vim.fn.sign_define("LspDiagnosticsWarningSign", {text = "!", texthl = "LspDiagnosticsWarningSign"})
+
+function lsp_status()
+  if vim.tbl_isempty(vim.lsp.buf_get_clients(0)) then
+    return ''
+  end
+
+  local status = {}
+
+  for _, ty in ipairs { 'Warning', 'Error', 'Information', 'Hint' } do
+    local n = vim.lsp.diagnostic.get_count(0, ty)
+    if n > 0 then
+      table.insert(status, ('%s:%s'):format(ty:sub(1,1), n))
+    end
+  end
+  return table.concat(status, ' ')
+end

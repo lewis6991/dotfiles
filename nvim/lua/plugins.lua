@@ -20,7 +20,7 @@ vim.cmd 'packadd packer.nvim'
 local init = {
   {'wbthomason/packer.nvim', opt = true},
 
-  {'tpope/vim-commentary', keys = {'gc'}},
+  'tpope/vim-commentary',
   'tpope/vim-fugitive',
   'tpope/vim-unimpaired',
   'tpope/vim-repeat',
@@ -38,13 +38,13 @@ local init = {
   'vim-scripts/visualrepeat',
   'timakro/vim-searchant', -- Highlight the current search result
 
-  {'tmhedberg/SimpylFold' , disable=true, ft = 'python'},
+  --- Filetype plugins ---
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
   {'derekwyatt/vim-scala' , ft = 'scala' },
-
+  {'zinit-zsh/zinit-vim-syntax', ft = 'zsh'},
   'martinda/Jenkinsfile-vim-syntax',
 
-  {'ap/vim-buftabline', disable=true},
+  'tmhedberg/SimpylFold',
 
   'dietsche/vim-lastplace',
   'christoomey/vim-tmux-navigator',
@@ -96,25 +96,58 @@ local init = {
     end
   },
 
+  {'scalameta/nvim-metals',
+    config = function()
+      setup_metals = function()
+        require("metals").initialize_or_attach {
+          init_options = {
+            statusBarProvider = 'on'
+          },
+          settings = {
+            showImplicitArguments = true,
+          },
+          on_attach = function()
+            local keymap = function(mode, key, result)
+              vim.api.nvim_buf_set_keymap(0, mode, key, result, {noremap = true, silent = true})
+            end
+            keymap('n', '<C-]>'     , '<cmd>lua vim.lsp.buf.definition()<CR>')
+            keymap('n', 'K'         , '<cmd>lua vim.lsp.buf.hover()<CR>')
+            keymap('n', 'gK'        , '<cmd>lua vim.lsp.buf.signature_help()<CR>')
+            keymap('n', 'gr'        , '<cmd>lua vim.lsp.buf.references()<CR>')
+            keymap('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
+            keymap('n', ']d'        , '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
+            keymap('n', '[d'        , '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
+            keymap('n', 'go'        , '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
+
+            vim.bo.omnifunc = 'v:lua.vim.lsp.omnifunc'
+          end
+        }
+      end
+
+      vim.cmd('augroup metals_lsp')
+      vim.cmd('au!')
+      vim.cmd('au FileType scala,sbt lua setup_metals()')
+      vim.cmd('augroup end')
+    end
+  },
+
   {'neovim/nvim-lspconfig',
-    requires = {
-      'scalameta/nvim-metals',
-      'tjdevries/nlua.nvim'
-    },
+    requires = {'tjdevries/nlua.nvim'},
     config = "require('lsp')"
   },
 
   {'nvim-lua/completion-nvim',
     requires = {
       'steelsojka/completion-buffers',
+      'albertoCaroM/completion-tmux',
     },
     config = function()
+      vim.g.completion_auto_change_source = 1
       vim.g.completion_chain_complete_list = {
-        default = {
-          { complete_items = { 'lsp', 'buffers' } },
-          { mode = { '<c-p>' } },
-          { mode = { '<c-n>' } }
-        }
+        { complete_items = { 'lsp' } },
+        { complete_items = { 'buffers', 'tmux' } },
+        { mode = { '<c-p>' } },
+        { mode = { '<c-n>' } }
       }
       vim.cmd("autocmd BufEnter * lua require'completion'.on_attach()")
     end
@@ -129,6 +162,8 @@ local init = {
   },
 
   {'lewis6991/cleanfold.nvim', config = "require('cleanfold').setup()" },
+
+  'whiteinge/diffconflicts',
 
   {'~/projects/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },

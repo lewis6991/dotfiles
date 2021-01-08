@@ -1,19 +1,30 @@
 
-vim.g.loaded_python_provider = 1 -- Disable python2
--- vim.g.loaded_ruby_provider   = 1 -- Disable ruby
+P = function(v)
+  print(vim.inspect(v))
+  return v
+end
 
--- if vim.fn.glob('/devtools/linuxbrew/bin/python3') ~= '' then
---     vim.g.python3_host_prog = '/devtools/linuxbrew/bin/python3'
--- else
---     vim.g.python3_host_prog = vim.fn.systemlist('which python3')[0]
--- end
+local opts_info = vim.api.nvim_get_all_options_info()
 
-vim.o.inccommand = 'split'
-vim.o.previewheight = 30
+local opt = setmetatable({}, {
+  __newindex = function(self, key, value)
+    vim.o[key] = value
+    local scope = opts_info[key].scope
+    if scope == 'win' then
+      vim.wo[key] = value
+    elseif scope == 'buf' then
+      vim.bo[key] = value
+    end
+  end
+})
+
+opt.inccommand = 'split'
+opt.previewheight = 30
 
 -- Remove tilda from signcolumn
-vim.o.fillchars = 'eob: '
+opt.fillchars = 'eob: '
 
-vim.o.signcolumn='auto:3'
-vim.o.pumblend=10
-vim.o.winblend=10
+opt.signcolumn = 'auto:3'
+
+opt.pumblend=10
+opt.winblend=10
