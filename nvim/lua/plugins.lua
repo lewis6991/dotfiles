@@ -43,6 +43,7 @@ local init = {
   {'derekwyatt/vim-scala' , ft = 'scala' },
   {'zinit-zsh/zinit-vim-syntax', ft = 'zsh'},
   'martinda/Jenkinsfile-vim-syntax',
+  'teal-language/vim-teal',
 
   'tmhedberg/SimpylFold',
 

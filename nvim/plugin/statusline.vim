@@ -57,7 +57,7 @@ function! s:lsp_status() abort
         return ''
     end
 
-    let sl = luaeval('lsp_status()')
+    let sl = luaeval('Lsp_status()')
     if sl !=# ''
         let sl = '  '.sl.'  '
     end

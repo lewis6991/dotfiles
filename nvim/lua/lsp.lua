@@ -60,7 +60,12 @@ local function setup_sumneko_ls()
           path = vim.split(package.path, ';'),
         },
         diagnostics = {
-          globals = {'vim'},
+          globals = {
+            -- Neovim
+            "vim",
+            -- Busted
+            "describe", "it", "before_each", "after_each", "teardown", "pending"
+          }
         },
         workspace = {
           library = {
@@ -163,10 +168,12 @@ vim.g.diagnostic_enable_virtual_text = 1
 vim.g.diagnostic_enable_underline = 0
 vim.g.diagnostic_virtual_text_prefix = ' '
 
-vim.fn.sign_define("LspDiagnosticsErrorSign"  , {text = "✘", texthl = "LspDiagnosticsErrorSign"})
-vim.fn.sign_define("LspDiagnosticsWarningSign", {text = "!", texthl = "LspDiagnosticsWarningSign"})
+vim.fn.sign_define("LspDiagnosticsSignError"      , {text = "✘", texthl = "LspDiagnosticsSignError"})
+vim.fn.sign_define("LspDiagnosticsSignWarning"    , {text = "!", texthl = "LspDiagnosticsSignWarning"})
+vim.fn.sign_define("LspDiagnosticsSignInformation", {text = "i", texthl = "LspDiagnosticsSignInformation"})
+vim.fn.sign_define("LspDiagnosticsSignHint"       , {text = "h", texthl = "LspDiagnosticsSignHint"})
 
-function lsp_status()
+function Lsp_status()
   if vim.tbl_isempty(vim.lsp.buf_get_clients(0)) then
     return ''
   end
