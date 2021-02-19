@@ -1,8 +1,3 @@
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-#┃ Lewis's .bashrc                                                             ┃
-#┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 # Skip remaining setup if not an interactive shell
 [[ $- != *i* ]] && return
 
@@ -16,36 +11,20 @@ if hash brew 2> /dev/null; then
     BREW_PREFIX=$(brew --prefix)
 fi
 
-IS_WSL=0
-IS_MAC=0
-IS_LINUX=0
-
-if [ "$(uname)" == "Darwin" ]; then
-    IS_MAC=1
-elif [ "$(uname)" == "Linux" ]; then
-    if grep Microsoft /proc/version > /dev/null; then
-        IS_WSL=1
-    else
-        IS_LINUX=1
-    fi
-fi
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ FZF                                                                         ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------
+# FZF
+#-------------------------------------------------------------------------------
 source_if_exists ~/.fzf.bash
 
 export FZF_DEFAULT_OPTS='--height 30% --reverse'
 
 if hash rg 2>/dev/null; then
     export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
-elif hash ag 2>/dev/null; then
-    export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 fi
 
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Completion                                                                  ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------
+# Completion
+#-------------------------------------------------------------------------------
 
 source_if_exists "$HOME/.bash_completion"
 
@@ -57,21 +36,11 @@ elif ! shopt -oq posix; then
     source_if_exists /etc/bash_completion
 fi
 
-if hash gerrit 2> /dev/null; then
-    source <(gerrit completion)
-fi
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Prompt                                                                      ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------
+# Prompt
+#-------------------------------------------------------------------------------
 prompt_command() {
     PS1=$(~/.prompt bash $?)
-
-    # if [ -n "$TMUX" ]; then
-    #     # Refresh these variables
-    #     eval "$(tmux showenv -s DISPLAY)"
-    #     eval "$(tmux showenv -s SSH_CONNECTION)"
-    # fi
 
     # Update history after every command
     history -a
@@ -82,9 +51,9 @@ PROMPT_COMMAND=prompt_command
 export FANCY_PROMPT_RHS_ENABLE=0
 export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Variables                                                                   ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------
+# Variables
+#-------------------------------------------------------------------------------
 
 # Modify path if coretuils is installed (Mac)
 if ((HAVE_BREW)); then
@@ -131,16 +100,9 @@ export LESS_TERMCAP_ZW=$(tput rsupm)
 
 export LS_COLORS=""
 
-if ((IS_WSL)); then
-    # WSL sets all permissions outside of the unix filesystem to 777. This ruins
-    # all ls colors since they are all files executable. Tweak this to make the
-    # colors less offensive.
-    export LS_COLORS="$LS_COLORS:tw=30:ow=34:ex=00:"
-fi
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Aliases                                                                     ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------
+# Aliases
+#-------------------------------------------------------------------------------
 alias ls='ls --color'
 alias ll='ls -goAh'
 
@@ -154,22 +116,13 @@ if hash rlwrap 2>/dev/null; then
     alias tclsh="rlwrap -A tclsh"
 fi
 
-alias install-nvim='make CMAKE_BUILD_TYPE=Release CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=$HOME"'
-
-alias tree="tree -A"
-
 alias ta="tmux attach"
 alias bashrc="vim ~/.bashrc"
 alias re-csh="source ~/.bashrc"
 
-alias python=python3
-alias pip=pip3
-
-alias lssize="ls -A --color=none | xargs du -sh"
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Other                                                                       ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------
+# Other
+#-------------------------------------------------------------------------------
 # Disable software flow control so <Ctrl-S> doesn't hang the terminal.
 stty -ixon
 
@@ -181,26 +134,9 @@ shopt -s histappend
 
 export HISTCONTROL=erasedups
 
-if ((IS_MAC)); then
-    xhost + > /dev/null
-fi
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Load other setups                                                           ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------
+# Load other setups
+#-------------------------------------------------------------------------------
 source_if_exists "$HOME/.bashrc_local"
 
-export PATH="$HOME/bin:$PATH"
-export PATH="$HOME/tools/python/bin:$PATH"
-# export PATH="/usr/local/sbin:$PATH"
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┃ Locale                                                                      ┃
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-if ! ((IS_MAC)); then
-    LC_ALL="en_US.utf8"
-    LANG="en_US.utf8"
-fi
-
-#┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-#┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+#-------------------------------------------------------------------------------

@@ -18,3 +18,5 @@ endfunction "}}}
 
 setlocal foldmethod=expr
 setlocal foldexpr=YamlFolds()
+
+setlocal nospell

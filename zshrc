@@ -88,8 +88,12 @@ zinit lucid light-mode for \
         zsh-users/zsh-completions \
     wait atload'_zsh_autosuggest_start' \
         zsh-users/zsh-autosuggestions \
+    atload"FAST_HIGHLIGHT[chroma-ssh]=''" \
     atinit"ZINIT[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay" \
         zdharma/fast-syntax-highlighting \
+
+# atload"FAST_HIGHLIGHT[chroma-ssh]=''" Disables ssh highlighting which has bad
+# performance issues: https://github.com/zdharma/fast-syntax-highlighting/issues/139
 
 if [[ -f $DOTFILES/mouse.zsh ]]; then
     . $DOTFILES/mouse.zsh

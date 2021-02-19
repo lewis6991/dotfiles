@@ -6,32 +6,38 @@ source_if_exists() {
 }
 
 extract() {
-    if [ -f "$1" ] ; then
-        case $1 in
-            *.tar.bz2) tar xvjf   "$1" ;;
-            *.tar.gz ) tar xvzf   "$1" ;;
-            *.tar.xz ) tar xvf    "$1" ;;
-            *.bz2    ) bunzip2    "$1" ;;
-            *.gz     ) gunzip     "$1" ;;
-            *.tar    ) tar xvf    "$1" ;;
-            *.tbz2   ) tar xvjf   "$1" ;;
-            *.tgz    ) tar xvzf   "$1" ;;
-            *.zip    ) unzip      "$1" ;;
-            *.Z      ) uncompress "$1" ;;
-            *        ) echo "'$1' cannot be extracted via >extract<" ;;
-        esac
-    else
-        echo "'$1' is not a valid file!"
-    fi
+   if [[ -z "$1" ]]; then
+       print -P "usage: \e[1;36mextract\e[1;0m < filename >"
+       print -P "       Extract the file specified based on the extension"
+   elif [[ -f $1 ]]; then
+       case ${(L)1} in
+           *.tar.xz)   tar -Jxf   "$1" ;;
+           *.tar.bz2)  tar -jxvf  "$1" ;;
+           *.tar.gz)   tar -zxvf  "$1" ;;
+           *.bz2)      bunzip2    "$1" ;;
+           *.gz)       gunzip     "$1" ;;
+           *.jar)      unzip      "$1" ;;
+           *.rar)      unrar x    "$1" ;;
+           *.tar)      tar -xvf   "$1" ;;
+           *.tbz2)     tar -jxvf  "$1" ;;
+           *.tgz)      tar -zxvf  "$1" ;;
+           *.zip)      unzip      "$1" ;;
+           *.Z)        uncompress "$1" ;;
+           *.7z)       7za e      "$1" ;;
+           *)          echo "Unable to extract '$1' :: Unknown extension"
+       esac
+   else
+       echo "File ('$1') does not exist!"
+   fi
 }
 
-ssh() {
-    if [ -n "$TMUX" ]; then
-        tmux rename-window "ssh:$(echo $* | sed 's/\.arm\.com$//')"
-        command ssh "$@"
-        tmux set-window-option automatic-rename "on" 1>/dev/null
-    else
-        command ssh "$@"
-    fi
-}
+# ssh() {
+#     if [ -n "$TMUX" ]; then
+#         tmux rename-window "ssh:$(echo $* | sed 's/\.arm\.com$//')"
+#         command ssh "$@"
+#         tmux set-window-option automatic-rename "on" 1>/dev/null
+#     else
+#         command ssh "$@"
+#     fi
+# }
 

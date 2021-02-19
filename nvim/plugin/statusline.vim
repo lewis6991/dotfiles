@@ -1,7 +1,11 @@
 
 function! Hunks() abort
     if exists('b:gitsigns_status')
-        return b:gitsigns_status
+        if b:gitsigns_status !=# ''
+            return b:gitsigns_status
+        else
+            return '✓'
+        endif
     endif
     return ''
 endfunction

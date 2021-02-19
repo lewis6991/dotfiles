@@ -41,6 +41,7 @@ local init = {
   --- Filetype plugins ---
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
   {'derekwyatt/vim-scala' , ft = 'scala' },
+  {'cespare/vim-toml'     },
   {'zinit-zsh/zinit-vim-syntax', ft = 'zsh'},
   'martinda/Jenkinsfile-vim-syntax',
   'teal-language/vim-teal',
@@ -137,7 +138,24 @@ local init = {
     config = "require('lsp')"
   },
 
+  {'hrsh7th/nvim-compe',
+    -- disable = true,
+    config = function()
+      require'compe'.setup {
+        source = {
+          path       = true;
+          buffer     = true;
+          nvim_lsp   = true;
+          nvim_lua   = true;
+          spell      = true;
+          treesitter = true;
+        };
+      }
+    end
+  },
+
   {'nvim-lua/completion-nvim',
+    disabled = true,
     requires = {
       'steelsojka/completion-buffers',
       'albertoCaroM/completion-tmux',
@@ -172,11 +190,11 @@ local init = {
       require('gitsigns').setup{
         -- debug_mode = true,
         signs = {
-          add          = {hl = 'GitGutterAdd'   },
-          change       = {hl = 'GitGutterChange'},
-          delete       = {hl = 'GitGutterDelete'},
-          topdelete    = {hl = 'GitGutterDelete'},
-          changedelete = {hl = 'GitGutterChange'},
+          add          = {text= '┃', hl = 'GitGutterAdd'   },
+          change       = {text= '┃', hl = 'GitGutterChange'},
+          delete       = {text= '_', hl = 'GitGutterDelete'},
+          topdelete    = {text= '‾', hl = 'GitGutterDelete'},
+          changedelete = {text= '≃', hl = 'GitGutterChange'},
         }
       }
     end

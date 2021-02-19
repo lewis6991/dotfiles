@@ -1,20 +1,24 @@
 #! /usr/bin/env bash
 
-git for-each-ref --shell --format="%(refname:lstrip=2)" refs/heads |
-    while read entry; do
+# arrow='->'
+arrow='\uf553'
+this='\uf111'
+
+git for-each-ref --shell --format="%(refname:short)" refs/heads |
+    while read -r entry; do
         branch=$(echo "$entry" | xargs)  # Unquote
-        remoteBranch=$(git config branch.$branch.merge)
-        remoteBranch=${remoteBranch##refs/heads/}
-        git branch \
-            --format=\
-'%(color: bold green)%(align:2,left)'\
-'%(HEAD)%(end)%(color:yellow)%(refname:strip=2)'\
-'%(color:reset) -> '\
-'%(color:blue)%(upstream:strip=3) '\
-'%(color:cyan)%(upstream:track)' \
+        upstream=$(git branch --list "$branch" --format='%(upstream:short)')
+        branch_info=$(git branch \
+            --color=always \
             --list \
-            "$branch"
-        git --no-pager log \
-            --format="      %s" \
-            "origin/$remoteBranch..$branch"
+            --format="\
+%(color: bold green)%(if)%(HEAD)%(then)$this %(else)  %(end)\
+%(color:yellow)%(refname:short)%(color:reset) $arrow \
+%(color:blue)%(upstream:short) \
+%(color:cyan)%(upstream:track)" \
+            "$branch")
+        echo -e "$branch_info"
+        if [[ "$branch_info" != *[gone] ]]; then
+            git --no-pager log --format="      %s" "$upstream..$branch"
+        fi
     done

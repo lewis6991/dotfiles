@@ -175,11 +175,11 @@ function main {
 
     install_extra_brew_packages \
         bash          \
-        diff-so-fancy \
+        bat           \
+        git-delta     \
         highlight     \
         make          \
         python        \
-        python@2      \
         rlwrap        \
         tmux          \
         tree          \

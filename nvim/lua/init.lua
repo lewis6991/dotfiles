@@ -28,3 +28,5 @@ opt.signcolumn = 'auto:3'
 
 opt.pumblend=10
 opt.winblend=10
+
+vim.cmd'hi SpellBad guisp=#663333'
