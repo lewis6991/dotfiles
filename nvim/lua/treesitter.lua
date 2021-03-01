@@ -7,14 +7,10 @@ require'nvim-treesitter'.define_modules {
         vim.cmd'set foldmethod=expr foldexpr=nvim_treesitter#foldexpr()'
     end,
     detach = function(bufnr) end,
-  },
-  spell = {
-    attach = function(bufnr, lang)
-      vim.cmd'au BufEnter * ++once syntax enable | hi SpellBad guisp=#663333'
-    end,
-    detach = function(bufnr) end,
   }
 }
+
+vim.cmd'hi SpellBad guisp=#663333'
 
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
@@ -46,7 +42,6 @@ require'nvim-treesitter.configs'.setup {
     },
   },
   fold = { enable = true },
-  spell = { enable = true },
   playground = { enable = true }
 }
 

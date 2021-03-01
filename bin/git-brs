@@ -18,7 +18,7 @@ git for-each-ref --shell --format="%(refname:short)" refs/heads |
 %(color:cyan)%(upstream:track)" \
             "$branch")
         echo -e "$branch_info"
-        if [[ "$branch_info" != *[gone] ]]; then
+        if [[ "$upstream" != "" ]]; then
             git --no-pager log --format="      %s" "$upstream..$branch"
         fi
     done

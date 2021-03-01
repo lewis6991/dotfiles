@@ -139,7 +139,6 @@ local init = {
   },
 
   {'hrsh7th/nvim-compe',
-    -- disable = true,
     config = function()
       require'compe'.setup {
         source = {
@@ -151,24 +150,37 @@ local init = {
           treesitter = true;
         };
       }
-    end
-  },
+      local t = function(str)
+        return vim.api.nvim_replace_termcodes(str, true, true, true)
+      end
 
-  {'nvim-lua/completion-nvim',
-    disabled = true,
-    requires = {
-      'steelsojka/completion-buffers',
-      'albertoCaroM/completion-tmux',
-    },
-    config = function()
-      vim.g.completion_auto_change_source = 1
-      vim.g.completion_chain_complete_list = {
-        { complete_items = { 'lsp' } },
-        { complete_items = { 'buffers', 'tmux' } },
-        { mode = { '<c-p>' } },
-        { mode = { '<c-n>' } }
-      }
-      vim.cmd("autocmd BufEnter * lua require'completion'.on_attach()")
+      local check_back_space = function()
+          local col = vim.fn.col('.') - 1
+          if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
+              return true
+          else
+              return false
+          end
+      end
+
+      -- Use (s-)tab to:
+      -- move to prev/next item in completion menuone
+      _G.tab_complete = function()
+        return vim.fn.pumvisible() == 1 and t'<C-n>'
+        or     check_back_space()       and t'<Tab>'
+        or     vim.fn['compe#complete']()
+      end
+      _G.s_tab_complete = function()
+        return vim.fn.pumvisible() == 1 and t'<C-p>' or t'<S-Tab>'
+      end
+
+      local function map(key, action)
+        vim.api.nvim_set_keymap('i', key, action, {expr = true})
+        vim.api.nvim_set_keymap('s', key, action, {expr = true})
+      end
+
+      map("<Tab>"  , "v:lua.tab_complete()"  )
+      map("<S-Tab>", "v:lua.s_tab_complete()")
     end
   },
 

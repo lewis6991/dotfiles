@@ -167,7 +167,7 @@ bindkey '^N' history-substring-search-down
 # Enable shift-tab to cycle back completions
 bindkey -M menuselect '^[[Z' reverse-menu-complete
 
-extract(){
+extract() {
    if [[ -z "$1" ]]; then
        print -P "usage: \e[1;36mextract\e[1;0m < filename >"
        print -P "       Extract the file specified based on the extension"
@@ -193,17 +193,17 @@ extract(){
    fi
 }
 
-refresh_tmux() {
-    if [[ -n "$TMUX" ]]; then
-        # Update environment variables when we attach to an existing tmux
-        # session from a new connection
-        tmux show-environment | grep -v '^-' | sed 's/=\(.*\)/="\1"/' | while read foo; do
-            eval "export $foo"
-        done
-    fi
-}
+# refresh_tmux() {
+#     if [[ -n "$TMUX" ]]; then
+#         # Update environment variables when we attach to an existing tmux
+#         # session from a new connection
+#         tmux show-environment | grep -v '^-' | sed 's/=\(.*\)/="\1"/' | while read foo; do
+#             eval "export $foo"
+#         done
+#     fi
+# }
 
-add-zsh-hook precmd refresh_tmux
+# add-zsh-hook precmd refresh_tmux
 
 ring_bell() {
     echo -n -e '\a'

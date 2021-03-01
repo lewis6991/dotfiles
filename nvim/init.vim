@@ -134,6 +134,8 @@ nnoremap q <nop>
 " Show syntax highlighting groups for word under cursor
 nnoremap <leader>z :call <SID>syn_stack()<CR>
 
+nnoremap <leader>: :lua<space>
+
 nmap   <Tab> :bnext<CR>
 nmap <S-Tab> :bprev<CR>
 
@@ -145,9 +147,6 @@ cnoremap <C-N> <down>
 
 cnoremap <C-A> <Home>
 cnoremap <C-D> <Del>
-
-imap   <Tab> <Plug>(completion_smart_tab)
-imap <S-Tab> <Plug>(completion_smart_s_tab)
 
 " }}}
 " Whitespace {{{
@@ -247,6 +246,8 @@ command! Hashbang call Hashbang()
 
 command! -nargs=* FloatingMan call ToggleCommand('execute ":r !man -D '.<q-args>. '" | Man!')
 
+command! LspDisable lua vim.lsp.stop_client(vim.lsp.get_active_clients())
+
 set keywordprg=:FloatingMan
 
 function! CreateCenteredFloatingWindow() "{{{
@@ -276,5 +277,7 @@ endfunction "}}}
 
 " Brighten lsp floating windows
 highlight link NormalFloat StatusLine
+
+set nospell
 
 " vim: foldmethod=marker foldminlines=0:
