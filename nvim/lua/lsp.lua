@@ -91,11 +91,12 @@ setup(nvim_lsp.jedi_language_server)
 setup_sumneko_ls()
 
 setup(nvim_lsp.diagnosticls, {
-  filetypes = {'python', 'sh'},
+  filetypes = {'python', 'sh', 'teal'},
   init_options = {
     filetypes = {
       python = {'pylint', 'mypy'},
-      sh     = {'shellcheck'}
+      sh     = {'shellcheck'},
+      teal   = {'tealcheck'}
     },
     linters = {
       pylint = {
@@ -140,6 +141,24 @@ setup(nvim_lsp.diagnosticls, {
           error = "error",
         },
       },
+      tealcheck = {
+        sourceName = "tealcheck",
+        command = "tl",
+        args = {'check', '%file'},
+        isStdout = false,
+        isStderr = true,
+        rootPatterns = {"tlconfig.lua", ".git"},
+        formatPattern = {
+          '^([^:]+):(\\d+):(\\d+): (.+)$',
+          {
+            sourceName = 1,
+            sourceNameFilter = true,
+            line = 2,
+            column = 3,
+            message = 4
+          }
+        }
+      },
       shellcheck = {
         sourceName = "shellcheck",
         command = "shellcheck",
@@ -168,10 +187,14 @@ vim.g.diagnostic_enable_virtual_text = 1
 vim.g.diagnostic_enable_underline = 0
 vim.g.diagnostic_virtual_text_prefix = ' '
 
-vim.fn.sign_define("LspDiagnosticsSignError"      , {text = "✘", texthl = "LspDiagnosticsSignError"})
-vim.fn.sign_define("LspDiagnosticsSignWarning"    , {text = "!", texthl = "LspDiagnosticsSignWarning"})
-vim.fn.sign_define("LspDiagnosticsSignInformation", {text = "i", texthl = "LspDiagnosticsSignInformation"})
-vim.fn.sign_define("LspDiagnosticsSignHint"       , {text = "h", texthl = "LspDiagnosticsSignHint"})
+local function set_lsp_sign(name, text)
+  vim.fn.sign_define(name, {text = text, texthl = name})
+end
+
+set_lsp_sign("LspDiagnosticsSignError"      , "✘")
+set_lsp_sign("LspDiagnosticsSignWarning"    , "!")
+set_lsp_sign("LspDiagnosticsSignInformation", "i")
+set_lsp_sign("LspDiagnosticsSignHint"       , "h")
 
 function Lsp_status()
   if vim.tbl_isempty(vim.lsp.buf_get_clients(0)) then

@@ -59,6 +59,5 @@ augroup dirvish_config
     autocmd FileType dirvish nmap <buffer> <C-k> <nop>
     autocmd FileType dirvish nmap <buffer> <C-l> <nop>
 
-    " autocmd FileType dirvish setlocal winhl=Normal:Floating
     autocmd FileType dirvish setlocal nocursorline
 augroup END
