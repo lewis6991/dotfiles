@@ -8,6 +8,7 @@ git for-each-ref --shell --format="%(refname:short)" refs/heads |
     while read -r entry; do
         branch=$(echo "$entry" | xargs)  # Unquote
         upstream=$(git branch --list "$branch" --format='%(upstream:short)')
+        upstream_track=$(git branch --list "$branch" --format='%(upstream:track)')
         branch_info=$(git branch \
             --color=always \
             --list \
@@ -18,7 +19,7 @@ git for-each-ref --shell --format="%(refname:short)" refs/heads |
 %(color:cyan)%(upstream:track)" \
             "$branch")
         echo -e "$branch_info"
-        if [[ "$upstream" != "" ]]; then
+        if [[ "$upstream" != "" ]] && [[ "$upstream_track" != "[gone]" ]]; then
             git --no-pager log --format="      %s" "$upstream..$branch"
         fi
     done
