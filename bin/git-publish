@@ -1,0 +1,19 @@
+#! /usr/bin/env bash
+
+set -e
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ "$branch" = "HEAD" ]; then
+    # check if we are in a rebase
+    head_name_file="$(git rev-parse --git-dir)/rebase-merge/head-name"
+    if [ -f "${head_name_file}" ]; then
+        branch=$(cut -f3- -d/ "$head_name_file")
+    else
+        # ignore DETACHED HEAD state.
+        exit 1
+    fi
+fi
+remoteBranch=$(git config "branch.${1-$branch}.merge")
+remoteBranch=${remoteBranch##refs/heads/}
+git push origin "HEAD:refs/for/$remoteBranch"
+jerrit update
+
