@@ -20,7 +20,7 @@ function run {
 
     len=-1
     for i in "${!status[@]}"; do
-        status_no_c=$(sed -r 's/^.* ([^ ].*)/\1/g' <<< "${status[i]}")
+        status_no_c=$(perl -pe 's/^.* ([^ ].*)/\1/g' <<< "${status[i]}")
         if [ ${#status_no_c} -gt $len ]; then
             len=${#status_no_c}
         fi
@@ -30,8 +30,8 @@ function run {
         cstat=${status[i]}
         cdiff=${diff[i]}
         if [ -n "$cdiff" ]; then
-            cstat1=$(sed -r 's/^(.*) [^ ].*/\1/g' <<< "$cstat")
-            cstat2=$(sed -r 's/^.* ([^ ].*)/\1/g' <<< "$cstat")
+            cstat1=$(perl -pe 's/^(.*) [^ ].*/\1/g' <<< "$cstat")
+            cstat2=$(perl -pe 's/^.* ([^ ].*)/\1/g' <<< "$cstat")
             printf "%s %*s │%s\n" "$cstat1" "-$len" "$cstat2" "$cdiff"
         else
             printf "%s\n" "$cstat"
