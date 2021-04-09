@@ -137,25 +137,30 @@ if have_cmd rlwrap; then
     fi
 fi
 
-if have_cmd rg; then
-    rg() {
-        if [[ -t 1 ]]; then
-            command rg --pretty --smart-case "$@" | less
-        else
-            command rg "$@"
-        fi
-    }
+# MacOS Built in less is too old.
+if [[ "$(which less)" != "/usr/bin/less" ]]; then
+    if have_cmd rg; then
+        rg() {
+            if [[ -t 1 ]]; then
+                command rg --pretty --smart-case "$@" | less
+            else
+                command rg "$@"
+            fi
+        }
 
-    export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" 2> /dev/null'
+        export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" 2> /dev/null'
+    fi
+
+    # --RAW-CONTROL-CHARS cause --quit-if-one-screen to not work
+    export LESS="\
+        --raw-control-chars \
+        --ignore-case \
+        --LONG-PROMPT \
+        --quit-if-one-screen \
+        --chop-long-lines"
+else
+    echo "'less' is too told"
 fi
-
-# --RAW-CONTROL-CHARS cause --quit-if-one-screen to not work
-export LESS="\
-    --raw-control-chars \
-    --ignore-case \
-    --LONG-PROMPT \
-    --quit-if-one-screen \
-    --chop-long-lines"
 
 # Async prompt -----------------------------------------------------------------
 source "$DOTFILES/modules/fancy-prompt/prompt.zsh"
@@ -215,3 +220,4 @@ add-zsh-hook precmd ring_bell
 ! [ -f ~/.aliases_local ] || source ~/.aliases_local
 ! [ -f ~/.fzf.zsh       ] || source ~/.fzf.zsh
 ! [ -f ~/.zshrc_local   ] || source ~/.zshrc_local
+### End of Zinit's installer chunk
