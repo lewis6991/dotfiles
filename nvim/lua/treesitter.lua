@@ -15,7 +15,7 @@ vim.cmd'hi SpellBad guisp=#663333'
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
     "python",
-    "json",
+    -- "json",
     "html",
     "bash",
     "lua",
@@ -41,7 +41,10 @@ require'nvim-treesitter.configs'.setup {
       node_decremental  = "grm",
     },
   },
-  fold = { enable = true },
+  fold = {
+    enable = true,
+    disable = {'rst'}
+  },
   playground = { enable = true }
 }
 

@@ -118,15 +118,15 @@ nnoremap <leader>gs :Gstatus<CR>
 
 nnoremap T :sp<space><bar><space>term<space>
 
-nnoremap j gj
-nnoremap k gk
+nnoremap <expr> k v:count == 0 ? 'gk' : 'k'
+nnoremap <expr> j v:count == 0 ? 'gj' : 'j'
 
 nnoremap Y y$
 
-nnoremap Q :w<cr>
-vnoremap Q <nop>
-nnoremap gQ <nop>
-vnoremap gQ <nop>
+nmap Q :w<cr>
+vmap Q <nop>
+nmap gQ <nop>
+vmap gQ <nop>
 
 " I never use macros and more often mis-hit this key
 nnoremap q <nop>
@@ -276,7 +276,7 @@ endfunction "}}}
 "}}}
 
 " Brighten lsp floating windows
-highlight link NormalFloat StatusLine
+" highlight link NormalFloat StatusLine
 
 set nospell
 

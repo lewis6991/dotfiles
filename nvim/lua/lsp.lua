@@ -90,6 +90,7 @@ setup(nvim_lsp.jedi_language_server)
 -- https://github.com/sumneko/lua-language-server/wiki/Build-and-Run-(Standalone)
 setup_sumneko_ls()
 
+-- npm install -g diagnostic-languageserver
 setup(nvim_lsp.diagnosticls, {
   filetypes = {'python', 'sh', 'teal'},
   init_options = {
@@ -102,13 +103,12 @@ setup(nvim_lsp.diagnosticls, {
       pylint = {
         sourceName = "pylint",
         command = "pylint",
-        args = {"--output-format=json", '--from-stdin', '%filename'},
+        args = {"--output-format=json", '--from-stdin', '%filepath'},
         rootPatterns = {"pylintrc", "pyproject.toml", ".git"},
         parseJson = {
           line       = 'line',
           column     = 'column',
           security   = 'type',
-          sourceName = 'path',
           message    = '${message-id}: ${message}'
         },
         offsetColumn = 1,
@@ -125,13 +125,14 @@ setup(nvim_lsp.diagnosticls, {
         offsetColumn = 0,
         sourceName = "mypy",
         command = "mypy",
-        args = {'%tempfile'},
+        args = {'--shadow-file', '%filepath', '%tempfile', '%filepath', '--strict'},
         rootPatterns = {"setup.cfg", ".git"},
         formatLines = 1,
         formatPattern = {
           '^([^:]+):(\\d+): ([^:]+): (.*)$',
           {
             sourceName = 1,
+            sourceNameFilter = true,
             line = 2,
             security = 3,
             message = 4
@@ -162,9 +163,8 @@ setup(nvim_lsp.diagnosticls, {
       shellcheck = {
         sourceName = "shellcheck",
         command = "shellcheck",
-        args = {'-f', 'json', '--exclude=1091', '-'},
+        args = {'--shell=bash', '-f', 'json', '--exclude=1004,1091,2002,2016', '-'},
         parseJson = {
-          sourceName = 'file',
           line       = 'line',
           endLine    = 'endLine',
           column     = 'column',
@@ -193,8 +193,8 @@ end
 
 set_lsp_sign("LspDiagnosticsSignError"      , "✘")
 set_lsp_sign("LspDiagnosticsSignWarning"    , "!")
-set_lsp_sign("LspDiagnosticsSignInformation", "i")
-set_lsp_sign("LspDiagnosticsSignHint"       , "h")
+set_lsp_sign("LspDiagnosticsSignInformation", "I")
+set_lsp_sign("LspDiagnosticsSignHint"       , "H")
 
 function Lsp_status()
   if vim.tbl_isempty(vim.lsp.buf_get_clients(0)) then
@@ -209,5 +209,7 @@ function Lsp_status()
       table.insert(status, ('%s:%s'):format(ty:sub(1,1), n))
     end
   end
-  return table.concat(status, ' ')
+  local r = table.concat(status, ' ')
+
+  return r == '' and 'LSP' or r
 end

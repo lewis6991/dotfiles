@@ -1,11 +1,11 @@
 
 function! Hunks() abort
     if exists('b:gitsigns_status')
+        let status = b:gitsigns_head
         if b:gitsigns_status !=# ''
-            return b:gitsigns_status
-        else
-            return '✓'
+            let status .= ' '.b:gitsigns_status
         endif
+        return status
     endif
     return ''
 endfunction

@@ -50,7 +50,6 @@ local init = {
 
   'dietsche/vim-lastplace',
   'christoomey/vim-tmux-navigator',
-  'tmux-plugins/vim-tmux-focus-events',
   'ryanoasis/vim-devicons',
   'powerman/vim-plugin-AnsiEsc',
 
@@ -63,7 +62,7 @@ local init = {
     end
   },
 
-  'justinmk/vim-dirvish',
+  {'justinmk/vim-dirvish', config = "require'dirvish'"},
 
   'rhysd/conflict-marker.vim',
 
@@ -85,6 +84,7 @@ local init = {
         [':']  = { pattern = ':'        , left_margin = 1, right_margin = 1 },
         ['?']  = { pattern = '?'        , left_margin = 1, right_margin = 1 },
         ['<']  = { pattern = '<'        , left_margin = 1, right_margin = 0 },
+        ['>']  = { pattern = '>'        , left_margin = 1, right_margin = 0 },
         ['\\'] = { pattern = '\\'       , left_margin = 1, right_margin = 0 },
         ['+']  = { pattern = '+'        , left_margin = 1, right_margin = 1 }
       }
@@ -147,7 +147,7 @@ local init = {
           nvim_lsp   = true;
           nvim_lua   = true;
           spell      = true;
-          treesitter = true;
+          -- treesitter = true;
         };
       }
       local t = function(str)
@@ -181,6 +181,9 @@ local init = {
 
       map("<Tab>"  , "v:lua.tab_complete()"  )
       map("<S-Tab>", "v:lua.s_tab_complete()")
+
+      vim.api.nvim_set_keymap('i', '<cr>', "compe#confirm('<CR>')",
+        {expr = true, silent = true, noremap = true})
     end
   },
 
@@ -196,9 +199,14 @@ local init = {
 
   'whiteinge/diffconflicts',
 
+  -- 'mhinz/vim-signify',
+  -- 'airblade/vim-gitgutter',
   {'~/projects/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
+      vim.api.nvim_set_keymap('n', 'm', ':Gitsigns dump_cache<cr>'    , {silent=true})
+      vim.api.nvim_set_keymap('n', 'M', ':Gitsigns debug_messages<cr>', {silent=true})
+      vim.cmd'hi link GitSignsCurrentLineBlame FloatBorder'
       require('gitsigns').setup{
         -- debug_mode = true,
         signs = {
@@ -224,6 +232,7 @@ local init = {
       'romgrk/nvim-treesitter-context',
       'nvim-treesitter/playground',
     },
+    run = ':TSUpdate',
     config = "require('treesitter')",
   },
 
