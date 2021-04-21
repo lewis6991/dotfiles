@@ -1,3 +1,4 @@
+require'plugins'
 
 P = function(v)
   print(vim.inspect(v))
@@ -7,7 +8,7 @@ end
 local opts_info = vim.api.nvim_get_all_options_info()
 
 local opt = setmetatable({}, {
-  __newindex = function(self, key, value)
+  __newindex = function(_, key, value)
     vim.o[key] = value
     local scope = opts_info[key].scope
     if scope == 'win' then

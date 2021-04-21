@@ -5,26 +5,79 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
     return
   end
 
-  local out = vim.fn.system(string.format(
+  print("Downloading packer.nvim...")
+  print(vim.fn.system(string.format(
     'git clone %s %s',
     'https://github.com/wbthomason/packer.nvim',
     install_path
-  ))
-
-  print(out)
-  print("Downloading packer.nvim...")
+  )))
 end
 
 vim.cmd 'packadd packer.nvim'
 
+vim.cmd[[augroup plugins | autocmd! | augroup END]]
+
+-- Reload plugins.lua
+vim.cmd[[autocmd plugins BufWritePost plugins.lua lua package.loaded["plugins"] = nil; require("plugins")]]
+
+-- Recompile lazy loaders
+vim.cmd[[autocmd plugins BufWritePost plugins.lua PackerCompile]]
+
+-- -- Reload lazy loaders
+-- vim.cmd[[autocmd BufWritePost plugins.lua runtime plugin/packer_compiled.vim]]
+
+
 local init = {
   {'wbthomason/packer.nvim', opt = true},
+
+  'lewis6991/github_dark.nvim',
+
+  {'kyazdani42/nvim-tree.lua',
+    config = function()
+      vim.api.nvim_set_keymap('n', '-', '<cmd>NvimTreeFindFile<cr>', {})
+      vim.g.nvim_tree_quit_on_open = 1
+      vim.g.nvim_tree_side = 'right'
+      vim.g.nvim_tree_show_icons = { git = 1, folders = 0, files = 0 }
+      vim.g.nvim_tree_special_files = {}
+      vim.g.nvim_tree_follow = 1
+      -- vim.g.nvim_tree_git_hl = 1
+      vim.g.nvim_tree_group_empty = 1
+      local tree_cb = require'nvim-tree.config'.nvim_tree_callback
+      vim.g.nvim_tree_bindings = {
+        ["<CR>"]           = tree_cb("edit"),
+        ["o"]              = tree_cb("edit"),
+        ["<2-LeftMouse>"]  = tree_cb("edit"),
+        ["<2-RightMouse>"] = tree_cb("cd"),
+        ["<C-]>"]          = tree_cb("cd"),
+        ["v"]              = tree_cb("vsplit"),
+        ["s"]              = tree_cb("split"),
+        ["t"]              = tree_cb("tabnew"),
+        ["<BS>"]           = tree_cb("close_node"),
+        ["<S-CR>"]         = tree_cb("close_node"),
+        ["<Tab>"]          = tree_cb("preview"),
+        ["I"]              = tree_cb("toggle_ignored"),
+        ["H"]              = tree_cb("toggle_dotfiles"),
+        ["R"]              = tree_cb("refresh"),
+        ["a"]              = tree_cb("create"),
+        ["d"]              = tree_cb("remove"),
+        ["r"]              = tree_cb("rename"),
+        ["<C-r>"]          = tree_cb("full_rename"),
+        ["x"]              = tree_cb("cut"),
+        ["c"]              = tree_cb("copy"),
+        ["p"]              = tree_cb("paste"),
+        ["[c"]             = tree_cb("prev_git_item"),
+        ["]c"]             = tree_cb("next_git_item"),
+        ["-"]              = tree_cb("dir_up"),
+        ["q"]              = tree_cb("close"),
+        ["<esc>"]          = tree_cb("close"),
+      }
+    end
+  },
 
   'tpope/vim-commentary',
   'tpope/vim-fugitive',
   'tpope/vim-unimpaired',
   'tpope/vim-repeat',
-  'tpope/vim-eunuch',
   'tpope/vim-surround',
 
   {'AndrewRadev/bufferize.vim',
@@ -61,8 +114,6 @@ local init = {
       vim.g.lengthmatters_highlight_one_column = 1
     end
   },
-
-  {'justinmk/vim-dirvish', config = "require'dirvish'"},
 
   'rhysd/conflict-marker.vim',
 
@@ -220,8 +271,13 @@ local init = {
     end
   },
 
+  {'~/projects/spellsitter.nvim',
+    config = function()
+      require('spellsitter').setup{}
+    end
+  },
+
   {'norcalli/nvim-colorizer.lua',
-    disable = true,
     config = function()
       require'colorizer'.setup()
     end
