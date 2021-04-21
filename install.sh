@@ -174,23 +174,17 @@ function main {
     fi
 
     install_extra_brew_packages \
-        bash          \
-        bat           \
-        git-delta     \
-        highlight     \
-        make          \
-        python        \
-        rlwrap        \
-        tmux          \
-        tree          \
+        bash       \
+        bat        \
+        git-delta  \
+        highlight  \
+        make       \
+        python     \
+        rlwrap     \
+        tmux       \
+        tree       \
+        ripgrep    \
         zsh
-
-    if ! command -v rg >/dev/null; then
-        message_install ripgrep
-        brew tap burntsushi/ripgrep https://github.com/BurntSushi/ripgrep.git
-        brew install ripgrep-bin
-        message_done
-    fi
 
     if ! command -v pip3 >/dev/null; then
         message_error "pip3 is not installed"
