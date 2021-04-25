@@ -85,7 +85,7 @@ function install_nvim_config {
     message_install neovim
     rm -rf $XDG_CONFIG_HOME/nvim
     link_file nvim "$XDG_CONFIG_HOME/nvim"
-    nvim --headless +PlugInstall +quitall
+    nvim --headless +PackerCompile +quitall
     message_done
 }
 
@@ -177,7 +177,6 @@ function main {
         bash       \
         bat        \
         git-delta  \
-        highlight  \
         make       \
         python     \
         rlwrap     \
@@ -190,12 +189,12 @@ function main {
         message_error "pip3 is not installed"
     fi
 
-    install_pip_package gitlint
-    install_pip_package mypy
-    install_pip_package pylint
-    install_pip_package pynvim
-    install_pip_package vim-vint
-    install_pip_package yamllint
+    # install_pip_package gitlint
+    # install_pip_package mypy
+    # install_pip_package pylint
+    # install_pip_package pynvim
+    # install_pip_package vim-vint
+    # install_pip_package yamllint
 
     message "${GREEN}Finished successfully${NC}"
 }
