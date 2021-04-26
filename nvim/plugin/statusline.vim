@@ -1,5 +1,5 @@
 
-function! Hunks() abort
+function! s:hunks() abort
     if exists('b:gitsigns_status')
         let status = b:gitsigns_head
         if b:gitsigns_status !=# ''
@@ -10,7 +10,7 @@ function! Hunks() abort
     return ''
 endfunction
 
-function! EncodingAndFormat() abort
+function! s:encodingAndFormat() abort
     let l:e = &fileencoding ? &fileencoding : &encoding
     let l:f = &fileformat
 
@@ -61,34 +61,19 @@ function! s:lsp_status() abort
         return ''
     end
 
-    let sl = luaeval('Lsp_status()')
+    let sl = luaeval('_G.Lsp_status and Lsp_status() or "NA"')
     if sl !=# ''
         let sl = '  '.sl.'  '
     end
     return sl
 endfunction
 
-function! s:filetype() abort
-    let s = '%( %{&filetype} %)'
-    if exists('*WebDevIconsGetFileTypeSymbol')
-        let s .= '%( %{WebDevIconsGetFileTypeSymbol()} %)'
-    endif
-    return s
-endfunction
-
-function! s:fileformat() abort
-    let s = '%( %{EncodingAndFormat()}%)'
-    if exists('*WebDevIconsGetFileFormatSymbol')
-        let s .= '%( %{WebDevIconsGetFileFormatSymbol()}%)'
-    endif
-    return s
-endfunction
-
-function! Statusline_expr(active) abort
+function! s:statusline(active) abort
+    let sid = expand('<SID>')
     let s  = '%#StatusLine#'
     let s .= s:status_highlight(1, a:active)
     let s .= s:recording()
-    let s .= '%( %{Hunks()}  %)'
+    let s .= '%( %{'.sid.'hunks()}  %)'
     let s .= s:status_highlight(2, a:active)
     let s .= s:lsp_status()
     if exists('*metals#status')
@@ -97,19 +82,33 @@ function! Statusline_expr(active) abort
     let s .= '%='
     let s .= '%<%0.60f%m%r'  " file.txt[+][RO]
     let s .= ' %= '
-    let s .= s:filetype()
+
+    " filetype
+    let s .= '%( %{&filetype} %)'
+    if exists('*WebDevIconsGetFileTypeSymbol')
+        let s .= '%( %{WebDevIconsGetFileTypeSymbol()} %)'
+    endif
+
     let s .= ' '.s:status_highlight(1, a:active).' '
-    let s .= s:fileformat()
+
+    " encoding
+    let s .= '%( %{'.sid.'encodingAndFormat()}%)'
+    if exists('*WebDevIconsGetFileFormatSymbol')
+        let s .= '%( %{WebDevIconsGetFileFormatSymbol()}%)'
+    endif
+
     let s .= '%3p%% %2l(%02c)/%-3L ' " 80% 65[12]/120
     return s
 endfunction
 
+function! s:statusline_expr(active) abort
+    return '%!'.expand('<SID>')..'statusline('.a:active.')'
+endfunction
+
 augroup statusline
     " Only set up WinEnter autocmd when the WinLeave autocmd runs
-    autocmd WinLeave,FocusLost *
-        \ setlocal statusline=%!Statusline_expr(0) |
-        \ autocmd vimrc WinEnter,FocusGained *
-            \ setlocal statusline=%!Statusline_expr(1)
+    autocmd WinEnter,FocusGained * let &l:statusline=s:statusline_expr(1)
+    autocmd WinLeave,FocusLost   * let &l:statusline=s:statusline_expr(0)
 augroup END
 
-set statusline=%!Statusline_expr(1)
+let &statusline=s:statusline_expr(1)
