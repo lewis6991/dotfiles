@@ -31,9 +31,10 @@ local function setup(config, opts)
     return
   end
 
-  if not opts.on_attach then
-    opts.on_attach = custom_on_attach
-  end
+  opts.on_attach = opts.on_attach or custom_on_attach
+
+  opts.flags = opts.flags or {}
+  opts.flags.debounce_text_changes = 400
 
   config.setup(opts)
 end
