@@ -34,7 +34,7 @@ local function setup(config, opts)
   opts.on_attach = opts.on_attach or custom_on_attach
 
   opts.flags = opts.flags or {}
-  opts.flags.debounce_text_changes = 400
+  opts.flags.debounce_text_changes = opts.flags.debounce_text_changes or 400
 
   config.setup(opts)
 end
@@ -126,17 +126,24 @@ setup(nvim_lsp.diagnosticls, {
         offsetColumn = 0,
         sourceName = "mypy",
         command = "mypy",
-        args = {'--shadow-file', '%filepath', '%tempfile', '%filepath', '--strict'},
+        args = {
+          '--shadow-file', '%filepath', '%tempfile', '%filepath',
+          '--python-version=3.8',
+          '--show-error-codes',
+          '--show-column-numbers',
+          '--strict'
+        },
         rootPatterns = {"setup.cfg", ".git"},
         formatLines = 1,
         formatPattern = {
-          '^([^:]+):(\\d+): ([^:]+): (.*)$',
+          '^([^:]+):(\\d+):(\\d+): ([^:]+): (.*)$',
           {
             sourceName = 1,
             sourceNameFilter = true,
             line = 2,
-            security = 3,
-            message = 4
+            column = 3,
+            security = 4,
+            message = 5
           }
         },
         securities = {

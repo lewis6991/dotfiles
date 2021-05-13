@@ -62,10 +62,27 @@ local init = {
 
   'tmhedberg/SimpylFold',
 
+  {'lewis6991/foldsigns.nvim',
+    config = function()
+      require'foldsigns'.setup{
+        exclude = {'GitSigns.*'}
+      }
+    end
+  },
+
   'dietsche/vim-lastplace',
   'christoomey/vim-tmux-navigator',
   'ryanoasis/vim-devicons',
   'powerman/vim-plugin-AnsiEsc',
+
+  {'neapel/vim-bnfc-syntax',
+    config = function()
+      -- Argh, why don't syntax plugins ever set commentstring!
+      vim.cmd[[autocmd vimrc FileType bnfc setlocal commentstring=--%s]]
+      -- This syntax works pretty well for regular BNF too
+      vim.cmd[[autocmd vimrc BufNewFile,BufRead *.bnf setlocal filetype=bnfc]]
+    end
+  },
 
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',
@@ -151,6 +168,7 @@ local init = {
   },
 
   {'hrsh7th/nvim-compe',
+    requires = {'andersevenrud/compe-tmux'},
     config = function()
       require'compe'.setup {
         source = {
@@ -159,10 +177,11 @@ local init = {
           nvim_lsp   = true;
           nvim_lua   = true;
           spell      = true;
-          -- treesitter = true;
-        };
+          tmux       = true;
+        }
       }
-      local t = function(str)
+
+      local function t(str)
         return vim.api.nvim_replace_termcodes(str, true, true, true)
       end
 
@@ -182,20 +201,18 @@ local init = {
         or     check_back_space()       and t'<Tab>'
         or     vim.fn['compe#complete']()
       end
+
       _G.s_tab_complete = function()
         return vim.fn.pumvisible() == 1 and t'<C-p>' or t'<S-Tab>'
       end
 
-      local function map(key, action)
-        vim.api.nvim_set_keymap('i', key, action, {expr = true})
-        vim.api.nvim_set_keymap('s', key, action, {expr = true})
-      end
+      vim.api.nvim_set_keymap('i', '<Tab>'  , 'v:lua.tab_complete()'  , {expr = true})
+      vim.api.nvim_set_keymap('s', '<S-Tab>', 'v:lua.s_tab_complete()', {expr = true})
+      vim.api.nvim_set_keymap('i', '<cr>'   , "compe#confirm('<CR>')" , {expr = true, silent = true, noremap = true})
 
-      map("<Tab>"  , "v:lua.tab_complete()"  )
-      map("<S-Tab>", "v:lua.s_tab_complete()")
-
-      vim.api.nvim_set_keymap('i', '<cr>', "compe#confirm('<CR>')",
-        {expr = true, silent = true, noremap = true})
+      -- Workaround for https://github.com/hrsh7th/nvim-compe/issues/329
+      vim.api.nvim_set_keymap('i', '<C-y>', 'pumvisible() ? "\\<C-y>\\<C-y>" : "\\<C-y>"', {expr = true} )
+      vim.api.nvim_set_keymap('i', '<C-e>', 'pumvisible() ? "\\<C-y>\\<C-e>" : "\\<C-e>"', {expr = true} )
     end
   },
 
