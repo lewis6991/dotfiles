@@ -108,7 +108,7 @@ endif
 " }}}
 " Mappings {{{
 nnoremap <leader>ev :edit $MYVIMRC<CR>
-nnoremap <leader>el :edit $XDG_CONFIG_HOME/nvim/lua/plugins.lua<CR>
+nnoremap <leader>el :edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>
 nnoremap <leader>s :%s/\<<C-R><C-W>\>\C//g<left><left>
 nnoremap <leader>c 1z=
 nnoremap <leader>w :execute "resize ".line('$')<cr>

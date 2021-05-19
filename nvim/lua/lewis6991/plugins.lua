@@ -32,7 +32,7 @@ local init = {
 
   'lewis6991/github_dark.nvim',
 
-  {'justinmk/vim-dirvish', config = "require'dirvish'"},
+  {'justinmk/vim-dirvish', config = "require'lewis6991.dirvish'"},
 
   'tpope/vim-commentary',
   'tpope/vim-fugitive',
@@ -164,7 +164,7 @@ local init = {
 
   {'neovim/nvim-lspconfig',
     requires = {'tjdevries/nlua.nvim'},
-    config = "require('lsp')"
+    config = "require'lewis6991.lsp'"
   },
 
   {'hrsh7th/nvim-compe',
@@ -221,7 +221,7 @@ local init = {
       'nvim-lua/popup.nvim',
       'nvim-lua/plenary.nvim'
     },
-    config = "require('telescope_config')"
+    config = "require'lewis6991.telescope'"
   },
 
   {'lewis6991/cleanfold.nvim', config = "require('cleanfold').setup()" },
@@ -267,7 +267,7 @@ local init = {
       'nvim-treesitter/playground',
     },
     run = ':TSUpdate',
-    config = "require('treesitter')",
+    config = "require'lewis6991.treesitter'",
   },
 
   'euclidianAce/BetterLua.vim',

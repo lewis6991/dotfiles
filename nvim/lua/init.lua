@@ -1,4 +1,4 @@
-require'plugins'
+require'lewis6991.plugins'
 
 P = function(v)
   print(vim.inspect(v))
