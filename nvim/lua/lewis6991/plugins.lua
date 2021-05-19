@@ -18,7 +18,7 @@ vim.cmd 'packadd packer.nvim'
 vim.cmd[[augroup plugins | autocmd! | augroup END]]
 
 -- Reload plugins.lua
-vim.cmd[[autocmd plugins BufWritePost plugins.lua lua package.loaded["plugins"] = nil; require("plugins")]]
+vim.cmd[[autocmd plugins BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")]]
 
 -- Recompile lazy loaders
 vim.cmd[[autocmd plugins BufWritePost plugins.lua PackerCompile]]
