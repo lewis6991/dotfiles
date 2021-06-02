@@ -53,6 +53,7 @@ local init = {
 
   'vim-scripts/visualrepeat',
   'timakro/vim-searchant', -- Highlight the current search result
+  {'folke/trouble.nvim', config = [[require('trouble').setup()]]},
 
   --- Filetype plugins ---
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
