@@ -41,6 +41,8 @@ local init = {
   'tpope/vim-eunuch',
   'tpope/vim-surround',
 
+  {'tpope/vim-fugitive', cmd = {'Git', 'Gblame'} },
+
   {'AndrewRadev/bufferize.vim',
     cmd = 'Bufferize',
     config = function()
