@@ -16,7 +16,9 @@ git for-each-ref --shell --format="%(refname:short)" refs/heads |
 %(color: bold green)%(if)%(HEAD)%(then)$this %(else)  %(end)\
 %(color:yellow)%(refname:short)%(color:reset) $arrow \
 %(color:blue)%(upstream:short) \
-%(color:cyan)%(upstream:track)" \
+%(if:equals=<>)%(upstream:trackshort)%(then)%(color:red)%(else)%(color:cyan)%(end)\
+%(if:equals=<)%(upstream:trackshort)%(then)%(color:magenta)%(end)\
+%(upstream:track)" \
             "$branch")
         echo -e "$branch_info"
         if [[ "$upstream" != "" ]] && [[ "$upstream_track" != "[gone]" ]]; then

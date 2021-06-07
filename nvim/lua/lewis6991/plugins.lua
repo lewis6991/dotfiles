@@ -1,4 +1,4 @@
-local install_path = vim.fn.stdpath('data')..'/site/pack/packer/opt/packer.nvim'
+local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
 
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   if vim.fn.input("Download Packer? (y for yes): ") ~= "y" then
@@ -13,8 +13,6 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   )))
 end
 
-vim.cmd 'packadd packer.nvim'
-
 vim.cmd[[augroup plugins | autocmd! | augroup END]]
 
 -- Reload plugins.lua
@@ -28,14 +26,13 @@ vim.cmd[[autocmd plugins BufWritePost plugins.lua PackerCompile]]
 
 
 local init = {
-  {'wbthomason/packer.nvim', opt = true},
+  'wbthomason/packer.nvim',
 
   'lewis6991/github_dark.nvim',
 
   {'justinmk/vim-dirvish', config = "require'lewis6991.dirvish'"},
 
   'tpope/vim-commentary',
-  'tpope/vim-fugitive',
   'tpope/vim-unimpaired',
   'tpope/vim-repeat',
   'tpope/vim-eunuch',
@@ -146,7 +143,7 @@ local init = {
 
   {'scalameta/nvim-metals',
     config = function()
-      setup_metals = function()
+      _G.setup_metals = function()
         require("metals").initialize_or_attach {
           init_options = {
             statusBarProvider = 'on'
@@ -155,17 +152,17 @@ local init = {
             showImplicitArguments = true,
           },
           on_attach = function()
-            local keymap = function(mode, key, result)
-              vim.api.nvim_buf_set_keymap(0, mode, key, result, {noremap = true, silent = true})
+            local function keymap(key, result)
+              vim.api.nvim_buf_set_keymap(0, 'n', key, result, {noremap = true, silent = true})
             end
-            keymap('n', '<C-]>'     , '<cmd>lua vim.lsp.buf.definition()<CR>')
-            keymap('n', 'K'         , '<cmd>lua vim.lsp.buf.hover()<CR>')
-            keymap('n', 'gK'        , '<cmd>lua vim.lsp.buf.signature_help()<CR>')
-            keymap('n', 'gr'        , '<cmd>lua vim.lsp.buf.references()<CR>')
-            keymap('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
-            keymap('n', ']d'        , '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
-            keymap('n', '[d'        , '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
-            keymap('n', 'go'        , '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
+            keymap('<C-]>'     , '<cmd>lua vim.lsp.buf.definition()<CR>')
+            keymap('K'         , '<cmd>lua vim.lsp.buf.hover()<CR>')
+            keymap('gK'        , '<cmd>lua vim.lsp.buf.signature_help()<CR>')
+            keymap('gr'        , '<cmd>lua vim.lsp.buf.references()<CR>')
+            keymap('<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
+            keymap(']d'        , '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
+            keymap('[d'        , '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
+            keymap('go'        , '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
 
             vim.bo.omnifunc = 'v:lua.vim.lsp.omnifunc'
           end
@@ -235,6 +232,7 @@ local init = {
     end
   },
 
+  {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
   {'nvim-lua/telescope.nvim',
     requires = {
       'nvim-lua/popup.nvim',
@@ -274,11 +272,7 @@ local init = {
     end
   },
 
-  {'norcalli/nvim-colorizer.lua',
-    config = function()
-      require'colorizer'.setup()
-    end
-  },
+  {'norcalli/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
 
   {'nvim-treesitter/nvim-treesitter',
     requires = {
