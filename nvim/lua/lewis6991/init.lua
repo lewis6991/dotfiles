@@ -187,4 +187,5 @@ P = function(v)
   return v
 end
 
+vim.cmd[[autocmd vimrc VimResized * wincmd =]]
 -- vim: foldminlines=0:

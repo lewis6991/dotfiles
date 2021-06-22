@@ -7,8 +7,7 @@ require'nvim-treesitter'.define_modules {
   }
 }
 
-require'nvim-treesitter.configs'.setup {
-  ensure_installed = {
+local langs = {
     "python",
     -- "json",
     "html",
@@ -16,10 +15,13 @@ require'nvim-treesitter.configs'.setup {
     "lua",
     "rst",
     "teal",
-  },
+  }
+
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = langs,
   highlight = {
     enable = true,
-    use_languagetree = true,
+    additional_vim_regex_highlighting = false,
   },
   indent = {
     enable = true,
@@ -43,6 +45,10 @@ require'nvim-treesitter.configs'.setup {
   playground = { enable = true }
 }
 
+-- Make sure legacy syntax engine is disable for TS langs
+for _, l in ipairs(langs) do
+  vim.cmd(('autocmd vimrc FileType %s syntax clear'):format(l))
+end
 
 local function get_node_at_line(root, lnum)
   for node in root:iter_children() do

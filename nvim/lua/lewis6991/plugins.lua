@@ -250,6 +250,7 @@ local init = {
   {'~/projects/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
+      vim.cmd[[cabbrev G Gitsigns]]
       vim.api.nvim_set_keymap('n', 'm', ':Gitsigns dump_cache<cr>'    , {silent=true})
       vim.api.nvim_set_keymap('n', 'M', ':Gitsigns debug_messages<cr>', {silent=true})
       vim.cmd'hi link GitSignsCurrentLineBlame FloatBorder'
@@ -266,11 +267,7 @@ local init = {
     end
   },
 
-  {'~/projects/spellsitter.nvim',
-    config = function()
-      require('spellsitter').setup{}
-    end
-  },
+  {'~/projects/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
 
   {'norcalli/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
 
@@ -299,6 +296,17 @@ local init = {
 
 local packer = require('packer')
 
-packer.startup{init}
+packer.startup{init,
+  config = {
+    -- profile = {
+    --   enable = false,
+    --   threshold = 1
+    -- },
+    display = {
+      open_cmd = 'vnew \\[packer\\]',
+      prompt_border = 'rounded'
+    }
+  }
+}
 
 return packer
