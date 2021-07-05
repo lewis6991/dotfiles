@@ -31,7 +31,13 @@ local function setup(config, opts)
     return
   end
 
-  opts.on_attach = opts.on_attach or custom_on_attach
+  local opts_on_attach = opts.on_attach
+  opts.on_attach = function(client, bufnr)
+    custom_on_attach(client, bufnr)
+    if opts_on_attach then
+      opts_on_attach(client, bufnr)
+    end
+  end
 
   opts.flags = opts.flags or {}
   opts.flags.debounce_text_changes = opts.flags.debounce_text_changes or 400
@@ -92,6 +98,8 @@ setup(nvim_lsp.jedi_language_server)
 setup_sumneko_ls()
 
 -- npm install -g diagnostic-languageserver
+local linters = require'lewis6991.linters'
+
 setup(nvim_lsp.diagnosticls, {
   filetypes = {'Jenkinsfile', 'tcl', 'python', 'sh', 'teal'},
   init_options = {
@@ -102,12 +110,27 @@ setup(nvim_lsp.diagnosticls, {
       tcl         = {'tcl_lint'},
       Jenkinsfile = {'jenkinsfile_validate'}
     },
-    linters = require'lewis6991.linters'
-  }
+    linters = (function()
+      local r = vim.deepcopy(linters)
+      for _, linter in pairs(r) do
+        linter.on_attach = nil
+      end
+      return r
+    end)()
+  },
+  on_attach = function(client, bufnr)
+    local ft = vim.api.nvim_buf_get_option(bufnr, 'filetype')
+    local filetypes = client.config.init_options.filetypes[ft]
+    for name, linter in pairs(linters) do
+      if linter.on_attach and vim.tbl_contains(filetypes, name) then
+        linter.on_attach(client, bufnr)
+      end
+    end
+  end
 })
 
 vim.g.diagnostic_enable_virtual_text = 1
-vim.g.diagnostic_enable_underline = 0
+vim.g.diagnostic_enable_underline = 1
 vim.g.diagnostic_virtual_text_prefix = ' '
 
 local function set_lsp_sign(name, text)

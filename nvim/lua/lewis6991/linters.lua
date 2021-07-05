@@ -61,13 +61,14 @@ linters.pylint = {
 linters.mypy = {
   offsetColumn = 0,
   sourceName = "mypy",
-  command = "mypy",
+  command = "dmypy",
   args = {
-    '--shadow-file', '%filepath', '%tempfile', '%filepath',
+    'run', '--log-file=dmypy.log',
+    '--',
+    '--shadow-file', '%filepath', '%tempfile', '%dirname',
     '--python-version=3.8',
     '--show-error-codes',
-    '--show-column-numbers',
-    '--strict'
+    '--show-column-numbers'
   },
   rootPatterns = {"setup.cfg", ".git"},
   formatLines = 1,
@@ -85,6 +86,13 @@ linters.mypy = {
   securities = {
     error = "error",
   },
+  on_attach = function()
+    vim.cmd[[augroup LSPCONFIG]]
+    vim.cmd[[autocmd!]]
+    -- vim.cmd[[autocmd VimLeavePre * :silent !dmypy stop]]
+    vim.cmd[[autocmd VimLeavePre * :!dmypy stop]]
+    vim.cmd[[augroup END]]
+  end
 }
 
 linters.tealcheck = {

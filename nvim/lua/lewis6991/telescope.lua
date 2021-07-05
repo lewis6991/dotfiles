@@ -1,7 +1,9 @@
 
 require'telescope'.setup {
   defaults = {
-    preview_cutoff = 20,
+    layout_config = {
+      preview_cutoff = 20,
+    },
     selection_strategy = "reset",
     winblend = 25,
   },

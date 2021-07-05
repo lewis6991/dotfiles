@@ -107,8 +107,9 @@ endfunction
 
 augroup statusline
     " Only set up WinEnter autocmd when the WinLeave autocmd runs
-    autocmd WinEnter,FocusGained * let &l:statusline=s:statusline_expr(1)
-    autocmd WinLeave,FocusLost   * let &l:statusline=s:statusline_expr(0)
+    autocmd WinLeave,FocusLost *
+        \ autocmd WinEnter,FocusGained * let &l:statusline=s:statusline_expr(1)
+    autocmd WinLeave,FocusLost * let &l:statusline=s:statusline_expr(0)
 augroup END
 
 let &statusline=s:statusline_expr(1)
