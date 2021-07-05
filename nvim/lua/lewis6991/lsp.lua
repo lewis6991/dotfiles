@@ -106,7 +106,7 @@ setup(nvim_lsp.diagnosticls, {
     filetypes = {
       python      = {'pylint', 'mypy'},
       sh          = {'shellcheck'},
-      teal        = {'tealcheck'},
+      -- teal        = {'tealcheck'},
       tcl         = {'tcl_lint'},
       Jenkinsfile = {'jenkinsfile_validate'}
     },
@@ -122,7 +122,7 @@ setup(nvim_lsp.diagnosticls, {
     local ft = vim.api.nvim_buf_get_option(bufnr, 'filetype')
     local filetypes = client.config.init_options.filetypes[ft]
     for name, linter in pairs(linters) do
-      if linter.on_attach and vim.tbl_contains(filetypes, name) then
+      if linter.on_attach and filetypes and vim.tbl_contains(filetypes, name) then
         linter.on_attach(client, bufnr)
       end
     end
