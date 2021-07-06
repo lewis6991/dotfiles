@@ -89,11 +89,9 @@ local init = {
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',
 
-  {'whatyouhide/vim-lengthmatters',
-    config = function()
-      vim.g.lengthmatters_highlight_one_column = 1
-    end
-  },
+  {'whatyouhide/vim-lengthmatters', config = function()
+    vim.g.lengthmatters_highlight_one_column = 1
+  end},
 
   'rhysd/conflict-marker.vim',
 
@@ -121,13 +119,6 @@ local init = {
         ['\\'] = { pattern = '\\'       , left_margin = 1, right_margin = 0 },
         ['+']  = { pattern = '+'        , left_margin = 1, right_margin = 1 }
       }
-    end
-  },
-
-  {'bfredl/nvim-miniyank',
-    config = function()
-      vim.api.nvim_set_keymap('n', 'p', '<Plug>(miniyank-autoput)', {})
-      vim.api.nvim_set_keymap('n', 'P', '<Plug>(miniyank-autoPut)', {})
     end
   },
 
@@ -165,6 +156,8 @@ local init = {
       vim.cmd('augroup end')
     end
   },
+
+  'simrat39/symbols-outline.nvim',
 
   {'neovim/nvim-lspconfig',
     requires = {'tjdevries/nlua.nvim'},
@@ -253,7 +246,6 @@ local init = {
       vim.cmd[[cabbrev G Gitsigns]]
       vim.api.nvim_set_keymap('n', 'm', ':Gitsigns dump_cache<cr>'    , {silent=true})
       vim.api.nvim_set_keymap('n', 'M', ':Gitsigns debug_messages<cr>', {silent=true})
-      vim.cmd'hi link GitSignsCurrentLineBlame FloatBorder'
       require('gitsigns').setup{
         -- debug_mode = true,
         signs = {
@@ -292,6 +284,7 @@ local init = {
       vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {silent=true})
     end
   }
+
 }
 
 local packer = require('packer')

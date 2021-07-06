@@ -57,7 +57,7 @@ if 'Options' then
   -- updating the window title is postponed.  To force an
   o.lazyredraw = true
 
-  o.shortmess:append('I')
+  -- o.shortmess:append('I')
 
   -- Only insert one space after a period when formatting.
   o.joinspaces = true
