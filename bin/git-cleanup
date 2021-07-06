@@ -1,0 +1,10 @@
+#! /usr/bin/env bash
+
+git for-each-ref --shell --format="%(refname:short)" refs/heads |
+    while read -r entry; do
+        branch=$(echo "$entry" | xargs)  # Unquote
+        upstream_track=$(git branch --list "$branch" --format='%(upstream:track)')
+        if [[ "$upstream_track" == "[gone]" ]]; then
+            git branch -D "$branch"
+        fi
+    done
