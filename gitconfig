@@ -4,13 +4,13 @@
 
 [diff]
 	tool = vimdiff
-	algorithm = histogram
 
 [difftool]
 	prompt = false
 
 [alias]
 	a    = add
+	f    = fetch
 	ai   = !nvim -c 'Gstatus | wincmd o' .
 	au   = add -u
 	br   = branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:reset)%(align:10,left)%(refname:strip=2)%(end) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)'
@@ -57,7 +57,7 @@
 		}; f"
 
 	draft = "!f() {\
-		    set -e; \
+			set -e; \
 			branch=$(git rev-parse --abbrev-ref HEAD); \
 			remoteBranch=$(git config branch.$branch.merge); \
 			remoteBranch=${remoteBranch##refs/heads/}; \
