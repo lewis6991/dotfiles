@@ -101,14 +101,12 @@ setup_sumneko_ls()
 local linters = require'lewis6991.linters'
 
 setup(nvim_lsp.diagnosticls, {
-  filetypes = {'Jenkinsfile', 'tcl', 'python', 'sh', 'teal'},
+  filetypes = {'tcl', 'python', 'sh'},
   init_options = {
     filetypes = {
-      python      = {'pylint', 'mypy'},
-      sh          = {'shellcheck'},
-      -- teal        = {'tealcheck'},
+      python      = {'mypy'},
+      -- sh          = {'shellcheck'},
       tcl         = {'tcl_lint'},
-      Jenkinsfile = {'jenkinsfile_validate'}
     },
     linters = (function()
       local r = vim.deepcopy(linters)
@@ -142,20 +140,5 @@ set_lsp_sign("LspDiagnosticsSignWarning"    , "!")
 set_lsp_sign("LspDiagnosticsSignInformation", "I")
 set_lsp_sign("LspDiagnosticsSignHint"       , "H")
 
-function Lsp_status()
-  if vim.tbl_isempty(vim.lsp.buf_get_clients(0)) then
-    return ''
-  end
-
-  local status = {}
-
-  for _, ty in ipairs { 'Warning', 'Error', 'Information', 'Hint' } do
-    local n = vim.lsp.diagnostic.get_count(0, ty)
-    if n > 0 then
-      table.insert(status, ('%s:%s'):format(ty:sub(1,1), n))
-    end
-  end
-  local r = table.concat(status, ' ')
-
-  return r == '' and 'LSP' or r
-end
+-- Enables logging to $XDG_CACHE_HOME/nvim/lsp.log
+-- vim.lsp.set_log_level('trace')

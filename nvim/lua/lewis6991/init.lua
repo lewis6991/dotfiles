@@ -1,3 +1,4 @@
+require'lewis6991.status'
 
 local o = vim.opt
 

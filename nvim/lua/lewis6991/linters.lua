@@ -1,17 +1,6 @@
 
 local linters = {}
 
-linters.jenkinsfile_validate = {
-  sourceName = 'jenkinsfile_validate',
-  command = 'java',
-  args = {'-jar', os.getenv('JENKINS_CLI'), 'declarative-linter'},
-  formatPattern = {
-    '^WorkflowScript: \\d+: (.+) @ line (\\d+), column (\\d+)\\.$', {
-      message = 1, line = 2, column = 3,
-    }
-  },
-}
-
 linters.tcl_lint = {
   sourceName = "tcl_lint",
   command = "make",
@@ -33,28 +22,6 @@ linters.tcl_lint = {
   securities = {
     warning = "W",
     error   = "E",
-  },
-}
-
-linters.pylint = {
-  sourceName = "pylint",
-  command = "pylint",
-  args = {"--output-format=json", '--from-stdin', '%filepath'},
-  rootPatterns = {"pylintrc", "pyproject.toml", ".git"},
-  parseJson = {
-    line       = 'line',
-    column     = 'column',
-    security   = 'type',
-    message    = '${message-id}: ${message}'
-  },
-  offsetColumn = 1,
-  securities = {
-    informational = "hint",
-    refactor      = "info",
-    convention    = "warning",
-    warning       = "warning",
-    error         = "error",
-    fatal         = "error"
   },
 }
 
@@ -93,25 +60,6 @@ linters.mypy = {
     vim.cmd[[autocmd VimLeavePre * :!dmypy stop]]
     vim.cmd[[augroup END]]
   end
-}
-
-linters.tealcheck = {
-  sourceName = "tealcheck",
-  command = "tl",
-  args = {'check', '%file'},
-  isStdout = false,
-  isStderr = true,
-  rootPatterns = {"tlconfig.lua", ".git"},
-  formatPattern = {
-    '^([^:]+):(\\d+):(\\d+): (.+)$',
-    {
-      sourceName = 1,
-      sourceNameFilter = true,
-      line = 2,
-      column = 3,
-      message = 4
-    }
-  }
 }
 
 linters.shellcheck = {
