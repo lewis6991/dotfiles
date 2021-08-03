@@ -110,11 +110,13 @@ function M.statusline(active)
 end
 
 -- Only set up WinEnter autocmd when the WinLeave autocmd runs
-vim.cmd[[augroup statusline]]
-vim.cmd[[    autocmd WinLeave,FocusLost * autocmd WinEnter,FocusGained * let &l:statusline=v:lua.statusline.statusline(1)]]
-vim.cmd[[    autocmd WinLeave,FocusLost * let &l:statusline=v:lua.statusline.statusline(0)]]
-vim.cmd[[    autocmd VimEnter           * let &l:statusline=v:lua.statusline.statusline(1)]]
-vim.cmd[[augroup END]]
+vim.cmd[[
+  augroup statusline
+    autocmd WinLeave,FocusLost * autocmd BufWinEnter,WinEnter,FocusGained * let &l:statusline=v:lua.statusline.statusline(1)
+    autocmd WinLeave,FocusLost * let &l:statusline=v:lua.statusline.statusline(0)
+    autocmd VimEnter           * let &l:statusline=v:lua.statusline.statusline(1)
+  augroup END
+]]
 
 _G.statusline = M
 
