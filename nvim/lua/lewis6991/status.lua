@@ -29,6 +29,15 @@ function M.hunks()
   return ''
 end
 
+function M.blame()
+  if vim.b.gitsigns_blame_line_dict then
+    local info = vim.b.gitsigns_blame_line_dict
+    local date_time = require('gitsigns.util').get_relative_time(tonumber(info.author_time))
+    return string.format('%s - %s', info.author, date_time)
+  end
+  return ''
+end
+
 function M.encodingAndFormat()
     local e = vim.bo.fileencoding and vim.bo.fileencoding or vim.o.encoding
 
@@ -82,6 +91,7 @@ function M.statusline(active)
   s[#s+1] = '%( %{v:lua.statusline.hunks()} %)'
   s[#s+1] = highlight(2, active)
   s[#s+1] = '%( %{v:lua.statusline.lsp_status()} %)'
+  s[#s+1] = '%( %{v:lua.statusline.blame()} %)'
   if exists('*metals#status') then
     s[#s+1] = '%{metals#status()}'
   end

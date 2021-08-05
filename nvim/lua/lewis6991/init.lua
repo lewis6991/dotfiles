@@ -171,8 +171,9 @@ if "Mappings" then
 
   map('n', '<leader>:', ':lua<space>', {noremap=true})
 
-  map('n', '<Tab>'  , ':bnext<CR>', {})
-  map('n', '<S-Tab>', ':bprev<CR>', {})
+  -- Use barbar mappings instead
+  -- map('n', '<Tab>'  , ':bnext<CR>', {})
+  -- map('n', '<S-Tab>', ':bprev<CR>', {})
 
   map('n', '|', [[!v:count ? "<C-W>v<C-W><Right>" : '|']], {noremap=true, expr=true, silent=true})
   map('n', '_', [[!v:count ? "<C-W>s<C-W><Down>"  : '_']], {noremap=true, expr=true, silent=true})

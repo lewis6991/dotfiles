@@ -1,5 +1,7 @@
 DOTFILES="$HOME/$(dirname $(readlink $(print -P %N)))"
 
+export EDTIOR=nvim
+
 function have_cmd {
     if ! hash $1 2>/dev/null; then
         echo "zshrc: Command '$1' is not installed"
@@ -51,7 +53,9 @@ zstyle ':completion::complete:*' use-cache 1
 zstyle ':completion::complete:*' cache-path $XDG_CACHE_HOME
 
 # Set up ls colors
-eval "$(dircolors -b)"  # Needed to set up completion colors
+if have_cmd dircolors; then
+  eval "$(dircolors -b)"  # Needed to set up completion colors
+fi
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 # export LS_COLORS="$(ls_colors_generator)"
 zmodload zsh/complist
