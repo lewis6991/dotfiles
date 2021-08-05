@@ -1,12 +1,6 @@
 local null_ls = require("null-ls")
 local null_ls_helpers = require("null-ls.helpers")
 
-null_ls.setup {sources = {
-  null_ls.builtins.diagnostics.teal,
-  null_ls.builtins.diagnostics.shellcheck,
-  null_ls.builtins.code_actions.gitsigns,
-}}
-
 local jenkins_lint = {
   method = null_ls.methods.DIAGNOSTICS,
   filetypes = { "Jenkinsfile" },
@@ -36,8 +30,6 @@ local jenkins_lint = {
     end,
   }
 }
-
-null_ls.register(jenkins_lint)
 
 local pylint_lint = {
   method = null_ls.methods.DIAGNOSTICS,
@@ -75,4 +67,13 @@ local pylint_lint = {
   },
 }
 
-null_ls.register(pylint_lint)
+null_ls.setup {
+  diagnostics_format = "#{s}: #{m}",
+  sources = {
+    null_ls.builtins.diagnostics.teal,
+    null_ls.builtins.diagnostics.shellcheck,
+    null_ls.builtins.code_actions.gitsigns,
+    jenkins_lint,
+    pylint_lint,
+  }
+}
