@@ -186,6 +186,15 @@ local init = {
 
   'whiteinge/diffconflicts',
 
+  {'dstein64/nvim-scrollview', config = function()
+    vim.g.scrollview_current_only = 1
+    vim.g.scrollview_column = 1
+  end},
+
+  {'pwntester/octo.nvim', config=function()
+    require"octo".setup()
+  end},
+
   -- 'mhinz/vim-signify',
   -- 'airblade/vim-gitgutter',
   {'~/projects/gitsigns.nvim',
