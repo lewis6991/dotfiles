@@ -67,7 +67,16 @@ local pylint_lint = {
   },
 }
 
+local keymap = function(bufnr, key, result)
+  vim.api.nvim_buf_set_keymap(bufnr, 'n', key, result, {noremap = true})
+end
+
 null_ls.setup {
+  on_attach = function(_, bufnr)
+    keymap(bufnr, ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
+    keymap(bufnr, '[d', '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
+    keymap(bufnr, 'go', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
+  end,
   diagnostics_format = "#{s}: #{m}",
   sources = {
     null_ls.builtins.diagnostics.teal,
