@@ -95,6 +95,8 @@ local init = {
 
   'rhysd/conflict-marker.vim',
 
+  {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
+
   'bogado/file-line', -- Open file:line
 
   {'junegunn/vim-easy-align',

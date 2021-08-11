@@ -118,22 +118,8 @@ if 'Whitespace' then
   o.list = true
   o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
 
-  -- Delete trailing white space on save.
-  vim.cmd[[autocmd vimrc BufWrite * lua Delete_trailing_ws()]]
-
   -- Highlight trailing whitespace
   vim.cmd[[autocmd vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')]]
-
-  function Delete_trailing_ws()
-    -- Save cursor position
-    local save = vim.fn.winsaveview()
-
-    -- Remove trailing whitespace
-    vim.cmd[[%s/\s\+$//ge]]
-
-    -- Move cursor to original position
-    vim.fn.winrestview(save)
-  end
 end
 
 if "Mappings" then
