@@ -1,21 +1,35 @@
 local nvim_lsp = require 'lspconfig'
 
-local keymap = function(mode, key, result)
-  vim.api.nvim_buf_set_keymap(0, mode, key, result, {noremap = true, silent = true})
+local M = {}
+
+require'lspinstall'.setup()
+
+local custom_on_attach = function(_, bufnr)
+  local keymap = function(key, result)
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', key, '<cmd>lua '..result..'<CR>', {noremap = true, silent = true})
+  end
+
+  keymap('<C-]>'     , 'vim.lsp.buf.definition()')
+  keymap('K'         , 'vim.lsp.buf.hover()')
+  keymap('gK'        , 'vim.lsp.buf.signature_help()')
+  keymap('<C-s>'     , 'vim.lsp.buf.signature_help()')
+  keymap('gr'        , 'vim.lsp.buf.references()')
+  keymap('<leader>rn', 'vim.lsp.buf.rename()')
+  keymap('<leader>ca', 'vim.lsp.buf.code_action()')
+  keymap('<leader>e' , 'vim.lsp.diagnostic.show_line_diagnostics()')
+  keymap(']d'        , 'vim.lsp.diagnostic.goto_next()')
+  keymap('[d'        , 'vim.lsp.diagnostic.goto_prev()')
+  keymap('go'        , 'vim.lsp.diagnostic.set_loclist()')
+
+
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 end
 
-local custom_on_attach = function()
-  keymap('n', '<C-]>'     , '<cmd>lua vim.lsp.buf.definition()<CR>')
-  keymap('n', 'K'         , '<cmd>lua vim.lsp.buf.hover()<CR>')
-  keymap('n', 'gK'        , '<cmd>lua vim.lsp.buf.signature_help()<CR>')
-  keymap('n', 'gr'        , '<cmd>lua vim.lsp.buf.references()<CR>')
-  keymap('n', '<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
-  keymap('n', ']d'        , '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
-  keymap('n', '[d'        , '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
-  keymap('n', 'go'        , '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
-
-  vim.bo.omnifunc = 'v:lua.vim.lsp.omnifunc'
-end
+vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+  virtual_text = true,
+  signs = true,
+  update_in_insert = true,
+})
 
 local function executable(path)
   return vim.fn.executable(path) == 1
@@ -45,45 +59,51 @@ local function setup(config, opts)
   config.setup(opts)
 end
 
-local function setup_sumneko_ls()
-  local system_name
-  if vim.fn.has("mac") == 1 then
-    system_name = "macOS"
-  elseif vim.fn.has("unix") == 1 then
-    system_name = "Linux"
-  else
-    print("Unsupported system for sumneko")
+-- Make runtime files discoverable to the server
+local runtime_path = vim.split(package.path, ';')
+table.insert(runtime_path, 'lua/?.lua')
+table.insert(runtime_path, 'lua/?/init.lua')
+
+local function get_lua_runtime()
+  local result = {}
+
+  for _, path in pairs(vim.api.nvim_list_runtime_paths()) do
+    local lua_path = path .. "/lua/"
+    if vim.fn.isdirectory(lua_path) then
+      result[lua_path] = true
+    end
   end
 
-  local sumneko_root_path = '/Users/lewis/projects/lua-language-server'
-  local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-server"
+  -- This loads the `lua` files from nvim into the runtime.
+  result[vim.fn.expand("$VIMRUNTIME/lua")] = true
+  result[vim.fn.expand('$VIMRUNTIME/lua/vim/lsp')] = true
 
-  setup(nvim_lsp.sumneko_lua, {
-    cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
-    settings = {
-      Lua = {
-        runtime = {
-          version = 'LuaJIT',
-          path = vim.split(package.path, ';'),
-        },
-        diagnostics = {
-          globals = {
-            -- Neovim
-            "vim",
-            -- Busted
-            "describe", "it", "before_each", "after_each", "teardown", "pending"
-          }
-        },
-        workspace = {
-          library = {
-            [vim.fn.expand('$VIMRUNTIME/lua')] = true,
-            [vim.fn.expand('$VIMRUNTIME/lua/vim/lsp')] = true,
-          },
-        },
+  return result;
+end
+
+setup(nvim_lsp.lua, {
+  settings = {
+    Lua = {
+      runtime = {
+        version = 'LuaJIT',
+        path = runtime_path,
+      },
+      diagnostics = {
+        globals = {
+          -- Neovim
+          "vim",
+          -- Busted
+          "describe", "it", "before_each", "after_each", "teardown", "pending"
+        }
+      },
+      workspace = {
+        library = get_lua_runtime(),
+        maxPreload = 10000,
+        preloadFileSize = 10000,
       },
     },
-  })
-end
+  },
+})
 
 -- npm install -g vim-language-server
 setup(nvim_lsp.vimls)
@@ -93,9 +113,6 @@ setup(nvim_lsp.bashls)
 
 -- pip3 install jedi-language-server
 setup(nvim_lsp.jedi_language_server)
-
--- https://github.com/sumneko/lua-language-server/wiki/Build-and-Run-(Standalone)
-setup_sumneko_ls()
 
 -- npm install -g diagnostic-languageserver
 local linters = require'lewis6991.linters'
@@ -127,6 +144,23 @@ setup(nvim_lsp.diagnosticls, {
   end
 })
 
+M.setup_metals = function()
+  require("metals").initialize_or_attach {
+    init_options = {
+      statusBarProvider = 'on'
+    },
+    settings = {
+      showImplicitArguments = true,
+    },
+    on_attach = custom_on_attach
+  }
+end
+
+vim.cmd[[augroup metals_lsp]]
+vim.cmd[[au!]]
+vim.cmd[[au FileType scala,sbt lua require'lewis6991.lsp'.setup_metals()]]
+vim.cmd[[augroup END]]
+
 vim.g.diagnostic_enable_virtual_text = 1
 vim.g.diagnostic_enable_underline = 1
 vim.g.diagnostic_virtual_text_prefix = ' '
@@ -140,5 +174,8 @@ set_lsp_sign("LspDiagnosticsSignWarning"    , "!")
 set_lsp_sign("LspDiagnosticsSignInformation", "I")
 set_lsp_sign("LspDiagnosticsSignHint"       , "H")
 
+
 -- Enables logging to $XDG_CACHE_HOME/nvim/lsp.log
 -- vim.lsp.set_log_level('trace')
+
+return M
