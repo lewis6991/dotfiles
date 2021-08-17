@@ -36,6 +36,10 @@ local function executable(path)
 end
 
 local function setup(config, opts)
+  if not config then
+    return
+  end
+
   opts = opts or {}
 
   local cmd = opts.cmd or config.document_config.default_config.cmd

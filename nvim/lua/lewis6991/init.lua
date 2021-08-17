@@ -159,6 +159,8 @@ if "Mappings" then
 
   map('n', '<leader>:', ':lua<space>', {noremap=true})
 
+  map('n', '<C-C>', ':nohlsearch<CR>', {noremap=true})
+
   -- Use barbar mappings instead
   -- map('n', '<Tab>'  , ':bnext<CR>', {})
   -- map('n', '<S-Tab>', ':bprev<CR>', {})

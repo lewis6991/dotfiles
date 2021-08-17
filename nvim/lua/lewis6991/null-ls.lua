@@ -7,8 +7,7 @@ null_ls.setup {
     null_ls.builtins.diagnostics.shellcheck,
     null_ls.builtins.code_actions.gitsigns,
   },
-  on_attach = function(client, bufnr)
-    print(client.name)
+  on_attach = function(_, bufnr)
     local keymap = function(key, result)
       vim.api.nvim_buf_set_keymap(bufnr, 'n', key, '<cmd>lua '..result..'<CR>',
         {noremap = true, silent = true})
@@ -111,7 +110,7 @@ null_ls.setup {
   sources = {
     null_ls.builtins.diagnostics.teal,
     null_ls.builtins.diagnostics.shellcheck,
-    null_ls.builtins.code_actions.gitsigns,
+    -- null_ls.builtins.code_actions.gitsigns,
     jenkins_lint,
     pylint_lint,
   }

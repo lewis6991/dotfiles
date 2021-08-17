@@ -202,6 +202,19 @@ extract() {
    fi
 }
 
+if [[ -n "$TMUX" ]]; then
+    # # Update environment variables when we attach to an existing tmux
+    # # session from a new connection
+    # tmux show-environment | grep -v '^-' | sed 's/=\(.*\)/="\1"/' | while read foo; do
+    #     eval "export $foo"
+    # done
+    if [[ -n "$TERM_BACK" ]]; then
+        export TERM=$TERM_BACK
+    fi
+else
+    export TERM_BACK=$TERM
+fi
+
 # refresh_tmux() {
 #     if [[ -n "$TMUX" ]]; then
 #         # Update environment variables when we attach to an existing tmux

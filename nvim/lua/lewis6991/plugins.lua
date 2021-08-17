@@ -36,8 +36,7 @@ local init = {
   'tpope/vim-repeat',
   'tpope/vim-eunuch',
   'tpope/vim-surround',
-
-  {'tpope/vim-fugitive', cmd = {'Git', 'Gblame'} },
+  'tpope/vim-fugitive',
 
   {'AndrewRadev/bufferize.vim',
     cmd = 'Bufferize',
@@ -48,7 +47,13 @@ local init = {
   },
 
   'vim-scripts/visualrepeat',
-  'timakro/vim-searchant', -- Highlight the current search result
+
+  -- Highlight the current search result
+  -- 'timakro/vim-searchant',
+  {'PeterRincker/vim-searchlight', config = function()
+    vim.cmd[[highlight default link Searchlight SearchCurrent]]
+  end},
+
   {'folke/trouble.nvim', config = [[require('trouble').setup()]]},
 
   --- Filetype plugins ---
@@ -162,7 +167,7 @@ local init = {
 
   {'pwntester/octo.nvim', config=function()
     require"octo".setup()
-  end},
+  end, keys = ':'},
 
   -- 'mhinz/vim-signify',
   -- 'airblade/vim-gitgutter',
