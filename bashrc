@@ -1,3 +1,4 @@
+#! /usr/bin/env bash
 # Skip remaining setup if not an interactive shell
 [[ $- != *i* ]] && return
 

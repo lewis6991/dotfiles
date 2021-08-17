@@ -21,12 +21,11 @@ vim.cmd[[autocmd plugins BufWritePost plugins.lua lua package.loaded["lewis6991.
 -- Recompile lazy loaders
 vim.cmd[[autocmd plugins BufWritePost plugins.lua PackerCompile]]
 
--- -- Reload lazy loaders
--- vim.cmd[[autocmd BufWritePost plugins.lua runtime plugin/packer_compiled.vim]]
-
-
 local init = {
   'wbthomason/packer.nvim',
+
+  'nanotee/luv-vimdocs',
+  'wsdjeg/luarefvim',
 
   'lewis6991/github_dark.nvim',
 

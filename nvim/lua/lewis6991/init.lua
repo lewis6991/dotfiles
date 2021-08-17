@@ -71,6 +71,8 @@ if 'Options' then
   o.mouse       = 'a'
 
   o.diffopt:append('vertical')  -- Show diffs in vertical splits
+  o.diffopt:append('foldcolumn:0')  -- Show diffs in vertical splits
+  o.diffopt:append('indent-heuristic')
 
   o.undolevels = 10000
   o.undofile   = true
