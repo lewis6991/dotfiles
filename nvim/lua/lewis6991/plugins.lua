@@ -124,45 +124,13 @@ local init = {
     end
   },
 
-  {'scalameta/nvim-metals',
-    config = function()
-      _G.setup_metals = function()
-        require("metals").initialize_or_attach {
-          init_options = {
-            statusBarProvider = 'on'
-          },
-          settings = {
-            showImplicitArguments = true,
-          },
-          on_attach = function()
-            local function keymap(key, result)
-              vim.api.nvim_buf_set_keymap(0, 'n', key, result, {noremap = true, silent = true})
-            end
-            keymap('<C-]>'     , '<cmd>lua vim.lsp.buf.definition()<CR>')
-            keymap('K'         , '<cmd>lua vim.lsp.buf.hover()<CR>')
-            keymap('gK'        , '<cmd>lua vim.lsp.buf.signature_help()<CR>')
-            keymap('gr'        , '<cmd>lua vim.lsp.buf.references()<CR>')
-            keymap('<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
-            keymap(']d'        , '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>')
-            keymap('[d'        , '<cmd>lua vim.lsp.diagnostic.goto_prev()<CR>')
-            keymap('go'        , '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>')
-
-            vim.bo.omnifunc = 'v:lua.vim.lsp.omnifunc'
-          end
-        }
-      end
-
-      vim.cmd('augroup metals_lsp')
-      vim.cmd('au!')
-      vim.cmd('au FileType scala,sbt lua setup_metals()')
-      vim.cmd('augroup end')
-    end
-  },
-
   'simrat39/symbols-outline.nvim',
 
   {'neovim/nvim-lspconfig',
-    requires = {'tjdevries/nlua.nvim'},
+    requires = {
+      'kabouzeid/nvim-lspinstall',
+      'scalameta/nvim-metals',
+    },
     config = "require'lewis6991.lsp'"
   },
 
