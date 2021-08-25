@@ -178,6 +178,12 @@ set_lsp_sign("LspDiagnosticsSignWarning"    , "!")
 set_lsp_sign("LspDiagnosticsSignInformation", "I")
 set_lsp_sign("LspDiagnosticsSignHint"       , "H")
 
+vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+  vim.lsp.handlers.hover, {
+    -- Use a sharp border with `FloatBorder` highlights
+    border = "single"
+  }
+)
 
 -- Enables logging to $XDG_CACHE_HOME/nvim/lsp.log
 -- vim.lsp.set_log_level('trace')
