@@ -83,14 +83,18 @@ local function recording()
     end
 end
 
+local function padded_func(name)
+  return '%( %{v:lua.statusline.'..name..'()} %)'
+end
+
 function M.statusline(active)
   local s = {}
 
   s[#s+1] = '%#StatusLine#'..highlight(1, active)
   s[#s+1] = recording()
-  s[#s+1] = '%( %{v:lua.statusline.hunks()} %)'
+  s[#s+1] = padded_func('hunks')
   s[#s+1] = highlight(2, active)
-  s[#s+1] = '%( %{v:lua.statusline.lsp_status()} %)'
+  s[#s+1] = padded_func('lsp_status')
   s[#s+1] = '%( %{v:lua.statusline.blame()} %)'
   if exists('*metals#status') then
     s[#s+1] = '%{metals#status()}'
