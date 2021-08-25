@@ -13,13 +13,6 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   )))
 end
 
-vim.cmd[[
-  augroup plugins | autocmd! | augroup END
-
-  " Reload plugins.lua
-  autocmd plugins BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")
-]]
-
 local init = {
   'wbthomason/packer.nvim',
 
@@ -275,7 +268,32 @@ local init = {
 
 }
 
+-- Hacky way of auto clean/install/compile
+vim.cmd[[
+  augroup plugins
+  " Reload plugins.lua
+  autocmd!
+  autocmd BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")
+  autocmd BufWritePost plugins.lua PackerClean
+  augroup END
+]]
+
 local packer = require('packer')
+
+local state = 1
+local orig_complete = packer.on_complete
+packer.on_complete = vim.schedule_wrap(function()
+  if state == 1 then
+    packer.install()
+    state = state + 1
+    return
+  elseif state == 2 then
+    packer.compile()
+    state = state + 1
+    return
+  end
+  packer.on_complete = orig_complete
+end)
 
 packer.startup{init,
   config = {
@@ -289,7 +307,5 @@ packer.startup{init,
     }
   }
 }
-
-packer.compile()
 
 return packer
