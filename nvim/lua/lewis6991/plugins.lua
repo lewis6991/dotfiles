@@ -249,14 +249,28 @@ local init = {
 
   'euclidianAce/BetterLua.vim',
 
-  {'romgrk/barbar.nvim',
+  -- {'romgrk/barbar.nvim',
+  --   requires = { 'kyazdani42/nvim-web-devicons' },
+  --   config = function()
+  --     vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
+  --       closable = false
+  --     })
+  --     vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {silent=true})
+  --     vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {silent=true})
+  --   end
+  -- },
+
+  {'akinsho/bufferline.nvim',
     requires = { 'kyazdani42/nvim-web-devicons' },
     config = function()
-      vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
-        closable = false
-      })
-      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {silent=true})
-      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {silent=true})
+      require("bufferline").setup{
+        options = {
+          show_buffer_close_icons = false,
+          show_close_icon = false,
+        }
+      }
+      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferLineCycleNext<CR>', {noremap=true, silent=true})
+      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferLineCyclePrev<CR>', {noremap=true, silent=true})
     end
   }
 
