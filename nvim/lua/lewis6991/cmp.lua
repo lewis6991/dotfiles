@@ -55,6 +55,7 @@ cmp.setup {
     { name = 'nvim_lua' },
     { name = 'buffer'   },
     { name = 'luasnip'  },
+    { name = 'tmux'     },
   },
 }
 

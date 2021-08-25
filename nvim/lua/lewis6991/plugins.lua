@@ -149,7 +149,8 @@ local init = {
       'saadparwaiz1/cmp_luasnip',
       'hrsh7th/cmp-buffer',
       'onsails/lspkind-nvim',
-      'hrsh7th/cmp-nvim-lua'
+      'hrsh7th/cmp-nvim-lua',
+      { 'andersevenrud/compe-tmux', branch = 'cmp' }
     },
     config = [[require('lewis6991.cmp')]]
   },
