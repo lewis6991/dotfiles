@@ -148,6 +148,7 @@ local init = {
       'L3MON4D3/LuaSnip',
       'saadparwaiz1/cmp_luasnip',
       'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-path',
       'onsails/lspkind-nvim',
       'hrsh7th/cmp-nvim-lua',
       { 'andersevenrud/compe-tmux', branch = 'cmp' }
