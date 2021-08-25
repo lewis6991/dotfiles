@@ -183,18 +183,53 @@ local init = {
   {'~/projects/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
-      vim.cmd[[cabbrev G Gitsigns]]
-      vim.api.nvim_set_keymap('n', 'm', ':Gitsigns dump_cache<cr>'    , {silent=true})
-      vim.api.nvim_set_keymap('n', 'M', ':Gitsigns debug_messages<cr>', {silent=true})
+      vim.cmd[[cabbrev g Gitsigns]]
       require('gitsigns').setup{
-        -- debug_mode = true,
+        debug_mode = true,
         signs = {
-          add          = {text= '┃', hl = 'GitGutterAdd'   },
-          change       = {text= '┃', hl = 'GitGutterChange'},
-          delete       = {text= '_', hl = 'GitGutterDelete'},
-          topdelete    = {text= '‾', hl = 'GitGutterDelete'},
-          changedelete = {text= '≃', hl = 'GitGutterChange'},
-        }
+          add       = {text = '┃' },
+          change    = {text = '┃' },
+          delete    = {linehl = 'NormalNC'},
+          topdelete = {linehl = 'NormalNC'},
+        },
+        keymaps = {
+          -- Default keymap options
+          noremap = true,
+
+          ['n ]c'] = { expr = true, "&diff ? ']c' : '<cmd>lua require\"gitsigns\".next_hunk()<CR>'"},
+          ['n [c'] = { expr = true, "&diff ? '[c' : '<cmd>lua require\"gitsigns\".prev_hunk()<CR>'"},
+
+          ['n <leader>hs'] = '<cmd>Gitsigns stage_hunk<CR>',
+          ['v <leader>hs'] = '<cmd>Gitsigns stage_hunk<CR>',
+          ['n <leader>hS'] = '<cmd>Gitsigns stage_buffer<CR>',
+          ['n <leader>hu'] = '<cmd>Gitsigns undo_stage_hunk<CR>',
+          ['n <leader>hr'] = '<cmd>Gitsigns reset_hunk<CR>',
+          ['v <leader>hr'] = '<cmd>Gitsigns reset_hunk<CR>',
+          ['n <leader>hR'] = '<cmd>Gitsigns reset_buffer<CR>',
+          ['n <leader>hp'] = '<cmd>Gitsigns preview_hunk<CR>',
+          ['n <leader>hb'] = '<cmd>Gitsigns blame_line true <CR>',
+          ['n <leader>hB'] = '<cmd>Gitsigns toggle_current_line_blame<CR>',
+          ['n <leader>hd'] = '<cmd>Gitsigns diffthis<CR>',
+          ['n <leader>hD'] = '<cmd>Gitsigns diffthis ~<CR>',
+
+          ['n m'] = '<cmd>Gitsigns dump_cache<CR>',
+          ['n M'] = '<cmd>Gitsigns debug_messages<CR>',
+
+          ['o ih'] = ':<C-U>lua require"gitsigns".select_hunk()<CR>',
+          ['x ih'] = ':<C-U>lua require"gitsigns".select_hunk()<CR>'
+        },
+        preview_config = {
+          border = 'rounded',
+        },
+        current_line_blame_formatter_opts = {
+          relative_time = true
+        },
+        current_line_blame_opts = {
+          delay = 200
+        },
+        count_chars = {'₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉', ['+']='₊'},
+        _refresh_staged_on_update = false,
+        word_diff = true,
       }
     end
   },
