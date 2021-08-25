@@ -142,9 +142,16 @@ local init = {
     config = [[require('lewis6991.null-ls')]]
   },
 
-  {'hrsh7th/nvim-compe',
-    requires = {'andersevenrud/compe-tmux'},
-    config = [[require('lewis6991.compe')]]
+  {'hrsh7th/nvim-cmp',
+    requires = {
+      'hrsh7th/cmp-nvim-lsp',
+      'L3MON4D3/LuaSnip',
+      'saadparwaiz1/cmp_luasnip',
+      'hrsh7th/cmp-buffer',
+      'onsails/lspkind-nvim',
+      'hrsh7th/cmp-nvim-lua'
+    },
+    config = [[require('lewis6991.cmp')]]
   },
 
   {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
