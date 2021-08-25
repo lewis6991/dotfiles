@@ -13,13 +13,12 @@ if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
   )))
 end
 
-vim.cmd[[augroup plugins | autocmd! | augroup END]]
+vim.cmd[[
+  augroup plugins | autocmd! | augroup END
 
--- Reload plugins.lua
-vim.cmd[[autocmd plugins BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")]]
-
--- Recompile lazy loaders
-vim.cmd[[autocmd plugins BufWritePost plugins.lua PackerCompile]]
+  " Reload plugins.lua
+  autocmd plugins BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")
+]]
 
 local init = {
   'wbthomason/packer.nvim',
@@ -290,5 +289,7 @@ packer.startup{init,
     }
   }
 }
+
+packer.compile()
 
 return packer
