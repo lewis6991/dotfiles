@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 set -e
 
-git checkout -B "${1-master}"
 remoteBranch=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}')
+git checkout -B "${1-master}"
 git branch --set-upstream-to "${2-$remoteBranch}"
