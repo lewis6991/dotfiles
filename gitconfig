@@ -33,6 +33,7 @@
 	ri   = rebase --interactive
 	rs   = rebase --skip
 	sp   = stash show -p
+	pop  = stash pop
 	lgs = lg origin...
 	sub = submodule
 	new = "!f() {\

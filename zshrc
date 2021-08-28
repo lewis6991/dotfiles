@@ -137,7 +137,7 @@ if have_cmd rlwrap; then
         alias tclsh="rlwrap -Ar -pcyan tclsh"
     fi
     if have_cmd lua; then
-        alias lua="rlwrap -Ar -pcyan lua"
+        alias lua="rlwrap -Ar -pcyan --always-readline lua"
     fi
 fi
 
