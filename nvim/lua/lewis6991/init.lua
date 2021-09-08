@@ -92,15 +92,6 @@ if 'Options' then
   o.formatoptions:append('n') -- Recognise lists
 end
 
-if os.getenv('SSH_TTY') then
-  vim.g.clipboard = {
-    name          = 'pb-remote',
-    copy          = {['+'] = 'pbcopy-remote' , ['*'] = 'pbcopy-remote' },
-    paste         = {['+'] = 'pbpaste-remote', ['*'] = 'pbpaste-remote'},
-    cache_enabled = 0,
-  }
-end
-
 if 'Folding' then
   vim.g.sh_fold_enabled = 1
 
@@ -128,6 +119,7 @@ if "Mappings" then
   local map = vim.api.nvim_set_keymap
 
   map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'   , {noremap=true})
+  map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.vim<CR>'                 , {noremap=true})
   map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>', {noremap=true})
   map('n', '<leader>s' , ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'                   , {noremap=true})
   map('n', '<leader>c' , '1z='                                                      , {noremap=true})
@@ -178,6 +170,8 @@ P = function(v)
   print(vim.inspect(v))
   return v
 end
+
+vim.cmd[[command! -complete=lua -nargs=1 L lua print(vim.inspect(<args>))]]
 
 vim.cmd[[autocmd vimrc VimResized * wincmd =]]
 -- vim: foldminlines=0:

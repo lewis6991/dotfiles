@@ -25,6 +25,8 @@ function M.hunks()
       status = status ..' '..vim.b.gitsigns_status
     end
     return status
+  elseif vim.g.gitsigns_head then
+    return vim.g.gitsigns_head
   end
   return ''
 end

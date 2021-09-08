@@ -47,7 +47,7 @@ null_ls.setup {
     null_ls.builtins.diagnostics.shellcheck,
     null_ls.builtins.diagnostics.pylint,
     null_ls.builtins.diagnostics.flake8,
-    null_ls.builtins.diagnostics.luacheck,
+    -- null_ls.builtins.diagnostics.luacheck,
     -- null_ls.builtins.code_actions.gitsigns,
     jenkins_lint,
   }

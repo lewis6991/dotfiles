@@ -1,6 +1,6 @@
 local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
 
-if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
+if not vim.loop.fs_stat(install_path) then
   if vim.fn.input("Download Packer? (y for yes): ") ~= "y" then
     return
   end
@@ -161,11 +161,6 @@ local init = {
 
   'whiteinge/diffconflicts',
 
-  {'dstein64/nvim-scrollview', config = function()
-    vim.g.scrollview_current_only = 1
-    vim.g.scrollview_column = 1
-  end},
-
   {'pwntester/octo.nvim', config=function()
     require"octo".setup()
   end, keys = ':'},
@@ -241,28 +236,34 @@ local init = {
 
   'euclidianAce/BetterLua.vim',
 
-  -- {'romgrk/barbar.nvim',
-  --   requires = { 'kyazdani42/nvim-web-devicons' },
-  --   config = function()
-  --     vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
-  --       closable = false
-  --     })
-  --     vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {silent=true})
-  --     vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {silent=true})
-  --   end
-  -- },
+  {'ojroques/vim-oscyank',
+    event = 'TextYankPost',
+    config = function()
+      vim.g.oscyank_silent = true
+      vim.cmd[[autocmd vimrc TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif]]
+    end
+  },
 
-  {'akinsho/bufferline.nvim',
+  {'folke/persistence.nvim',
+    config = function()
+      require('persistence').setup()
+
+      -- restore the session for the current directory
+      vim.api.nvim_set_keymap("n", "<leader>qs", [[<cmd>lua require("persistence").load()<cr>]], {})
+
+      -- restore the last session
+      vim.api.nvim_set_keymap("n", "<leader>ql", [[<cmd>lua require("persistence").load({last=true})<cr>]], {})
+    end,
+  },
+
+  {'romgrk/barbar.nvim',
     requires = { 'kyazdani42/nvim-web-devicons' },
     config = function()
-      require("bufferline").setup{
-        options = {
-          show_buffer_close_icons = false,
-          show_close_icon = false,
-        }
-      }
-      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferLineCycleNext<CR>', {noremap=true, silent=true})
-      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferLineCyclePrev<CR>', {noremap=true, silent=true})
+      vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
+        closable = false
+      })
+      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {noremap=true,silent=true})
+      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {noremap=true,silent=true})
     end
   }
 
@@ -307,5 +308,7 @@ packer.startup{init,
     }
   }
 }
+
+vim.api.nvim_set_keymap('n', '<leader>u', ':PackerUpdate<CR>', {noremap=true, silent=true})
 
 return packer
