@@ -135,15 +135,16 @@ local init = {
   },
 
   {'hrsh7th/nvim-cmp',
+    event = "InsertEnter *",
     requires = {
-      'hrsh7th/cmp-nvim-lsp',
-      'L3MON4D3/LuaSnip',
-      'saadparwaiz1/cmp_luasnip',
-      'hrsh7th/cmp-buffer',
-      'hrsh7th/cmp-path',
       'onsails/lspkind-nvim',
-      'hrsh7th/cmp-nvim-lua',
-      { 'andersevenrud/compe-tmux', branch = 'cmp' }
+      { 'hrsh7th/cmp-nvim-lsp'    , after = "nvim-cmp" },
+      { 'hrsh7th/cmp-buffer'      , after = "nvim-cmp" },
+      { 'hrsh7th/cmp-path'        , after = "nvim-cmp" },
+      { 'hrsh7th/cmp-nvim-lua'    , after = "nvim-cmp" },
+      { 'andersevenrud/compe-tmux', after = "nvim-cmp", branch = 'cmp'},
+      { "L3MON4D3/LuaSnip"        , after = "nvim-cmp", module_pattern = "^luasnip%.*" },
+      { 'saadparwaiz1/cmp_luasnip', after = "nvim-cmp" },
     },
     config = [[require('lewis6991.cmp')]]
   },
