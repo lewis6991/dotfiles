@@ -16,6 +16,6 @@ remoteBranch=$(git config "branch.${1-$branch}.merge")
 remoteBranch=${remoteBranch##refs/heads/}
 git push origin "HEAD:refs/for/$remoteBranch"
 
-if ! hash jerrit 2>/dev/null; then
+if hash jerrit 2>/dev/null; then
     jerrit update
 fi
