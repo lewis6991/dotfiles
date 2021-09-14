@@ -1,8 +1,8 @@
 require'lewis6991.status'
 
-local o = vim.opt
+local o, api = vim.opt, vim.api
 
-local api = vim.api
+local M = {}
 
 if 'Plugins' then
   -- Load any plugins which are work sensitive.
@@ -147,7 +147,7 @@ if "Mappings" then
   map('n', 'q', '<nop>' , {noremap=true})
 
   -- Show syntax highlighting groups for word under cursor
-  function Syn_stack()
+  function M.syn_stack()
     local c = api.nvim_win_get_cursor(0)
     local stack = vim.fn.synstack(c[1], c[2]+1)
     for i, l in ipairs(stack) do
@@ -155,7 +155,7 @@ if "Mappings" then
     end
     print(vim.inspect(stack))
   end
-  map('n', '<leader>z', ':lua Syn_stack()<CR>', {noremap=true})
+  map('n', '<leader>z', ':lua package.loaded.lewis6991.syn_stack()<CR>', {noremap=true})
 
   map('n', '<leader>:', ':lua<space>', {noremap=true})
 
@@ -178,8 +178,6 @@ P = function(v)
   print(vim.inspect(v))
   return v
 end
-
-local M = {}
 
 if 'Hashbang' then
   function M.hashbang()
