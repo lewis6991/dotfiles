@@ -2,6 +2,8 @@ require'lewis6991.status'
 
 local o = vim.opt
 
+local api = vim.api
+
 if 'Plugins' then
   -- Load any plugins which are work sensitive.
   for _, f in ipairs(vim.fn.globpath('~/gerrit/', '*', false, true)) do
@@ -11,7 +13,13 @@ if 'Plugins' then
   o.rtp:prepend('~/projects/dotfiles/modules/moonlight.vim')
   o.rtp:prepend('~/projects/tcl.vim')
 
-  vim.g.loaded_netrwPlugin = 1  -- Stop netrw loading
+  -- Stop loading built in plugins
+  vim.g.loaded_netrwPlugin = 1
+  vim.g.loaded_tutor_mode_plugin = 1
+  vim.g.loaded_2html_plugin = 1
+  vim.g.loaded_zipPlugin = 1
+  vim.g.loaded_tarPlugin = 1
+  vim.g.loaded_gzip = 1
 
   -- Plugins are 'start' plugins so are loaded automatically, but to enable packer
   -- commands we need to require plugins at some point
@@ -116,7 +124,7 @@ if 'Whitespace' then
 end
 
 if "Mappings" then
-  local map = vim.api.nvim_set_keymap
+  local map = api.nvim_set_keymap
 
   map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'   , {noremap=true})
   map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.vim<CR>'                 , {noremap=true})
@@ -140,7 +148,7 @@ if "Mappings" then
 
   -- Show syntax highlighting groups for word under cursor
   function Syn_stack()
-    local c = vim.api.nvim_win_get_cursor(0)
+    local c = api.nvim_win_get_cursor(0)
     local stack = vim.fn.synstack(c[1], c[2]+1)
     for i, l in ipairs(stack) do
       stack[i] = vim.fn.synIDattr(l, 'name')
@@ -171,7 +179,78 @@ P = function(v)
   return v
 end
 
+local M = {}
+
+if 'Hashbang' then
+  function M.hashbang()
+    local shells = {
+      sh    = {'#! /usr/bin/env bash'},
+      py    = {'#! /usr/bin/env python3'},
+      scala = {'#! /usr/bin/env scala'},
+      tcl   = {'#! /usr/bin/env tclsh'},
+      lua = {
+          '#! /bin/sh',
+          '_=[[',
+          'exec lua "$0" "$@"',
+          ']]'
+        }
+    }
+
+    local extension = vim.fn.expand('%:e')
+
+    if shells[extension] then
+      local hb = shells[extension]
+      hb[#hb+1] = ''
+
+      api.nvim_buf_set_lines(0, 0, 0, false, hb)
+      vim.cmd[[autocmd vimrc BufWritePost <buffer> silent !chmod u+x %]]
+    end
+  end
+
+  vim.cmd[[command! Hashbang call v:lua.package.loaded.lewis6991.hashbang()]]
+end
+
+if "Floating Man" then
+  local function createCenteredFloatingWindow()
+    local width  = math.floor(vim.o.columns * 0.8)
+    local height = math.floor(vim.o.lines * 0.8)
+
+    local buf = api.nvim_create_buf(true, true)
+
+    api.nvim_open_win(buf, true, {
+      relative = 'editor',
+      style    = 'minimal',
+      border   = 'single',
+      row      = ((vim.o.lines - height) / 2) - 1,
+      col      = (vim.o.columns - width) / 2,
+      width    = width,
+      height   = height,
+    })
+
+    return buf
+  end
+
+  function M.floatingMan(id)
+    local buf = createCenteredFloatingWindow()
+    vim.api.nvim_buf_set_option(buf, 'filetype', 'man')
+
+    vim.cmd('Man '..id)
+
+    api.nvim_buf_set_keymap(buf, 'n', 'q'    , ':bwipeout!<cr>', {silent=true})
+    api.nvim_buf_set_keymap(buf, 'n', '<esc>', ':bwipeout!<cr>', {silent=true})
+    vim.cmd('autocmd BufLeave <buffer> :bwipeout!')
+  end
+
+  vim.cmd([[command! -nargs=* FloatingMan call v:lua.package.loaded.lewis6991.floatingMan(<f-args>)]])
+  o.keywordprg = ':FloatingMan'
+end
+
 vim.cmd[[command! -complete=lua -nargs=1 L lua print(vim.inspect(<args>))]]
 
 vim.cmd[[autocmd vimrc VimResized * wincmd =]]
+
+vim.cmd[[command! LspDisable lua vim.lsp.stop_client(vim.lsp.get_active_clients())]]
+
+return M
+
 -- vim: foldminlines=0:
