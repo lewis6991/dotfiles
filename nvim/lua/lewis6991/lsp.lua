@@ -118,6 +118,22 @@ setup(nvim_lsp.bashls)
 -- pip3 install jedi-language-server
 setup(nvim_lsp.jedi_language_server)
 
+-- Make sure this is a slash (as theres some metamagic happening behind the scenes)
+local configs = require("lspconfig/configs")
+configs.teal = {
+   default_config = {
+      cmd = {
+         "teal-language-server",
+         -- "logging=on", use this to enable logging in /tmp/teal-language-server.log
+      },
+      filetypes = { 'teal' },
+      root_dir = nvim_lsp.util.root_pattern("tlconfig.lua", ".git"),
+      settings = {},
+   },
+}
+
+setup(nvim_lsp.teal)
+
 -- npm install -g diagnostic-languageserver
 local linters = require'lewis6991.linters'
 
