@@ -1,3 +1,4 @@
+lua require'impatient'.enable_profile()
 lua require'lewis6991'
 
 "VimL

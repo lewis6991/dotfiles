@@ -19,7 +19,7 @@ local init = {
   'nanotee/luv-vimdocs',
   'wsdjeg/luarefvim',
 
-  'lewis6991/github_dark.nvim',
+  'lewis6991/impatient.nvim',
 
   {'justinmk/vim-dirvish', config = "require'lewis6991.dirvish'"},
 
