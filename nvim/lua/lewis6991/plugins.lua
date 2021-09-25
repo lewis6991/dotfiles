@@ -171,9 +171,9 @@ local init = {
   {'~/projects/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
-      vim.cmd[[cabbrev g Gitsigns]]
       require('gitsigns').setup{
         debug_mode = true,
+        max_file_length = 1000000000,
         signs = {
           add       = {text = '┃' },
           change    = {text = '┃' },
@@ -304,7 +304,7 @@ packer.startup{init,
     --   threshold = 1
     -- },
     display = {
-      open_cmd = 'vnew \\[packer\\]',
+      open_cmd = 'edit \\[packer\\]',
       prompt_border = 'rounded'
     }
   }
