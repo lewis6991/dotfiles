@@ -16,12 +16,16 @@ end
 local init = {
   'wbthomason/packer.nvim',
 
+  'lewis6991/tcl.vim',
+  'lewis6991/systemverilog.vim',
+  'lewis6991/impatient.nvim',
+
   'nanotee/luv-vimdocs',
   'wsdjeg/luarefvim',
 
-  'lewis6991/impatient.nvim',
-
-  {'justinmk/vim-dirvish', config = "require'lewis6991.dirvish'"},
+  {'lewis6991/vim-dirvish', config = function()
+    vim.g.dirvish_mode = ':sort ,^.*[\\/],'
+  end},
 
   'tpope/vim-commentary',
   'tpope/vim-unimpaired',
@@ -38,7 +42,11 @@ local init = {
     end
   },
 
-  'vim-scripts/visualrepeat',
+  {'vim-scripts/visualrepeat',
+    requires = { 'inkarkat/vim-ingo-library' }
+  },
+
+  {'sindrets/diffview.nvim', config = [[require'diffview'.setup()]]},
 
   -- Highlight the current search result
   -- 'timakro/vim-searchant',
@@ -124,7 +132,7 @@ local init = {
 
   {'neovim/nvim-lspconfig',
     requires = {
-      'kabouzeid/nvim-lspinstall',
+      'lewis6991/nvim-lspinstall',
       'scalameta/nvim-metals',
     },
     config = "require'lewis6991.lsp'"
@@ -149,6 +157,8 @@ local init = {
     config = [[require('lewis6991.cmp')]]
   },
 
+  -- 'dstein64/vim-startuptime',
+
   {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
   {'nvim-lua/telescope.nvim',
     requires = {
@@ -168,7 +178,8 @@ local init = {
 
   -- 'mhinz/vim-signify',
   -- 'airblade/vim-gitgutter',
-  {'~/projects/gitsigns.nvim',
+
+  {'lewis6991/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
       require('gitsigns').setup{
@@ -222,7 +233,7 @@ local init = {
     end
   },
 
-  {'~/projects/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
+  {'lewis6991/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
 
   {'norcalli/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
 
@@ -270,32 +281,63 @@ local init = {
 
 }
 
--- Hacky way of auto clean/install/compile
-vim.cmd[[
-  augroup plugins
-  " Reload plugins.lua
-  autocmd!
-  autocmd BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")
-  autocmd BufWritePost plugins.lua PackerClean
-  augroup END
-]]
+do -- look for local version of plugins in $HOME/projects and use them instead
+  local home = os.getenv('HOME')
+
+  local function try_get_local(plugin)
+    local _, name = unpack(vim.split(plugin, '/'))
+    local loc_install = home..'/projects/'..name
+    if vim.loop.fs_stat(loc_install) then
+      return loc_install
+    else
+      return plugin
+    end
+  end
+
+  local function try_local(spec, i)
+    if type(spec[i]) == 'string' then
+      spec[i] = try_get_local(spec[i])
+    elseif type(spec[i]) == 'table' then
+      spec[i][1] = try_get_local(spec[i][1])
+      for j, _ in ipairs(spec[i].requires or {}) do
+        try_local(spec[i].requires, j)
+      end
+    end
+  end
+
+  for i, _ in ipairs(init) do
+    try_local(init, i)
+  end
+end
 
 local packer = require('packer')
 
-local state = 1
-local orig_complete = packer.on_complete
-packer.on_complete = vim.schedule_wrap(function()
-  if state == 1 then
-    packer.install()
-    state = state + 1
-    return
-  elseif state == 2 then
-    packer.compile()
-    state = state + 1
-    return
-  end
-  packer.on_complete = orig_complete
-end)
+do -- Hacky way of auto clean/install/compile
+  vim.cmd[[
+    augroup plugins
+    " Reload plugins.lua
+    autocmd!
+    autocmd BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")
+    autocmd BufWritePost plugins.lua PackerClean
+    augroup END
+  ]]
+
+  local state = 'cleaned'
+  local orig_complete = packer.on_complete
+  packer.on_complete = vim.schedule_wrap(function()
+    if state == 'cleaned' then
+      packer.install()
+      state = 'installed'
+    elseif state == 'installed' then
+      packer.compile()
+      state = 'compiled'
+    elseif state == 'compiled' then
+      packer.on_complete = orig_complete
+      state = 'done'
+    end
+  end)
+
+end
 
 packer.startup{init,
   config = {

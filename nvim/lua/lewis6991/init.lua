@@ -1,17 +1,14 @@
-require'lewis6991.status'
-
 local o, api = vim.opt, vim.api
 
 local M = {}
+
+require('lewis6991.status')
 
 if 'Plugins' then
   -- Load any plugins which are work sensitive.
   for _, f in ipairs(vim.fn.globpath('~/gerrit/', '*', false, true)) do
     o.rtp:prepend(f)
   end
-
-  o.rtp:prepend('~/projects/dotfiles/modules/moonlight.vim')
-  o.rtp:prepend('~/projects/tcl.vim')
 
   -- Stop loading built in plugins
   vim.g.loaded_netrwPlugin = 1
