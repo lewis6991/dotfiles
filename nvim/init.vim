@@ -1,11 +1,6 @@
 lua require'impatient'.enable_profile()
 lua require'lewis6991'
-
-"VimL
-let g:vimsyn_folding  = 'af' "Fold augroups and functions
-let g:vim_indent_cont = &shiftwidth
-let g:xml_syntax_folding=1
-let g:man_hardwrap=1
+lua require'packer_compiled'
 
 " Filetype detections
 augroup vimrc

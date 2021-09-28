@@ -16,9 +16,11 @@ end
 local init = {
   'wbthomason/packer.nvim',
 
+  'lewis6991/moonlight.vim',
   'lewis6991/tcl.vim',
   'lewis6991/systemverilog.vim',
   'lewis6991/impatient.nvim',
+  {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
 
   'nanotee/luv-vimdocs',
   'wsdjeg/luarefvim',
@@ -99,8 +101,6 @@ local init = {
 
   'rhysd/conflict-marker.vim',
 
-  {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
-
   'bogado/file-line', -- Open file:line
 
   {'junegunn/vim-easy-align',
@@ -138,9 +138,7 @@ local init = {
     config = "require'lewis6991.lsp'"
   },
 
-  {'jose-elias-alvarez/null-ls.nvim',
-    config = [[require('lewis6991.null-ls')]]
-  },
+  {'jose-elias-alvarez/null-ls.nvim', config = [[require('lewis6991.null-ls')]]},
 
   {'hrsh7th/nvim-cmp',
     event = "InsertEnter *",
@@ -341,14 +339,12 @@ end
 
 packer.startup{init,
   config = {
-    -- profile = {
-    --   enable = false,
-    --   threshold = 1
-    -- },
     display = {
       open_cmd = 'edit \\[packer\\]',
       prompt_border = 'rounded'
-    }
+    },
+    -- Move to lua dir so impatient.nvim can cache it
+    compile_path = vim.fn.stdpath('config')..'/lua/packer_compiled.lua'
   }
 }
 

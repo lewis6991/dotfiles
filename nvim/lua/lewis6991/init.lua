@@ -1,8 +1,8 @@
+require 'lewis6991.status'
+
 local o, api = vim.opt, vim.api
 
 local M = {}
-
-require('lewis6991.status')
 
 if 'Plugins' then
   -- Load any plugins which are work sensitive.
@@ -95,6 +95,14 @@ if 'Options' then
   o.formatoptions:append('l') -- Long lines are not broken in insert mode.
   o.formatoptions:remove('t') -- Do not auto wrap text
   o.formatoptions:append('n') -- Recognise lists
+end
+
+if 'ftplugin' then
+  vim.g.vimsyn_folding  = 'af' --Fold augroups and functions
+  vim.g.vim_indent_cont = vim.opt.shiftwidth:get()
+  vim.g.xml_syntax_folding = 1
+  vim.g.man_hardwrap = 1
+  vim.g.yaml_recommended_style = 0
 end
 
 if 'Folding' then
