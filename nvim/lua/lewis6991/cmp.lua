@@ -15,8 +15,18 @@ cmp.setup {
     end,
   },
   formatting = {
-    format = function(_, vim_item)
+    format = function(entry, vim_item)
       vim_item.kind = lspkind.presets.default[vim_item.kind]
+
+       -- set a name for each source
+      vim_item.menu = ({
+        buffer   = "Buffer",
+        nvim_lsp = "LSP",
+        luasnip  = "LuaSnip",
+        nvim_lua = "Lua",
+        path     = 'Path',
+        tmux     = 'Tmux',
+      })[entry.source.name]
       return vim_item
     end
   },
@@ -51,12 +61,12 @@ cmp.setup {
     end,
   },
   sources = {
-    { name = 'nvim_lsp' },
     { name = 'nvim_lua' },
+    { name = 'nvim_lsp' },
     { name = 'buffer'   },
     { name = 'luasnip'  },
-    { name = 'tmux'     },
     { name = 'path'     },
+    { name = 'tmux', keyword_length=3, max_item_count=20},
   },
 }
 
