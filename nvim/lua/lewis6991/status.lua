@@ -47,12 +47,13 @@ function M.blame()
 end
 
 local function filetype_symbol()
-  local ok, res = pcall(vim.api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol')
+  local ok, res = pcall(vim.api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol', {})
   if ok then
     return res
   end
   local name = vim.api.nvim_buf_get_name(0)
-  return require'nvim-web-devicons'.get_icon(name, vim.bo.filetype, {default = true})
+  res = require'nvim-web-devicons'.get_icon(name, vim.bo.filetype, {default = true})
+  return res
 end
 
 function M.filetype()
