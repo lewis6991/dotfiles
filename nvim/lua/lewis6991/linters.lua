@@ -54,11 +54,10 @@ linters.mypy = {
     error = "error",
   },
   on_attach = function()
-    vim.cmd[[augroup LSPCONFIG]]
-    vim.cmd[[autocmd!]]
-    -- vim.cmd[[autocmd VimLeavePre * :silent !dmypy stop]]
-    vim.cmd[[autocmd VimLeavePre * :!dmypy stop]]
-    vim.cmd[[augroup END]]
+    vim.cmd[[augroup LSPCONFIG
+      autocmd!
+      autocmd VimLeavePre * :silent! !dmypy stop
+    augroup END]]
   end
 }
 

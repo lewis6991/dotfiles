@@ -36,6 +36,11 @@ local init = {
   'tpope/vim-surround',
   'tpope/vim-fugitive',
 
+  {'zsugabubus/crazy8.nvim', config = function()
+    -- Hacky fix so it works on the first opened buffer
+    vim.cmd[[autocmd vimrc BufReadPost * autocmd CursorHold <buffer=abuf> ++once lua Crazy8()]]
+  end},
+
   {'AndrewRadev/bufferize.vim',
     cmd = 'Bufferize',
     config = function()
@@ -44,9 +49,7 @@ local init = {
     end
   },
 
-  {'vim-scripts/visualrepeat',
-    requires = { 'inkarkat/vim-ingo-library' }
-  },
+  {'vim-scripts/visualrepeat', requires = 'inkarkat/vim-ingo-library' },
 
   {'sindrets/diffview.nvim', config = [[require'diffview'.setup()]]},
 
@@ -78,7 +81,12 @@ local init = {
 
   'dietsche/vim-lastplace',
 
-  'christoomey/vim-tmux-navigator',
+  -- 'christoomey/vim-tmux-navigator',
+  {'aserowy/tmux.nvim', config = function()
+    require("tmux").setup{
+      navigation = { enable_default_keybindings = true }
+    }
+  end},
 
   'ryanoasis/vim-devicons',
   'powerman/vim-plugin-AnsiEsc',
@@ -180,6 +188,8 @@ local init = {
   {'lewis6991/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
+      vim.api.nvim_set_keymap('n', 'm', '<cmd>Gitsigns dump_cache<CR>'    , {noremap=true})
+      vim.api.nvim_set_keymap('n', 'M', '<cmd>Gitsigns debug_messages<CR>', {noremap=true})
       require('gitsigns').setup{
         debug_mode = true,
         max_file_length = 1000000000,
@@ -208,9 +218,6 @@ local init = {
           ['n <leader>hB'] = '<cmd>Gitsigns toggle_current_line_blame<CR>',
           ['n <leader>hd'] = '<cmd>Gitsigns diffthis<CR>',
           ['n <leader>hD'] = '<cmd>Gitsigns diffthis ~<CR>',
-
-          ['n m'] = '<cmd>Gitsigns dump_cache<CR>',
-          ['n M'] = '<cmd>Gitsigns debug_messages<CR>',
 
           ['o ih'] = ':<C-U>lua require"gitsigns".select_hunk()<CR>',
           ['x ih'] = ':<C-U>lua require"gitsigns".select_hunk()<CR>'
@@ -293,19 +300,18 @@ do -- look for local version of plugins in $HOME/projects and use them instead
   end
 
   local function try_local(spec, i)
+    i = i or 1
     if type(spec[i]) == 'string' then
       spec[i] = try_get_local(spec[i])
     elseif type(spec[i]) == 'table' then
-      spec[i][1] = try_get_local(spec[i][1])
-      for j, _ in ipairs(spec[i].requires or {}) do
-        try_local(spec[i].requires, j)
+      for j, _ in ipairs(spec[i]) do
+        try_local(spec[i], j)
       end
+      try_local(spec[i], 'requires')
     end
   end
 
-  for i, _ in ipairs(init) do
-    try_local(init, i)
-  end
+  try_local{init}
 end
 
 local packer = require('packer')

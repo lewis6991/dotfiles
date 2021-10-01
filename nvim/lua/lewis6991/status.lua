@@ -13,6 +13,12 @@ function M.lsp_status()
       table.insert(status, ('%s:%s'):format(ty:sub(1,1), n))
     end
   end
+
+  local ok, res = pcall(vim.api.nvim_call_function, 'metals#status')
+  if ok then
+    status[#status+1] = res
+  end
+
   local r = table.concat(status, ' ')
 
   return r == '' and 'LSP' or r
@@ -40,6 +46,22 @@ function M.blame()
   return ''
 end
 
+local function filetype_symbol()
+  local ok, res = pcall(vim.api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol')
+  if ok then
+    return res
+  end
+  local name = vim.api.nvim_buf_get_name(0)
+  return require'nvim-web-devicons'.get_icon(name, vim.bo.filetype, {default = true})
+end
+
+function M.filetype()
+  return table.concat({
+    vim.bo.filetype,
+    filetype_symbol()
+  } , ' ')
+end
+
 function M.encodingAndFormat()
     local e = vim.bo.fileencoding and vim.bo.fileencoding or vim.o.encoding
 
@@ -51,9 +73,13 @@ function M.encodingAndFormat()
     local f = vim.bo.fileformat
     if f ~= 'unix' then
       r[#r+1] = '['..f..']'
+      local ok, res = pcall(vim.api.nvim_call_function, 'WebDevIconsGetFileFormatSymbol')
+      if ok then
+        r[#r+1] = res
+      end
     end
 
-    return table.concat(r)
+    return table.concat(r, ' ')
 end
 
 local function highlight(num, active)
@@ -68,15 +94,7 @@ local function highlight(num, active)
   end
 end
 
-local function exists(x)
-    return vim.fn.exists(x) == 1
-end
-
 local function recording()
-    if not exists('*reg_recording') then
-        return ''
-    end
-
     local reg = vim.fn.reg_recording()
     if reg ~= '' then
         return '%#ModeMsg#  RECORDING['..reg..']  '
@@ -85,44 +103,30 @@ local function recording()
     end
 end
 
-local function padded_func(name)
-  return '%( %{v:lua.statusline.'..name..'()} %)'
+local function pad(x)
+  return '%( '..x..' %)'
+end
+
+local function func(name)
+  return '%{v:lua.statusline.'..name..'()}'
 end
 
 function M.statusline(active)
-  local s = {}
-
-  s[#s+1] = '%#StatusLine#'..highlight(1, active)
-  s[#s+1] = recording()
-  s[#s+1] = padded_func('hunks')
-  s[#s+1] = highlight(2, active)
-  s[#s+1] = padded_func('lsp_status')
-  s[#s+1] = '%( %{v:lua.statusline.blame()} %)'
-  if exists('*metals#status') then
-    s[#s+1] = '%{metals#status()}'
-  end
-  s[#s+1] = '%='
-  s[#s+1] = '%<%0.60f%m%r'  -- file.txt[+][RO]
-  s[#s+1] = '%='
-
-  -- filetype
-  s[#s+1] = '%( %{&filetype} %)'
-  if exists('*WebDevIconsGetFileTypeSymbol') then
-    s[#s+1] = '%( %{WebDevIconsGetFileTypeSymbol()} %)'
-  end
-
-  s[#s+1] = highlight(1, active)
-
-  -- encoding
-  s[#s+1] ='%{v:lua.statusline.encodingAndFormat()}'
-
-  if exists('*WebDevIconsGetFileFormatSymbol') then
-    s[#s+1] ='%( %{WebDevIconsGetFileFormatSymbol()} %)'
-  end
-
-  s[#s+1] ='%3p%% %2l(%02c)/%-3L' -- 80% 65[12]/120
-
-  return table.concat(s)
+  return table.concat{
+    '%#StatusLine#',
+    highlight(1, active),
+    recording(),
+    pad(func('hunks')),
+    highlight(2, active),
+    pad(func('lsp_status')),
+    '%=',
+    '%<%0.60f%m%r',  -- file.txt[+][RO]
+    '%=',
+    pad(func('filetype')),
+    pad(func('encodingAndFormat')),
+    highlight(1, active),
+    ' %3p%% %2l(%02c)/%-3L', -- 80% 65[12]/120
+  }
 end
 
 -- Only set up WinEnter autocmd when the WinLeave autocmd runs

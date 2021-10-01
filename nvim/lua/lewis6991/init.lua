@@ -206,7 +206,7 @@ if 'Hashbang' then
       hb[#hb+1] = ''
 
       api.nvim_buf_set_lines(0, 0, 0, false, hb)
-      vim.cmd[[autocmd vimrc BufWritePost <buffer> silent !chmod u+x %]]
+      vim.cmd[[autocmd BufWritePost <buffer> ++once silent !chmod u+x %]]
     end
   end
 
