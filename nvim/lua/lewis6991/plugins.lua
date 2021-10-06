@@ -20,6 +20,7 @@ local init = {
   'lewis6991/tcl.vim',
   'lewis6991/systemverilog.vim',
   'lewis6991/impatient.nvim',
+  {'nathom/filetype.nvim',  config = 'vim.g.did_load_filetypes = 1'},
   {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
 
   'nanotee/luv-vimdocs',
