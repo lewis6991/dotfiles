@@ -89,7 +89,7 @@ local init = {
   end},
 
   'ryanoasis/vim-devicons',
-  'powerman/vim-plugin-AnsiEsc',
+  'raimon49/requirements.txt.vim',
 
   {'neapel/vim-bnfc-syntax',
     config = function()
