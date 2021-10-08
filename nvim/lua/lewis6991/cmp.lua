@@ -27,6 +27,11 @@ cmp.setup {
         path     = 'Path',
         tmux     = 'Tmux',
       })[entry.source.name]
+
+      local maxwidth = 40
+      if #vim_item.abbr > maxwidth then
+        vim_item.abbr = vim_item.abbr:sub(1, maxwidth)..'...'
+      end
       return vim_item
     end
   },
@@ -42,8 +47,8 @@ cmp.setup {
       select = true,
     },
     ['<Tab>'] = function(fallback)
-      if fn.pumvisible() == 1 then
-        fn.feedkeys(t'<C-n>', 'n')
+      if cmp.visible() then
+        cmp.select_next_item()
       elseif luasnip.expand_or_jumpable() then
         fn.feedkeys(t'<Plug>luasnip-expand-or-jump', '')
       else
@@ -51,8 +56,8 @@ cmp.setup {
       end
     end,
     ['<S-Tab>'] = function(fallback)
-      if fn.pumvisible() == 1 then
-        fn.feedkeys(t'<C-p>', 'n')
+      if cmp.visible() then
+        cmp.select_prev_item()
       elseif luasnip.jumpable(-1) then
         fn.feedkeys(t'<Plug>luasnip-jump-prev', '')
       else
@@ -61,8 +66,8 @@ cmp.setup {
     end,
   },
   sources = {
-    { name = 'nvim_lua' },
     { name = 'nvim_lsp' },
+    -- { name = 'nvim_lua' },
     { name = 'buffer'   },
     { name = 'luasnip'  },
     { name = 'path'     },
