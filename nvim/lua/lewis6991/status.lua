@@ -104,6 +104,20 @@ local function recording()
     end
 end
 
+function M.bufname()
+  local ratio = 0.5
+  local width = math.floor(vim.api.nvim_win_get_width(0) * ratio)
+  local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':.')
+  if vim.startswith(name, 'fugitive') then
+    local _, _, commit, relpath = name:find([[^fugitive://.*/%.git.*/(%x-)/(.*)]])
+    name = relpath..'@'..commit:sub(1, 7)
+  end
+  if #name > width then
+    name = '...'..name:sub(-width)
+  end
+  return name
+end
+
 local function pad(x)
   return '%( '..x..' %)'
 end
@@ -121,7 +135,8 @@ function M.statusline(active)
     highlight(2, active),
     pad(func('lsp_status')),
     '%=',
-    '%<%0.60f%m%r',  -- file.txt[+][RO]
+    pad(func('bufname')..'%m%r'),
+    -- '%<%0.60f%m%r',  -- file.txt[+][RO]
     '%=',
     pad(func('filetype')),
     pad(func('encodingAndFormat')),

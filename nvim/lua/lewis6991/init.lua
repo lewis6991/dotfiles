@@ -148,6 +148,9 @@ if "Mappings" then
   map('n', 'gQ', '<nop>' , {})
   map('v', 'gQ', '<nop>' , {})
 
+  -- delete the current buffer without deleting the window
+  map('n', '<leader>b', ':b#|bd#', {noremap=true})
+
   -- I never use macros and more often mis-hit this key
   map('n', 'q', '<nop>' , {noremap=true})
 

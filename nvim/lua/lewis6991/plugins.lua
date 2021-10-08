@@ -142,6 +142,7 @@ local init = {
     requires = {
       'lewis6991/nvim-lspinstall',
       'scalameta/nvim-metals',
+      'folke/lua-dev.nvim',
     },
     config = "require'lewis6991.lsp'"
   },

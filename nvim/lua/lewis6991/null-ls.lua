@@ -31,17 +31,32 @@ local jenkins_lint = {
   }
 }
 
+local flake8_ignores = {
+  'E501', -- line too long
+  'E221', -- multiple space before operators
+  'E201', -- whitespace before/after '['/']'
+  'E272', -- multiple spaces before keyword
+  'E241', -- multiple spaces after ':'
+  'E231', -- missing whitespace after ':'
+  'E203', -- whitespace before ':'
+  'E741', -- ambiguous variable name
+  'E226', -- missing whitespace around arithmetic operator
+}
+
 null_ls.setup {
   sources = {
     -- null_ls.builtins.diagnostics.teal,
     null_ls.builtins.diagnostics.shellcheck,
     null_ls.builtins.diagnostics.pylint,
-    null_ls.builtins.diagnostics.flake8,
-    -- null_ls.builtins.diagnostics.luacheck,
-    -- null_ls.builtins.code_actions.gitsigns,
+    null_ls.builtins.diagnostics.flake8.with{
+      -- extra_args = { '--config', vim.fn.stdpath('config')..'/flake8.cfg' }
+      extra_args = { '--ignore', table.concat(flake8_ignores, ',')}
+    },
+    null_ls.builtins.diagnostics.luacheck,
+    null_ls.builtins.code_actions.gitsigns,
     jenkins_lint,
   },
-  diagnostics_format = "#{s}: #{m}",
+  diagnostics_format = "#{s}: #{m} (#{c})",
   on_attach = function(_, bufnr)
     local keymap = function(key, result)
       vim.api.nvim_buf_set_keymap(bufnr, 'n', key, '<cmd>lua '..result..'<CR>',

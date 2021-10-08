@@ -31,10 +31,6 @@ vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(vim.lsp.diagn
   update_in_insert = true,
 })
 
-local function executable(path)
-  return vim.fn.executable(path) == 1
-end
-
 local function setup(config, opts)
   if not config then
     return
@@ -44,7 +40,7 @@ local function setup(config, opts)
 
   local cmd = opts.cmd or config.document_config.default_config.cmd
 
-  if not cmd or not executable(cmd[1]) then
+  if not cmd or vim.fn.executable(cmd[1]) == 0 then
     print(('%s is not installed'):format(config.name))
     return
   end
@@ -58,55 +54,20 @@ local function setup(config, opts)
   end
 
   opts.flags = opts.flags or {}
-  opts.flags.debounce_text_changes = opts.flags.debounce_text_changes or 400
+  opts.flags.debounce_text_changes = opts.flags.debounce_text_changes or 200
+
+  local has_cmp_lsp, cmp_lsp = pcall(require, 'cmp_nvm_lsp')
+  if has_cmp_lsp then
+    -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
+    opts.capabilities = vim.lsp.protocol.make_client_capabilities()
+    opts.capabilities = cmp_lsp.update_capabilities(opts.capabilities)
+  end
 
   config.setup(opts)
 end
 
--- Make runtime files discoverable to the server
-local runtime_path = vim.split(package.path, ';')
-table.insert(runtime_path, 'lua/?.lua')
-table.insert(runtime_path, 'lua/?/init.lua')
-
-local function get_lua_runtime()
-  local result = {}
-
-  for _, path in pairs(vim.api.nvim_list_runtime_paths()) do
-    local lua_path = path .. "/lua/"
-    if vim.fn.isdirectory(lua_path) then
-      result[lua_path] = true
-    end
-  end
-
-  -- This loads the `lua` files from nvim into the runtime.
-  result[vim.fn.expand("$VIMRUNTIME/lua")] = true
-  result[vim.fn.expand('$VIMRUNTIME/lua/vim/lsp')] = true
-
-  return result;
-end
-
-setup(nvim_lsp.lua, {
-  settings = {
-    Lua = {
-      runtime = {
-        version = 'LuaJIT',
-        path = runtime_path,
-      },
-      diagnostics = {
-        globals = {
-          -- Neovim
-          "vim",
-          -- Busted
-          "describe", "it", "before_each", "after_each", "teardown", "pending"
-        }
-      },
-      workspace = {
-        library = get_lua_runtime(),
-        maxPreload = 10000,
-        preloadFileSize = 10000,
-      },
-    },
-  },
+setup(nvim_lsp.lua, require("lua-dev").setup {
+  config_name = 'lua'
 })
 
 -- npm install -g vim-language-server
