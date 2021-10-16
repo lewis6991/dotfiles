@@ -72,7 +72,8 @@ if 'Options' then
   o.shortmess:append('c')
   o.completeopt:append{'noinsert','menuone','noselect','preview'}
   -- o.completeopt = 'noinsert,menuone,noselect,preview'
-  o.showbreak   = '    ↳ '
+  o.showbreak   = '↳ '
+  -- o.showbreak   = '    ↳ '
   o.mouse       = 'a'
 
   o.diffopt:append('vertical')  -- Show diffs in vertical splits
