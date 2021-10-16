@@ -163,7 +163,7 @@ if [[ "$(which less)" != "/usr/bin/less" ]]; then
         --quit-if-one-screen \
         --chop-long-lines"
 else
-    echo "'less' is too told"
+    echo "'less' is too old"
 fi
 
 # Async prompt -----------------------------------------------------------------
