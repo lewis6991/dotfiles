@@ -15,12 +15,13 @@ cmp.setup {
     end,
   },
   formatting = {
+    fields = { 'kind', 'abbr', 'menu' },
     format = function(entry, vim_item)
       vim_item.kind = lspkind.presets.default[vim_item.kind]
 
        -- set a name for each source
       vim_item.menu = ({
-        buffer   = "Buffer",
+        buffer   = "Buf",
         nvim_lsp = "LSP",
         luasnip  = "LuaSnip",
         nvim_lua = "Lua",

@@ -35,11 +35,7 @@ local init = {
   'tpope/vim-eunuch',
   'tpope/vim-surround',
   'tpope/vim-fugitive',
-
-  {'zsugabubus/crazy8.nvim', config = function()
-    -- Hacky fix so it works on the first opened buffer
-    vim.cmd[[autocmd vimrc BufReadPost * autocmd CursorHold <buffer=abuf> ++once lua Crazy8()]]
-  end},
+  'tpope/vim-sleuth',
 
   {'AndrewRadev/bufferize.vim',
     cmd = 'Bufferize',
@@ -140,7 +136,7 @@ local init = {
 
   {'neovim/nvim-lspconfig',
     requires = {
-      'lewis6991/nvim-lspinstall',
+      'williamboman/nvim-lsp-installer',
       'scalameta/nvim-metals',
       'folke/lua-dev.nvim',
     },

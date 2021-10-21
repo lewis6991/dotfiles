@@ -1,8 +1,32 @@
+local lsp_installer = require("nvim-lsp-installer")
 local nvim_lsp = require 'lspconfig'
 
 local M = {}
 
-require'lspinstall'.setup()
+if "diagnostic config" then
+  vim.diagnostic.config{
+    severity_sort = true,
+    update_in_insert = true,
+  }
+
+  local function set_lsp_sign(name, text)
+    vim.fn.sign_define(name, {text = text, texthl = name})
+  end
+
+  set_lsp_sign("DiagnosticSignError"      , "✘")
+  set_lsp_sign("DiagnosticSignWarning"    , "!")
+  set_lsp_sign("DiagnosticSignInformation", "I")
+  set_lsp_sign("DiagnosticSignHint"       , "H")
+end
+
+if "handlers" then
+  vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
+    vim.lsp.handlers.hover, {
+      -- Use a sharp border with `FloatBorder` highlights
+      border = "single"
+    }
+  )
+end
 
 local custom_on_attach = function(_, bufnr)
   local keymap = function(key, result)
@@ -25,12 +49,6 @@ local custom_on_attach = function(_, bufnr)
   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 end
 
-vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
-  virtual_text = true,
-  signs = true,
-  update_in_insert = true,
-})
-
 local function setup(config, opts)
   if not config then
     return
@@ -38,23 +56,17 @@ local function setup(config, opts)
 
   opts = opts or {}
 
-  local cmd = opts.cmd or config.document_config.default_config.cmd
-
-  if not cmd or vim.fn.executable(cmd[1]) == 0 then
-    print(('%s is not installed'):format(config.name))
-    return
-  end
-
-  local opts_on_attach = opts.on_attach
+  local on_attach = opts.on_attach
   opts.on_attach = function(client, bufnr)
     custom_on_attach(client, bufnr)
-    if opts_on_attach then
-      opts_on_attach(client, bufnr)
+    if on_attach then
+      on_attach(client, bufnr)
     end
   end
 
-  opts.flags = opts.flags or {}
-  opts.flags.debounce_text_changes = opts.flags.debounce_text_changes or 200
+  opts.flags = vim.tbl_deep_extend('keep', opts.flags or {}, {
+    debounce_text_changes = 200,
+  })
 
   local has_cmp_lsp, cmp_lsp = pcall(require, 'cmp_nvm_lsp')
   if has_cmp_lsp then
@@ -63,106 +75,127 @@ local function setup(config, opts)
     opts.capabilities = cmp_lsp.update_capabilities(opts.capabilities)
   end
 
-  config.setup(opts)
+  config:setup(opts)
 end
 
-setup(nvim_lsp.lua, require("lua-dev").setup {
-  config_name = 'lua'
-})
+local server_opts = {
 
--- npm install -g vim-language-server
-setup(nvim_lsp.vimls)
+  ["sumneko_lua"] = function()
+    return require("lua-dev").setup{}
+  end,
 
--- npm install -g bash-language-server
-setup(nvim_lsp.bashls)
+  ["diagnosticls"] = function()
+    local linters = require'lewis6991.linters'
+    return {
+      filetypes = {'tcl', 'python', 'sh'},
+      init_options = {
+        filetypes = {
+          python      = {'mypy'},
+          -- sh          = {'shellcheck'},
+          tcl         = {'tcl_lint'},
+        },
+        linters = (function()
+          local r = vim.deepcopy(linters)
+          for _, linter in pairs(r) do
+            linter.on_attach = nil
+          end
+          return r
+        end)()
+      },
+      on_attach = function(client, bufnr)
+        local ft = vim.api.nvim_buf_get_option(bufnr, 'filetype')
+        local filetypes = client.config.init_options.filetypes[ft]
+        for name, linter in pairs(linters) do
+          if linter.on_attach and filetypes and vim.tbl_contains(filetypes, name) then
+            linter.on_attach(client, bufnr)
+          end
+        end
+      end
+    }
+  end
 
--- pip3 install jedi-language-server
-setup(nvim_lsp.jedi_language_server)
+}
 
--- Make sure this is a slash (as theres some metamagic happening behind the scenes)
-local configs = require("lspconfig/configs")
-configs.teal = {
-   default_config = {
+if "teal-language-server" then
+  -- Make sure this is a slash (as theres some metamagic happening behind the scenes)
+  local configs = require("lspconfig/configs")
+  local server = require "nvim-lsp-installer.server"
+  local shell = require "nvim-lsp-installer.installers.shell"
+
+  local name = "teal_language_server"
+
+  configs[name] = {
+    default_config = {
       cmd = {
-         "teal-language-server",
-         -- "logging=on", use this to enable logging in /tmp/teal-language-server.log
+        "teal-language-server",
+        -- "logging=on", use this to enable logging in /tmp/teal-language-server.log
       },
       filetypes = { 'teal' },
       root_dir = nvim_lsp.util.root_pattern("tlconfig.lua", ".git"),
       settings = {},
-   },
-}
-
-setup(nvim_lsp.teal)
-
--- npm install -g diagnostic-languageserver
-local linters = require'lewis6991.linters'
-
-setup(nvim_lsp.diagnosticls, {
-  filetypes = {'tcl', 'python', 'sh'},
-  init_options = {
-    filetypes = {
-      python      = {'mypy'},
-      -- sh          = {'shellcheck'},
-      tcl         = {'tcl_lint'},
     },
-    linters = (function()
-      local r = vim.deepcopy(linters)
-      for _, linter in pairs(r) do
-        linter.on_attach = nil
-      end
-      return r
-    end)()
-  },
-  on_attach = function(client, bufnr)
-    local ft = vim.api.nvim_buf_get_option(bufnr, 'filetype')
-    local filetypes = client.config.init_options.filetypes[ft]
-    for name, linter in pairs(linters) do
-      if linter.on_attach and filetypes and vim.tbl_contains(filetypes, name) then
-        linter.on_attach(client, bufnr)
+  }
+
+  local tealls = server.Server:new {
+    name = name,
+    root_dir = server.get_server_root_path(name),
+    installer = {shell.sh('luarocks install --dev teal-language-server')},
+    default_options = {}
+  }
+
+  lsp_installer.register(tealls)
+end
+
+if "nvim-lsp-installer" then
+  lsp_installer.on_server_ready(function(server)
+    local opts = server_opts[server.name] and server_opts[server.name]()
+    setup(server, opts)
+    vim.cmd [[ do User LspAttachBuffers ]]
+  end)
+
+  local lsp_installer_servers = require'nvim-lsp-installer.servers'
+
+  for _, server in ipairs{
+    'jedi_language_server',
+    'bashls',
+    'vimls',
+    'sumneko_lua',
+    'diagnosticls',
+    'teal_language_server',
+  } do
+    local ok, obj = lsp_installer_servers.get_server(server)
+    if ok then
+      if not obj:is_installed() then
+        obj:install()
       end
     end
   end
-})
-
-M.setup_metals = function()
-  require("metals").initialize_or_attach {
-    init_options = {
-      statusBarProvider = 'on'
-    },
-    settings = {
-      showImplicitArguments = true,
-    },
-    on_attach = custom_on_attach
-  }
 end
 
-vim.cmd[[augroup metals_lsp]]
-vim.cmd[[au!]]
-vim.cmd[[au FileType scala,sbt lua require'lewis6991.lsp'.setup_metals()]]
-vim.cmd[[augroup END]]
+if "metals" then
+  M.setup_metals = function()
+    local metals = require'metals'
+    metals.initialize_or_attach(
+      vim.tbl_deep_extend('force', metals.bare_config(), {
+        init_options = {
+          statusBarProvider = 'on'
+        },
+        settings = {
+          showImplicitArguments = true,
+        },
+        on_attach = custom_on_attach
+      })
+    )
+  end
 
-vim.g.diagnostic_enable_virtual_text = 1
-vim.g.diagnostic_enable_underline = 1
-vim.g.diagnostic_virtual_text_prefix = ' '
-
-local function set_lsp_sign(name, text)
-  vim.fn.sign_define(name, {text = text, texthl = name})
+  vim.cmd[[
+    augroup metals_lsp
+    au!
+    au FileType scala,sbt lua require'lewis6991.lsp'.setup_metals()
+    augroup END
+  ]]
 end
-
-set_lsp_sign("LspDiagnosticsSignError"      , "✘")
-set_lsp_sign("LspDiagnosticsSignWarning"    , "!")
-set_lsp_sign("LspDiagnosticsSignInformation", "I")
-set_lsp_sign("LspDiagnosticsSignHint"       , "H")
-
-vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-  vim.lsp.handlers.hover, {
-    -- Use a sharp border with `FloatBorder` highlights
-    border = "single"
-  }
-)
-
--- Enables logging to $XDG_CACHE_HOME/nvim/lsp.log
--- vim.lsp.set_log_level('trace')
 
 return M
+
+-- vim: foldminlines=1 foldnextmax=1 :

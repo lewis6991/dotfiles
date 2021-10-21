@@ -1,22 +1,45 @@
 local M = {}
 
-function M.lsp_status()
+local function highlight(num, active)
+  if active == 1 then
+    if num == 1 then
+      return '%#PmenuSel#'
+    else
+      return '%#StatusLine#'
+    end
+  else
+    return '%#StatusLineNC#'
+  end
+end
+
+function M.hldefs()
+  local bg = vim.api.nvim_get_hl_by_name('StatusLine', true).background
+  for _, ty in ipairs { 'Warn', 'Error', 'Info', 'Hint' } do
+    local hl = vim.api.nvim_get_hl_by_name('Diagnostic'..ty, true)
+    vim.cmd(('highlight Diagnostic%sStatus guifg=#%6x guibg=#%6x'):format(ty, hl.foreground, bg))
+  end
+end
+
+function M.lsp_status(active)
   if vim.tbl_isempty(vim.lsp.buf_get_clients(0)) then
     return ''
   end
 
   local status = {}
 
-  for _, ty in ipairs { 'Warning', 'Error', 'Information', 'Hint' } do
-    local n = vim.lsp.diagnostic.get_count(0, ty)
-    if n > 0 then
-      table.insert(status, ('%s:%s'):format(ty:sub(1,1), n))
+  for _, ty in ipairs { 'Warn', 'Error', 'Info', 'Hint' } do
+    local n = vim.diagnostic.get(0, {severity=ty})
+    if #n > 0 then
+      if active == 1 then
+        table.insert(status, ('%%#Diagnostic%sStatus# %s:%s'):format(ty, ty:sub(1,1), #n))
+      else
+        table.insert(status, (' %s:%s'):format(ty:sub(1,1), #n))
+      end
     end
   end
 
-  local ok, res = pcall(vim.api.nvim_call_function, 'metals#status')
-  if ok then
-    status[#status+1] = res
+  if vim.g.metals_status then
+    status[#status+1] = vim.g.metals_status:gsub('%%', '%%%%')
   end
 
   local r = table.concat(status, ' ')
@@ -83,18 +106,6 @@ function M.encodingAndFormat()
     return table.concat(r, ' ')
 end
 
-local function highlight(num, active)
-  if active == 1 then
-    if num == 1 then
-      return '%#PmenuSel#'
-    else
-      return '%#StatusLine#'
-    end
-  else
-    return '%#StatusLineNC#'
-  end
-end
-
 local function recording()
     local reg = vim.fn.reg_recording()
     if reg ~= '' then
@@ -122,20 +133,21 @@ local function pad(x)
   return '%( '..x..' %)'
 end
 
-local function func(name)
-  return '%{v:lua.statusline.'..name..'()}'
+local function func(name, active)
+  active = active or 1
+  return '%{%v:lua.statusline.'..name..'('..tostring(active)..')%}'
 end
 
 function M.statusline(active)
   return table.concat{
-    '%#StatusLine#',
     highlight(1, active),
     recording(),
     pad(func('hunks')),
     highlight(2, active),
-    pad(func('lsp_status')),
+    pad(func('lsp_status', active)),
+    highlight(2, active),
     '%=',
-    pad(func('bufname')..'%m%r'),
+    pad(func('bufname')..'%m%r%h%q'),
     -- '%<%0.60f%m%r',  -- file.txt[+][RO]
     '%=',
     pad(func('filetype')),
@@ -151,6 +163,7 @@ vim.cmd[[
     autocmd WinLeave,FocusLost * autocmd BufWinEnter,WinEnter,FocusGained * let &l:statusline=v:lua.statusline.statusline(1)
     autocmd WinLeave,FocusLost * let &l:statusline=v:lua.statusline.statusline(0)
     autocmd VimEnter           * let &statusline=v:lua.statusline.statusline(1)
+    autocmd ColorScheme        * lua statusline.hldefs()
   augroup END
 ]]
 
