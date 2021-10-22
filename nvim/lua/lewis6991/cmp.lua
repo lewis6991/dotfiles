@@ -3,6 +3,8 @@ local api, fn = vim.api, vim.fn
 local luasnip = require 'luasnip'
 local lspkind = require 'lspkind'
 
+require 'lewis6991.cmp_gh'
+
 local function t(str)
   return api.nvim_replace_termcodes(str, true, true, true)
 end
@@ -27,6 +29,7 @@ cmp.setup {
         nvim_lua = "Lua",
         path     = 'Path',
         tmux     = 'Tmux',
+        gh       = 'GH',
       })[entry.source.name]
 
       local maxwidth = 40
@@ -67,12 +70,13 @@ cmp.setup {
     end,
   },
   sources = {
+    { name = 'gh' },
     { name = 'nvim_lsp' },
-    -- { name = 'nvim_lua' },
-    { name = 'buffer'   },
+    { name = 'nvim_lua' },
     { name = 'luasnip'  },
     { name = 'path'     },
-    { name = 'tmux', keyword_length=3, max_item_count=20},
+    { name = 'buffer'   },
+    { name = 'tmux', keyword_length=3, max_item_count=10},
   },
 }
 
