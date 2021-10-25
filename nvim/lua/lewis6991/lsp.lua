@@ -13,10 +13,10 @@ if "diagnostic config" then
     vim.fn.sign_define(name, {text = text, texthl = name})
   end
 
-  set_lsp_sign("DiagnosticSignError"      , "✘")
-  set_lsp_sign("DiagnosticSignWarning"    , "!")
-  set_lsp_sign("DiagnosticSignInformation", "I")
-  set_lsp_sign("DiagnosticSignHint"       , "H")
+  set_lsp_sign("DiagnosticSignError", "✘")
+  set_lsp_sign("DiagnosticSignWarn" , "!")
+  set_lsp_sign("DiagnosticSignInfo" , "I")
+  set_lsp_sign("DiagnosticSignHint" , "H")
 end
 
 if "handlers" then
@@ -150,7 +150,7 @@ if "nvim-lsp-installer" then
   lsp_installer.on_server_ready(function(server)
     local opts = server_opts[server.name] and server_opts[server.name]()
     setup(server, opts)
-    vim.cmd [[ do User LspAttachBuffers ]]
+    -- vim.cmd [[ do User LspAttachBuffers ]]
   end)
 
   local lsp_installer_servers = require'nvim-lsp-installer.servers'
@@ -164,10 +164,8 @@ if "nvim-lsp-installer" then
     'teal_language_server',
   } do
     local ok, obj = lsp_installer_servers.get_server(server)
-    if ok then
-      if not obj:is_installed() then
-        obj:install()
-      end
+    if ok and not obj:is_installed() then
+      obj:install()
     end
   end
 end
@@ -198,4 +196,4 @@ end
 
 return M
 
--- vim: foldminlines=1 foldnextmax=1 :
+-- vim: foldminlines=1 foldnestmax=1 :
