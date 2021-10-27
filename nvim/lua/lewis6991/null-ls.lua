@@ -73,10 +73,10 @@ require("lspconfig")["null-ls"].setup{
     end
 
     keymap('<leader>ca', 'vim.lsp.buf.code_action()')
-    keymap('<leader>e' , 'vim.lsp.diagnostic.show_line_diagnostics()')
-    keymap(']d'        , 'vim.lsp.diagnostic.goto_next()')
-    keymap('[d'        , 'vim.lsp.diagnostic.goto_prev()')
-    keymap('go'        , 'vim.lsp.diagnostic.set_loclist()')
+    keymap('<leader>e' , 'vim.diagnostic.show_line_diagnostics()')
+    keymap(']d'        , 'vim.diagnostic.goto_next()')
+    keymap('[d'        , 'vim.diagnostic.goto_prev()')
+    keymap('go'        , 'vim.diagnostic.setloclist()')
 
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
   end
