@@ -181,6 +181,12 @@ if "Mappings" then
   map('c', '<C-N>', '<down>', {noremap=true})
   map('c', '<C-A>', '<Home>', {noremap=true})
   map('c', '<C-D>', '<Del>' , {noremap=true})
+
+  map('n', '<leader>e' , '<cmd>lua vim.diagnostic.show_line_diagnostics()<CR>', {})
+  map('n', ']d'        , '<cmd>lua vim.diagnostic.goto_next()<CR>', {})
+  map('n', '[d'        , '<cmd>lua vim.diagnostic.goto_prev()<CR>', {})
+  map('n', 'go'        , '<cmd>lua vim.diagnostic.setloclist()<CR>', {})
+
 end
 
 P = function(v)

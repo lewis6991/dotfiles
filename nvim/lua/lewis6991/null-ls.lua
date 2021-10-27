@@ -67,16 +67,8 @@ null_ls.config {
 
 require("lspconfig")["null-ls"].setup{
   on_attach = function(_, bufnr)
-    local keymap = function(key, result)
-      vim.api.nvim_buf_set_keymap(bufnr, 'n', key, '<cmd>lua '..result..'<CR>',
-        {noremap = true, silent = true})
-    end
-
-    keymap('<leader>ca', 'vim.lsp.buf.code_action()')
-    keymap('<leader>e' , 'vim.diagnostic.show_line_diagnostics()')
-    keymap(']d'        , 'vim.diagnostic.goto_next()')
-    keymap('[d'        , 'vim.diagnostic.goto_prev()')
-    keymap('go'        , 'vim.diagnostic.setloclist()')
+    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ca',
+      '<cmd>lua vim.lsp.buf.code_action()<CR>', {noremap = true, silent = true})
 
     vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
   end

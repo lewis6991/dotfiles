@@ -40,11 +40,6 @@ local custom_on_attach = function(_, bufnr)
   keymap('gr'        , 'vim.lsp.buf.references()')
   keymap('<leader>rn', 'vim.lsp.buf.rename()')
   keymap('<leader>ca', 'vim.lsp.buf.code_action()')
-  keymap('<leader>e' , 'vim.diagnostic.show_line_diagnostics()')
-  keymap(']d'        , 'vim.diagnostic.goto_next()')
-  keymap('[d'        , 'vim.diagnostic.goto_prev()')
-  keymap('go'        , 'vim.diagnostic.setloclist()')
-
 
   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
 end
