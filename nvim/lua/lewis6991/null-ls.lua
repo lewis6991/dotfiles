@@ -48,7 +48,7 @@ local shellcheck_ignores = {
   '1003', -- Want to escape a single quote? echo 'This is how it'\''s done'.
 }
 
-null_ls.setup {
+null_ls.config {
   sources = {
     -- null_ls.builtins.diagnostics.teal,
     null_ls.builtins.diagnostics.shellcheck.with {
@@ -63,6 +63,9 @@ null_ls.setup {
     jenkins_lint,
   },
   diagnostics_format = "#{s}: #{m} (#{c})",
+}
+
+require("lspconfig")["null-ls"].setup{
   on_attach = function(_, bufnr)
     local keymap = function(key, result)
       vim.api.nvim_buf_set_keymap(bufnr, 'n', key, '<cmd>lua '..result..'<CR>',
