@@ -38,16 +38,13 @@ bindkey -M vicmd 'k' history-substring-search-up
 bindkey -M vicmd 'j' history-substring-search-down
 bindkey -e
 
-# Enable shift-tab to cycle back completions
-bindkey -M menuselect '^[[Z' reverse-menu-complete
-
 DOTFILES="$HOME/$(dirname $(readlink $(print -P %N)))"
 
 export EDTIOR=nvim
 
 function have_cmd {
     if ! hash $1 2>/dev/null; then
-        echo "zshrc: Command '$1' is not installed"
+        # echo "zshrc: Command '$1' is not installed"
         return 1
     fi
 }
@@ -90,18 +87,11 @@ setopt SHARE_HISTORY
 setopt HIST_REDUCE_BLANKS
 
 # Completion -------------------------------------------------------------------
-# enable menu completion and highlighting current option
-zstyle ':completion:*' menu yes select
-zstyle ':completion::complete:*' use-cache 1
-zstyle ':completion::complete:*' cache-path $XDG_CACHE_HOME
-
-# Set up ls colors
-if have_cmd dircolors; then
-  eval "$(dircolors -b)"  # Needed to set up completion colors
-fi
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
-# export LS_COLORS="$(ls_colors_generator)"
 zmodload zsh/complist
+
+# Enable shift-tab to cycle back completions
+bindkey -M menuselect '^[[Z' reverse-menu-complete
+setopt menu_complete
 
 # Pager ------------------------------------------------------------------------
 export PAGER="less"
