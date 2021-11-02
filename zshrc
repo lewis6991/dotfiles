@@ -1,3 +1,46 @@
+# Prompt for spelling correction of commands.
+setopt CORRECT
+
+# Customize spelling correction prompt.
+SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
+
+# Remove path separator from WORDCHARS.
+WORDCHARS=${WORDCHARS//[\/]}
+
+# -----------------
+# Zim configuration
+# -----------------
+
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
+  # Update static initialization script if it does not exist or it's outdated, before sourcing it
+  source ${ZIM_HOME}/zimfw.zsh init -q
+fi
+source ${ZIM_HOME}/init.zsh
+
+# ------------------------------
+# Post-init module configuration
+# ------------------------------
+
+# Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+# Bind up and down keys
+zmodload -F zsh/terminfo +p:terminfo
+if [[ -n ${terminfo[kcuu1]} && -n ${terminfo[kcud1]} ]]; then
+  bindkey ${terminfo[kcuu1]} history-substring-search-up
+  bindkey ${terminfo[kcud1]} history-substring-search-down
+fi
+
+bindkey '^P' history-substring-search-up
+bindkey '^N' history-substring-search-down
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+bindkey -e
+
+# Enable shift-tab to cycle back completions
+bindkey -M menuselect '^[[Z' reverse-menu-complete
+
 DOTFILES="$HOME/$(dirname $(readlink $(print -P %N)))"
 
 export EDTIOR=nvim
@@ -74,42 +117,20 @@ export MANPAGER='nvim +Man!'
 
 # Plugins ----------------------------------------------------------------------
 
-### Added by Zinit's installer
-if ! [ -f "$HOME/.zinit/bin/zinit.zsh" ]; then
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)"
-fi
-
-source "$HOME/.zinit/bin/zinit.zsh"
-autoload -Uz _zplugin
-(( ${+_comps} )) && _comps[zinit]=_zplugin
-### End of Zinit's installer chunk
-
-zinit lucid light-mode for \
-    mafredri/zsh-async \
-    wait hlissner/zsh-autopair \
-    wait zsh-users/zsh-history-substring-search \
-    wait blockf atpull'zinit creinstall -q .' \
-        zsh-users/zsh-completions \
-    wait atload'_zsh_autosuggest_start' \
-        zsh-users/zsh-autosuggestions \
-    atload"FAST_HIGHLIGHT[chroma-ssh]=''" \
-    atinit"ZINIT[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay" \
-        zdharma/fast-syntax-highlighting \
+# zinit lucid light-mode for \
+#     mafredri/zsh-async \
+#     wait hlissner/zsh-autopair \
+#     wait zsh-users/zsh-history-substring-search \
+#     wait blockf atpull'zinit creinstall -q .' \
+#         zsh-users/zsh-completions \
+#     wait atload'_zsh_autosuggest_start' \
+#         zsh-users/zsh-autosuggestions \
+#     atload"FAST_HIGHLIGHT[chroma-ssh]=''" \
+#     atinit"ZINIT[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay" \
+#         zdharma/fast-syntax-highlighting \
 
 # atload"FAST_HIGHLIGHT[chroma-ssh]=''" Disables ssh highlighting which has bad
 # performance issues: https://github.com/zdharma/fast-syntax-highlighting/issues/139
-
-if [[ -f $DOTFILES/mouse.zsh ]]; then
-    . $DOTFILES/mouse.zsh
-fi
-
-# marlonrichert/zsh-autocomplete
-
-zstyle ':autocomplete:list-choices:*' min-input 3
-zstyle ':autocomplete:list-choices:*' max-lines 4
-zstyle ':autocomplete:tab:*' completion select
-zstyle ':autocomplete:tab:*' completion cycle
-
 
 # Other ----------------------------------------------------------------------
 
@@ -123,7 +144,6 @@ setopt IGNORE_EOF
 
 # Aliases ----------------------------------------------------------------------
 
-alias ls='ls --color'
 alias ll='ls -goAh'
 
 if have_cmd nvim; then
@@ -166,16 +186,6 @@ else
     echo "'less' is too old"
 fi
 
-# Async prompt -----------------------------------------------------------------
-source "$DOTFILES/modules/fancy-prompt/prompt.zsh"
-
-# Use default emacs bindings
-bindkey -e
-bindkey '^P' history-substring-search-up
-bindkey '^N' history-substring-search-down
-# Enable shift-tab to cycle back completions
-bindkey -M menuselect '^[[Z' reverse-menu-complete
-
 extract() {
    if [[ -z "$1" ]]; then
        print -P "usage: \e[1;36mextract\e[1;0m < filename >"
@@ -203,11 +213,6 @@ extract() {
 }
 
 if [[ -n "$TMUX" ]]; then
-    # # Update environment variables when we attach to an existing tmux
-    # # session from a new connection
-    # tmux show-environment | grep -v '^-' | sed 's/=\(.*\)/="\1"/' | while read foo; do
-    #     eval "export $foo"
-    # done
     if [[ -n "$TERM_BACK" ]]; then
         export TERM=$TERM_BACK
     fi
@@ -215,17 +220,35 @@ else
     export TERM_BACK=$TERM
 fi
 
-# refresh_tmux() {
-#     if [[ -n "$TMUX" ]]; then
-#         # Update environment variables when we attach to an existing tmux
-#         # session from a new connection
-#         tmux show-environment | grep -v '^-' | sed 's/=\(.*\)/="\1"/' | while read foo; do
-#             eval "export $foo"
-#         done
-#     fi
-# }
-
-# add-zsh-hook precmd refresh_tmux
+if {true} {
+    if [[ -n "$TMUX" ]]; then
+        local is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
+            | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
+        local files=(
+            "~/.profile"
+            "~/.zprofile"
+            "~/.zshrc"
+            "~/.zshrc_local"
+            "~/.aliases"
+            "~/.aliases_local"
+            "~/.tmux.conf"
+            "\$XDG_CONFIG_HOME/nvim/init.vim"
+            "\$XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua"
+        )
+        local menu_spec=""
+        local key=0
+        for i in $files; {
+            # menu_spec+=" '$i' $key \"if-shell $(printf '%q' $is_vim) \
+            #     \\\"send-keys ':e   $i' Enter\\\" \
+            #     \\\"send-keys 'nvim $i' Enter\\\" \""
+            menu_spec+=" '$i' $key $(printf '%q' "if-shell $(printf '%q' $is_vim) \
+                $(printf '%q' "send-keys ':e   $i' Enter") \
+                $(printf '%q' "send-keys 'nvim $i' Enter")")"
+            key=$((key+1))
+        }
+        eval "tmux bind-key -n M-c display-menu -x W -y S -T '#[fg=colour4]Configuration Files' $menu_spec"
+    fi
+}
 
 ring_bell() {
     echo -n -e '\a'
@@ -235,6 +258,4 @@ add-zsh-hook precmd ring_bell
 
 ! [ -f ~/.aliases       ] || source ~/.aliases
 ! [ -f ~/.aliases_local ] || source ~/.aliases_local
-! [ -f ~/.fzf.zsh       ] || source ~/.fzf.zsh
 ! [ -f ~/.zshrc_local   ] || source ~/.zshrc_local
-### End of Zinit's installer chunk

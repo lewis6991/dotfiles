@@ -4,8 +4,8 @@ set -euo pipefail
 readonly   RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly  CYAN='\033[0;36m'
-readonly  GREY='\033[1;30m'
-readonly   MAG='\033[0;34m'
+# readonly  GREY='\033[1;30m'
+# readonly   MAG='\033[0;34m'
 readonly    NC='\033[0m' # No Color
 
 function message() {
@@ -30,15 +30,15 @@ function message_error {
 }
 
 function check_cmd {
-    command=$1
+    local command=$1
     message -n "Checking for ${CYAN}$command${NC}..."
-    if command -v $command >/dev/null; then
+    if command -v "$command" >/dev/null; then
         message_ok
     else
         message "${RED}NO${NC}"
         if command -v brew >/dev/null; then
-            message_install $command
-            brew install $command >> install.log
+            message_install "$command"
+            brew install "$command" >> install.log
             message_done
         else
             message_error "$command is not installed"
@@ -47,15 +47,15 @@ function check_cmd {
 }
 
 function link_file {
-    rm -rf $2
-    mkdir -p $(dirname $2)
+    rm -rf "$2"
+    mkdir -p "$(dirname "$2")"
     message "Linking ${CYAN}$1${NC} to ${CYAN}$2${NC}"
-    if ! ln -srv $1 $2 >/dev/null; then
+    if ! ln -srv "$1" "$2" >/dev/null; then
         # If last command failed then coreutils probably doesn't support -r switch (<8.16)
         message "link failed... attempting alternate command that doesn't use -r"
-        local current_dir=$(pwd)
-        pushd $(dirname $2)
-        ln -sv $current_dir/$1 $(basename $2)
+        local current_dir; current_dir=$(pwd)
+        pushd "$(dirname "$2")"
+        ln -sv "$current_dir/$1" "$(basename "$2")"
         popd
     fi
 }
@@ -83,21 +83,21 @@ function install_vim_config {
 
 function install_nvim_config {
     message_install neovim
-    rm -rf $XDG_CONFIG_HOME/nvim
+    rm -rf "$XDG_CONFIG_HOME/nvim"
     link_file nvim "$XDG_CONFIG_HOME/nvim"
     nvim --headless +PackerCompile +quitall
     message_done
 }
 
 function install_brew_package() {
-    command=$1
-    package=$2
+    local command=$1
+    local package=$2
     shift 2
-    brew_args="$@"
+    local brew_args="$@"
     message -n "Checking if $CYAN$command ($package)$NC is installed..."
-    if ! command -v $command >/dev/null; then
-        message_install $package
-        brew install $package $brew_args >> install.log
+    if ! command -v "$command"1 >/dev/null; then
+        message_install "$package"
+        brew install "$package" $brew_args >> install.log
         message_done
     else
         message_ok
@@ -105,9 +105,9 @@ function install_brew_package() {
 }
 
 function install_pip_package() {
-    package=$1
-    message_install $package
-    pip3 install $package >> install.log
+    local package=$1
+    message_install "$package"
+    pip3 install "$package" >> install.log
     message_done
 }
 
@@ -117,7 +117,7 @@ install_extra_brew_packages() {
 
     for p in "$@"; do
         message -n "Checking for ${CYAN}$p${NC}..."
-        if grep -v "$p" <<< $installed > /dev/null; then
+        if grep -v "$p" <<< "$installed" > /dev/null; then
             to_install+=($p)
             message "${RED}NO${NC}"
         else
@@ -161,6 +161,7 @@ function main {
     install_dotfile bash_completion
     install_dotfile inputrc
     install_dotfile aliases
+    install_dotfile zimrc
 
     message_install fancy-prompt
     ./modules/fancy-prompt/install.sh >> install.log
