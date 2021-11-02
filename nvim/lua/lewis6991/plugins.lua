@@ -61,7 +61,6 @@ local init = {
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
   {'derekwyatt/vim-scala' , ft = 'scala' },
   {'cespare/vim-toml'     },
-  {'zinit-zsh/zinit-vim-syntax', ft = 'zsh'},
   'martinda/Jenkinsfile-vim-syntax',
   'teal-language/vim-teal',
 
