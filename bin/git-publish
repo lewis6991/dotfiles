@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+remote=origin
+
 set -e
 branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$branch" = "HEAD" ]; then
@@ -12,9 +14,14 @@ if [ "$branch" = "HEAD" ]; then
         exit 1
     fi
 fi
-remoteBranch=$(git config "branch.${1-$branch}.merge")
-remoteBranch=${remoteBranch##refs/heads/}
-git push origin "HEAD:refs/for/$remoteBranch"
+
+if remoteBranch=$(git config "branch.${1-$branch}.merge"); then
+    remoteBranch=${remoteBranch##refs/heads/}
+else
+    remoteBranch=$(git remote show $remote | grep 'HEAD branch' | cut -d' ' -f5)
+fi
+
+git push $remote "HEAD:refs/for/$remoteBranch"
 
 if hash jerrit 2>/dev/null; then
     jerrit update
