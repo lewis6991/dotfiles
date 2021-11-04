@@ -145,13 +145,14 @@ local init = {
   {'jose-elias-alvarez/null-ls.nvim', config = [[require('lewis6991.null-ls')]]},
 
   {'hrsh7th/nvim-cmp',
-    event = "InsertEnter *",
+    event = "InsertEnter,CmdlineEnter *",
     requires = {
       'onsails/lspkind-nvim',
       { 'hrsh7th/cmp-nvim-lsp'    , after = "nvim-cmp" },
       { 'hrsh7th/cmp-buffer'      , after = "nvim-cmp" },
       { 'hrsh7th/cmp-path'        , after = "nvim-cmp" },
       { 'hrsh7th/cmp-nvim-lua'    , after = "nvim-cmp" },
+      { 'hrsh7th/cmp-cmdline'     , after = "nvim-cmp" },
       { 'andersevenrud/compe-tmux', after = "nvim-cmp", branch = 'cmp'},
       { "L3MON4D3/LuaSnip"        },
       { 'saadparwaiz1/cmp_luasnip', after = "nvim-cmp" },

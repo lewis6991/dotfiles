@@ -78,5 +78,8 @@ cmp.setup {
     { name = 'buffer'   },
     { name = 'tmux', keyword_length=3, max_item_count=10},
   },
-}
+  }
+
+cmp.setup.cmdline('/', { sources = { { name = 'buffer'  } } })
+cmp.setup.cmdline(':', { sources = { { name = 'cmdline' } } })
 
