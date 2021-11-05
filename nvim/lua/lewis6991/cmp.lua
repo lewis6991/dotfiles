@@ -1,38 +1,38 @@
-local api, fn = vim.api, vim.fn
-
 local luasnip = require 'luasnip'
-local lspkind = require 'lspkind'
 
 require 'lewis6991.cmp_gh'
 
-local function t(str)
-  return api.nvim_replace_termcodes(str, true, true, true)
-end
+local source_names = {
+  buffer   = "Buf",
+  nvim_lsp = "LSP",
+  luasnip  = "Snip",
+  nvim_lua = "Lua",
+  path     = 'Path',
+  tmux     = 'Tmux',
+  gh       = 'GH',
+  cmdline  = 'CMD',
+}
 
 local cmp = require 'cmp'
 cmp.setup {
   snippet = {
     expand = function(args)
-      require('luasnip').lsp_expand(args.body)
+      luasnip.lsp_expand(args.body)
     end,
   },
   formatting = {
     fields = { 'kind', 'abbr', 'menu' },
     format = function(entry, vim_item)
+      local lspkind = require 'lspkind'
       vim_item.kind = lspkind.presets.default[vim_item.kind]
 
        -- set a name for each source
-      vim_item.menu = ({
-        buffer   = "Buf",
-        nvim_lsp = "LSP",
-        luasnip  = "LuaSnip",
-        nvim_lua = "Lua",
-        path     = 'Path',
-        tmux     = 'Tmux',
-        gh       = 'GH',
-      })[entry.source.name]
+      local nm = source_names[entry.source.name]
+      if nm then
+        vim_item.menu = nm
+      end
 
-      local maxwidth = 40
+      local maxwidth = 50
       if #vim_item.abbr > maxwidth then
         vim_item.abbr = vim_item.abbr:sub(1, maxwidth)..'...'
       end
@@ -40,34 +40,16 @@ cmp.setup {
     end
   },
   mapping = {
-    ['<C-p>'] = cmp.mapping.select_prev_item(),
-    ['<C-n>'] = cmp.mapping.select_next_item(),
-    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<Tab>']     = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<S-Tab>']   = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<C-n>']     = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<C-p>']     = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<Down>']    = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
+    ['<Up>']      = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
+    ['<C-d>']     = cmp.mapping.scroll_docs(-4),
+    ['<C-f>']     = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete(),
-    ['<C-e>'] = cmp.mapping.close(),
-    ['<CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = true,
-    },
-    ['<Tab>'] = function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        fn.feedkeys(t'<Plug>luasnip-expand-or-jump', '')
-      else
-        fallback()
-      end
-    end,
-    ['<S-Tab>'] = function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
-        fn.feedkeys(t'<Plug>luasnip-jump-prev', '')
-      else
-        fallback()
-      end
-    end,
+    ['<CR>']      = cmp.mapping.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true },
   },
   sources = {
     { name = 'gh' },
@@ -78,7 +60,10 @@ cmp.setup {
     { name = 'buffer'   },
     { name = 'tmux', keyword_length=3, max_item_count=10},
   },
+  experimental = {
+    ghost_text = true,
   }
+}
 
 cmp.setup.cmdline('/', { sources = { { name = 'buffer'  } } })
 cmp.setup.cmdline(':', { sources = { { name = 'cmdline' } } })
