@@ -17,5 +17,7 @@ zmodule mafredri/zsh-async --name async
 zmodule zdharma-continuum/fast-syntax-highlighting
 zmodule hlissner/zsh-autopair
 zmodule mafredri/zsh-async --name async
+zmodule romkatv/gitstatus
 zmodule lewis6991/fancy-prompt
 zmodule lewis6991/zsh-mouse
+
