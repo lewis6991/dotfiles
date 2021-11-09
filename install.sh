@@ -151,24 +151,16 @@ function main {
 
     mkdir -p "$XDG_CONFIG_HOME"
 
-    link_file gitconfig "$XDG_CONFIG_HOME/git/config"
-
-    install_dotfile tmux.conf
     install_dotfile bashrc
     install_dotfile zshrc
     install_dotfile zprofile
     install_dotfile bash_functions
     install_dotfile bash_completion
-    install_dotfile inputrc
     install_dotfile aliases
     install_dotfile zimrc
 
-    message_install fancy-prompt
-    ./modules/fancy-prompt/install.sh >> install.log
-    message_done
-
-    install_vim_config
-    install_nvim_config
+    link_file config "$XDG_CONFIG_HOME"
+    link_file nvim/init.vim "$HOME/.vimrc"
 
     if ! command -v brew >/dev/null; then
         message_error "Cannot install brew packages. Please install brew"
@@ -176,7 +168,6 @@ function main {
 
     install_extra_brew_packages \
         bash       \
-        bat        \
         git-delta  \
         make       \
         python     \
