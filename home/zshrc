@@ -37,24 +37,26 @@ function have_cmd {
 }
 
 if have_cmd brew; then
-    HAVE_BREW=1
     BREW_PREFIX=$(brew --prefix)
-else
-    HAVE_BREW=0
 fi
 
-if ((HAVE_BREW)); then
-    COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
-    if [ -d "$COREUTILS_PATH" ]; then
-        PATH="$COREUTILS_PATH/gnubin:$PATH"
-        MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
+function modpath {
+  local target=$(eval echo \$$1)
+  if [ -d "$2" ]; then
+    if ! [[ $target =~ "$2" ]]; then
+      eval $1=\$2:$target
+    else
+      # echo "Variable $1 already contains \"$2\""
     fi
-fi
+  else
+    echo "Error: Directory \"$2\" does not exist"
+  fi
+}
 
-if [[ -d $DOTFILES/bin ]]; then
-    PATH="$DOTFILES/bin:$PATH"
-else
-    echo "Error: Directory \"$DOTFILES/bin\" does not exist"
+if [ -n "$BREW_PREFIX" ]; then
+  COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
+  modpath PATH "$COREUTILS_PATH/gnubin"
+  modpath MANPATH "$COREUTILS_PATH/gnuman"
 fi
 
 # Variables --------------------------------------------------------------------
@@ -236,3 +238,5 @@ add-zsh-hook precmd ring_bell
 ! [ -f ~/.aliases       ] || source ~/.aliases
 ! [ -f ~/.aliases_local ] || source ~/.aliases_local
 ! [ -f ~/.zshrc_local   ] || source ~/.zshrc_local
+
+unfunction modpath have_cmd
