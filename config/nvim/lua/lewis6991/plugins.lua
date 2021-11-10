@@ -17,6 +17,8 @@ local init = {
   'wbthomason/packer.nvim',
 
   'lewis6991/moonlight.vim',
+  {'lewis6991/github_dark.nvim', config = [[vim.cmd'color github_dark']]},
+
   'lewis6991/tcl.vim',
   'lewis6991/systemverilog.vim',
   'lewis6991/impatient.nvim',

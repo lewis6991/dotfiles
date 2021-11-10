@@ -49,8 +49,6 @@ function install_dotfile {
 function main {
     rm -rf install.log
 
-    export XDG_CONFIG_HOME="${XDG_CONFIG_HOME-$HOME/.config}"
-
     for filename in ./home/*; do
         install_dotfile "$filename"
     done
