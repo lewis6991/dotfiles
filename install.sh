@@ -67,26 +67,7 @@ function check_dependencies {
 }
 
 function install_dotfile {
-    link_file "$1" "$HOME/.$1"
-}
-
-function install_vim_config {
-    message_install vim
-    rm -rf ~/.vim
-    mkdir -p ~/.vim/tmp/backup
-
-    link_file nvim/init.vim "$HOME/.vimrc"
-    link_file nvim "$XDG_CONFIG_HOME/vim"
-    install_dotfile gvimrc
-    message_done
-}
-
-function install_nvim_config {
-    message_install neovim
-    rm -rf "$XDG_CONFIG_HOME/nvim"
-    link_file nvim "$XDG_CONFIG_HOME/nvim"
-    nvim --headless +PackerCompile +quitall
-    message_done
+    link_file "home/$1" "$HOME/.$1"
 }
 
 function install_brew_package() {
