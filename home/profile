@@ -1,0 +1,86 @@
+#! /bin/usr/env bash
+
+if [ -f "$HOME/.profile_local" ]; then
+    source "$HOME/.profile_local"
+fi
+
+export EDITOR=nvim
+
+# ------------------------------------------------------------------------------
+# XDG
+# ------------------------------------------------------------------------------
+
+if [ -n "$DOTFILES" ]; then
+    export XDG_CONFIG_HOME="$DOTFILES/config"
+else
+    echo "DOTFILES is not defined"
+fi
+
+if [ -n "$XDG_BASE" ]; then
+    export XDG_CACHE_HOME="$XDG_BASE/.cache"
+    export XDG_DATA_HOME="$XDG_BASE/.data"
+    export XDG_RUNTIME_DIR="$XDG_BASE/.runtime"
+else
+    echo "XDG_BASE is not defined"
+fi
+
+xdg_init() {
+    if ! [ -d "$1" ]; then
+        echo "Creating $1"
+        mkdir "$1"
+    fi
+}
+
+xdg_init "$XDG_CONFIG_HOME"
+xdg_init "$XDG_RUNTIME_DIR"
+xdg_init "$XDG_CACHE_HOME"
+xdg_init "$XDG_DATA_HOME"
+
+unset xdg_init
+
+export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
+export PYLINTHOME="$XDG_CACHE_HOME/pylint"
+export PYTHON_EGG_CACHE="$XDG_CACHE_HOME/python-eggs"
+export RLWRAP_HOME="$XDG_DATA_HOME/rlwrap"
+export TMUX_TMPDIR="$XDG_RUNTIME_DIR"
+export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
+export CARGO_HOME="$XDG_DATA_HOME/cargo"
+export CMAKE_INSTALL_PREFIX="$XDG_BASE"
+export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgreprc
+
+unset XDG_BASE
+
+# ------------------------------------------------------------------------------
+# Brew
+# ------------------------------------------------------------------------------
+
+if [ -n "$BREW_PREFIX" ]; then
+    # shellcheck disable=2046
+    eval $($BREW_PREFIX/bin/brew shellenv)
+fi
+
+# Makes brew edit work properly with nvim
+# export HOMEBREW_NO_ENV_FILTERING=1
+export HOMEBREW_CACHE="$XDG_CACHE_HOME"
+
+export HOMEBREW_DEVELOPER=1
+export HOMEBREW_CURL_PATH=/devtools/conda/bin/curl
+export HOMEBREW_GIT_PATH=/devtools/conda/bin/git
+
+# ------------------------------------------------------------------------------
+# Misc
+# ------------------------------------------------------------------------------
+
+for i in \
+    "$HOME" \
+    "$DOTFILES" \
+    "$HOME/.luarocks" \
+    "$HOME/.local" \
+    "$XDG_DATA_HOME/npm" \
+    "$XDG_DATA_HOME/cargo"
+do
+    [ -d "$i/bin"       ] && PATH="$i/bin:$PATH"
+    [ -d "$i/man"       ] && MANPATH="$i/man:$MANPATH"
+    [ -d "$i/share/man" ] && MANPATH="$i/share/man:$MANPATH"
+    [ -d "$i/info"      ] && INFOPATH="$i/info:$INFOPATH"
+done
