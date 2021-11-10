@@ -56,7 +56,15 @@ null_ls.config {
     },
     -- null_ls.builtins.diagnostics.pylint,
     null_ls.builtins.diagnostics.flake8.with{
-      extra_args = { '--ignore', table.concat(flake8_ignores, ',')}
+      extra_args = function(params)
+        -- params.root is set to the first parent dir with with either .git or
+        -- Makefile
+        if vim.loop.fs_stat(params.root..'/setup.cfg') then
+            return {}
+        end
+        -- These ignores will override setup.cfg
+        return { '--ignore', table.concat(flake8_ignores, ',')}
+      end
     },
     null_ls.builtins.diagnostics.luacheck,
     null_ls.builtins.code_actions.gitsigns,
