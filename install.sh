@@ -1,55 +1,37 @@
 #!/bin/bash
 set -euo pipefail
 
-readonly   RED='\033[0;31m'
+# brew packages:
+# - bash
+# - git-delta
+# - make
+# - python
+# - rlwrap
+# - tmux
+# - tree
+# - ripgrep
+# - zsh
+
+# pip packages:
+# - gitlint
+# - mypy
+# - pylint
+# - pynvim
+# - vim-vint
+# - yamllint
+
 readonly GREEN='\033[0;32m'
 readonly  CYAN='\033[0;36m'
-# readonly  GREY='\033[1;30m'
-# readonly   MAG='\033[0;34m'
 readonly    NC='\033[0m' # No Color
 
 function message() {
     echo -e "$@" | tee -a install.log
 }
 
-function message_install () {
-    message -n "Installing ${CYAN}$1${NC}..."
-}
-
-function message_done () {
-    message "${GREEN}DONE${NC}"
-}
-
-function message_ok () {
-    message "${GREEN}OK${NC}"
-}
-
-function message_error {
-    echo -e "${RED}Error:" $@ "$NC"
-    exit 1
-}
-
-function check_cmd {
-    local command=$1
-    message -n "Checking for ${CYAN}$command${NC}..."
-    if command -v "$command" >/dev/null; then
-        message_ok
-    else
-        message "${RED}NO${NC}"
-        if command -v brew >/dev/null; then
-            message_install "$command"
-            brew install "$command" >> install.log
-            message_done
-        else
-            message_error "$command is not installed"
-        fi
-    fi
-}
-
 function link_file {
     rm -rf "$2"
     mkdir -p "$(dirname "$2")"
-    message "Linking ${CYAN}$1${NC} to ${CYAN}$2${NC}"
+    message "Linking ${CYAN}$2${NC} to ${CYAN}$1${NC}"
     if ! ln -srv "$1" "$2" >/dev/null; then
         # If last command failed then coreutils probably doesn't support -r switch (<8.16)
         message "link failed... attempting alternate command that doesn't use -r"
@@ -60,114 +42,18 @@ function link_file {
     fi
 }
 
-function check_dependencies {
-    for tool in "$@"; do
-        check_cmd $tool
-    done
-}
-
 function install_dotfile {
-    link_file "home/$1" "$HOME/.$1"
-}
-
-function install_brew_package() {
-    local command=$1
-    local package=$2
-    shift 2
-    local brew_args="$@"
-    message -n "Checking if $CYAN$command ($package)$NC is installed..."
-    if ! command -v "$command"1 >/dev/null; then
-        message_install "$package"
-        brew install "$package" $brew_args >> install.log
-        message_done
-    else
-        message_ok
-    fi
-}
-
-function install_pip_package() {
-    local package=$1
-    message_install "$package"
-    pip3 install "$package" >> install.log
-    message_done
-}
-
-install_extra_brew_packages() {
-    installed=$(brew list)
-    to_install=()
-
-    for p in "$@"; do
-        message -n "Checking for ${CYAN}$p${NC}..."
-        if grep -v "$p" <<< "$installed" > /dev/null; then
-            to_install+=($p)
-            message "${RED}NO${NC}"
-        else
-            message_ok
-        fi
-    done
-
-    to_install_l="${to_install[@]+"${to_install[@]}"}"
-
-    if [ -n "$to_install_l" ]; then
-        message_install "{$to_install_l}"
-        brew install $to_install_l >> install.log
-        message_done
-    fi
+    link_file "$1" "$HOME/.$(basename "$1")"
 }
 
 function main {
     rm -rf install.log
 
-    install_brew_package nvim neovim --HEAD
-
-    check_dependencies \
-        git   \
-        rsync \
-        wget  \
-        curl
-
-    git submodule update --init
-
     export XDG_CONFIG_HOME="${XDG_CONFIG_HOME-$HOME/.config}"
 
-    mkdir -p "$XDG_CONFIG_HOME"
-
-    install_dotfile bashrc
-    install_dotfile zshrc
-    install_dotfile zprofile
-    install_dotfile bash_functions
-    install_dotfile bash_completion
-    install_dotfile aliases
-    install_dotfile zimrc
-
-    link_file config "$XDG_CONFIG_HOME"
-    link_file nvim/init.vim "$HOME/.vimrc"
-
-    if ! command -v brew >/dev/null; then
-        message_error "Cannot install brew packages. Please install brew"
-    fi
-
-    install_extra_brew_packages \
-        bash       \
-        git-delta  \
-        make       \
-        python     \
-        rlwrap     \
-        tmux       \
-        tree       \
-        ripgrep    \
-        zsh
-
-    if ! command -v pip3 >/dev/null; then
-        message_error "pip3 is not installed"
-    fi
-
-    # install_pip_package gitlint
-    # install_pip_package mypy
-    # install_pip_package pylint
-    # install_pip_package pynvim
-    # install_pip_package vim-vint
-    # install_pip_package yamllint
+    for filename in ./home/*; do
+        install_dotfile "$filename"
+    done
 
     message "${GREEN}Finished successfully${NC}"
 }
