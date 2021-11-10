@@ -1,3 +1,5 @@
+#! /bin/usr/env bash
+
 alias ga="git a"
 alias gd="git d"
 alias gf="git fetch"
@@ -13,12 +15,8 @@ alias rgi="rg --no-ignore"
 
 alias ta="tmux attach"
 
-alias vimin="vim -u ~/.vimrcmin"
-
 alias lssize="du -h -d 1 --exclude .snapshot"
 
 alias gitconfig='vim $XDG_CONFIG_HOME/git/config'
 
 alias thist="tmux capture-pane -epS - > /tmp/tmuxhist && vim -c 'te cat /tmp/tmuxhist' -c stopinsert"
-
-# vim: set filetype=sh:
