@@ -64,6 +64,12 @@ export HOMEBREW_GIT_PATH=/devtools/conda/bin/git
 # Misc
 # ------------------------------------------------------------------------------
 
+if [ -n "$BREW_PREFIX" ]; then
+  COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
+  [ -d "$COREUTILS_PATH/gnubin" ] && PATH="$COREUTILS_PATH/gnubin:$PATH"
+  [ -d "$COREUTILS_PATH/gnuman" ] && MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
+fi
+
 for i in \
     "$HOME" \
     "$DOTFILES" \

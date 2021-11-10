@@ -27,37 +27,12 @@ bindkey '^N' history-substring-search-down
 
 DOTFILES="$HOME/$(dirname $(dirname $(readlink $(print -P %N))))"
 
-export EDTIOR=nvim
-
 function have_cmd {
     if ! hash $1 2>/dev/null; then
         # echo "zshrc: Command '$1' is not installed"
         return 1
     fi
 }
-
-if have_cmd brew; then
-    BREW_PREFIX=$(brew --prefix)
-fi
-
-function modpath {
-  local target=$(eval echo \$$1)
-  if [ -d "$2" ]; then
-    if ! [[ $target =~ "$2" ]]; then
-      eval $1=\$2:$target
-    else
-      # echo "Variable $1 already contains \"$2\""
-    fi
-  else
-    echo "Error: Directory \"$2\" does not exist"
-  fi
-}
-
-if [ -n "$BREW_PREFIX" ]; then
-  COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
-  modpath PATH "$COREUTILS_PATH/gnubin"
-  modpath MANPATH "$COREUTILS_PATH/gnuman"
-fi
 
 # Variables --------------------------------------------------------------------
 export FANCY_PROMPT_DOUBLE_LINE=1
@@ -66,7 +41,7 @@ export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 
 # History ----------------------------------------------------------------------
-if (( ${+XDG_DATA_HOME} )); then
+if [ -d "$XDG_DATA_HOME" ]; then
     HISTFILE="$XDG_DATA_HOME/zsh_history"
 fi
 HISTSIZE=50000
@@ -123,13 +98,6 @@ setopt IGNORE_EOF
 
 # Aliases ----------------------------------------------------------------------
 
-alias ll='ls -goAh'
-
-if have_cmd nvim; then
-    alias vim="nvim"
-    alias vimdiff="nvim -d"
-fi
-
 # Give command history to tclsh
 if have_cmd rlwrap; then
     if have_cmd tclsh; then
@@ -164,32 +132,6 @@ if [[ "$(which less)" != "/usr/bin/less" ]]; then
 else
     echo "'less' is too old"
 fi
-
-extract() {
-   if [[ -z "$1" ]]; then
-       print -P "usage: \e[1;36mextract\e[1;0m < filename >"
-       print -P "       Extract the file specified based on the extension"
-   elif [[ -f $1 ]]; then
-       case ${(L)1} in
-           *.tar.xz)   tar -Jxf   $1 ;;
-           *.tar.bz2)  tar -jxvf  $1 ;;
-           *.tar.gz)   tar -zxvf  $1 ;;
-           *.bz2)      bunzip2    $1 ;;
-           *.gz)       gunzip     $1 ;;
-           *.jar)      unzip      $1 ;;
-           *.rar)      unrar x    $1 ;;
-           *.tar)      tar -xvf   $1 ;;
-           *.tbz2)     tar -jxvf  $1 ;;
-           *.tgz)      tar -zxvf  $1 ;;
-           *.zip)      unzip      $1 ;;
-           *.Z)        uncompress $1 ;;
-           *.7z)       7za e      $1 ;;
-           *)          echo "Unable to extract '$1' :: Unknown extension"
-       esac
-   else
-       echo "File ('$1') does not exist!"
-   fi
-}
 
 if [[ -n "$TMUX" ]]; then
     if [[ -n "$TERM_BACK" ]]; then
@@ -235,8 +177,9 @@ ring_bell() {
 
 add-zsh-hook precmd ring_bell
 
-! [ -f ~/.aliases       ] || source ~/.aliases
-! [ -f ~/.aliases_local ] || source ~/.aliases_local
-! [ -f ~/.zshrc_local   ] || source ~/.zshrc_local
+! [ -f ~/.aliases        ] || source ~/.aliases
+! [ -f ~/.bash_functions ] || source ~/.bash_functions
+! [ -f ~/.aliases_local  ] || source ~/.aliases_local
+! [ -f ~/.zshrc_local    ] || source ~/.zshrc_local
 
-unfunction modpath have_cmd
+unfunction have_cmd
