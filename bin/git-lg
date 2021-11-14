@@ -1,14 +1,7 @@
 #! /usr/bin/env bash
 set -e
-hash_length=$(expr length $(git rev-parse --short HEAD))
-width=$(($(tput cols) - 10))
-width2=$(expr 54 - $hash_length)
 
-# git log \
-#     --graph \
-#     --format="%w($width,,$width2)%C(bold yellow)%h %C(bold blue)%<(18,trunc)%an %C(bold green)%<(14)%cr %C(auto)%d %Creset%s" \
-#     $@
 git log \
     --graph \
-    --format="%w($width,,$width2)%C(bold yellow)%h %C(bold blue)%<(18,trunc)%an %C(bold green)%<(14)%cd %C(auto)%d %Creset%s" \
-    $@
+    --format="%C(bold yellow)%h %C(bold blue)%<(18,trunc)%an %C(bold green)%<(14)%cd %C(auto)%d %Creset%s" \
+    "$@"

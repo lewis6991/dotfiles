@@ -116,11 +116,6 @@ if 'Folding' then
   o.foldminlines=10
 end
 
-if 'Theme' then
-  vim.cmd[[silent! colorscheme moonlight]]
-  vim.cmd'hi SpellBad guisp=#663333'
-end
-
 if 'Whitespace' then
   o.list = true
   o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
