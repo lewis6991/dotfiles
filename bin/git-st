@@ -16,32 +16,28 @@ function run {
         exit
     fi
 
-    mapfile -t diff < <(git diff --color $extra_diff_opts --stat HEAD $@ 2> /dev/null | sed '$d; s/^ //' | cut -d '|' -f 2)
+    mapfile -t diff < <(git diff --color $extra_diff_opts --stat HEAD "$@" 2> /dev/null | sed '$d; s/^ //' | cut -d '|' -f 2)
 
     len=-1
     for i in "${!status[@]}"; do
-        status_no_c=$(perl -pe 's/^.* ([^ ].*)/\1/g' <<< "${status[i]}")
-        if [ ${#status_no_c} -gt $len ]; then
-            len=${#status_no_c}
+        if [ ${#status[i]} -gt $len ]; then
+            len=${#status[i]}
         fi
     done
 
     for i in "${!status[@]}"; do
         cstat=${status[i]}
-        cdiff=${diff[i]}
-        if [ -n "$cdiff" ]; then
-            cstat1=$(perl -pe 's/^(.*) [^ ].*/\1/g' <<< "$cstat")
-            cstat2=$(perl -pe 's/^.* ([^ ].*)/\1/g' <<< "$cstat")
-            printf "%s %*s │%s\n" "$cstat1" "-$len" "$cstat2" "$cdiff"
+        cdiff=${diff[i]//[[:space:]]/}  # trim whitespace
+        if [ -n "$cdiff" ] && [ "$cdiff" != 0 ]; then
+            printf "%*s │ %s\n" "-$len" "$cstat" "$cdiff"
         else
-            printf "%s\n" "$cstat"
+            printf "%*s │\n" "-$len" "$cstat"
         fi
     done
 }
 
 function main {
-    # shellcheck disable=SC2068
-    run $@
+    run "$@"
     if [[ $* != *"--ignore-submodules"* ]]; then
         echo ''
         export -f run
@@ -49,5 +45,4 @@ function main {
     fi
 }
 
-# shellcheck disable=SC2068
-main $@
+main "$@"
