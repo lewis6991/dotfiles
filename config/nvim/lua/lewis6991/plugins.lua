@@ -167,6 +167,7 @@ local init = {
   {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
   {'nvim-lua/telescope.nvim',
     requires = {
+      'nvim-telescope/telescope-ui-select.nvim',
       'nvim-lua/popup.nvim',
       'nvim-lua/plenary.nvim'
     },

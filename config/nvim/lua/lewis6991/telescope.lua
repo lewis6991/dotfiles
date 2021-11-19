@@ -11,43 +11,23 @@ require'telescope'.setup {
     fzf = {
       override_generic_sorter = false, -- override the generic sorter
       override_file_sorter = true,     -- override the file sorter
-      case_mode = "smart_case",        -- or "ignore_case" or "respect_case"
+      case_mode = "smart_case"        -- or "ignore_case" or "respect_case"
+    },
+    ["ui-select"] = {
+      require("telescope.themes").get_dropdown {
+        -- even more opts
+      }
     }
   }
 }
+
 require('telescope').load_extension('fzf')
-
-local function git_root()
-  local a = vim.split(vim.fn.system('git rev-parse --show-superproject-working-tree 2> /dev/null'), '\n')[1]
-  if a ~= '' then
-    return a
-  end
-  local b = vim.split(vim.fn.system('git rev-parse --show-toplevel 2> /dev/null'), '\n')[1]
-  if b ~= '' then
-    return b
-  end
-  return vim.fn.getcwd()
-end
-
-function My_git_files()
-  local finders = require'telescope.finders'
-  local pickers = require'telescope.pickers'
-  local sorters = require'telescope.sorters'
-
-  pickers.new({}, {
-    prompt = 'Git Files',
-    finder = finders.new_oneshot_job({
-      "git", "ls-files", "-o", "--exclude-standard", "-c", git_root()
-    }),
-    sorter = sorters.get_fuzzy_file(),
-  }):find()
-end
+require('telescope').load_extension('ui-select')
 
 local keymap = function(key, result)
   vim.api.nvim_set_keymap('n', key, result, {noremap = true, silent = true})
 end
 
 keymap('<C-p>'    , '<cmd>Telescope git_files<cr>')
--- keymap('<C-p>'    , '<cmd>lua My_git_files()<cr>')
 keymap('<C- >'    , [[<cmd>lua require('telescope.builtin').find_files()<cr>]])
 keymap('<leader>r', [[<cmd>lua require('telescope.builtin').live_grep()<cr>]])
