@@ -10,10 +10,11 @@ export EDITOR=nvim
 # XDG
 # ------------------------------------------------------------------------------
 
+if [ -z "$DOTFILES" ] && [ -d "$HOME/projects/dotfiles" ]; then
+    DOTFILES=$HOME/projects/dotfiles
+fi
+
 if [ -n "$DOTFILES" ]; then
-    if [ -d "$HOME/projects/dotfiles" ]; then
-        DOTFILES=$HOME/projects/dotfiles
-    fi
     export XDG_CONFIG_HOME="$DOTFILES/config"
 else
     echo "DOTFILES is not defined"
