@@ -156,7 +156,7 @@ local init = {
       { 'hrsh7th/cmp-path'        , after = "nvim-cmp" },
       { 'hrsh7th/cmp-nvim-lua'    , after = "nvim-cmp" },
       { 'hrsh7th/cmp-cmdline'     , after = "nvim-cmp" },
-      { 'andersevenrud/compe-tmux', after = "nvim-cmp", branch = 'cmp'},
+      { 'andersevenrud/cmp-tmux'  , after = "nvim-cmp", branch = 'cmp'},
       { "L3MON4D3/LuaSnip"        },
       { 'saadparwaiz1/cmp_luasnip', after = "nvim-cmp" },
     },
@@ -175,9 +175,12 @@ local init = {
     config = "require'lewis6991.telescope'"
   },
 
-  {'pwntester/octo.nvim', config=function()
-    require"octo".setup()
-  end, keys = ':'},
+  {'pwntester/octo.nvim',
+    event = 'CmdlineEnter *',
+    config=function()
+      require"octo".setup()
+    end
+  },
 
   -- 'mhinz/vim-signify',
   -- 'airblade/vim-gitgutter',
