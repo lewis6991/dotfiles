@@ -50,7 +50,7 @@ local shellcheck_ignores = {
 
 null_ls.config {
   sources = {
-    -- null_ls.builtins.diagnostics.teal,
+    null_ls.builtins.diagnostics.teal,
     null_ls.builtins.diagnostics.shellcheck.with {
       extra_args = { '--exclude', table.concat(shellcheck_ignores, ',')}
     },
