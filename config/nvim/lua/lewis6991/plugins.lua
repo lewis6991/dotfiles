@@ -23,6 +23,7 @@ local init = {
   'lewis6991/systemverilog.vim',
   'lewis6991/impatient.nvim',
   {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
+  {'lewis6991/cleanfold.nvim', config = [[require('cleanfold').setup()]]},
 
   'nanotee/luv-vimdocs',
   'wsdjeg/luarefvim',
@@ -174,17 +175,13 @@ local init = {
     config = "require'lewis6991.telescope'"
   },
 
-  {'lewis6991/cleanfold.nvim', config = "require('cleanfold').setup()" },
-
-  'whiteinge/diffconflicts',
-
   {'pwntester/octo.nvim', config=function()
     require"octo".setup()
   end, keys = ':'},
 
   -- 'mhinz/vim-signify',
   -- 'airblade/vim-gitgutter',
-
+  -- 'rhysd/git-messenger.vim',
   {'lewis6991/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
     config = function()
@@ -203,24 +200,24 @@ local init = {
           -- Default keymap options
           noremap = true,
 
-          ['n ]c'] = { expr = true, "&diff ? ']c' : '<cmd>lua require\"gitsigns\".next_hunk()<CR>'"},
-          ['n [c'] = { expr = true, "&diff ? '[c' : '<cmd>lua require\"gitsigns\".prev_hunk()<CR>'"},
+          ['n ]c'] = { expr = true, "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'"},
+          ['n [c'] = { expr = true, "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'"},
 
           ['n <leader>hs'] = '<cmd>Gitsigns stage_hunk<CR>',
-          ['v <leader>hs'] = '<cmd>Gitsigns stage_hunk<CR>',
+          ['v <leader>hs'] = ':Gitsigns stage_hunk<CR>',
           ['n <leader>hS'] = '<cmd>Gitsigns stage_buffer<CR>',
           ['n <leader>hu'] = '<cmd>Gitsigns undo_stage_hunk<CR>',
           ['n <leader>hr'] = '<cmd>Gitsigns reset_hunk<CR>',
-          ['v <leader>hr'] = '<cmd>Gitsigns reset_hunk<CR>',
+          ['v <leader>hr'] = ':Gitsigns reset_hunk<CR>',
           ['n <leader>hR'] = '<cmd>Gitsigns reset_buffer<CR>',
           ['n <leader>hp'] = '<cmd>Gitsigns preview_hunk<CR>',
-          ['n <leader>hb'] = '<cmd>Gitsigns blame_line true <CR>',
+          ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line{full=true}<CR>',
           ['n <leader>hB'] = '<cmd>Gitsigns toggle_current_line_blame<CR>',
           ['n <leader>hd'] = '<cmd>Gitsigns diffthis<CR>',
           ['n <leader>hD'] = '<cmd>Gitsigns diffthis ~<CR>',
 
-          ['o ih'] = ':<C-U>lua require"gitsigns".select_hunk()<CR>',
-          ['x ih'] = ':<C-U>lua require"gitsigns".select_hunk()<CR>'
+          ['o ih'] = ':<C-U>Gitsigns select_hunk<CR>',
+          ['x ih'] = ':<C-U>Gitsigns select_hunk<CR>'
         },
         preview_config = {
           border = 'rounded',
