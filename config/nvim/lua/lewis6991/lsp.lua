@@ -111,7 +111,7 @@ local server_opts = {
 
 }
 
-if "teal-language-server" then
+if false and "teal-language-server" then
   -- Make sure this is a slash (as theres some metamagic happening behind the scenes)
   local configs = require("lspconfig/configs")
   local server = require "nvim-lsp-installer.server"
