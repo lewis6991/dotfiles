@@ -136,36 +136,6 @@ else
     export TERM_BACK=$TERM
 fi
 
-if {true} {
-    if [[ -n "$TMUX" ]]; then
-        local is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
-            | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
-        local files=(
-            "~/.profile"
-            "~/.zprofile"
-            "~/.zshrc"
-            "~/.zshrc_local"
-            "~/.aliases"
-            "~/.aliases_local"
-            "~/.tmux.conf"
-            "\$XDG_CONFIG_HOME/nvim/init.vim"
-            "\$XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua"
-        )
-        local menu_spec=""
-        local key=0
-        for i in $files; {
-            # menu_spec+=" '$i' $key \"if-shell $(printf '%q' $is_vim) \
-            #     \\\"send-keys ':e   $i' Enter\\\" \
-            #     \\\"send-keys 'nvim $i' Enter\\\" \""
-            menu_spec+=" '$i' $key $(printf '%q' "if-shell $(printf '%q' $is_vim) \
-                $(printf '%q' "send-keys ':e   $i' Enter") \
-                $(printf '%q' "send-keys 'nvim $i' Enter")")"
-            key=$((key+1))
-        }
-        eval "tmux bind-key -n M-c display-menu -x W -y S -T '#[fg=colour4]Configuration Files' $menu_spec"
-    fi
-}
-
 ring_bell() {
     echo -n -e '\a'
 }
