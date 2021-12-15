@@ -1,9 +1,3 @@
-# Prompt for spelling correction of commands.
-setopt CORRECT
-
-# Customize spelling correction prompt.
-SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
-
 # Remove path separator from WORDCHARS.
 WORDCHARS=${WORDCHARS//[\/]}
 
@@ -22,10 +16,12 @@ source ${ZIM_HOME}/init.zsh
 # ------------------------------
 
 bindkey -e
+
+# zsh-users/zsh-history-substring-search
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
-
-DOTFILES="$HOME/$(dirname $(dirname $(readlink $(print -P %N))))"
+export HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=8,bold,fg=white'
+export HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=8,fg=red'
 
 function have_cmd {
     if ! hash $1 2>/dev/null; then
@@ -34,10 +30,11 @@ function have_cmd {
     fi
 }
 
-# Variables --------------------------------------------------------------------
+# lewis6991/fancy-prompt
 export FANCY_PROMPT_DOUBLE_LINE=1
 export FANCY_PROMPT_USE_NERD_SYMBOLS=1
 
+# zsh-users/zsh-autosuggestions
 export ZSH_AUTOSUGGEST_USE_ASYNC=1
 
 # History ----------------------------------------------------------------------
