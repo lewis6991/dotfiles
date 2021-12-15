@@ -13,10 +13,10 @@ if "diagnostic config" then
     vim.fn.sign_define(name, {text = text, texthl = name})
   end
 
-  set_lsp_sign("DiagnosticSignError", "✘")
-  set_lsp_sign("DiagnosticSignWarn" , "!")
-  set_lsp_sign("DiagnosticSignInfo" , "I")
-  set_lsp_sign("DiagnosticSignHint" , "H")
+  set_lsp_sign("DiagnosticSignError", "●")
+  set_lsp_sign("DiagnosticSignWarn" , "●")
+  set_lsp_sign("DiagnosticSignInfo" , "●")
+  set_lsp_sign("DiagnosticSignHint" , "○")
 end
 
 if "handlers" then
@@ -79,36 +79,6 @@ local server_opts = {
     return require("lua-dev").setup{}
   end,
 
-  ["diagnosticls"] = function()
-    local linters = require'lewis6991.linters'
-    return {
-      filetypes = {'tcl', 'python', 'sh'},
-      init_options = {
-        filetypes = {
-          python      = {'mypy'},
-          -- sh          = {'shellcheck'},
-          tcl         = {'tcl_lint'},
-        },
-        linters = (function()
-          local r = vim.deepcopy(linters)
-          for _, linter in pairs(r) do
-            linter.on_attach = nil
-          end
-          return r
-        end)()
-      },
-      on_attach = function(client, bufnr)
-        local ft = vim.api.nvim_buf_get_option(bufnr, 'filetype')
-        local filetypes = client.config.init_options.filetypes[ft]
-        for name, linter in pairs(linters) do
-          if linter.on_attach and filetypes and vim.tbl_contains(filetypes, name) then
-            linter.on_attach(client, bufnr)
-          end
-        end
-      end
-    }
-  end
-
 }
 
 if false and "teal-language-server" then
@@ -155,8 +125,7 @@ if "nvim-lsp-installer" then
     'bashls',
     'vimls',
     'sumneko_lua',
-    'diagnosticls',
-    'teal_language_server',
+    'teal_language_server'
   } do
     local ok, obj = lsp_installer_servers.get_server(server)
     if ok and not obj:is_installed() then
@@ -168,17 +137,20 @@ end
 if "metals" then
   M.setup_metals = function()
     local metals = require'metals'
-    metals.initialize_or_attach(
-      vim.tbl_deep_extend('force', metals.bare_config(), {
-        init_options = {
-          statusBarProvider = 'on'
-        },
-        settings = {
-          showImplicitArguments = true,
-        },
-        on_attach = custom_on_attach
-      })
-    )
+
+    local capabilities = vim.lsp.protocol.make_client_capabilities()
+    capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+    metals.initialize_or_attach(vim.tbl_deep_extend('force', metals.bare_config(), {
+      on_attach = custom_on_attach,
+      capabilities = capabilities,
+      init_options = {
+        statusBarProvider = 'on'
+      },
+      settings = {
+        showImplicitArguments = true,
+      }
+    }))
   end
 
   vim.cmd[[
@@ -188,6 +160,10 @@ if "metals" then
     augroup END
   ]]
 end
+
+nvim_lsp.clangd.setup{
+  on_attach = custom_on_attach
+}
 
 return M
 
