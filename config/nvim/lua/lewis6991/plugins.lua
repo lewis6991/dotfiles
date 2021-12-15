@@ -277,16 +277,34 @@ local init = {
     end,
   },
 
-  {'romgrk/barbar.nvim',
-    requires = { 'kyazdani42/nvim-web-devicons' },
+  -- {'romgrk/barbar.nvim',
+  --   requires = { 'kyazdani42/nvim-web-devicons' },
+  --   config = function()
+  --     vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
+  --       closable = false
+  --     })
+  --     vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {noremap=true,silent=true})
+  --     vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {noremap=true,silent=true})
+  --   end
+  -- },
+
+  {"jose-elias-alvarez/buftabline.nvim",
+    requires = {"kyazdani42/nvim-web-devicons"}, -- optional!
     config = function()
-      vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
-        closable = false
-      })
-      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {noremap=true,silent=true})
-      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {noremap=true,silent=true})
+      require("buftabline").setup{
+        tab_format = " #{i} #{b}#{f} ",
+        go_to_maps = false,
+        -- auto_hide = true,
+        hlgroups = {
+          modified_current = 'Todo',
+          modified_normal = 'Todo',
+          modified_active = 'Todo',
+        },
+      }
+      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufNext<CR>', {noremap=true,silent=true})
+      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufPrev<CR>', {noremap=true,silent=true})
     end
-  }
+  },
 
 }
 
