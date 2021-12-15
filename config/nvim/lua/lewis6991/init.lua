@@ -129,7 +129,7 @@ if "Mappings" then
   local map = api.nvim_set_keymap
 
   map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'   , {noremap=true})
-  map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.vim<CR>'                 , {noremap=true})
+  map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'                 , {noremap=true})
   map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>', {noremap=true})
   map('n', '<leader>s' , ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'                   , {noremap=true})
   map('n', '<leader>c' , '1z='                                                      , {noremap=true})
@@ -183,11 +183,6 @@ if "Mappings" then
   map('n', '[d'        , '<cmd>lua vim.diagnostic.goto_prev()<CR>', {})
   map('n', 'go'        , '<cmd>lua vim.diagnostic.setloclist()<CR>', {})
 
-end
-
-P = function(v)
-  print(vim.inspect(v))
-  return v
 end
 
 if 'Hashbang' then
@@ -254,11 +249,17 @@ if "Floating Man" then
   o.keywordprg = ':FloatingMan'
 end
 
-vim.cmd[[command! -complete=lua -nargs=1 L lua print(vim.inspect(<args>))]]
+vim.cmd[[
 
-vim.cmd[[autocmd vimrc VimResized * wincmd =]]
+  command! -complete=lua -nargs=1 L lua print(vim.inspect(<args>))
 
-vim.cmd[[command! LspDisable lua vim.lsp.stop_client(vim.lsp.get_active_clients())]]
+  autocmd vimrc VimResized * wincmd =
+  iabbrev :rev:
+      \ <c-r>=printf(&commentstring,
+      \     ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>
+
+  iabbrev :todo: <c-r>=printf(&commentstring, ' TODO lewis6991:')<CR>
+]]
 
 return M
 
