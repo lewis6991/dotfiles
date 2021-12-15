@@ -85,6 +85,8 @@ if 'Options' then
   o.undofile   = true
   o.splitright = true
   o.splitbelow = true
+  -- Set spell is slow so try and do it as late as possible
+  -- vim.cmd[[autocmd CursorHold * ++once set spell]]
   o.spell      = true
 
   local xdg_cfg = os.getenv('XDG_CONFIG_HOME')
