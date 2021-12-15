@@ -79,10 +79,16 @@ local function filetype_symbol()
   return res
 end
 
+local function is_treesitter()
+  local bufnr = vim.api.nvim_get_current_buf()
+  return vim.treesitter.highlighter.active[bufnr] ~= nil
+end
+
 function M.filetype()
   return table.concat({
     vim.bo.filetype,
-    filetype_symbol()
+    filetype_symbol(),
+    is_treesitter() and '[TS]' or nil
   } , ' ')
 end
 
