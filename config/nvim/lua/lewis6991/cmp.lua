@@ -30,6 +30,8 @@ cmp.setup {
       local nm = source_names[entry.source.name]
       if nm then
         vim_item.menu = nm
+      else
+        vim_item.menu = entry.source.name
       end
 
       local maxwidth = 50
@@ -58,6 +60,8 @@ cmp.setup {
     { name = 'luasnip'  },
     { name = 'path'     },
     { name = 'buffer'   },
+    { name = 'rg'       },
+    { name = 'spell'    },
     { name = 'tmux', keyword_length=3, max_item_count=10},
   },
   experimental = {

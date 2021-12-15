@@ -20,7 +20,7 @@ local init = {
   {'lewis6991/github_dark.nvim', config = [[vim.cmd'color github_dark']]},
 
   'lewis6991/tcl.vim',
-  'lewis6991/systemverilog.vim',
+  -- 'lewis6991/systemverilog.vim',
   'lewis6991/impatient.nvim',
   {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
   {'lewis6991/cleanfold.nvim', config = [[require('cleanfold').setup()]]},
@@ -156,7 +156,9 @@ local init = {
       { 'hrsh7th/cmp-path'        , after = "nvim-cmp" },
       { 'hrsh7th/cmp-nvim-lua'    , after = "nvim-cmp" },
       { 'hrsh7th/cmp-cmdline'     , after = "nvim-cmp" },
-      { 'andersevenrud/cmp-tmux'  , after = "nvim-cmp", branch = 'cmp'},
+      { 'lukas-reineke/cmp-rg'    , after = "nvim-cmp" },
+      { 'f3fora/cmp-spell'        , after = "nvim-cmp" },
+      { 'andersevenrud/cmp-tmux'  , after = "nvim-cmp" },
       { "L3MON4D3/LuaSnip"        },
       { 'saadparwaiz1/cmp_luasnip', after = "nvim-cmp" },
     },
@@ -257,7 +259,9 @@ local init = {
     event = 'TextYankPost',
     config = function()
       vim.g.oscyank_silent = true
-      vim.cmd[[autocmd vimrc TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif]]
+      vim.cmd[[
+        autocmd vimrc TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
+      ]]
     end
   },
 

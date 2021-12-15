@@ -64,6 +64,7 @@ if 'Options' then
   o.lazyredraw = true
 
   -- o.shortmess:append('I')
+  -- o.shortmess:remove('F')
 
   -- Only insert one space after a period when formatting.
   o.joinspaces = true
@@ -113,7 +114,7 @@ if 'Folding' then
   o.foldcolumn='0'
   o.foldnestmax=3
   o.foldopen:append('jump')
-  o.foldminlines=10
+  -- o.foldminlines=10
 end
 
 if 'Whitespace' then
