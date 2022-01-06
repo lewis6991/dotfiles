@@ -2,6 +2,8 @@ require 'lewis6991.status'
 
 local o, api = vim.opt, vim.api
 
+local add_command = api.nvim_add_user_command
+
 local M = {}
 
 if 'Plugins' then
@@ -187,34 +189,30 @@ if "Mappings" then
 
 end
 
-if 'Hashbang' then
-  function M.hashbang()
-    local shells = {
-      sh    = {'#! /usr/bin/env bash'},
-      py    = {'#! /usr/bin/env python3'},
-      scala = {'#! /usr/bin/env scala'},
-      tcl   = {'#! /usr/bin/env tclsh'},
-      lua = {
-          '#! /bin/sh',
-          '_=[[',
-          'exec lua "$0" "$@"',
-          ']]'
-        }
-    }
+add_command('Hashbang', function()
+  local shells = {
+    sh    = {'#! /usr/bin/env bash'},
+    py    = {'#! /usr/bin/env python3'},
+    scala = {'#! /usr/bin/env scala'},
+    tcl   = {'#! /usr/bin/env tclsh'},
+    lua = {
+        '#! /bin/sh',
+        '_=[[',
+        'exec lua "$0" "$@"',
+        ']]'
+      }
+  }
 
-    local extension = vim.fn.expand('%:e')
+  local extension = vim.fn.expand('%:e')
 
-    if shells[extension] then
-      local hb = shells[extension]
-      hb[#hb+1] = ''
+  if shells[extension] then
+    local hb = shells[extension]
+    hb[#hb+1] = ''
 
-      api.nvim_buf_set_lines(0, 0, 0, false, hb)
-      vim.cmd[[autocmd BufWritePost <buffer> ++once silent !chmod u+x %]]
-    end
+    api.nvim_buf_set_lines(0, 0, 0, false, hb)
+    vim.cmd[[autocmd BufWritePost <buffer> ++once silent !chmod u+x %]]
   end
-
-  vim.cmd[[command! Hashbang call v:lua.package.loaded.lewis6991.hashbang()]]
-end
+end, {force = true})
 
 if "Floating Man" then
   local function createCenteredFloatingWindow()
@@ -236,7 +234,8 @@ if "Floating Man" then
     return buf
   end
 
-  function M.floatingMan(id)
+  add_command('FloatingMan', function(opts)
+    local id = opts.args
     local buf = createCenteredFloatingWindow()
     vim.api.nvim_buf_set_option(buf, 'filetype', 'man')
 
@@ -245,22 +244,20 @@ if "Floating Man" then
     api.nvim_buf_set_keymap(buf, 'n', 'q'    , ':bwipeout!<cr>', {silent=true})
     api.nvim_buf_set_keymap(buf, 'n', '<esc>', ':bwipeout!<cr>', {silent=true})
     vim.cmd('autocmd BufLeave <buffer> :bwipeout!')
-  end
+  end, {nargs = '*', force = true})
 
-  vim.cmd([[command! -nargs=* FloatingMan call v:lua.package.loaded.lewis6991.floatingMan(<f-args>)]])
   o.keywordprg = ':FloatingMan'
 end
 
+add_command('L', "lua print(vim.inspect(<args>))", {nargs = 1, complete = 'lua', force = true})
+
 vim.cmd[[
-
-  command! -complete=lua -nargs=1 L lua print(vim.inspect(<args>))
-
   autocmd vimrc VimResized * wincmd =
-  iabbrev :rev:
-      \ <c-r>=printf(&commentstring,
-      \     ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>
 
-  iabbrev :todo: <c-r>=printf(&commentstring, ' TODO lewis6991:')<CR>
+  iabbrev :rev: <c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>
+  iabbrev :todo: <c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>
+
+  iabbrev funciton function
 ]]
 
 return M

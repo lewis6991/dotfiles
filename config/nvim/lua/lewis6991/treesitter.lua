@@ -70,7 +70,7 @@ end
 -- parsers.list.lua.install_info.url = '/Users/lewis/projects/nvim-tree-sitter-lua'
 -- parsers.list.lua.install_info.url = '/Users/lewis/.data/nvim/site/pack/packer/start/nvim-treesitter/grammar/lua'
 
-function TS_get_tree(lnum)
+local function ts_get_tree(lnum)
   lnum = lnum or vim.api.nvim_win_get_cursor(0)[1]
 
   local parsers = require'nvim-treesitter.parsers'
@@ -87,4 +87,4 @@ function TS_get_tree(lnum)
   end
 end
 
-vim.api.nvim_set_keymap('n', '<leader>Z', ':lua TS_get_tree()<cr>', {silent=true})
+vim.api.nvim_set_keymap('n', '<leader>Z', '', {silent=true, callback=ts_get_tree})
