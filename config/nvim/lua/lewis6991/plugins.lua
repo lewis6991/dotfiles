@@ -67,7 +67,7 @@ local init = {
   --- Filetype plugins ---
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
   {'derekwyatt/vim-scala' , ft = 'scala' },
-  {'cespare/vim-toml'     },
+  'cespare/vim-toml',
   'martinda/Jenkinsfile-vim-syntax',
   'teal-language/vim-teal',
   'raimon49/requirements.txt.vim',
