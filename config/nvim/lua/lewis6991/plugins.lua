@@ -40,6 +40,14 @@ local init = {
   'tpope/vim-fugitive',
   'tpope/vim-sleuth',
 
+  'wellle/targets.vim',
+  'michaeljsmith/vim-indent-object',
+  'dietsche/vim-lastplace',
+  'sindrets/diffview.nvim',
+  'folke/trouble.nvim',
+  'rhysd/conflict-marker.vim',
+  'bogado/file-line', -- Open file:line
+
   {'AndrewRadev/bufferize.vim',
     cmd = 'Bufferize',
     config = function()
@@ -50,15 +58,11 @@ local init = {
 
   {'vim-scripts/visualrepeat', requires = 'inkarkat/vim-ingo-library' },
 
-  {'sindrets/diffview.nvim', config = [[require'diffview'.setup()]]},
-
   -- Highlight the current search result
   -- 'timakro/vim-searchant',
   {'PeterRincker/vim-searchlight', config = function()
     vim.cmd[[highlight default link Searchlight SearchCurrent]]
   end},
-
-  {'folke/trouble.nvim', config = [[require('trouble').setup()]]},
 
   --- Filetype plugins ---
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
@@ -66,7 +70,8 @@ local init = {
   {'cespare/vim-toml'     },
   'martinda/Jenkinsfile-vim-syntax',
   'teal-language/vim-teal',
-
+  'raimon49/requirements.txt.vim',
+  'euclidianAce/BetterLua.vim',
   'tmhedberg/SimpylFold',
 
   {'lewis6991/foldsigns.nvim',
@@ -77,9 +82,6 @@ local init = {
     end
   },
 
-  'dietsche/vim-lastplace',
-
-  -- 'christoomey/vim-tmux-navigator',
   {'aserowy/tmux.nvim', config = function()
     require("tmux").setup{
       navigation = { enable_default_keybindings = true }
@@ -87,7 +89,6 @@ local init = {
   end},
 
   'ryanoasis/vim-devicons',
-  'raimon49/requirements.txt.vim',
 
   {'neapel/vim-bnfc-syntax',
     config = function()
@@ -98,16 +99,9 @@ local init = {
     end
   },
 
-  'wellle/targets.vim',
-  'michaeljsmith/vim-indent-object',
-
   {'whatyouhide/vim-lengthmatters', config = function()
     vim.g.lengthmatters_highlight_one_column = 1
   end},
-
-  'rhysd/conflict-marker.vim',
-
-  'bogado/file-line', -- Open file:line
 
   {'junegunn/vim-easy-align',
     keys = 'ga',
@@ -163,8 +157,6 @@ local init = {
     config = [[require('lewis6991.cmp')]]
   },
 
-  -- 'dstein64/vim-startuptime',
-
   {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
   {'nvim-lua/telescope.nvim',
     requires = {
@@ -195,10 +187,11 @@ local init = {
         debug_mode = true,
         max_file_length = 1000000000,
         signs = {
-          add       = {text = '┃' },
-          change    = {text = '┃' },
-          delete    = {linehl = 'NormalNC'},
-          topdelete = {linehl = 'NormalNC'},
+          add          = {show_count = false, text = '┃' },
+          change       = {show_count = false, text = '┃' },
+          delete       = {show_count = true, linehl = 'NormalNC' },
+          topdelete    = {show_count = true, linehl = 'NormalNC' },
+          changedelete = {show_count = true},
         },
         keymaps = {
           -- Default keymap options
@@ -226,14 +219,19 @@ local init = {
         preview_config = {
           border = 'rounded',
         },
+        current_line_blame = true,
         current_line_blame_formatter_opts = {
           relative_time = true
         },
         current_line_blame_opts = {
-          delay = 200
+          delay = 0
         },
-        count_chars = {'₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉', ['+']='₊'},
+        count_chars = {
+          '⒈', '⒉', '⒊', '⒋', '⒌', '⒍', '⒎', '⒏', '⒐',
+          '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
+        },
         _refresh_staged_on_update = false,
+        _blame_cache = true,
         word_diff = true,
       }
     end
@@ -251,8 +249,6 @@ local init = {
     run = ':TSUpdate',
     config = "require'lewis6991.treesitter'",
   },
-
-  'euclidianAce/BetterLua.vim',
 
   {'ojroques/vim-oscyank',
     event = 'TextYankPost',
@@ -354,6 +350,7 @@ do -- Hacky way of auto clean/install/compile
       state = 'installed'
     elseif state == 'installed' then
       packer.compile()
+      -- packer.compile('profile=true')
       state = 'compiled'
     elseif state == 'compiled' then
       packer.on_complete = orig_complete
