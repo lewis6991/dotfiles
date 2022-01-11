@@ -88,8 +88,9 @@ function M.filetype()
   return table.concat({
     vim.bo.filetype,
     filetype_symbol(),
-    is_treesitter() and '🌴' or nil
-    -- is_treesitter() and '[TS]' or nil
+    -- Causes artifacts in ruler section
+    -- is_treesitter() and '🌴' or nil
+    is_treesitter() and '' or nil
   } , ' ')
 end
 
