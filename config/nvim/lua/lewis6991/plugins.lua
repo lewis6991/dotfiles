@@ -134,8 +134,6 @@ local init = {
     end
   },
 
-  'simrat39/symbols-outline.nvim',
-
   {'neovim/nvim-lspconfig',
     requires = {
       'williamboman/nvim-lsp-installer',
@@ -171,6 +169,7 @@ local init = {
   {'nvim-lua/telescope.nvim',
     requires = {
       'nvim-telescope/telescope-ui-select.nvim',
+      'nvim-telescope/telescope-fzf-native.nvim',
       'nvim-lua/popup.nvim',
       'nvim-lua/plenary.nvim'
     },
@@ -260,7 +259,12 @@ local init = {
     config = function()
       vim.g.oscyank_silent = true
       vim.cmd[[
-        autocmd vimrc TextYankPost * if v:event.operator is 'y' && v:event.regname is '' | execute 'OSCYankReg "' | endif
+        augroup oscyank
+          autocmd!
+          autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is ''
+          autocmd TextYankPost *     execute 'OSCYankReg "'
+          autocmd TextYankPost * endif
+        augroup END
       ]]
     end
   },
@@ -294,12 +298,6 @@ local init = {
       require("buftabline").setup{
         tab_format = " #{i} #{b}#{f} ",
         go_to_maps = false,
-        -- auto_hide = true,
-        hlgroups = {
-          modified_current = 'Todo',
-          modified_normal = 'Todo',
-          modified_active = 'Todo',
-        },
       }
       vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufNext<CR>', {noremap=true,silent=true})
       vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufPrev<CR>', {noremap=true,silent=true})

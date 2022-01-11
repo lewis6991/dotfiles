@@ -1,8 +1,10 @@
 require 'lewis6991.status'
+require 'lewis6991.floating_man'
 
 local o, api = vim.opt, vim.api
 
 local add_command = api.nvim_add_user_command
+local map = vim.keymap.set
 
 local M = {}
 
@@ -32,7 +34,7 @@ end
 if 'Options' then
   o.backup         = true
   o.backupdir:remove('.')
-  o.breakindent = true -- Indent wrapped lines to match start
+  o.breakindent    = true -- Indent wrapped lines to match start
   o.clipboard      = 'unnamedplus'
   o.expandtab      = true
   o.fillchars      = 'eob: ' -- Remove tilda from signcolumn
@@ -53,26 +55,18 @@ if 'Options' then
   o.startofline    = false
   o.swapfile       = false
   o.tabstop        = 4
-  o.termguicolors = true
+  o.termguicolors  = true
   o.textwidth      = 80
   o.updatetime     = 200
   o.virtualedit    = 'block' -- allow cursor to exist where there is no character
   o.winblend       = 10
   o.wrap           = false
-
-  -- When this option is set, the screen will not be redrawn while executing
-  -- macros, registers and other commands that have not been typed.  Also,
-  -- updating the window title is postponed.  To force an
-  o.lazyredraw = true
-
-  -- o.shortmess:append('I')
-  -- o.shortmess:remove('F')
-
-  -- Only insert one space after a period when formatting.
-  o.joinspaces = true
+  o.lazyredraw     = true
 
   -- Avoid showing message extra message when using completion
   o.shortmess:append('c')
+  -- o.shortmess:append('I')
+  -- o.shortmess:remove('F')
   o.completeopt:append{'noinsert','menuone','noselect','preview'}
   -- o.completeopt = 'noinsert,menuone,noselect,preview'
   o.showbreak   = '↳ '
@@ -87,8 +81,6 @@ if 'Options' then
   o.undofile   = true
   o.splitright = true
   o.splitbelow = true
-  -- Set spell is slow so try and do it as late as possible
-  -- vim.cmd[[autocmd CursorHold * ++once set spell]]
   o.spell      = true
 
   local xdg_cfg = os.getenv('XDG_CONFIG_HOME')
@@ -130,33 +122,31 @@ if 'Whitespace' then
 end
 
 if "Mappings" then
-  local map = api.nvim_set_keymap
+  map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'   )
+  map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'                 )
+  map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>')
+  map('n', '<leader>s' , ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'                   )
+  map('n', '<leader>c' , '1z='                                                      )
+  map('n', '<leader>w' , ':execute "resize ".line("$")<cr>'                         )
 
-  map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'   , {noremap=true})
-  map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'                 , {noremap=true})
-  map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>', {noremap=true})
-  map('n', '<leader>s' , ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'                   , {noremap=true})
-  map('n', '<leader>c' , '1z='                                                      , {noremap=true})
-  map('n', '<leader>w' , ':execute "resize ".line("$")<cr>'                         , {noremap=true})
+  map('n', 'k', [[v:count == 0 ? 'gk' : 'k']], {expr=true})
+  map('n', 'j', [[v:count == 0 ? 'gj' : 'j']], {expr=true})
 
-  map('n', 'k', [[v:count == 0 ? 'gk' : 'k']], {noremap=true, expr=true})
-  map('n', 'j', [[v:count == 0 ? 'gj' : 'j']], {noremap=true, expr=true})
+  map('n', 'Y', 'y$')
 
-  map('n', 'Y', 'y$', {noremap=true})
-
-  map('n', 'Q' , ':w<cr>', {})
-  map('v', 'Q' , '<nop>' , {})
-  map('n', 'gQ', '<nop>' , {})
-  map('v', 'gQ', '<nop>' , {})
+  map('n', 'Q' , ':w<cr>')
+  map('v', 'Q' , '<nop>' )
+  map('n', 'gQ', '<nop>' )
+  map('v', 'gQ', '<nop>' )
 
   -- delete the current buffer without deleting the window
-  map('n', '<leader>b', ':b#|bd#', {noremap=true})
+  map('n', '<leader>b', ':b#|bd#')
 
   -- I never use macros and more often mis-hit this key
-  map('n', 'q', '<nop>' , {noremap=true})
+  map('n', 'q', '<nop>')
 
   -- Show syntax highlighting groups for word under cursor
-  function M.syn_stack()
+  local function syn_stack()
     local c = api.nvim_win_get_cursor(0)
     local stack = vim.fn.synstack(c[1], c[2]+1)
     for i, l in ipairs(stack) do
@@ -164,29 +154,25 @@ if "Mappings" then
     end
     print(vim.inspect(stack))
   end
-  map('n', '<leader>z', ':lua package.loaded.lewis6991.syn_stack()<CR>', {noremap=true})
+  map('n', '<leader>z', syn_stack)
 
-  map('n', '<leader>:', ':lua<space>', {noremap=true})
-
-  map('n', '<C-C>', ':nohlsearch<CR>', {noremap=true})
+  map('n', '<C-C>', ':nohlsearch<CR>')
 
   -- Use barbar mappings instead
   -- map('n', '<Tab>'  , ':bnext<CR>', {})
   -- map('n', '<S-Tab>', ':bprev<CR>', {})
 
-  map('n', '|', [[!v:count ? "<C-W>v<C-W><Right>" : '|']], {noremap=true, expr=true, silent=true})
-  map('n', '_', [[!v:count ? "<C-W>s<C-W><Down>"  : '_']], {noremap=true, expr=true, silent=true})
+  map('n', '|', [[!v:count ? "<C-W>v<C-W><Right>" : '|']], {expr=true, silent=true})
+  map('n', '_', [[!v:count ? "<C-W>s<C-W><Down>"  : '_']], {expr=true, silent=true})
 
-  map('c', '<C-P>', '<up>'  , {noremap=true})
-  map('c', '<C-N>', '<down>', {noremap=true})
-  map('c', '<C-A>', '<Home>', {noremap=true})
-  map('c', '<C-D>', '<Del>' , {noremap=true})
+  map('c', '<C-P>', '<up>'  )
+  map('c', '<C-N>', '<down>')
+  map('c', '<C-A>', '<Home>')
+  map('c', '<C-D>', '<Del>' )
 
-  map('n', '<leader>e' , '<cmd>lua vim.diagnostic.show_line_diagnostics()<CR>', {})
-  map('n', ']d'        , '<cmd>lua vim.diagnostic.goto_next()<CR>', {})
-  map('n', '[d'        , '<cmd>lua vim.diagnostic.goto_prev()<CR>', {})
-  map('n', 'go'        , '<cmd>lua vim.diagnostic.setloclist()<CR>', {})
-
+  map('n', ']d', vim.diagnostic.goto_next)
+  map('n', '[d', vim.diagnostic.goto_prev)
+  map('n', 'go', vim.diagnostic.open_float)
 end
 
 add_command('Hashbang', function()
@@ -214,42 +200,7 @@ add_command('Hashbang', function()
   end
 end, {force = true})
 
-if "Floating Man" then
-  local function createCenteredFloatingWindow()
-    local width  = math.floor(vim.o.columns * 0.8)
-    local height = math.floor(vim.o.lines * 0.8)
-
-    local buf = api.nvim_create_buf(true, true)
-
-    api.nvim_open_win(buf, true, {
-      relative = 'editor',
-      style    = 'minimal',
-      border   = 'single',
-      row      = ((vim.o.lines - height) / 2) - 1,
-      col      = (vim.o.columns - width) / 2,
-      width    = width,
-      height   = height,
-    })
-
-    return buf
-  end
-
-  add_command('FloatingMan', function(opts)
-    local id = opts.args
-    local buf = createCenteredFloatingWindow()
-    vim.api.nvim_buf_set_option(buf, 'filetype', 'man')
-
-    vim.cmd('Man '..id)
-
-    api.nvim_buf_set_keymap(buf, 'n', 'q'    , ':bwipeout!<cr>', {silent=true})
-    api.nvim_buf_set_keymap(buf, 'n', '<esc>', ':bwipeout!<cr>', {silent=true})
-    vim.cmd('autocmd BufLeave <buffer> :bwipeout!')
-  end, {nargs = '*', force = true})
-
-  o.keywordprg = ':FloatingMan'
-end
-
-add_command('L', "lua print(vim.inspect(<args>))", {nargs = 1, complete = 'lua', force = true})
+add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', force = true})
 
 vim.cmd[[
   autocmd vimrc VimResized * wincmd =
