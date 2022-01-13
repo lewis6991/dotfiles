@@ -42,7 +42,8 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
     disable = {'rst', 'python'}
   },
-  playground = { enable = true }
+  playground = { enable = true },
+  context_commentstring = { enable = true }
 }
 
 -- Make sure legacy syntax engine is disable for TS langs

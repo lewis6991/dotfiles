@@ -244,6 +244,7 @@ local init = {
   {'nvim-treesitter/nvim-treesitter',
     requires = {
       'romgrk/nvim-treesitter-context',
+      'JoosepAlviste/nvim-ts-context-commentstring',
       'nvim-treesitter/playground',
     },
     run = ':TSUpdate',
