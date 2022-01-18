@@ -117,8 +117,14 @@ if 'Whitespace' then
   o.list = true
   o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
 
+  M.highlight_trailing_ws = function()
+    if vim.bo.buftype == "" then
+      vim.fn.matchadd('ColorColumn', '\\s\\+$')
+    end
+  end
+
   -- Highlight trailing whitespace
-  vim.cmd[[autocmd vimrc BufEnter * call matchadd('ColorColumn', '\s\+$')]]
+  vim.cmd[[autocmd vimrc BufEnter * lua package.loaded.lewis6991.highlight_trailing_ws()]]
 end
 
 if "Mappings" then
