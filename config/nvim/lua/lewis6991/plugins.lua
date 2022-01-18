@@ -189,8 +189,8 @@ local init = {
         signs = {
           add          = {show_count = false, text = '┃' },
           change       = {show_count = false, text = '┃' },
-          delete       = {show_count = true, linehl = 'NormalNC' },
-          topdelete    = {show_count = true, linehl = 'NormalNC' },
+          delete       = {show_count = true },
+          topdelete    = {show_count = true },
           changedelete = {show_count = true},
         },
         keymaps = {
@@ -209,9 +209,10 @@ local init = {
           ['n <leader>hR'] = '<cmd>Gitsigns reset_buffer<CR>',
           ['n <leader>hp'] = '<cmd>Gitsigns preview_hunk<CR>',
           ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line{full=true}<CR>',
-          ['n <leader>hB'] = '<cmd>Gitsigns toggle_current_line_blame<CR>',
+          ['n <leader>tb'] = '<cmd>Gitsigns toggle_current_line_blame<CR>',
           ['n <leader>hd'] = '<cmd>Gitsigns diffthis<CR>',
           ['n <leader>hD'] = '<cmd>Gitsigns diffthis ~<CR>',
+          ['n <leader>td'] = '<cmd>Gitsigns toggle_deleted<CR>',
 
           ['o ih'] = ':<C-U>Gitsigns select_hunk<CR>',
           ['x ih'] = ':<C-U>Gitsigns select_hunk<CR>'
