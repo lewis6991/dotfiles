@@ -13,6 +13,8 @@ if "diagnostic config" then
     vim.fn.sign_define(name, {text = text, texthl = name})
   end
 
+  vim.cmd[[highlight link LspCodeLens WarningMsg]]
+
   set_lsp_sign("DiagnosticSignError", "●")
   set_lsp_sign("DiagnosticSignWarn" , "●")
   set_lsp_sign("DiagnosticSignInfo" , "●")
@@ -28,12 +30,18 @@ if "handlers" then
   )
 end
 
-local custom_on_attach = function(_, bufnr)
+local custom_on_attach = function(client, bufnr)
   local keymap = function(key, result)
     vim.api.nvim_buf_set_keymap(bufnr, 'n', key, '<cmd>lua '..result..'<CR>', {noremap = true, silent = true})
   end
 
+  if client.resolved_capabilities.code_lens then
+    vim.cmd[[autocmd BufEnter,CursorHold,InsertLeave <buffer> lua vim.lsp.codelens.refresh()]]
+    vim.lsp.codelens.refresh()
+  end
+
   keymap('<C-]>'     , 'vim.lsp.buf.definition()')
+  keymap('<leader>cl', 'vim.lsp.codelens.run()')
   keymap('K'         , 'vim.lsp.buf.hover()')
   keymap('gK'        , 'vim.lsp.buf.signature_help()')
   keymap('<C-s>'     , 'vim.lsp.buf.signature_help()')
