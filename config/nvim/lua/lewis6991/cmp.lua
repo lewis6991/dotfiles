@@ -54,15 +54,18 @@ cmp.setup {
     ['<CR>']      = cmp.mapping.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true },
   },
   sources = {
-    { name = 'gh' },
-    { name = 'nvim_lsp' },
-    { name = 'nvim_lua' },
-    { name = 'luasnip'  },
-    { name = 'path'     },
-    { name = 'buffer'   },
-    { name = 'rg'       },
-    { name = 'spell'    },
-    { name = 'tmux', keyword_length=3, max_item_count=10},
+    { name = 'gh'         },
+    { name = 'nvim_lsp'   },
+    { name = 'nvim_lsp_signature_help'},
+    { name = 'nvim_lua'   },
+    { name = 'luasnip'    },
+    { name = 'emoji'      },
+    { name = 'path'       },
+    { name = 'treesitter' },
+    { name = 'buffer'     },
+    { name = 'rg'         },
+    { name = 'spell'      },
+    { name = 'tmux'       },
   },
   experimental = {
     ghost_text = true,
@@ -72,3 +75,10 @@ cmp.setup {
 cmp.setup.cmdline('/', { sources = { { name = 'buffer'  } } })
 cmp.setup.cmdline(':', { sources = { { name = 'cmdline' } } })
 
+for _, cmd_type in ipairs({':', '/', '?', '@', '='}) do
+  cmp.setup.cmdline(cmd_type, {
+    sources = {
+      { name = 'cmdline_history' },
+    },
+  })
+end
