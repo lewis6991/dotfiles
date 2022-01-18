@@ -75,10 +75,10 @@ cmp.setup {
 cmp.setup.cmdline('/', { sources = { { name = 'buffer'  } } })
 cmp.setup.cmdline(':', { sources = { { name = 'cmdline' } } })
 
-for _, cmd_type in ipairs({':', '/', '?', '@', '='}) do
-  cmp.setup.cmdline(cmd_type, {
-    sources = {
-      { name = 'cmdline_history' },
-    },
-  })
-end
+-- for _, cmd_type in ipairs({':', '/', '?', '@', '='}) do
+--   cmp.setup.cmdline(cmd_type, {
+--     sources = {
+--       { name = 'cmdline_history' },
+--     },
+--   })
+-- end

@@ -149,7 +149,7 @@ local init = {
       'hrsh7th/cmp-path',
       'hrsh7th/cmp-nvim-lua',
       'hrsh7th/cmp-cmdline',
-      'dmitmel/cmp-cmdline-history',
+      -- 'dmitmel/cmp-cmdline-history',
       'lukas-reineke/cmp-rg',
       'f3fora/cmp-spell',
       'andersevenrud/cmp-tmux',
