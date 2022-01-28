@@ -50,7 +50,13 @@ local custom_on_attach = function(client, bufnr)
   keymap('<leader>rn', 'vim.lsp.buf.rename()')
   keymap('<leader>ca', 'vim.lsp.buf.code_action()')
 
-  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+  -- Use LSP as the handler for formatexpr.
+  --    See `:help formatexpr` for more information.
+  vim.bo[bufnr].formatexpr = 'v:lua.vim.lsp.formatexpr()'
+
+  -- Use LSP as the handler for omnifunc.
+  --    See `:help omnifunc` and `:help ins-completion` for more information.
+  vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
 end
 
 local function setup(config, opts)

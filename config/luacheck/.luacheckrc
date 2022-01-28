@@ -4,7 +4,7 @@ stds.nvim = {
 
 std = "lua51+nvim"
 
-globals = {"vim"}
+globals = {"vim", "os"}
 
 -- Rerun tests only if their modification time changed.
 cache = true

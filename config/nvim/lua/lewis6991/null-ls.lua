@@ -115,6 +115,8 @@ null_ls.setup {
           'E203', -- whitespace before ':'
           'E741', -- ambiguous variable name
           'E226', -- missing whitespace around arithmetic operator
+          'E305', 'E302', -- expected 2 blank lines after class
+          'E251', -- unexpected spaces around keyword / parameter equals (E251)
         }, ',')}
       end
     },

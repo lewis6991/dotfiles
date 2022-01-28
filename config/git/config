@@ -48,6 +48,7 @@
 		}; f"
 	reh = reset --hard
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
+	rtrack = !sh -c 'git branch --set-upstream-to $1' -
 	untrack = branch --unset-upstream
 	who = shortlog --summary --numbered
 	who2 = shortlog --summary --numbered --since=2year

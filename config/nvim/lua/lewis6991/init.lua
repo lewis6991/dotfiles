@@ -146,7 +146,7 @@ if "Mappings" then
   map('v', 'gQ', '<nop>' )
 
   -- delete the current buffer without deleting the window
-  map('n', '<leader>b', ':b#|bd#')
+  map('n', '<leader>b', ':b#|bd#<CR>')
 
   -- I never use macros and more often mis-hit this key
   map('n', 'q', '<nop>')

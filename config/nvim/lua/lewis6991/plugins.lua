@@ -194,32 +194,35 @@ local init = {
           change       = {show_count = false, text = '┃' },
           delete       = {show_count = true },
           topdelete    = {show_count = true },
-          changedelete = {show_count = true},
+          changedelete = {show_count = true },
         },
-        keymaps = {
-          -- Default keymap options
-          noremap = true,
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
 
-          ['n ]c'] = { expr = true, "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'"},
-          ['n [c'] = { expr = true, "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'"},
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
 
-          ['n <leader>hs'] = '<cmd>Gitsigns stage_hunk<CR>',
-          ['v <leader>hs'] = ':Gitsigns stage_hunk<CR>',
-          ['n <leader>hS'] = '<cmd>Gitsigns stage_buffer<CR>',
-          ['n <leader>hu'] = '<cmd>Gitsigns undo_stage_hunk<CR>',
-          ['n <leader>hr'] = '<cmd>Gitsigns reset_hunk<CR>',
-          ['v <leader>hr'] = ':Gitsigns reset_hunk<CR>',
-          ['n <leader>hR'] = '<cmd>Gitsigns reset_buffer<CR>',
-          ['n <leader>hp'] = '<cmd>Gitsigns preview_hunk<CR>',
-          ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line{full=true}<CR>',
-          ['n <leader>tb'] = '<cmd>Gitsigns toggle_current_line_blame<CR>',
-          ['n <leader>hd'] = '<cmd>Gitsigns diffthis<CR>',
-          ['n <leader>hD'] = '<cmd>Gitsigns diffthis ~<CR>',
-          ['n <leader>td'] = '<cmd>Gitsigns toggle_deleted<CR>',
+          map('n', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", {expr=true})
+          map('n', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", {expr=true})
 
-          ['o ih'] = ':<C-U>Gitsigns select_hunk<CR>',
-          ['x ih'] = ':<C-U>Gitsigns select_hunk<CR>'
-        },
+          map({'n', 'v'}, '<leader>hs', gs.stage_hunk)
+          map({'n', 'v'}, '<leader>hr', gs.reset_hunk)
+          map('n', '<leader>hS', gs.stage_buffer)
+          map('n', '<leader>hu', gs.undo_stage_hunk)
+          map('n', '<leader>hR', gs.reset_buffer)
+          map('n', '<leader>hp', gs.preview_hunk)
+          map('n', '<leader>hb', function() gs.blame_line{full=true} end)
+          map('n', '<leader>tb', gs.toggle_current_line_blame)
+          map('n', '<leader>hd', gs.diffthis)
+          map('n', '<leader>hD', function() gs.diffthis('~') end)
+          map('n', '<leader>td', gs.toggle_deleted)
+
+          map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+        end,
+        keymaps = {},
         preview_config = {
           border = 'rounded',
         },
@@ -235,7 +238,6 @@ local init = {
           '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
         },
         _refresh_staged_on_update = false,
-        _blame_cache = true,
         word_diff = true,
       }
     end
@@ -281,17 +283,6 @@ local init = {
       vim.api.nvim_set_keymap("n", "<leader>ql", [[<cmd>lua require("persistence").load({last=true})<cr>]], {})
     end,
   },
-
-  -- {'romgrk/barbar.nvim',
-  --   requires = { 'kyazdani42/nvim-web-devicons' },
-  --   config = function()
-  --     vim.g.bufferline = vim.tbl_extend('force', vim.g.bufferline or {}, {
-  --       closable = false
-  --     })
-  --     vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufferNext<CR>'    , {noremap=true,silent=true})
-  --     vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufferPrevious<CR>', {noremap=true,silent=true})
-  --   end
-  -- },
 
   {"jose-elias-alvarez/buftabline.nvim",
     requires = {"kyazdani42/nvim-web-devicons"}, -- optional!
