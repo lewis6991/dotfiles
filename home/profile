@@ -78,6 +78,7 @@ fi
 for i in \
     "$HOME" \
     "$DOTFILES" \
+    "/opt/homebrew" \
     "$HOME/.luarocks" \
     "$HOME/.local" \
     "$XDG_DATA_HOME/npm" \
