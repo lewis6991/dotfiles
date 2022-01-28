@@ -1,0 +1,208 @@
+/* Linux & macOS specific styles */
+@media (-moz-gtk-csd-available), (-moz-mac-big-sur-theme: 0), (-moz-mac-big-sur-theme: 1) {
+    #TabsToolbar:not([customizing="true"]) {
+          visibility: collapse !important;
+      }
+
+    #toolbar-menubar {
+          padding-top: 0px !important;
+      }
+
+    #TabsToolbar:not([customizing="true"]) {
+          visibility: collapse !important;
+      }
+
+    #toolbar-menubar {
+          padding-top: 0px !important;
+      }
+
+    #nav-bar {
+          padding-left: 80px;
+      }
+
+    #TabsToolbar .titlebar-buttonbox-container {
+          visibility: visible !important;
+          position: absolute;
+          top: 12px;
+          left: 0px;
+      }
+
+    .titlebar-buttonbox-container {
+          display: block;
+      }
+
+    .titlebar-button > .toolbarbutton-icon {
+          height: 13x !important;
+          min-height: 13px !important;
+          width: 13px !important;
+          min-width: 13px !important;
+      }
+
+    .titlebar-button {
+          padding-left: 6px !important;
+          padding-right: 6px !important;
+          padding-top: 6px !important;
+      }
+
+    .titlebar-placeholder[type="pre-tabs"] {
+          width: 120px !important;
+      }
+
+    .titlebar-buttonbox-container {
+          -moz-box-ordinal-group: 0;
+      }
+}
+
+
+/* Windows specific styles */
+@media (-moz-os-version: windows-win10) {
+    /* Hide main tabs toolbar */
+    :root[tabsintitlebar]{
+          --uc-window-control-width: 138px; /* Space at the right of nav-bar for window controls */
+          /* --uc-window-drag-space-width: 24px; */  /* To add extra window drag space in nav-bar */
+      }
+
+    #nav-bar{
+          border-inline: var(--uc-window-drag-space-width,0px) solid var(--toolbar-bgcolor) ;
+          border-inline-style: solid !important;
+          border-right-width: calc(var(--uc-window-control-width,0px) + var(--uc-window-drag-space-width,0px));
+
+          padding-top: 0px !important;
+          margin-left: -80px; /* Removes the space left when hiding .titlebar-buttonbox-container */
+      }
+
+    :root {
+          --uc-toolbar-height: 32px;
+          --chrome-content-separator-color: none !important;
+      }
+
+    :root:not([uidensity="compact"]) {
+          --uc-toolbar-height: 38px;
+      }
+
+    #TabsToolbar {
+          visibility: collapse !important;
+      }
+    /* Hide the Windows controls on the left side. */
+    #TabsToolbar .titlebar-buttonbox-container {
+          visibility: hidden !important;
+      }
+    /* Line up the Windows controls with the rest of the icons in the toolbar. */
+    .titlebar-buttonbox-container {
+          margin-top: 7px;
+      }
+    :root:not([inFullscreen]) #nav-bar {
+          margin-top: calc(0px - var(--uc-toolbar-height));
+      }
+
+    #toolbar-menubar {
+          min-height: unset !important;
+          height: var(--uc-toolbar-height) !important;
+          position: relative;
+      }
+
+    #main-menubar {
+          -moz-box-flex: 1;
+          background-color: var(--toolbar-bgcolor,--toolbar-non-lwt-bgcolor);
+          background-clip: padding-box;
+          border-right: 30px solid transparent;
+          border-image: linear-gradient(to left, transparent, var(--toolbar-bgcolor,--toolbar-non-lwt-bgcolor) 30px) 20 / 30px;
+      }
+
+    #toolbar-menubar:not([inactive]) {
+          z-index: 2;
+      }
+
+    #toolbar-menubar[inactive] > #menubar-items {
+          opacity: 0;
+          pointer-events: none;
+          margin-left: var(--uc-window-drag-space-width,0px);
+      }
+
+    :root[inFullscreen] #nav-bar {
+          border-inline: none !important;
+      }
+}
+
+
+/* General styles */
+#browser {
+    position: relative;
+}
+#sidebar-box[sidebarcommand*="tabcenter"] #sidebar-header {
+    visibility: collapse;
+    display: none;
+}
+
+#sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) {
+    display: block;
+    position: absolute;
+    min-width: 48px;
+    max-width: 48px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    border-right: 1px solid var(--sidebar-border-color);
+    z-index: 1;
+    top: 0;
+    bottom: 0;
+}
+
+[sidebarcommand*="tabcenter"] #sidebar,
+#sidebar-box[sidebarcommand*="tabcenter"]:hover {
+    min-width: 10vw !important;
+    width: 30vw !important;
+    max-width: 200px !important;
+    z-index: 10 !important;
+}
+
+@media (width >= 1200px) {
+    [sidebarcommand*="tabcenter"] #sidebar,
+    #sidebar-box[sidebarcommand*="tabcenter"]:hover {
+        max-width: 250px !important;
+    }
+}
+
+[sidebarcommand*="tabcenter"] ~ #sidebar-splitter {
+    display: none;
+}
+
+[sidebarcommand*="tabcenter"] #sidebar {
+    max-height: 100%;
+    height: 100%;
+}
+
+#sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) ~ #appcontent {
+    margin-left: 48px;
+}
+
+#main-window[inFullscreen][inDOMFullscreen] #appcontent {
+    margin-left: 0;
+}
+
+#main-window[inFullscreen] #sidebar {
+    height: 100vh;
+}
+
+[sidebarcommand*="tabcenter"] #sidebar-header {
+    background: #0C0C0D;
+    border-bottom: none !important;
+}
+
+[sidebarcommand*="tabcenter"] ~ #sidebar-splitter {
+    border-right-color: #0C0C0D !important;
+    border-left-color: #0C0C0D !important;
+}
+
+[sidebarcommand*="tabcenter"] #sidebar-switcher-target,
+[sidebarcommand*="tabcenter"] #sidebar-close {
+    filter: invert(100%);
+}
+
+@media (max-width: 630px) {
+    #urlbar-container {
+        min-width: 100% !important;
+    }
+    #menubar-items {
+        display: none !important;
+    }
+}
