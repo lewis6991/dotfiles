@@ -208,8 +208,8 @@ local init = {
           map('n', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", {expr=true})
           map('n', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", {expr=true})
 
-          map({'n', 'v'}, '<leader>hs', gs.stage_hunk)
-          map({'n', 'v'}, '<leader>hr', gs.reset_hunk)
+          map({'n', 'v'}, '<leader>hs', ':Gitsigns stage_hunk<CR>')
+          map({'n', 'v'}, '<leader>hr', ':Gitsigns reset_hunk<CR>')
           map('n', '<leader>hS', gs.stage_buffer)
           map('n', '<leader>hu', gs.undo_stage_hunk)
           map('n', '<leader>hR', gs.reset_buffer)
@@ -238,6 +238,7 @@ local init = {
           '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
         },
         _refresh_staged_on_update = false,
+        _extmark_signs = vim._has_sign_extmarks,
         word_diff = true,
       }
     end
