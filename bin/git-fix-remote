@@ -1,0 +1,18 @@
+#! /usr/bin/env bash
+set -e
+
+remote_name=${1-origin}
+
+url=$(git remote get-url "$remote_name")
+
+if [[ $url =~ https://github.com/(.*) ]]; then
+    repo=${BASH_REMATCH[1]}
+    new_url="git@github.com:${repo}.git"
+    echo "Changing URL of remote '$remote_name':"
+    echo -e "\tfrom:\t$url"
+    echo -e "\tto:\t$new_url"
+    git remote set-url "$remote_name" "$new_url"
+else
+    echo "URL of remote '$remote_name' is already set to:"
+    echo -e "\t$url"
+fi
