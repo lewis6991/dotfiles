@@ -1,5 +1,7 @@
 local M = {}
 
+local api = vim.api
+
 local function highlight(num, active)
   if active == 1 then
     if num == 1 then
@@ -13,11 +15,11 @@ local function highlight(num, active)
 end
 
 function M.hldefs()
-  local bg = vim.api.nvim_get_hl_by_name('StatusLine', true).background
+  local bg = api.nvim_get_hl_by_name('StatusLine', true).background
   for _, ty in ipairs { 'Warn', 'Error', 'Info', 'Hint' } do
-    local hl = vim.api.nvim_get_hl_by_name('Diagnostic'..ty, true)
+    local hl = api.nvim_get_hl_by_name('Diagnostic'..ty, true)
     local name = ('Diagnostic%sStatus'):format(ty)
-    vim.api.nvim_set_hl(0, name, { fg = hl.foreground, bg = bg})
+    api.nvim_set_hl(0, name, { fg = hl.foreground, bg = bg})
   end
 end
 
@@ -71,17 +73,17 @@ function M.blame()
 end
 
 local function filetype_symbol()
-  local ok, res = pcall(vim.api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol', {})
+  local ok, res = pcall(api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol', {})
   if ok then
     return res
   end
-  local name = vim.api.nvim_buf_get_name(0)
+  local name = api.nvim_buf_get_name(0)
   res = require'nvim-web-devicons'.get_icon(name, vim.bo.filetype, {default = true})
   return res
 end
 
 local function is_treesitter()
-  local bufnr = vim.api.nvim_get_current_buf()
+  local bufnr = api.nvim_get_current_buf()
   return vim.treesitter.highlighter.active[bufnr] ~= nil
 end
 
@@ -106,7 +108,7 @@ function M.encodingAndFormat()
     local f = vim.bo.fileformat
     if f ~= 'unix' then
       r[#r+1] = '['..f..']'
-      local ok, res = pcall(vim.api.nvim_call_function, 'WebDevIconsGetFileFormatSymbol')
+      local ok, res = pcall(api.nvim_call_function, 'WebDevIconsGetFileFormatSymbol')
       if ok then
         r[#r+1] = res
       end
@@ -126,8 +128,8 @@ end
 
 function M.bufname()
   local ratio = 0.5
-  local width = math.floor(vim.api.nvim_win_get_width(0) * ratio)
-  local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':.')
+  local width = math.floor(api.nvim_win_get_width(0) * ratio)
+  local name = vim.fn.fnamemodify(api.nvim_buf_get_name(0), ':.')
   if vim.startswith(name, 'fugitive://') then
     local _, _, commit, relpath = name:find([[^fugitive://.*/%.git.*/(%x-)/(.*)]])
     name = relpath..'@'..commit:sub(1, 7)
