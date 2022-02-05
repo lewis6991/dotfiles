@@ -16,7 +16,8 @@ function M.hldefs()
   local bg = vim.api.nvim_get_hl_by_name('StatusLine', true).background
   for _, ty in ipairs { 'Warn', 'Error', 'Info', 'Hint' } do
     local hl = vim.api.nvim_get_hl_by_name('Diagnostic'..ty, true)
-    vim.cmd(('highlight Diagnostic%sStatus guifg=#%6x guibg=#%6x'):format(ty, hl.foreground, bg))
+    local name = ('Diagnostic%sStatus'):format(ty)
+    vim.api.nvim_set_hl(0, name, { fg = hl.foreground, bg = bg})
   end
 end
 
