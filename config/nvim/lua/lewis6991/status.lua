@@ -149,8 +149,8 @@ local function func(name, active)
   return '%{%v:lua.statusline.'..name..'('..tostring(active)..')%}'
 end
 
-function M.statusline(active)
-  return table.concat{
+function M.set(active)
+  vim.wo.statusline = table.concat{
     highlight(1, active),
     recording(),
     pad(func('hunks')),
@@ -171,9 +171,12 @@ end
 -- Only set up WinEnter autocmd when the WinLeave autocmd runs
 vim.cmd[[
   augroup statusline
-    autocmd WinLeave,FocusLost * autocmd BufWinEnter,WinEnter,FocusGained * let &l:statusline=v:lua.statusline.statusline(1)
-    autocmd WinLeave,FocusLost * let &l:statusline=v:lua.statusline.statusline(0)
-    autocmd VimEnter           * let &statusline=v:lua.statusline.statusline(1)
+    autocmd!
+    autocmd WinLeave,FocusLost *
+        \ autocmd statusline BufWinEnter,WinEnter,FocusGained *
+            \ lua statusline.set(1)
+    autocmd WinLeave,FocusLost * lua statusline.set(0)
+    autocmd VimEnter           * lua statusline.set(1)
     autocmd ColorScheme        * lua statusline.hldefs()
   augroup END
 ]]
