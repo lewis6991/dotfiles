@@ -31,8 +31,8 @@ if "handlers" then
 end
 
 local custom_on_attach = function(client, bufnr)
-  local keymap = function(key, result)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', key, '<cmd>lua '..result..'<CR>', {noremap = true, silent = true})
+  local map = function(key, result)
+    vim.keymap.set('n', key, result, {silent = true, buffer=bufnr})
   end
 
   if client.resolved_capabilities.code_lens then
@@ -40,15 +40,15 @@ local custom_on_attach = function(client, bufnr)
     vim.lsp.codelens.refresh()
   end
 
-  keymap('<C-]>'     , 'vim.lsp.buf.definition()')
-  keymap('<leader>cl', 'vim.lsp.codelens.run()')
-  keymap('K'         , 'vim.lsp.buf.hover()')
-  keymap('gK'        , 'vim.lsp.buf.signature_help()')
-  keymap('<C-s>'     , 'vim.lsp.buf.signature_help()')
+  map('<C-]>'     , vim.lsp.buf.definition)
+  map('<leader>cl', vim.lsp.codelens.run)
+  map('K'         , vim.lsp.buf.hover)
+  map('gK'        , vim.lsp.buf.signature_help)
+  map('<C-s>'     , vim.lsp.buf.signature_help)
   -- keymap('gr'        , 'vim.lsp.buf.references()')
-  vim.api.nvim_buf_set_keymap(bufnr, "n", "gr", "<cmd>Trouble lsp_references<cr>", {silent = true, noremap = true})
-  keymap('<leader>rn', 'vim.lsp.buf.rename()')
-  keymap('<leader>ca', 'vim.lsp.buf.code_action()')
+  map('gr', '<cmd>Trouble lsp_references<cr>')
+  map('<leader>rn', vim.lsp.buf.rename)
+  map('<leader>ca', vim.lsp.buf.code_action)
 
   -- Use LSP as the handler for formatexpr.
   --    See `:help formatexpr` for more information.
