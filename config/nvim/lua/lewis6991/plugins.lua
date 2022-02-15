@@ -61,7 +61,7 @@ local init = {
   -- Highlight the current search result
   -- 'timakro/vim-searchant',
   {'PeterRincker/vim-searchlight', config = function()
-    vim.cmd[[highlight default link Searchlight SearchCurrent]]
+    vim.api.nvim_set_hl(0, 'SearchLight', {link = 'SearchCurrent'})
   end},
 
   --- Filetype plugins ---
@@ -106,8 +106,7 @@ local init = {
   {'junegunn/vim-easy-align',
     keys = 'ga',
     config = function()
-      vim.api.nvim_set_keymap('x', 'ga', '<Plug>(EasyAlign)', {})
-      vim.api.nvim_set_keymap('n', 'ga', '<Plug>(EasyAlign)', {})
+      vim.keymap.set({'x', 'n'}, 'ga', '<Plug>(EasyAlign)')
       vim.g.easy_align_delimiters = {
         [';']  = { pattern = ';'        , left_margin = 0 },
         ['[']  = { pattern = '['        , left_margin = 1, right_margin = 0 },

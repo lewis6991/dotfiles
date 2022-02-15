@@ -13,7 +13,7 @@ if "diagnostic config" then
     vim.fn.sign_define(name, {text = text, texthl = name})
   end
 
-  vim.cmd[[highlight link LspCodeLens WarningMsg]]
+  vim.api.nvim_set_hl(0, 'LspCodeLens', {link='WarningMsg'})
 
   set_lsp_sign("DiagnosticSignError", "●")
   set_lsp_sign("DiagnosticSignWarn" , "●")
