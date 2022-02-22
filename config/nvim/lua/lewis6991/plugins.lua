@@ -189,18 +189,6 @@ packer.setup {
     end
   },
 
-  {'folke/persistence.nvim',
-    config = function()
-      require('persistence').setup()
-
-      -- restore the session for the current directory
-      vim.api.nvim_set_keymap("n", "<leader>qs", [[<cmd>lua require("persistence").load()<cr>]], {})
-
-      -- restore the last session
-      vim.api.nvim_set_keymap("n", "<leader>ql", [[<cmd>lua require("persistence").load({last=true})<cr>]], {})
-    end,
-  },
-
   {"jose-elias-alvarez/buftabline.nvim",
     requires = {"kyazdani42/nvim-web-devicons"}, -- optional!
     config = function()
