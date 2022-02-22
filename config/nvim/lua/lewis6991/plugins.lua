@@ -1,19 +1,6 @@
-local install_path = vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+local packer = require('lewis6991.packer')
 
-if not vim.loop.fs_stat(install_path) then
-  if vim.fn.input("Download Packer? (y for yes): ") ~= "y" then
-    return
-  end
-
-  print("Downloading packer.nvim...")
-  print(vim.fn.system(string.format(
-    'git clone %s %s',
-    'https://github.com/wbthomason/packer.nvim',
-    install_path
-  )))
-end
-
-local init = {
+packer.setup {
   'wbthomason/packer.nvim',
 
   'lewis6991/moonlight.vim',
@@ -26,7 +13,6 @@ local init = {
   {'lewis6991/cleanfold.nvim', config = [[require('cleanfold').setup()]]},
 
   'nanotee/luv-vimdocs',
-  'wsdjeg/luarefvim',
 
   {'lewis6991/vim-dirvish', config = function()
     vim.g.dirvish_mode = ':sort ,^.*[\\/],'
@@ -55,8 +41,6 @@ local init = {
       vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
     end
   },
-
-  {'vim-scripts/visualrepeat', requires = 'inkarkat/vim-ingo-library' },
 
   -- Highlight the current search result
   -- 'timakro/vim-searchant',
@@ -127,8 +111,11 @@ local init = {
     end
   },
 
+  'dstein64/nvim-scrollview',
+
   {'neovim/nvim-lspconfig',
     requires = {
+      'stevearc/aerial.nvim',
       'williamboman/nvim-lsp-installer',
       'scalameta/nvim-metals',
       'folke/lua-dev.nvim',
@@ -164,86 +151,13 @@ local init = {
     requires = {
       'nvim-telescope/telescope-ui-select.nvim',
       'nvim-telescope/telescope-fzf-native.nvim',
-      'nvim-lua/popup.nvim',
       'nvim-lua/plenary.nvim'
     },
     config = "require'lewis6991.telescope'"
   },
 
-  {'pwntester/octo.nvim',
-    event = 'CmdlineEnter *',
-    config=function()
-      require"octo".setup()
-    end
-  },
-
-  -- 'mhinz/vim-signify',
-  -- 'airblade/vim-gitgutter',
-  -- 'rhysd/git-messenger.vim',
-  {'lewis6991/gitsigns.nvim',
-    requires = { 'nvim-lua/plenary.nvim' },
-    config = function()
-      vim.api.nvim_set_keymap('n', 'm', '<cmd>Gitsigns dump_cache<CR>'    , {noremap=true})
-      vim.api.nvim_set_keymap('n', 'M', '<cmd>Gitsigns debug_messages<CR>', {noremap=true})
-      require('gitsigns').setup{
-        debug_mode = true,
-        max_file_length = 1000000000,
-        signs = {
-          add          = {show_count = false, text = '┃' },
-          change       = {show_count = false, text = '┃' },
-          delete       = {show_count = true },
-          topdelete    = {show_count = true },
-          changedelete = {show_count = true },
-        },
-        on_attach = function(bufnr)
-          local gs = package.loaded.gitsigns
-          local line = vim.fn.line
-
-          local function map(mode, l, r, opts)
-            opts = opts or {}
-            opts.buffer = bufnr
-            vim.keymap.set(mode, l, r, opts)
-          end
-
-          map('n', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", {expr=true})
-          map('n', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", {expr=true})
-
-          map('n', '<leader>hs', gs.stage_hunk)
-          map('n', '<leader>hr', gs.reset_hunk)
-          map('v', '<leader>hs', function() gs.stage_hunk({line("."), line("v")}) end)
-          map('v', '<leader>hr', function() gs.reset_hunk({line("."), line("v")}) end)
-          map('n', '<leader>hS', gs.stage_buffer)
-          map('n', '<leader>hu', gs.undo_stage_hunk)
-          map('n', '<leader>hR', gs.reset_buffer)
-          map('n', '<leader>hp', gs.preview_hunk)
-          map('n', '<leader>hb', function() gs.blame_line{full=true} end)
-          map('n', '<leader>tb', gs.toggle_current_line_blame)
-          map('n', '<leader>hd', gs.diffthis)
-          map('n', '<leader>hD', function() gs.diffthis('~') end)
-          map('n', '<leader>td', gs.toggle_deleted)
-
-          map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
-        end,
-        keymaps = {},
-        preview_config = {
-          border = 'rounded',
-        },
-        current_line_blame = true,
-        current_line_blame_formatter_opts = {
-          relative_time = true
-        },
-        current_line_blame_opts = {
-          delay = 0
-        },
-        count_chars = {
-          '⒈', '⒉', '⒊', '⒋', '⒌', '⒍', '⒎', '⒏', '⒐',
-          '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
-        },
-        _refresh_staged_on_update = false,
-        _extmark_signs = vim._has_sign_extmarks,
-        word_diff = true,
-      }
-    end
+  {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'",
+    requires = { 'nvim-lua/plenary.nvim' }
   },
 
   {'lewis6991/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
@@ -294,82 +208,9 @@ local init = {
         tab_format = " #{i} #{b}#{f} ",
         go_to_maps = false,
       }
-      vim.api.nvim_set_keymap('n', '<Tab>'  , ':BufNext<CR>', {noremap=true,silent=true})
-      vim.api.nvim_set_keymap('n', '<S-Tab>', ':BufPrev<CR>', {noremap=true,silent=true})
+      vim.keymap.set('n', '<Tab>'  , ':BufNext<CR>', {silent=true})
+      vim.keymap.set('n', '<S-Tab>', ':BufPrev<CR>', {silent=true})
     end
-  },
-
-}
-
-do -- look for local version of plugins in $HOME/projects and use them instead
-  local home = os.getenv('HOME')
-
-  local function try_get_local(plugin)
-    local _, name = unpack(vim.split(plugin, '/'))
-    local loc_install = home..'/projects/'..name
-    if vim.loop.fs_stat(loc_install) then
-      return loc_install
-    else
-      return plugin
-    end
-  end
-
-  local function try_local(spec, i)
-    i = i or 1
-    if type(spec[i]) == 'string' then
-      spec[i] = try_get_local(spec[i])
-    elseif type(spec[i]) == 'table' then
-      for j, _ in ipairs(spec[i]) do
-        try_local(spec[i], j)
-      end
-      try_local(spec[i], 'requires')
-    end
-  end
-
-  try_local{init}
-end
-
-local packer = require('packer')
-
-do -- Hacky way of auto clean/install/compile
-  vim.cmd[[
-    augroup plugins
-    " Reload plugins.lua
-    autocmd!
-    autocmd BufWritePost plugins.lua lua package.loaded["lewis6991.plugins"] = nil; require("lewis6991.plugins")
-    autocmd BufWritePost plugins.lua PackerClean
-    augroup END
-  ]]
-
-  local state = 'cleaned'
-  local orig_complete = packer.on_complete
-  packer.on_complete = vim.schedule_wrap(function()
-    if state == 'cleaned' then
-      packer.install()
-      state = 'installed'
-    elseif state == 'installed' then
-      packer.compile()
-      -- packer.compile('profile=true')
-      state = 'compiled'
-    elseif state == 'compiled' then
-      packer.on_complete = orig_complete
-      state = 'done'
-    end
-  end)
-
-end
-
-packer.startup{init,
-  config = {
-    display = {
-      open_cmd = 'edit \\[packer\\]',
-      prompt_border = 'rounded'
-    },
-    -- Move to lua dir so impatient.nvim can cache it
-    compile_path = vim.fn.stdpath('config')..'/lua/packer_compiled.lua'
   }
+
 }
-
-vim.api.nvim_set_keymap('n', '<leader>u', ':PackerUpdate<CR>', {noremap=true, silent=true})
-
-return packer

@@ -57,6 +57,9 @@ local custom_on_attach = function(client, bufnr)
   -- Use LSP as the handler for omnifunc.
   --    See `:help omnifunc` and `:help ins-completion` for more information.
   vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+  require("aerial").on_attach(client, bufnr)
+  map('<leader>a', '<cmd>AerialToggle!<CR>')
 end
 
 local function setup(config, opts)
