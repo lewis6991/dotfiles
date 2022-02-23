@@ -56,7 +56,6 @@ packer.setup {
   'teal-language/vim-teal',
   'raimon49/requirements.txt.vim',
   'euclidianAce/BetterLua.vim',
-  'tmhedberg/SimpylFold',
 
   {'lewis6991/foldsigns.nvim',
     config = function()

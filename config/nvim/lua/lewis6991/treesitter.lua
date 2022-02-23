@@ -46,7 +46,7 @@ require'nvim-treesitter.configs'.setup {
   },
   fold = {
     enable = true,
-    disable = {'rst', 'python', 'make'}
+    disable = {'rst', 'make'}
   },
   playground = { enable = true },
   context_commentstring = { enable = true }
