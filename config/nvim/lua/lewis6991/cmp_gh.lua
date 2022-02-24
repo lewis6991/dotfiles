@@ -1,11 +1,10 @@
-local void = require('plenary.async.async').void
-local wrap = require('plenary.async.async').wrap
+local async = require('plenary.async.async')
 local scheduler = require('plenary.async.util').scheduler
 local kinds = require('cmp.types').lsp.CompletionItemKind
 
-local MAX_RESULTS = 100
+local MAX_RESULTS = 40
 
-local job = wrap(function(obj, callback)
+local job = async.wrap(function(obj, callback)
   local stdout_data = {}
   local stdout = vim.loop.new_pipe(false)
 
@@ -46,8 +45,10 @@ local function process_results(result, detail)
 
   local items = {}
   for _, gh_item in ipairs(parsed) do
+    local ghnum = string.format("#%s", gh_item.number)
     items[#items+1] = {
-      label = string.format("#%s", gh_item.number),
+      word = ghnum,
+      label = string.format("%s %s", ghnum, gh_item.title),
       detail = detail,
       kind = kinds.Reference,
       documentation = {
@@ -60,7 +61,7 @@ local function process_results(result, detail)
   return items
 end
 
-source.complete = void(function(self, _, callback)
+source.complete = async.void(function(self, _, callback)
   local bufnr = vim.api.nvim_get_current_buf()
   if self.cache[bufnr] then
     callback { items = self.cache[bufnr] }
