@@ -3,14 +3,21 @@ local luasnip = require 'luasnip'
 require 'lewis6991.cmp_gh'
 
 local source_names = {
-  buffer   = "Buf",
-  nvim_lsp = "LSP",
-  luasnip  = "Snip",
-  nvim_lua = "Lua",
-  path     = 'Path',
-  tmux     = 'Tmux',
-  gh       = 'GH',
-  cmdline  = 'CMD',
+  buffer     = {'BUF'  , 'String'},
+  nvim_lsp   = {nil    , 'Question'},
+  luasnip    = {'Snip' , 'CmpItemMenu'},
+  -- nvim_lua   = {'Lua'  , 'ErrorMsg'},
+  -- nvim_lua   = {'  '  , 'ErrorMsg'},
+  nvim_lua   = {nil    , 'ErrorMsg'},
+  path       = {'Path' , 'WarningMsg'},
+  -- tmux       = {'Tmux' , 'CursorLineNr'},
+  tmux       = {nil    , 'CursorLineNr'},
+  gh         = {'GH'   , 'CmpItemMenu'},
+  rg         = {'RG'   , 'CmpItemMenu'},
+  cmdline    = {'CMD'  , 'CmpItemMenu'},
+  spell      = {'Spell', 'CmpItemMenu'},
+  -- treesitter = {'TS'   , 'Delimiter'}
+  treesitter = {''    , 'Delimiter'}
 }
 
 local cmp = require 'cmp'
@@ -29,7 +36,9 @@ cmp.setup {
        -- set a name for each source
       local nm = source_names[entry.source.name]
       if nm then
-        vim_item.menu = nm
+        vim_item.menu = nm[1]
+        vim_item.menu_hl_group = nm[2]
+        vim_item.kind_hl_group = nm[2]
       else
         vim_item.menu = entry.source.name
       end
