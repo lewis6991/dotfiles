@@ -29,6 +29,9 @@ local function on_attach(bufnr)
   map('n', '<leader>hD', function() gitsigns.diffthis('~') end)
   map('n', '<leader>td', gitsigns.toggle_deleted)
 
+  map('n', '<leader>hQ', function() gitsigns.setqflist('all') end)
+  map('n', '<leader>hq', function() gitsigns.setqflist() end)
+
   map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
 end
 

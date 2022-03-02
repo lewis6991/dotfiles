@@ -1,7 +1,8 @@
 require'nvim-treesitter'.define_modules {
   fold = {
-    attach = function(_, _)
-      vim.cmd'set foldmethod=expr foldexpr=nvim_treesitter#foldexpr()'
+    attach = function()
+      vim.opt.foldmethod = 'expr'
+      vim.opt.foldexpr = 'nvim_treesitter#foldexpr()'
     end,
     detach = function() end,
   }
@@ -52,10 +53,10 @@ require'nvim-treesitter.configs'.setup {
   context_commentstring = { enable = true }
 }
 
--- Make sure legacy syntax engine is disable for TS langs
-for _, l in ipairs(langs) do
-  vim.cmd(('autocmd vimrc FileType %s syntax clear'):format(l))
-end
+-- -- Make sure legacy syntax engine is disable for TS langs
+-- for _, l in ipairs(langs) do
+--   vim.cmd(('autocmd vimrc FileType %s syntax clear'):format(l))
+-- end
 
 local function get_node_at_line(root, lnum)
   for node in root:iter_children() do
