@@ -36,7 +36,10 @@ local custom_on_attach = function(client, bufnr)
   end
 
   if client.resolved_capabilities.code_lens then
-    vim.cmd[[autocmd BufEnter,CursorHold,InsertLeave <buffer> lua vim.lsp.codelens.refresh()]]
+    vim.api.nvim_create_autocmd({'BufEnter', 'CursorHold', 'InsertLeave'}, {
+      buffer = bufnr,
+      callback = vim.lsp.codelens.refresh
+    })
     vim.lsp.codelens.refresh()
   end
 
@@ -153,7 +156,7 @@ if "nvim-lsp-installer" then
 end
 
 if "metals" then
-  M.setup_metals = function()
+  local setup_metals = function()
     local metals = require'metals'
 
     local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -171,12 +174,10 @@ if "metals" then
     }))
   end
 
-  vim.cmd[[
-    augroup metals_lsp
-    au!
-    au FileType scala,sbt lua require'lewis6991.lsp'.setup_metals()
-    augroup END
-  ]]
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = {'scala', 'sbt'},
+    callback = setup_metals
+  })
 end
 
 nvim_lsp.clangd.setup{

@@ -169,17 +169,31 @@ function M.set(active)
 end
 
 -- Only set up WinEnter autocmd when the WinLeave autocmd runs
-vim.cmd[[
-  augroup statusline
-    autocmd!
-    autocmd WinLeave,FocusLost *
-        \ autocmd statusline BufWinEnter,WinEnter,FocusGained *
-            \ lua statusline.set(1)
-    autocmd WinLeave,FocusLost * lua statusline.set(0)
-    autocmd VimEnter           * lua statusline.set(1)
-    autocmd ColorScheme        * lua statusline.hldefs()
-  augroup END
-]]
+api.nvim_create_augroup('statusline', {})
+api.nvim_create_autocmd({'WinLeave', 'FocusLost'}, {
+  group = 'statusline',
+  callback = function()
+    api.nvim_create_autocmd({'BufWinEnter', 'WinEnter', 'FocusGained'}, {
+      group = 'statusline',
+      callback = function()
+        M.set(1)
+      end
+    })
+    M.set(0)
+  end
+})
+
+api.nvim_create_autocmd('VimEnter', {
+  group = 'statusline',
+  callback = function()
+    M.set(1)
+  end
+})
+
+api.nvim_create_autocmd('ColorScheme', {
+  group = 'statusline',
+  callback = M.hldefs
+})
 
 _G.statusline = M
 

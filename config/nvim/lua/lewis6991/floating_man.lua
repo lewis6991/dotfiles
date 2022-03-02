@@ -26,7 +26,7 @@ vim.api.nvim_add_user_command('FloatingMan', function(opts)
 
   vim.keymap.set('n', 'q'    , ':bwipeout!<cr>', {silent=true, buffer=buf})
   vim.keymap.set('n', '<esc>', ':bwipeout!<cr>', {silent=true, buffer=buf})
-  vim.cmd('autocmd BufLeave <buffer> :bwipeout!')
+  vim.api.nvim_create_autocmd('BufLeave', { buffer = 0, command = 'bwipeout!' })
 end, {nargs = '*', force = true})
 
 vim.opt.keywordprg = ':FloatingMan'

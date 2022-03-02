@@ -91,7 +91,7 @@ packer.setup {
   },
 
   -- Highlight the current search result
-  -- 'timakro/vim-searchant',
+  -- can be replaced with https://github.com/neovim/neovim/pull/11082
   {'PeterRincker/vim-searchlight', config = function()
     vim.api.nvim_set_hl(0, 'SearchLight', {link = 'SearchCurrent'})
   end},
@@ -158,7 +158,7 @@ packer.setup {
     end
   },
 
-  'dstein64/nvim-scrollview',
+  -- 'dstein64/nvim-scrollview',
 
   {'neovim/nvim-lspconfig',
     requires = {

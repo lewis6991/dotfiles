@@ -4,6 +4,7 @@ require 'lewis6991.floating_man'
 local o, api = vim.opt, vim.api
 
 local add_command = api.nvim_add_user_command
+local autocmd = api.nvim_create_autocmd
 local map = vim.keymap.set
 
 local M = {}
@@ -22,13 +23,18 @@ if 'Plugins' then
   vim.g.loaded_tarPlugin = 1
   vim.g.loaded_gzip = 1
 
+
+  api.nvim_create_augroup('vimrc', {})
+
   -- Plugins are 'start' plugins so are loaded automatically, but to enable packer
   -- commands we need to require plugins at some point
-  vim.cmd[[
-  augroup vimrc
-    autocmd CursorHold * ++once lua require'lewis6991.plugins'
-  augroup END
-  ]]
+  autocmd('CursorHold', {
+    callback = function()
+      require'lewis6991.plugins'
+    end,
+    once = true,
+    desc = 'Load Packer'
+  })
 end
 
 if 'Options' then
@@ -117,14 +123,15 @@ if 'Whitespace' then
   o.list = true
   o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
 
-  M.highlight_trailing_ws = function()
-    if vim.bo.buftype == "" then
-      vim.fn.matchadd('ColorColumn', '\\s\\+$')
-    end
-  end
-
   -- Highlight trailing whitespace
-  vim.cmd[[autocmd vimrc BufEnter * lua package.loaded.lewis6991.highlight_trailing_ws()]]
+  autocmd('BufEnter', {
+    group = 'vimrc',
+    callback = function()
+      if vim.bo.buftype == "" then
+        vim.fn.matchadd('ColorColumn', '\\s\\+$')
+      end
+    end,
+  })
 end
 
 if "Mappings" then
@@ -202,15 +209,19 @@ add_command('Hashbang', function()
     hb[#hb+1] = ''
 
     api.nvim_buf_set_lines(0, 0, 0, false, hb)
-    vim.cmd[[autocmd BufWritePost <buffer> ++once silent !chmod u+x %]]
+    autocmd('BufWritePost', {
+      buffer = 0,
+      once = true,
+      command = 'silent !chmod u+x %'
+    })
   end
 end, {force = true})
 
 add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', force = true})
 
-vim.cmd[[
-  autocmd vimrc VimResized * wincmd =
+autocmd('VimResized', {group='vimrc', command='wincmd ='})
 
+vim.cmd[[
   iabbrev :rev: <c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>
   iabbrev :todo: <c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>
 

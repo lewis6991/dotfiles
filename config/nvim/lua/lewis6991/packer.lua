@@ -48,15 +48,16 @@ end
 
 -- Hacky way of auto clean/install/compile
 local function automize(packer)
-  vim.cmd[[
-    augroup plugins
-      " Reload plugins.lua
-      autocmd!
-      autocmd BufWritePost */lua/lewis6991/plugins.lua lua package.loaded["lewis6991.plugins"] = nil
-      autocmd BufWritePost */lua/lewis6991/plugins.lua lua require("lewis6991.plugins")
-      autocmd BufWritePost */lua/lewis6991/plugins.lua PackerClean
-    augroup END
-  ]]
+  vim.api.nvim_create_augroup('plugins', {})
+  vim.api.nvim_create_autocmd('BufWritePost', {
+    group = 'plugins',
+    pattern = '*/lua/lewis6991/plugins.lua',
+    callback = function()
+      package.loaded["lewis6991.plugins"] = nil
+      require("lewis6991.plugins")
+      require('packer').clean()
+    end
+  })
 
   local state = 'cleaned'
   local orig_complete = packer.on_complete
