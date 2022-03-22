@@ -85,6 +85,12 @@ null_ls.setup {
   sources = {
     null_ls.builtins.diagnostics.teal,
     null_ls.builtins.diagnostics.luacheck,
+    -- null_ls.builtins.diagnostics.luacheck.with{
+    --   -- This shouldn't be needed but is required for MacOS
+    --   extra_args = {
+    --     '--config', '$XDG_CONFIG_HOME/luacheck/.luacheckrc'
+    --   }
+    -- },
 
     null_ls.builtins.diagnostics.shellcheck.with {
       extra_args = {

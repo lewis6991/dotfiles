@@ -87,6 +87,8 @@ function M.setup(init)
 
   packer.startup{init,
     config = {
+      -- https://github.com/wbthomason/packer.nvim/issues/746
+      max_jobs = 30,
       display = {
         open_cmd = 'edit \\[packer\\]',
         prompt_border = 'rounded'

@@ -102,6 +102,7 @@ packer.setup {
   'cespare/vim-toml',
   'martinda/Jenkinsfile-vim-syntax',
   'teal-language/vim-teal',
+  'fladson/vim-kitty',
   'raimon49/requirements.txt.vim',
   'euclidianAce/BetterLua.vim',
 
@@ -203,10 +204,13 @@ packer.setup {
     config = "require'lewis6991.telescope'"
   },
 
+  {'akinsho/git-conflict.nvim', config = "require('git-conflict').setup()"},
   {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'",
     requires = { 'nvim-lua/plenary.nvim' }
   },
 
+  'neovim/nvimdev.nvim',
+  'neomake/neomake',
   {'lewis6991/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
 
   {'norcalli/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
