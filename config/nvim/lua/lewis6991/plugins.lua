@@ -217,7 +217,7 @@ packer.setup {
 
   {'nvim-treesitter/nvim-treesitter',
     requires = {
-      'romgrk/nvim-treesitter-context',
+      'lewis6991/nvim-treesitter-context',
       'JoosepAlviste/nvim-ts-context-commentstring',
       'nvim-treesitter/playground',
     },
