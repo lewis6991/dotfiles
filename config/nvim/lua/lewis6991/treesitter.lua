@@ -1,17 +1,18 @@
 require'nvim-treesitter'.define_modules {
   fold = {
     attach = function()
-      vim.opt.foldmethod = 'expr'
       vim.opt.foldexpr = 'nvim_treesitter#foldexpr()'
+      vim.opt.foldmethod = 'expr'
+      vim.cmd'normal zx' -- recompute folds
     end,
     detach = function() end,
   }
 }
 
-require'treesitter-context'.setup{
-    enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
-    throttle = true, -- Throttles plugin updates (may improve performance)
-    max_lines = 4, -- How many lines the window should span. Values <= 0 mean no limit.
+require'treesitter-context'.setup {
+  enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+  throttle = true, -- Throttles plugin updates (may improve performance)
+  max_lines = 4, -- How many lines the window should span. Values <= 0 mean no limit.
 }
 
 local langs = {
@@ -28,7 +29,6 @@ require'nvim-treesitter.configs'.setup {
   ensure_installed = langs,
   highlight = {
     enable = true,
-    additional_vim_regex_highlighting = false,
   },
   indent = {
     enable = true,
@@ -52,11 +52,6 @@ require'nvim-treesitter.configs'.setup {
   playground = { enable = true },
   context_commentstring = { enable = true }
 }
-
--- -- Make sure legacy syntax engine is disable for TS langs
--- for _, l in ipairs(langs) do
---   vim.cmd(('autocmd vimrc FileType %s syntax clear'):format(l))
--- end
 
 local function get_node_at_line(root, lnum)
   for node in root:iter_children() do

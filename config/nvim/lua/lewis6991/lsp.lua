@@ -31,8 +31,8 @@ if "handlers" then
 end
 
 local custom_on_attach = function(client, bufnr)
-  local map = function(key, result)
-    vim.keymap.set('n', key, result, {silent = true, buffer=bufnr})
+  local map = function(key, result, desc)
+    vim.keymap.set('n', key, result, {silent = true, buffer=bufnr, desc=desc})
   end
 
   if client.resolved_capabilities.code_lens then
@@ -43,15 +43,15 @@ local custom_on_attach = function(client, bufnr)
     vim.lsp.codelens.refresh()
   end
 
-  map('<C-]>'     , vim.lsp.buf.definition)
-  map('<leader>cl', vim.lsp.codelens.run)
-  map('K'         , vim.lsp.buf.hover)
-  map('gK'        , vim.lsp.buf.signature_help)
-  map('<C-s>'     , vim.lsp.buf.signature_help)
+  map('<C-]>'     , vim.lsp.buf.definition    , 'vim.lsp.buf.definition'    )
+  map('<leader>cl', vim.lsp.codelens.run      , 'vim.lsp.codelens.run'      )
+  -- map('K'         , vim.lsp.buf.hover         , 'vim.lsp.buf.hover'         )
+  -- map('gK'        , vim.lsp.buf.signature_help, 'vim.lsp.buf.signature_help')
+  map('<C-s>'     , vim.lsp.buf.signature_help, 'vim.lsp.buf.signature_help')
+  map('<leader>rn', vim.lsp.buf.rename        , 'vim.lsp.buf.rename'        )
+  map('<leader>ca', vim.lsp.buf.code_action   , 'vim.lsp.buf.code_action'   )
   -- keymap('gr'        , 'vim.lsp.buf.references()')
   map('gr', '<cmd>Trouble lsp_references<cr>')
-  map('<leader>rn', vim.lsp.buf.rename)
-  map('<leader>ca', vim.lsp.buf.code_action)
 
   -- Use LSP as the handler for formatexpr.
   --    See `:help formatexpr` for more information.
@@ -61,6 +61,7 @@ local custom_on_attach = function(client, bufnr)
   --    See `:help omnifunc` and `:help ins-completion` for more information.
   vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
 
+  require("aerial").setup{}
   require("aerial").on_attach(client, bufnr)
   map('<leader>a', '<cmd>AerialToggle!<CR>')
 end

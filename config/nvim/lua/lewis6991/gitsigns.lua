@@ -3,7 +3,10 @@ local gitsigns = require('gitsigns')
 local line = vim.fn.line
 
 vim.keymap.set('n', 'm', function() gitsigns.dump_cache() end)
-vim.keymap.set('n', 'M', function() gitsigns.debug_messages() end)
+
+--  TODO(lewis6991): doesn't work properly
+-- vim.keymap.set('n', 'M', function() gitsigns.debug_messages() end)
+vim.keymap.set('n', 'M', '<cmd>Gitsigns debug_messages<cr>')
 
 local function on_attach(bufnr)
   local function map(mode, l, r, opts)
@@ -12,8 +15,23 @@ local function on_attach(bufnr)
     vim.keymap.set(mode, l, r, opts)
   end
 
-  map('n', ']c', "&diff ? ']c' : '<cmd>Gitsigns next_hunk<CR>'", {expr=true})
-  map('n', '[c', "&diff ? '[c' : '<cmd>Gitsigns prev_hunk<CR>'", {expr=true})
+  map('n', ']c', function()
+    if vim.wo.diff then
+      return ']c'
+    else
+      vim.schedule(gitsigns.next_hunk)
+      return '<Ignore>'
+    end
+  end, {expr=true})
+
+  map('n', '[c', function()
+    if vim.wo.diff then
+      return '[c'
+    else
+      vim.schedule(gitsigns.prev_hunk)
+      return '<Ignore>'
+    end
+  end, {expr=true})
 
   map('n', '<leader>hs', gitsigns.stage_hunk)
   map('n', '<leader>hr', gitsigns.reset_hunk)

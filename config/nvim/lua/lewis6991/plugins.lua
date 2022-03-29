@@ -3,7 +3,7 @@ local packer = require('lewis6991.packer')
 packer.setup {
   'wbthomason/packer.nvim',
 
-  'lewis6991/moonlight.vim',
+  -- 'lewis6991/moonlight.vim',
   {'lewis6991/github_dark.nvim', config = [[vim.cmd'color github_dark']]},
 
   'lewis6991/tcl.vim',
@@ -32,11 +32,14 @@ packer.setup {
       end)
 
       vim.g.nvim_tree_highlight_opened_files = 3
+      vim.g.nvim_tree_respect_buf_cwd = 1
 
       require'nvim-tree'.setup {
         disable_netrw = true,
         hijack_cursor = true,
+        update_cwd = true,
         update_focused_file = {
+          enable = true,
           update_cwd = true,
         },
         view = {
@@ -120,6 +123,19 @@ packer.setup {
     }
   end},
 
+  {'lewis6991/hover.nvim', config  = function()
+    require('hover').setup{
+      init = function()
+        require('hover.providers.lsp')
+        require('hover.providers.gh')
+        require('hover.providers.dictionary')
+        require('hover.providers.man')
+      end
+    }
+    vim.keymap.set('n', 'K', require('hover').hover, {desc='hover.nvim'})
+    vim.keymap.set('n', 'gK', require('hover').hover_select, {desc='hover.nvim (select)'})
+  end},
+
   'ryanoasis/vim-devicons',
 
   {'neapel/vim-bnfc-syntax',
@@ -133,6 +149,7 @@ packer.setup {
 
   {'whatyouhide/vim-lengthmatters', config = function()
     vim.g.lengthmatters_highlight_one_column = 1
+    vim.g.lengthmatters_excluded = {'packer'}
   end},
 
   {'junegunn/vim-easy-align',
@@ -159,7 +176,7 @@ packer.setup {
     end
   },
 
-  -- 'dstein64/nvim-scrollview',
+  'lewis6991/nvim-scrollview',
 
   {'neovim/nvim-lspconfig',
     requires = {
@@ -204,13 +221,13 @@ packer.setup {
     config = "require'lewis6991.telescope'"
   },
 
-  {'akinsho/git-conflict.nvim', config = "require('git-conflict').setup()"},
   {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'",
     requires = { 'nvim-lua/plenary.nvim' }
   },
 
-  'neovim/nvimdev.nvim',
-  'neomake/neomake',
+  {'neovim/nvimdev.nvim',
+    requires = {'neomake/neomake'}
+  },
   {'lewis6991/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
 
   {'norcalli/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
