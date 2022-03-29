@@ -78,6 +78,6 @@ gitsigns.setup{
     '⒈', '⒉', '⒊', '⒋', '⒌', '⒍', '⒎', '⒏', '⒐',
     '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
   },
-  _refresh_staged_on_update = false,
+  update_debounce = 0,
   word_diff = true,
 }
