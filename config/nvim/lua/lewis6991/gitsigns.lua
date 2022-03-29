@@ -16,21 +16,15 @@ local function on_attach(bufnr)
   end
 
   map('n', ']c', function()
-    if vim.wo.diff then
-      return ']c'
-    else
-      vim.schedule(gitsigns.next_hunk)
-      return '<Ignore>'
-    end
+    if vim.wo.diff then return ']c' end
+    vim.schedule(gitsigns.next_hunk)
+    return '<Ignore>'
   end, {expr=true})
 
   map('n', '[c', function()
-    if vim.wo.diff then
-      return '[c'
-    else
-      vim.schedule(gitsigns.prev_hunk)
-      return '<Ignore>'
-    end
+    if vim.wo.diff then return '[c' end
+    vim.schedule(gitsigns.prev_hunk)
+    return '<Ignore>'
   end, {expr=true})
 
   map('n', '<leader>hs', gitsigns.stage_hunk)

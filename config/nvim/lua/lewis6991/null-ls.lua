@@ -97,6 +97,7 @@ null_ls.setup {
         '--shell', 'bash',
         '--exclude', table.concat({
           '1003', -- Want to escape a single quote? echo 'This is how it'\''s done'.
+          '2016', -- Expressions don't expand in single quotes
         }, ',')
       }
     },
