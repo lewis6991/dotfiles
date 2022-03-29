@@ -1,12 +1,7 @@
 stds.nvim = {
-  read_globals = { "jit" }
+  globals = {"vim"}
 }
 
-std = "lua51+nvim"
-
-globals = {"vim", "os"}
-
--- Rerun tests only if their modification time changed.
-cache = true
+std = "luajit+nvim"
 
 -- vim: ft=lua
