@@ -22,60 +22,8 @@ packer.setup {
   'tpope/vim-fugitive',
   'tpope/vim-sleuth',
 
-  {'kyazdani42/nvim-tree.lua',
-    requires = {
-      'kyazdani42/nvim-web-devicons', -- optional, for file icon
-    },
-    config = function()
-      vim.keymap.set('n', '-',  function()
-        require 'nvim-tree'.toggle(true)
-      end)
-
-      vim.g.nvim_tree_highlight_opened_files = 3
-      vim.g.nvim_tree_respect_buf_cwd = 1
-
-      require'nvim-tree'.setup {
-        disable_netrw = true,
-        hijack_cursor = true,
-        update_cwd = true,
-        update_focused_file = {
-          enable = true,
-          update_cwd = true,
-        },
-        view = {
-          side = 'right',
-          mappings = {
-            custom_only = true,
-            list = {
-              { key = "p", action = "preview" },
-              { key = "g?", action = "toggle_help" },
-              { key = "H", action = "toggle_dotfiles" },
-              { key = "I", action = "toggle_ignored" },
-              { key = "zM", action = "collapse_all" },
-              { key = "<esc>", action = "close" },
-              { key = "q", action = "close" },
-              { key = "o", action = "create" },
-              { key = "r", action = "rename" },
-              { key = "R", action = "refresh" },
-              { key = "K", action = "first_sibling" },
-              { key = "J", action = "last_sibling" },
-              { key = "-", action = "dir_up" },
-              { key = "<CR>", action = "edit" },
-              { key = "v", action = "vsplit" },
-              { key = "s", action = "split" },
-              { key = "]c", action = "next_git_item" },
-              { key = "[c", action = "prev_git_item" }
-            }
-          }
-        },
-        actions = {
-          open_file = {
-            quit_on_open = true,
-          }
-        }
-      }
-    end
-  },
+  'kyazdani42/nvim-web-devicons',
+  'lewis6991/vim-dirvish',
 
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',
@@ -256,17 +204,5 @@ packer.setup {
       ]]
     end
   },
-
-  {"jose-elias-alvarez/buftabline.nvim",
-    requires = {"kyazdani42/nvim-web-devicons"}, -- optional!
-    config = function()
-      require("buftabline").setup{
-        tab_format = " #{i} #{b}#{f} ",
-        go_to_maps = false,
-      }
-      vim.keymap.set('n', '<Tab>'  , ':BufNext<CR>', {silent=true})
-      vim.keymap.set('n', '<S-Tab>', ':BufPrev<CR>', {silent=true})
-    end
-  }
 
 }
