@@ -11,23 +11,23 @@ local function autocmd(name)
   end
 end
 
-local function nmap(first)
-  return function(second, ...)
-    vim.keymap.set('n', first, second, ...)
+local function map(mode)
+  return function(first)
+    return function(second)
+      local opts
+      if type(second) == 'table' then
+        opts = second
+        second = opts[1]
+        opts[1] = nil
+      end
+      vim.keymap.set(mode, first, second, opts)
+    end
   end
 end
 
-local function vmap(first)
-  return function(second, ...)
-    vim.keymap.set('v', first, second, ...)
-  end
-end
-
-local function cmap(first)
-  return function(second, ...)
-    vim.keymap.set('c', first, second, ...)
-  end
-end
+local function nmap(first) return map 'n' (first) end
+local function vmap(first) return map 'v' (first) end
+local function cmap(first) return map 'c' (first) end
 
 local M = {}
 
@@ -164,8 +164,8 @@ if "Mappings" then
   nmap '<leader>c'  '1z='
   nmap '<leader>w'  ':execute "resize ".line("$")<cr>'
 
-  nmap 'k' ([[v:count == 0 ? 'gk' : 'k']], {expr=true})
-  nmap 'j' ([[v:count == 0 ? 'gj' : 'j']], {expr=true})
+  nmap 'k' {[[v:count == 0 ? 'gk' : 'k']], expr=true}
+  nmap 'j' {[[v:count == 0 ? 'gj' : 'j']], expr=true}
 
   nmap 'Y' 'y$'
 
