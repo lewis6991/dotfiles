@@ -1,5 +1,7 @@
 
-require'telescope'.setup {
+local telescope = require 'telescope'
+
+telescope.setup {
   defaults = {
     preview = false,
     layout_config = {
@@ -17,8 +19,8 @@ require'telescope'.setup {
     }
   }
 }
-require('telescope').load_extension('fzf')
-require('telescope').load_extension('ui-select')
+telescope.load_extension('fzf')
+telescope.load_extension('ui-select')
 
 local keymap = function(key, fun, opts)
   vim.api.nvim_set_keymap('n', key, '', {
