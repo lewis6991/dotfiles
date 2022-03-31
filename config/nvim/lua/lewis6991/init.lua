@@ -4,8 +4,30 @@ require 'lewis6991.floating_man'
 local o, api = vim.opt, vim.api
 
 local add_command = api.nvim_add_user_command
-local autocmd = api.nvim_create_autocmd
-local map = vim.keymap.set
+
+local function autocmd(name)
+  return function(opts)
+    vim.api.nvim_create_autocmd(name, opts)
+  end
+end
+
+local function nmap(first)
+  return function(second, ...)
+    vim.keymap.set('n', first, second, ...)
+  end
+end
+
+local function vmap(first)
+  return function(second, ...)
+    vim.keymap.set('v', first, second, ...)
+  end
+end
+
+local function cmap(first)
+  return function(second, ...)
+    vim.keymap.set('c', first, second, ...)
+  end
+end
 
 local M = {}
 
@@ -28,13 +50,13 @@ if 'Plugins' then
 
   -- Plugins are 'start' plugins so are loaded automatically, but to enable packer
   -- commands we need to require plugins at some point
-  autocmd('CursorHold', {
+  autocmd 'CursorHold'  {
     callback = function()
       require'lewis6991.plugins'
     end,
     once = true,
     desc = 'Load Packer'
-  })
+  }
 end
 
 if 'Options' then
@@ -124,39 +146,39 @@ if 'Whitespace' then
   o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
 
   -- Highlight trailing whitespace
-  autocmd('BufEnter', {
+  autocmd 'BufEnter' {
     group = 'vimrc',
     callback = function()
       if vim.bo.buftype == "" then
         vim.fn.matchadd('ColorColumn', '\\s\\+$')
       end
-    end,
-  })
+    end
+  }
 end
 
 if "Mappings" then
-  map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'   )
-  map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'                 )
-  map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>')
-  map('n', '<leader>s' , ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'                   )
-  map('n', '<leader>c' , '1z='                                                      )
-  map('n', '<leader>w' , ':execute "resize ".line("$")<cr>'                         )
+  nmap '<leader>ev' ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'
+  nmap '<leader>eV' ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'
+  nmap '<leader>el' ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>'
+  nmap '<leader>s'  ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'
+  nmap '<leader>c'  '1z='
+  nmap '<leader>w'  ':execute "resize ".line("$")<cr>'
 
-  map('n', 'k', [[v:count == 0 ? 'gk' : 'k']], {expr=true})
-  map('n', 'j', [[v:count == 0 ? 'gj' : 'j']], {expr=true})
+  nmap 'k' ([[v:count == 0 ? 'gk' : 'k']], {expr=true})
+  nmap 'j' ([[v:count == 0 ? 'gj' : 'j']], {expr=true})
 
-  map('n', 'Y', 'y$')
+  nmap 'Y' 'y$'
 
-  map('n', 'Q' , ':w<cr>')
-  map('v', 'Q' , '<nop>' )
-  map('n', 'gQ', '<nop>' )
-  map('v', 'gQ', '<nop>' )
+  nmap 'Q'  ':w<cr>'
+  vmap 'Q'  '<nop>'
+  nmap 'gQ' '<nop>'
+  vmap 'gQ' '<nop>'
 
   -- delete the current buffer without deleting the window
-  map('n', '<leader>b', ':b#|bd#<CR>')
+  nmap '<leader>b' ':b#|bd#<CR>'
 
   -- I never use macros and more often mis-hit this key
-  map('n', 'q', '<nop>')
+  nmap 'q' '<nop>'
 
   -- Show syntax highlighting groups for word under cursor
   local function syn_stack()
@@ -167,25 +189,26 @@ if "Mappings" then
     end
     print(vim.inspect(stack))
   end
-  map('n', '<leader>z', syn_stack)
+  nmap '<leader>z' (syn_stack)
 
-  map('n', '<C-C>', ':nohlsearch<CR>')
+  nmap '<C-C>' ':nohlsearch<CR>'
 
-  -- Use barbar mappings instead
   -- map('n', '<Tab>'  , ':bnext<CR>', {})
   -- map('n', '<S-Tab>', ':bprev<CR>', {})
+  nmap '<Tab>'   (':tabnext<CR>', {silent=true})
+  nmap '<S-Tab>' (':tabprev<CR>', {silent=true})
 
-  map('n', '|', [[!v:count ? "<C-W>v<C-W><Right>" : '|']], {expr=true, silent=true})
-  map('n', '_', [[!v:count ? "<C-W>s<C-W><Down>"  : '_']], {expr=true, silent=true})
+  nmap '|' ([[!v:count ? "<C-W>v<C-W><Right>" : '|']], {expr=true, silent=true})
+  nmap '_' ([[!v:count ? "<C-W>s<C-W><Down>"  : '_']], {expr=true, silent=true})
 
-  map('c', '<C-P>', '<up>'  )
-  map('c', '<C-N>', '<down>')
-  map('c', '<C-A>', '<Home>')
-  map('c', '<C-D>', '<Del>' )
+  cmap '<C-P>' '<up>'
+  cmap '<C-N>' '<down>'
+  cmap '<C-A>' '<Home>'
+  cmap '<C-D>' '<Del>'
 
-  map('n', ']d', vim.diagnostic.goto_next)
-  map('n', '[d', vim.diagnostic.goto_prev)
-  map('n', 'go', vim.diagnostic.open_float)
+  nmap ']d' (vim.diagnostic.goto_next)
+  nmap '[d' (vim.diagnostic.goto_prev)
+  nmap 'go' (vim.diagnostic.open_float)
 end
 
 add_command('Hashbang', function()
@@ -209,17 +232,17 @@ add_command('Hashbang', function()
     hb[#hb+1] = ''
 
     api.nvim_buf_set_lines(0, 0, 0, false, hb)
-    autocmd('BufWritePost', {
+    autocmd 'BufWritePost' {
       buffer = 0,
       once = true,
       command = 'silent !chmod u+x %'
-    })
+    }
   end
 end, {force = true})
 
 add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', force = true})
 
-autocmd('VimResized', {group='vimrc', command='wincmd ='})
+autocmd 'VimResized' {group='vimrc', command='wincmd ='}
 
 vim.cmd[[
   iabbrev :rev: <c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>
