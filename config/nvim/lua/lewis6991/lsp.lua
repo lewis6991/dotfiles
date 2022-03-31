@@ -98,7 +98,11 @@ end
 local server_opts = {
 
   ["sumneko_lua"] = function()
-    return require("lua-dev").setup{}
+    return require("lua-dev").setup{
+      library = {
+        plugins = false
+      }
+    }
   end,
 
 }
