@@ -195,11 +195,11 @@ if "Mappings" then
 
   -- map('n', '<Tab>'  , ':bnext<CR>', {})
   -- map('n', '<S-Tab>', ':bprev<CR>', {})
-  nmap '<Tab>'   (':tabnext<CR>', {silent=true})
-  nmap '<S-Tab>' (':tabprev<CR>', {silent=true})
+  nmap '<Tab>'   {':tabnext<CR>', silent=true}
+  nmap '<S-Tab>' {':tabprev<CR>', silent=true}
 
-  nmap '|' ([[!v:count ? "<C-W>v<C-W><Right>" : '|']], {expr=true, silent=true})
-  nmap '_' ([[!v:count ? "<C-W>s<C-W><Down>"  : '_']], {expr=true, silent=true})
+  nmap '|' {[[!v:count ? "<C-W>v<C-W><Right>" : '|']], expr=true, silent=true}
+  nmap '_' {[[!v:count ? "<C-W>s<C-W><Down>"  : '_']], expr=true, silent=true}
 
   cmap '<C-P>' '<up>'
   cmap '<C-N>' '<down>'
