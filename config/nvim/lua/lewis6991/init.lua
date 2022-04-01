@@ -148,11 +148,11 @@ if 'Whitespace' then
   -- Highlight trailing whitespace
   autocmd 'BufEnter' {
     group = 'vimrc',
-    callback = function()
+    callback = vim.schedule_wrap(function()
       if vim.bo.buftype == "" then
         vim.fn.matchadd('ColorColumn', '\\s\\+$')
       end
-    end
+    end)
   }
 end
 
