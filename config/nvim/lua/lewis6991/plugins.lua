@@ -57,6 +57,15 @@ packer.setup {
   'raimon49/requirements.txt.vim',
   'euclidianAce/BetterLua.vim',
 
+  {'lukas-reineke/indent-blankline.nvim', config = function()
+    require("indent_blankline").setup {
+      show_current_context = true,
+      context_char = '┃',
+      char = "",
+      context_highlight_list = {'NonText'}
+    }
+  end},
+
   {'lewis6991/foldsigns.nvim',
     config = function()
       require'foldsigns'.setup{
