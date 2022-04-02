@@ -146,13 +146,19 @@ if 'Whitespace' then
   o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
 
   -- Highlight trailing whitespace
-  autocmd 'BufEnter' {
+  -- setup in VimEnter to stop the intro screen being cleared
+  autocmd 'VimEnter' {
     group = 'vimrc',
-    callback = vim.schedule_wrap(function()
-      if vim.bo.buftype == "" then
-        vim.fn.matchadd('ColorColumn', '\\s\\+$')
-      end
-    end)
+    callback = function()
+      autocmd 'BufEnter' {
+        group = 'vimrc',
+        callback = vim.schedule_wrap(function()
+          if vim.bo.buftype == "" then
+            vim.fn.matchadd('ColorColumn', '\\s\\+$')
+          end
+        end)
+      }
+    end
   }
 end
 

@@ -178,9 +178,9 @@ packer.setup {
     config = "require'lewis6991.telescope'"
   },
 
-  {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'",
-    requires = { 'nvim-lua/plenary.nvim' }
-  },
+  'nvim-lua/plenary.nvim',
+
+  {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'" },
 
   {'neovim/nvimdev.nvim',
     requires = {'neomake/neomake'}
