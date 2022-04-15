@@ -1,5 +1,3 @@
-local luasnip = require 'luasnip'
-
 require 'lewis6991.cmp_gh'
 
 local source_names = {
@@ -24,7 +22,7 @@ local cmp = require 'cmp'
 cmp.setup {
   snippet = {
     expand = function(args)
-      luasnip.lsp_expand(args.body)
+      require'luasnip'.lsp_expand(args.body)
     end,
   },
   formatting = {
@@ -50,17 +48,10 @@ cmp.setup {
       return vim_item
     end
   },
-  mapping = {
-    ['<Tab>']     = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
-    ['<S-Tab>']   = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
-    ['<C-n>']     = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
-    ['<C-p>']     = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
-    ['<Down>']    = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
-    ['<Up>']      = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
-    ['<C-d>']     = cmp.mapping.scroll_docs(-4),
-    ['<C-f>']     = cmp.mapping.scroll_docs(4),
-    ['<C-Space>'] = cmp.mapping.complete(),
-    ['<CR>']      = cmp.mapping.confirm { behavior = cmp.ConfirmBehavior.Replace, select = true },
+  mapping = cmp.mapping.preset.insert{
+    ['<Tab>']   = cmp.mapping.select_next_item{ behavior = cmp.SelectBehavior.Insert },
+    ['<S-Tab>'] = cmp.mapping.select_prev_item{ behavior = cmp.SelectBehavior.Insert },
+    ['<CR>']    = cmp.mapping.confirm { select = true },
   },
   sources = {
     { name = 'gh'         },
