@@ -112,6 +112,9 @@ if have_cmd rlwrap; then
     if have_cmd lua; then
         alias lua="rlwrap -Ar -pcyan --always-readline lua"
     fi
+    if have_cmd luajit; then
+        alias luajit="rlwrap -Ar -pcyan --always-readline luajit"
+    fi
 fi
 
 if have_cmd rg; then
