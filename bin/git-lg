@@ -3,5 +3,5 @@ set -e
 
 git log \
     --graph \
-    --format="%C(bold yellow)%h %C(bold blue)%<(18,trunc)%an %C(bold green)%<(14)%cd %C(auto)%d %Creset%s" \
+    --format="%C(bold yellow)%h %C(bold blue)%<(18,trunc)%aN %C(bold green)%<(14)%cd %C(auto)%d %Creset%s" \
     "$@"
