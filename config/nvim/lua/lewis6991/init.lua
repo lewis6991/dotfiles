@@ -1,5 +1,4 @@
 require 'lewis6991.status'
-require 'lewis6991.floating_man'
 
 local o, api = vim.opt, vim.api
 
