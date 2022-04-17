@@ -2,7 +2,7 @@ require 'lewis6991.status'
 
 local o, api = vim.opt, vim.api
 
-local add_command = api.nvim_add_user_command
+local add_command = api.nvim_create_user_command
 
 local function autocmd(name)
   return function(opts)
