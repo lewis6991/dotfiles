@@ -1,5 +1,3 @@
-local lsp_installer = require("nvim-lsp-installer")
-local nvim_lsp = require 'lspconfig'
 
 local M = {}
 
@@ -21,17 +19,8 @@ if "diagnostic config" then
   set_lsp_sign("DiagnosticSignHint" , "○")
 end
 
-if "handlers" then
-  vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
-    vim.lsp.handlers.hover, {
-      -- Use a sharp border with `FloatBorder` highlights
-      border = "single"
-    }
-  )
-end
-
-local custom_on_attach = function(client, bufnr)
-  local map = function(key, result, desc)
+local function custom_on_attach(client, bufnr)
+  local function map(key, result, desc)
     vim.keymap.set('n', key, result, {silent = true, buffer=bufnr, desc=desc})
   end
 
@@ -53,10 +42,6 @@ local custom_on_attach = function(client, bufnr)
   -- keymap('gr'        , 'vim.lsp.buf.references()')
   map('gr', '<cmd>Trouble lsp_references<cr>')
 
-  -- Use LSP as the handler for formatexpr.
-  --    See `:help formatexpr` for more information.
-  vim.bo[bufnr].formatexpr = 'v:lua.vim.lsp.formatexpr()'
-
   -- Use LSP as the handler for omnifunc.
   --    See `:help omnifunc` and `:help ins-completion` for more information.
   vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
@@ -66,12 +51,24 @@ local custom_on_attach = function(client, bufnr)
   map('<leader>a', '<cmd>AerialToggle!<CR>')
 end
 
+local server_opts = {
+  ["sumneko_lua"] = function()
+    return require("lua-dev").setup{
+      library = {
+        plugins = false
+      }
+    }
+  end
+}
+
 local function setup(config, opts)
   if not config then
     return
   end
 
-  opts = opts or {}
+  local server_opts0 = server_opts[config.name] and server_opts[config.name]()
+
+  opts = vim.tbl_deep_extend('force', opts or {}, server_opts0 or {})
 
   local on_attach = opts.on_attach
   opts.on_attach = function(client, bufnr)
@@ -95,54 +92,9 @@ local function setup(config, opts)
   config:setup(opts)
 end
 
-local server_opts = {
-
-  ["sumneko_lua"] = function()
-    return require("lua-dev").setup{
-      library = {
-        plugins = false
-      }
-    }
-  end,
-
-}
-
-if false and "teal-language-server" then
-  -- Make sure this is a slash (as theres some metamagic happening behind the scenes)
-  local configs = require("lspconfig/configs")
-  local server = require "nvim-lsp-installer.server"
-  local shell = require "nvim-lsp-installer.installers.shell"
-
-  local name = "teal_language_server"
-
-  configs[name] = {
-    default_config = {
-      cmd = {
-        "teal-language-server",
-        -- "logging=on", use this to enable logging in /tmp/teal-language-server.log
-      },
-      filetypes = { 'teal' },
-      root_dir = nvim_lsp.util.root_pattern("tlconfig.lua", ".git"),
-      settings = {},
-    },
-  }
-
-  local tealls = server.Server:new {
-    name = name,
-    root_dir = server.get_server_root_path(name),
-    installer = {shell.sh('luarocks install --dev teal-language-server')},
-    default_options = {}
-  }
-
-  lsp_installer.register(tealls)
-end
-
 if "nvim-lsp-installer" then
-  lsp_installer.on_server_ready(function(server)
-    local opts = server_opts[server.name] and server_opts[server.name]()
-    setup(server, opts)
-    -- vim.cmd [[ do User LspAttachBuffers ]]
-  end)
+  local lsp_installer = require("nvim-lsp-installer")
+  lsp_installer.on_server_ready(setup)
 
   local lsp_installer_servers = require'nvim-lsp-installer.servers'
 
@@ -184,6 +136,8 @@ if "metals" then
     callback = setup_metals
   })
 end
+
+local nvim_lsp = require'lspconfig'
 
 nvim_lsp.clangd.setup{
   on_attach = custom_on_attach
