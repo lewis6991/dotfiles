@@ -18,6 +18,43 @@ local source_names = {
   treesitter = {''    , 'Delimiter'}
 }
 
+local symbols = {
+  Text = '',
+  Method = '',
+  Function = '',
+  Constructor = '',
+  Field = 'ﰠ',
+  Variable = '',
+  Class = 'ﴯ',
+  Interface = '',
+  Module = '',
+  Property = 'ﰠ',
+  Unit = '塞',
+  Value = '',
+  Enum = '',
+  Keyword = '',
+  Snippet = '',
+  Color = '',
+  File = '',
+  Reference = '',
+  Folder = '',
+  EnumMember = '',
+  Constant = '',
+  Struct = 'פּ',
+  Event = '',
+  Operator = '',
+  TypeParameter = '',
+  Namespace = '',
+  Package = '',
+  String = '',
+  Number = '',
+  Boolean = '',
+  Array = '',
+  Object = '',
+  Key = '',
+  Null = 'ﳠ',
+}
+
 local cmp = require 'cmp'
 cmp.setup {
   snippet = {
@@ -28,8 +65,7 @@ cmp.setup {
   formatting = {
     fields = { 'kind', 'abbr', 'menu' },
     format = function(entry, vim_item)
-      local lspkind = require 'lspkind'
-      vim_item.kind = lspkind.presets.default[vim_item.kind]
+      vim_item.kind = symbols[vim_item.kind]
 
        -- set a name for each source
       local nm = source_names[entry.source.name]

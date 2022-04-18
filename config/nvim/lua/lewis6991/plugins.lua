@@ -149,7 +149,6 @@ packer.setup {
 
   {'hrsh7th/nvim-cmp',
     requires = {
-      'onsails/lspkind-nvim',
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-nvim-lsp-signature-help',
       'hrsh7th/cmp-buffer',
