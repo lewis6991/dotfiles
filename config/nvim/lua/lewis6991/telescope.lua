@@ -9,6 +9,12 @@ telescope.setup {
     },
     selection_strategy = "reset",
     winblend = 15,
+    mappings = {
+      i = {
+        ["<CR>"] =  require('telescope.actions').select_tab,
+        ["<esc>"] = require('telescope.actions').close,
+      }
+    }
   },
   extensions = {
     fzf = {
