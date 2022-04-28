@@ -34,10 +34,13 @@ local function on_attach(bufnr)
   map('n', '<leader>hR', gitsigns.reset_buffer)
   map('n', '<leader>hp', gitsigns.preview_hunk)
   map('n', '<leader>hb', function() gitsigns.blame_line{full=true} end)
-  map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
   map('n', '<leader>hd', gitsigns.diffthis)
   map('n', '<leader>hD', function() gitsigns.diffthis('~') end)
+
+  -- Toggles
+  map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
   map('n', '<leader>td', gitsigns.toggle_deleted)
+  map('n', '<leader>tw', gitsigns.toggle_word_diff)
 
   map('n', '<leader>hQ', function() gitsigns.setqflist('all') end)
   map('n', '<leader>hq', gitsigns.setqflist)
@@ -64,12 +67,12 @@ gitsigns.setup{
     relative_time = true
   },
   current_line_blame_opts = {
-    delay = 0
+    delay = 50
   },
   count_chars = {
     '⒈', '⒉', '⒊', '⒋', '⒌', '⒍', '⒎', '⒏', '⒐',
     '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
   },
-  update_debounce = 0,
+  update_debounce = 50,
   word_diff = true,
 }

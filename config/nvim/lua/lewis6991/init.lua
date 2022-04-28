@@ -256,8 +256,23 @@ vim.cmd[[
   iabbrev funciton function
 ]]
 
-
 if "Diagnostics" then
+  vim.diagnostic.config{
+    severity_sort = true,
+    update_in_insert = true,
+  }
+
+  local function set_lsp_sign(name, text)
+    vim.fn.sign_define(name, {text = text, texthl = name})
+  end
+
+  vim.api.nvim_set_hl(0, 'LspCodeLens', {link='WarningMsg'})
+
+  set_lsp_sign("DiagnosticSignError", "●")
+  set_lsp_sign("DiagnosticSignWarn" , "●")
+  set_lsp_sign("DiagnosticSignInfo" , "●")
+  set_lsp_sign("DiagnosticSignHint" , "○")
+
   local orig_signs_handler = vim.diagnostic.handlers.signs
 
   -- Override the built-in signs handler to aggregate signs

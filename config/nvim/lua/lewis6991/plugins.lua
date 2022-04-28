@@ -57,13 +57,11 @@ packer.setup {
   'raimon49/requirements.txt.vim',
   'euclidianAce/BetterLua.vim',
 
-  {'lukas-reineke/indent-blankline.nvim', config = function()
-    require("indent_blankline").setup {
-      show_current_context = true,
-      context_char = '┃',
-      char = "",
-      context_highlight_list = {'NonText'}
+  {'mhinz/vim-grepper', config = function()
+    vim.g.grepper = {
+      dir = 'repo',
     }
+    vim.keymap.set({'n', 'x'}, 'gs', '<plug>(GrepperOperator)')
   end},
 
   {'lewis6991/foldsigns.nvim',
