@@ -32,11 +32,14 @@ end
 
 local server_opts = {
   ["sumneko_lua"] = function()
-    return require("lua-dev").setup{
+    local opts = require("lua-dev").setup{
       library = {
         plugins = false
       }
     }
+    opts.settings.Lua.diagnostics = {}
+    opts.settings.Lua.diagnostics.globals = { 'it', 'describe', 'before_each', 'after_each' }
+    return opts
   end
 }
 
