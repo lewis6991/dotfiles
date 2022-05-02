@@ -53,6 +53,8 @@ function main {
         install_dotfile "$filename"
     done
 
+    link_file ./config/kitty "$HOME/.config/kitty"
+
     message "${GREEN}Finished successfully${NC}"
 }
 
