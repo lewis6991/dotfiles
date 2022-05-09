@@ -4,7 +4,7 @@ local function custom_on_attach(client, bufnr)
     vim.keymap.set('n', key, result, {silent = true, buffer=bufnr, desc=desc})
   end
 
-  if client.resolved_capabilities.code_lens then
+  if client.server_capabilities.code_lens then
     vim.api.nvim_create_autocmd({'BufEnter', 'CursorHold', 'InsertLeave'}, {
       buffer = bufnr,
       callback = vim.lsp.codelens.refresh
