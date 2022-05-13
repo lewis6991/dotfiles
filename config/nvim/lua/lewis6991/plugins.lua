@@ -57,6 +57,10 @@ packer.setup {
   'raimon49/requirements.txt.vim',
   'euclidianAce/BetterLua.vim',
 
+  {'rcarriga/nvim-notify', config = function()
+    require('lewis6991.notify')
+  end},
+
   {'mhinz/vim-grepper', config = function()
     vim.g.grepper = {
       dir = 'repo',
