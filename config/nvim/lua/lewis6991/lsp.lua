@@ -31,14 +31,15 @@ local function custom_on_attach(client, bufnr)
 end
 
 local server_opts = {
-  ["sumneko_lua"] = function()
+  sumneko_lua = function()
     local opts = require("lua-dev").setup{
       library = {
         plugins = false
       }
     }
-    opts.settings.Lua.diagnostics = {}
-    opts.settings.Lua.diagnostics.globals = { 'it', 'describe', 'before_each', 'after_each' }
+    opts.settings.Lua.diagnostics = {
+      globals = { 'it', 'describe', 'before_each', 'after_each' }
+    }
     return opts
   end
 }
@@ -65,10 +66,10 @@ local function setup(config, opts)
     opts.capabilities = cmp_lsp.update_capabilities(opts.capabilities)
   end
 
-  config:setup(opts)
+  config.setup(opts)
 end
 
-require("nvim-lsp-installer").on_server_ready(setup)
+require("nvim-lsp-installer").setup()
 
 if "metals" then
   local function setup_metals()
@@ -76,6 +77,18 @@ if "metals" then
 
     metals.initialize_or_attach(vim.tbl_deep_extend('force', metals.bare_config(), {
       on_attach = custom_on_attach,
+      handlers = {
+        ["metals/status"] = function(_, status, ctx)
+          vim.lsp.handlers["$/progress"](_, {
+            token = 1,
+            value = {
+              kind = status.show and 'begin' or status.hide and 'end' or "report",
+              message = status.text,
+            }
+          }, ctx)
+        end
+      },
+
       init_options = {
         statusBarProvider = 'on'
       },
@@ -93,8 +106,12 @@ end
 
 local nvim_lsp = require'lspconfig'
 
-nvim_lsp.clangd.setup{
-  on_attach = custom_on_attach
-}
+for _, server in ipairs{
+  'clangd',
+  'sumneko_lua',
+  'jedi_language_server',
+} do
+  setup(nvim_lsp[server])
+end
 
 -- vim: foldminlines=1 foldnestmax=1 :
