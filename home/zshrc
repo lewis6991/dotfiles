@@ -156,4 +156,6 @@ add-zsh-hook precmd ring_bell
 ! [ -f ~/.aliases_local  ] || source ~/.aliases_local
 ! [ -f ~/.zshrc_local    ] || source ~/.zshrc_local
 
+ulimit -c unlimited
+
 unfunction have_cmd

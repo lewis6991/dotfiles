@@ -135,7 +135,9 @@ packer.setup {
     end
   },
 
-  'lewis6991/nvim-scrollview',
+  {'lewis6991/satellite.nvim', config = function()
+    require('satellite').setup()
+  end},
 
   {'neovim/nvim-lspconfig',
     requires = {
@@ -192,7 +194,7 @@ packer.setup {
 
   {'nvim-treesitter/nvim-treesitter',
     requires = {
-      'lewis6991/nvim-treesitter-context',
+      'nvim-treesitter/nvim-treesitter-context',
       'JoosepAlviste/nvim-ts-context-commentstring',
       'nvim-treesitter/playground',
     },

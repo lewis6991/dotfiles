@@ -102,6 +102,7 @@ null_ls.setup {
       }
     },
 
+    null_ls.builtins.diagnostics.mypy,
     -- null_ls.builtins.diagnostics.pylint,
     null_ls.builtins.diagnostics.flake8.with{
       extra_args = function(params)

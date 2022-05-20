@@ -109,7 +109,8 @@ local nvim_lsp = require'lspconfig'
 for _, server in ipairs{
   'clangd',
   'sumneko_lua',
-  'jedi_language_server',
+  'pyright',
+  -- 'jedi_language_server',
 } do
   setup(nvim_lsp[server])
 end

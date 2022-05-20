@@ -127,15 +127,15 @@ local function recording()
 end
 
 function M.bufname()
-  local ratio = 0.5
-  local width = math.floor(api.nvim_win_get_width(0) * ratio)
-  local name = vim.fn.fnamemodify(api.nvim_buf_get_name(0), ':.')
+  ---@diagnostic disable-next-line: undefined-field
+  local name = vim.api.nvim_eval_statusline('%f', {}).str
   if vim.startswith(name, 'fugitive://') then
     local _, _, commit, relpath = name:find([[^fugitive://.*/%.git.*/(%x-)/(.*)]])
     name = relpath..'@'..commit:sub(1, 7)
   end
-  if #name > width then
-    name = '...'..name:sub(-width)
+  if vim.startswith(name, 'gitsigns://') then
+    local _, _, revision, relpath = name:find([[^gitsigns://.*/%.git.*/(.*):(.*)]])
+    name = relpath..'@'..revision:sub(1, 7)
   end
   return name
 end

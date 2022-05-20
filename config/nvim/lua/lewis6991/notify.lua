@@ -2,46 +2,50 @@ vim.notify = require("notify")
 
 local client_notifs = {}
 
-local function get_notif_data(client_id, token)
- if not client_notifs[client_id] then
-   client_notifs[client_id] = {}
- end
+local function get_notif_data(id, token)
+  if not client_notifs[id] then
+    client_notifs[id] = {}
+  end
 
- if not client_notifs[client_id][token] then
-   client_notifs[client_id][token] = {}
- end
+  if not client_notifs[id][token] then
+    client_notifs[id][token] = {}
+  end
 
- return client_notifs[client_id][token]
+  return client_notifs[id][token]
 end
 
-local spinner_frames = { "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷" }
+local SPINNER_FRAMES = { "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷" }
 
 local function update_spinner(client_id, token)
- local notif_data = get_notif_data(client_id, token)
+  local notif_data = get_notif_data(client_id, token)
 
- if notif_data.spinner then
-   local new_spinner = (notif_data.spinner + 1) % #spinner_frames
-   notif_data.spinner = new_spinner
+  if notif_data.spinner then
+    notif_data.spinner = (notif_data.spinner + 1) % #SPINNER_FRAMES
 
-   notif_data.notification = vim.notify(nil, nil, {
-     hide_from_history = true,
-     icon = spinner_frames[new_spinner],
-     replace = notif_data.notification,
-   })
+    notif_data.notification = vim.notify(nil, nil, {
+      hide_from_history = true,
+      icon = SPINNER_FRAMES[notif_data.spinner],
+      replace = notif_data.notification,
+    })
 
-   vim.defer_fn(function()
-     update_spinner(client_id, token)
-   end, 100)
- end
+    vim.defer_fn(function()
+      update_spinner(client_id, token)
+    end, 100)
+  end
 end
 
 local function format_title(title, client_name)
- return client_name .. (title and #title > 0 and ": " .. title or "")
+  return client_name .. (title and #title > 0 and ": " .. title or "")
 end
 
 local function format_message(message, percentage)
- return (percentage and percentage .. "%\t" or "") .. (message or "")
+  return (percentage and percentage .. "%\t" or "") .. (message or "")
 end
+
+local ignored = {
+  ['null-ls'] = true,
+  ['sumneko_lua'] = true
+}
 
 vim.lsp.handlers["$/progress"] = function(_, result, ctx)
   local client_id = ctx.client_id
@@ -50,7 +54,7 @@ vim.lsp.handlers["$/progress"] = function(_, result, ctx)
 
   local client_name = vim.lsp.get_client_by_id(client_id).name
 
-  if client_name == 'null-ls' then
+  if ignored[client_name] then
     return
   end
 
@@ -65,7 +69,7 @@ vim.lsp.handlers["$/progress"] = function(_, result, ctx)
 
     notif_data.notification = vim.notify(message, "info", {
       title = format_title(val.title, client_name),
-      icon = spinner_frames[1],
+      icon = SPINNER_FRAMES[1],
       timeout = false,
       hide_from_history = false,
     })
@@ -83,7 +87,7 @@ vim.lsp.handlers["$/progress"] = function(_, result, ctx)
     notif_data.notification = vim.notify(message, "info", {
       icon = "",
       replace = notif_data.notification,
-      timeout = 3000,
+      timeout = 200,
     })
 
     notif_data.spinner = nil
