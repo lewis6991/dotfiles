@@ -41,12 +41,6 @@ packer.setup {
     end
   },
 
-  -- Highlight the current search result
-  -- can be replaced with https://github.com/neovim/neovim/pull/11082
-  {'PeterRincker/vim-searchlight', config = function()
-    vim.api.nvim_set_hl(0, 'SearchLight', {link = 'SearchCurrent'})
-  end},
-
   --- Filetype plugins ---
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
   {'derekwyatt/vim-scala' , ft = 'scala' },
