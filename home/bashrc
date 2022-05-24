@@ -40,17 +40,21 @@ fi
 #-------------------------------------------------------------------------------
 # Prompt
 #-------------------------------------------------------------------------------
-prompt_command() {
-    PS1=$(~/.prompt bash $?)
+if [ -f ~/.prompt ]; then
+    prompt_command() {
+        PS1=$(~/.prompt bash $?)
 
-    # Update history after every command
-    history -a
-}
+        # Update history after every command
+        history -a
+    }
 
-PROMPT_COMMAND=prompt_command
+    PROMPT_COMMAND=prompt_command
 
-export FANCY_PROMPT_RHS_ENABLE=0
-export FANCY_PROMPT_USE_NERD_SYMBOLS=1
+    export FANCY_PROMPT_RHS_ENABLE=0
+    export FANCY_PROMPT_USE_NERD_SYMBOLS=1
+else
+    export PS1='\[\e[34;1m\]\h:\[\e[36;1m\]\u:\[\e[32;1m\]\W\[\e[0m\]> '
+fi
 
 #-------------------------------------------------------------------------------
 # Variables
