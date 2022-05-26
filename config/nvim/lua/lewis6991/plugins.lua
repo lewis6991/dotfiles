@@ -30,7 +30,6 @@ packer.setup {
   'dietsche/vim-lastplace',
   'sindrets/diffview.nvim',
   'folke/trouble.nvim',
-  'rhysd/conflict-marker.vim',
   'bogado/file-line', -- Open file:line
 
   {'AndrewRadev/bufferize.vim',
@@ -174,8 +173,6 @@ packer.setup {
     },
     config = "require'lewis6991.telescope'"
   },
-
-  'nvim-lua/plenary.nvim',
 
   {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'" },
 

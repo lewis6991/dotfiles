@@ -89,10 +89,15 @@ function M.setup(init)
     config = {
       git = {
         default_url_format = 'git@github.com:/%s',
+        subcommands = {
+          update  = 'pull --progress',
+          install = 'clone --progress',
+        },
       },
       max_jobs = 30,
       display = {
-        open_cmd = 'edit \\[packer\\]',
+        -- open_cmd = '65vnew \\[packer\\]',
+        -- open_cmd = 'edit \\[packer\\]',
         prompt_border = 'rounded'
       },
       autoremove = true

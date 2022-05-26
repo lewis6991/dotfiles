@@ -149,8 +149,9 @@ local function func(name, active)
   return '%{%v:lua.statusline.'..name..'('..tostring(active)..')%}'
 end
 
-function M.set(active)
-  vim.wo.statusline = table.concat{
+function M.set(active, global)
+  local scope = global and 'o' or 'wo'
+  vim[scope].statusline = table.concat{
     highlight(1, active),
     recording(),
     pad(func('hunks')),
@@ -186,7 +187,7 @@ api.nvim_create_autocmd({'WinLeave', 'FocusLost'}, {
 api.nvim_create_autocmd('VimEnter', {
   group = 'statusline',
   callback = function()
-    M.set(1)
+    M.set(1, true)
   end
 })
 
