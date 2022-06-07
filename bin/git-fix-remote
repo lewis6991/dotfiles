@@ -7,7 +7,7 @@ url=$(git remote get-url "$remote_name")
 
 if [[ $url =~ https://github.com/(.*) ]]; then
     repo=${BASH_REMATCH[1]}
-    new_url="git@github.com:${repo}.git"
+    new_url="git@github.com:${repo}"
     echo "Changing URL of remote '$remote_name':"
     echo -e "\tfrom:\t$url"
     echo -e "\tto:\t$new_url"

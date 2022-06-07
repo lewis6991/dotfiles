@@ -12,7 +12,8 @@ local function custom_on_attach(client, bufnr)
     vim.lsp.codelens.refresh()
   end
 
-  map('<C-]>'     , vim.lsp.buf.definition    , 'vim.lsp.buf.definition'    )
+  -- map('<C-]>'     , vim.lsp.buf.definition, 'vim.lsp.buf.definition'    )
+  map('<C-]>'     , function() vim.lsp.buf.definition{reuse_win=true} end, 'vim.lsp.buf.definition'    )
   map('<leader>cl', vim.lsp.codelens.run      , 'vim.lsp.codelens.run'      )
   -- map('K'         , vim.lsp.buf.hover         , 'vim.lsp.buf.hover'         )
   -- map('gK'        , vim.lsp.buf.signature_help, 'vim.lsp.buf.signature_help')

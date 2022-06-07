@@ -165,7 +165,7 @@ function M.set(active, global)
     pad(func('filetype')),
     pad(func('encodingAndFormat')),
     highlight(1, active),
-    ' %3p%% %2l(%02c)/%-3L', -- 80% 65[12]/120
+    ' %3p%% %2l(%02c)/%-3L ', -- 80% 65[12]/120
   }
 end
 
