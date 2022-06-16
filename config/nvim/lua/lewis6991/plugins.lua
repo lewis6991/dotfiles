@@ -11,6 +11,35 @@ packer.setup {
   'lewis6991/impatient.nvim',
   {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
   {'lewis6991/cleanfold.nvim', config = [[require('cleanfold').setup()]]},
+  'lewis6991/brodir.nvim',
+
+  {'lewis6991/foldsigns.nvim',
+    config = function()
+      require'foldsigns'.setup{
+        exclude = {'GitSigns.*'}
+      }
+    end
+  },
+
+  {'lewis6991/hover.nvim', config  = function()
+    require('hover').setup{
+      init = function()
+        require('hover.providers.lsp')
+        require('hover.providers.gh')
+        require('hover.providers.dictionary')
+        require('hover.providers.man')
+      end
+    }
+    vim.keymap.set('n', 'K', require('hover').hover, {desc='hover.nvim'})
+    vim.keymap.set('n', 'gK', require('hover').hover_select, {desc='hover.nvim (select)'})
+  end},
+
+  {'lewis6991/satellite.nvim', config = function()
+    require('satellite').setup()
+  end},
+
+  {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'" },
+  {'lewis6991/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
 
   'nanotee/luv-vimdocs',
 
@@ -23,7 +52,6 @@ packer.setup {
   'tpope/vim-sleuth',
 
   'kyazdani42/nvim-web-devicons',
-  'lewis6991/vim-dirvish',
 
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',
@@ -61,31 +89,10 @@ packer.setup {
     vim.keymap.set({'n', 'x'}, 'gs', '<plug>(GrepperOperator)')
   end},
 
-  {'lewis6991/foldsigns.nvim',
-    config = function()
-      require'foldsigns'.setup{
-        exclude = {'GitSigns.*'}
-      }
-    end
-  },
-
   {'aserowy/tmux.nvim', config = function()
     require("tmux").setup{
       navigation = { enable_default_keybindings = true }
     }
-  end},
-
-  {'lewis6991/hover.nvim', config  = function()
-    require('hover').setup{
-      init = function()
-        require('hover.providers.lsp')
-        require('hover.providers.gh')
-        require('hover.providers.dictionary')
-        require('hover.providers.man')
-      end
-    }
-    vim.keymap.set('n', 'K', require('hover').hover, {desc='hover.nvim'})
-    vim.keymap.set('n', 'gK', require('hover').hover_select, {desc='hover.nvim (select)'})
   end},
 
   'ryanoasis/vim-devicons',
@@ -127,10 +134,6 @@ packer.setup {
       }
     end
   },
-
-  {'lewis6991/satellite.nvim', config = function()
-    require('satellite').setup()
-  end},
 
   {'neovim/nvim-lspconfig',
     requires = {
@@ -174,12 +177,9 @@ packer.setup {
     config = "require'lewis6991.telescope'"
   },
 
-  {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'" },
-
   {'neovim/nvimdev.nvim',
     requires = {'neomake/neomake'}
   },
-  {'lewis6991/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
 
   {'norcalli/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
 
