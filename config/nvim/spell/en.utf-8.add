@@ -95,3 +95,4 @@ exhaustivity
 LuaJIT
 Neovim
 pointcuts
+Overridable

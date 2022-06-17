@@ -152,6 +152,7 @@ end
 function M.set(active, global)
   local scope = global and 'o' or 'wo'
   vim[scope].statusline = table.concat{
+    '%=', -- Needed for the highlight below to work
     highlight(1, active),
     recording(),
     pad(func('hunks')),

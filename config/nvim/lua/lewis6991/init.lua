@@ -4,6 +4,8 @@ require 'lewis6991.diagnostic'
 
 local o, api = vim.opt, vim.api
 
+vim.g.do_filetype_lua = 1
+
 local add_command = api.nvim_create_user_command
 
 local function autocmd(name)
@@ -65,6 +67,7 @@ if 'Options' then
   o.backupdir:remove('.')
   o.breakindent    = true -- Indent wrapped lines to match start
   o.clipboard      = 'unnamedplus'
+  o.cmdheight      = 0
   o.expandtab      = true
   o.fillchars      = 'eob: ' -- Remove tilda from signcolumn
   o.hidden         = true
