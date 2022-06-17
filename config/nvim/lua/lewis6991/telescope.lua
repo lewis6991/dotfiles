@@ -11,7 +11,8 @@ telescope.setup {
     winblend = 15,
     mappings = {
       i = {
-        ["<CR>"] =  require('telescope.actions').select_tab,
+        ["<CR>"]  = require('telescope.actions').select_tab,
+        ["<C-e>"] = require('telescope.actions').select_default,
         ["<esc>"] = require('telescope.actions').close,
       }
     }
