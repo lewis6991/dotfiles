@@ -4,8 +4,6 @@ require 'lewis6991.diagnostic'
 
 local o, api = vim.opt, vim.api
 
-vim.g.do_filetype_lua = 1
-
 local add_command = api.nvim_create_user_command
 
 local function autocmd(name)
@@ -128,11 +126,11 @@ if 'Options' then
 end
 
 if 'ftplugin' then
-  vim.g.vimsyn_folding  = 'af' --Fold augroups and functions
-  vim.g.vim_indent_cont = vim.opt.shiftwidth:get()
-  vim.g.xml_syntax_folding = 1
-  vim.g.man_hardwrap = 1
-  vim.g.yaml_recommended_style = 0
+  -- enable filetype.lua
+  vim.g.do_filetype_lua = 1
+
+  -- disable filetype.vim
+  vim.g.did_load_filetypes = 0
 end
 
 if 'Folding' then
@@ -183,6 +181,10 @@ if "Mappings" then
   vmap 'Q'  '<nop>'
   nmap 'gQ' '<nop>'
   vmap 'gQ' '<nop>'
+
+  vmap 'gQ' {function()
+    vim.lsp.buf.range_formatting()
+  end}
 
   -- delete the current buffer without deleting the window
   nmap '<leader>b' ':b#|bd#<CR>'
