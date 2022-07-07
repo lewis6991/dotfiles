@@ -9,7 +9,15 @@ local add_command = api.nvim_create_user_command
 
 local function autocmd(name)
   return function(opts)
-    vim.api.nvim_create_autocmd(name, opts)
+    if opts[1] then
+      if type(opts[1]) == 'function' then
+        opts.callback = opts[1]
+      elseif type(opts[1]) == 'string' then
+        opts.command = opts[1]
+      end
+      opts[1] = nil
+    end
+    api.nvim_create_autocmd(name, opts)
   end
 end
 
@@ -52,8 +60,8 @@ if 'Plugins' then
 
   -- Plugins are 'start' plugins so are loaded automatically, but to enable packer
   -- commands we need to require plugins at some point
-  autocmd 'CursorHold'  {
-    callback = function()
+  autocmd 'CursorHold' {
+    function()
       require'lewis6991.plugins'
     end,
     once = true,
@@ -144,10 +152,10 @@ if 'Whitespace' then
   -- setup in VimEnter to stop the intro screen being cleared
   autocmd 'VimEnter' {
     group = 'vimrc',
-    callback = function()
+    function()
       autocmd 'BufEnter' {
         group = 'vimrc',
-        callback = vim.schedule_wrap(function()
+        vim.schedule_wrap(function()
           if vim.bo.buftype == "" then
             vim.fn.matchadd('ColorColumn', '\\s\\+$')
           end
@@ -239,23 +247,24 @@ add_command('Hashbang', function()
 
     api.nvim_buf_set_lines(0, 0, 0, false, hb)
     autocmd 'BufWritePost' {
+      'silent !chmod u+x %',
       buffer = 0,
       once = true,
-      command = 'silent !chmod u+x %'
     }
   end
 end, {force = true})
 
 add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', force = true})
 
-autocmd 'VimResized' {group='vimrc', command='wincmd ='}
+autocmd 'VimResized' {'wincmd =', group='vimrc'}
 
-vim.cmd[[
-  iabbrev :rev: <c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>
-  iabbrev :todo: <c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>
+local function abbrev(l, r)
+  vim.cmd{cmd='abbrev', args={l, r}}
+end
 
-  iabbrev funciton function
-]]
+abbrev(':rev:', [[<c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
+abbrev(':todo:', [[<c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>]])
+abbrev('function', 'function')
 
 _G.printf = function(...)
   print(string.format(...))
