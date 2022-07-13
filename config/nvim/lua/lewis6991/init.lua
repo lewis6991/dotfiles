@@ -125,14 +125,6 @@ if 'Options' then
   o.formatoptions:append('n') -- Recognise lists
 end
 
-if 'ftplugin' then
-  -- enable filetype.lua
-  vim.g.do_filetype_lua = 1
-
-  -- disable filetype.vim
-  vim.g.did_load_filetypes = 0
-end
-
 if 'Folding' then
   vim.g.sh_fold_enabled = 1
 
