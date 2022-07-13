@@ -89,7 +89,7 @@ packer.setup {
     vim.keymap.set({'n', 'x'}, 'gs', '<plug>(GrepperOperator)')
   end},
 
-  {'aserowy/tmux.nvim', config = function()
+  {'lewis6991/tmux.nvim', config = function()
     require("tmux").setup{
       navigation = { enable_default_keybindings = true }
     }
