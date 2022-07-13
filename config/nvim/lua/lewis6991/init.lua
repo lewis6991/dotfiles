@@ -65,7 +65,7 @@ if 'Options' then
   o.backupdir:remove('.')
   o.breakindent    = true -- Indent wrapped lines to match start
   o.clipboard      = 'unnamedplus'
-  o.cmdheight      = 0
+  -- o.cmdheight      = 0
   o.expandtab      = true
   o.fillchars      = 'eob: ' -- Remove tilda from signcolumn
   o.hidden         = true
