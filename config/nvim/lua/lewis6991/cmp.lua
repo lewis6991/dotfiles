@@ -97,7 +97,7 @@ cmp.setup {
     { name = 'luasnip'    },
     { name = 'emoji'      },
     { name = 'path'       },
-    { name = 'treesitter' },
+    -- { name = 'treesitter' },
     { name = 'buffer'     },
     { name = 'rg'         },
     { name = 'spell'      },
@@ -110,7 +110,7 @@ cmp.setup {
 
 cmp.setup.cmdline('/', {
   sources = {
-    { name = 'treesitter' },
+    -- { name = 'treesitter' },
     { name = 'buffer' }
   },
   mapping = cmp.mapping.preset.cmdline()
