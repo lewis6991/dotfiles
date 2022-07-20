@@ -1,53 +1,57 @@
 
-local telescope = require 'telescope'
+local done_setup  = false
 
-telescope.setup {
-  defaults = {
-    preview = false,
-    layout_config = {
-      preview_cutoff = 20,
+local function setup()
+  local telescope = require 'telescope'
+  local actions = require('telescope.actions')
+
+  telescope.setup {
+    defaults = {
+      selection_strategy = "reset",
+      winblend = 15,
+      mappings = {
+        i = {
+          ["<CR>"]  = actions.select_tab,
+          ["<C-e>"] = actions.select_default,
+          ["<esc>"] = actions.close,
+        }
+      }
     },
-    selection_strategy = "reset",
-    winblend = 15,
-    mappings = {
-      i = {
-        ["<CR>"]  = require('telescope.actions').select_tab,
-        ["<C-e>"] = require('telescope.actions').select_default,
-        ["<esc>"] = require('telescope.actions').close,
+    extensions = {
+      ["ui-select"] = {
+        require("telescope.themes").get_dropdown{}
       }
     }
-  },
-  extensions = {
-    fzf = {
-      override_generic_sorter = false, -- Causes crashes
-    },
-    ["ui-select"] = {
-      require("telescope.themes").get_dropdown{}
-    }
   }
-}
-telescope.load_extension('fzf')
-telescope.load_extension('ui-select')
+  telescope.load_extension('fzf')
+  telescope.load_extension('ui-select')
+end
 
-local keymap = function(key, fun, opts)
-  vim.api.nvim_set_keymap('n', key, '', {
-    desc = 'Telescope '..fun..vim.inspect(opts or '', {newline='', indent=''}),
-    callback = function()
+local function nmap(key)
+  return function(spec)
+    local fun, opts
+    if type(spec) == 'string' then
+      fun = spec
+    else
+      fun = spec[1]
+      spec[1] = nil
+      opts = spec
+    end
+    vim.keymap.set('n', key, function()
+      if not done_setup then
+        setup()
+        done_setup = true
+      end
       require('telescope.builtin')[fun](opts)
-    end,
-    noremap = true,
-    silent = true,
-  })
+    end, {})
+  end
 end
 
 -- default: CTRL-B   scroll N screens Backwards
-keymap('<C-b>'    , 'buffers')
+nmap '<C-b>' 'buffers'
 
--- default:  CTRL-P same as "k"
-keymap('<C-p>'    , 'git_files', {use_git_root=true})
+nmap '<C-p>' {'git_files', use_git_root=true}
+nmap '<C- >' {'git_files', cwd="$HOME/projects/dotfiles", hidden=true}
 
--- default: none
-keymap('<C- >'    , 'git_files', {preview=true, cwd="$HOME/projects/dotfiles", hidden=true})
-
-keymap('<leader>f', 'find_files')
-keymap('<leader>g', 'live_grep', {preview=true})
+nmap '<leader>f' 'find_files'
+nmap '<leader>g' 'live_grep'
