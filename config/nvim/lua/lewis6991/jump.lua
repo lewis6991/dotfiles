@@ -4,6 +4,7 @@ local win_timer
 local key_timer
 
 local win
+local show = 0
 
 local buf = vim.api.nvim_create_buf(false, true)
 do
@@ -28,6 +29,7 @@ local function enable_cmoved_au()
       if win then
         vim.api.nvim_win_close(win, true)
         win = nil
+        show = 0
       end
       cmoved_au = nil
     end
@@ -57,7 +59,7 @@ local function refresh_win(height, width)
       width = width,
       height = height,
       style = 'minimal',
-      border = 'single',
+      -- border = 'single',
     })
     vim.wo[win].winblend = 15
   end
@@ -75,6 +77,7 @@ local function refresh_win_timer()
       vim.schedule(function()
         vim.api.nvim_win_close(win, true)
         win = nil
+        show = 0
       end)
     end
   end)
@@ -118,8 +121,6 @@ local function get_text(jumplist, current)
   return lines, current_line, width
 end
 
-local show = false
-
 local function do_show()
   -- Only show on second succesive jump within KEY_TIMEOUT
   if not key_timer then
@@ -128,14 +129,14 @@ local function do_show()
   key_timer:start(KEY_TIMEOUT, 0, function()
     key_timer:close()
     key_timer = nil
-    show = false
+    show = 0
   end)
 
-  if show then
+  if show == 2 then
     return true
   end
 
-  show = true
+  show = show + 1
 end
 
 local function show_jumps(forward)
