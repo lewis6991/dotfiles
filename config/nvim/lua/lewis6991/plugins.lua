@@ -138,7 +138,8 @@ packer.setup {
   {'neovim/nvim-lspconfig',
     requires = {
       'stevearc/aerial.nvim',
-      'williamboman/nvim-lsp-installer',
+      'williamboman/mason.nvim',
+      'williamboman/mason-lspconfig.nvim',
       'scalameta/nvim-metals',
       'folke/lua-dev.nvim',
     },

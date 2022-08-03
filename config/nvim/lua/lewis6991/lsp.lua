@@ -13,7 +13,6 @@ local function custom_on_attach(client, bufnr)
   end
 
   map('<C-]>'     , vim.lsp.buf.definition, 'vim.lsp.buf.definition'    )
-  -- map('<C-]>'     , function() vim.lsp.buf.definition{reuse_win=true} end, 'vim.lsp.buf.definition'    )
   map('<leader>cl', vim.lsp.codelens.run      , 'vim.lsp.codelens.run'      )
   -- map('K'         , vim.lsp.buf.hover         , 'vim.lsp.buf.hover'         )
   -- map('gK'        , vim.lsp.buf.signature_help, 'vim.lsp.buf.signature_help')
@@ -56,10 +55,6 @@ local function setup(config, opts)
 
   opts.on_attach = custom_on_attach
 
-  -- opts.flags = vim.tbl_deep_extend('keep', opts.flags or {}, {
-  --   debounce_text_changes = 200,
-  -- })
-
   local has_cmp_lsp, cmp_lsp = pcall(require, 'cmp_nvm_lsp')
   if has_cmp_lsp then
     -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
@@ -70,7 +65,10 @@ local function setup(config, opts)
   config.setup(opts)
 end
 
-require("nvim-lsp-installer").setup()
+require('mason').setup()
+require('mason-lspconfig').setup{
+  automatic_installation = true,
+}
 
 if "metals" then
   local function setup_metals()
