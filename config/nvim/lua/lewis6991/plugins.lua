@@ -194,19 +194,22 @@ packer.setup {
     config = "require'lewis6991.treesitter'",
   },
 
-  {'ojroques/vim-oscyank',
-    event = 'TextYankPost',
-    config = function()
-      vim.g.oscyank_silent = true
-      vim.cmd[[
-        augroup oscyank
-          autocmd!
-          autocmd TextYankPost * if v:event.operator is 'y' && v:event.regname is ''
-          autocmd TextYankPost *     execute 'OSCYankReg "'
-          autocmd TextYankPost * endif
-        augroup END
-      ]]
+  {'ojroques/nvim-osc52', config = function()
+    require'osc52'.setup{ silent = true }
+
+    local function copy(lines, _)
+      require('osc52').copy(table.concat(lines, '\n'))
     end
-  },
+
+    local function paste()
+      return {vim.split(vim.fn.getreg(''), '\n'), vim.fn.getregtype('')}
+    end
+
+    vim.g.clipboard = {
+        name = 'osc52',
+        copy = {['+'] = copy, ['*'] = copy },
+        paste = {['+'] = paste, ['*'] = paste },
+    }
+  end},
 
 }
