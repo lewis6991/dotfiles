@@ -2,6 +2,7 @@ require 'lewis6991.status'
 require 'lewis6991.tabline'
 require 'lewis6991.diagnostic'
 require 'lewis6991.jump'
+require 'lewis6991.clipboard'
 
 local o, api = vim.opt, vim.api
 
