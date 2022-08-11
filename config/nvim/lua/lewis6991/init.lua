@@ -259,13 +259,9 @@ add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', f
 
 autocmd 'VimResized' {'wincmd =', group='vimrc'}
 
-local function abbrev(l, r)
-  vim.cmd{cmd='abbrev', args={l, r}}
-end
-
-abbrev(':rev:', [[<c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
-abbrev(':todo:', [[<c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>]])
-abbrev('function', 'function')
+vim.cmd.abbrev(':rev:', [[<c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
+vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>]])
+vim.cmd.abbrev('function', 'function')
 
 _G.printf = function(...)
   print(string.format(...))

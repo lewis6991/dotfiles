@@ -4,7 +4,9 @@ packer.setup {
   'wbthomason/packer.nvim',
 
   -- 'lewis6991/moonlight.vim',
-  {'lewis6991/github_dark.nvim', config = [[vim.cmd'color github_dark']]},
+  {'lewis6991/github_dark.nvim', config = function()
+    vim.cmd.color'github_dark'
+  end},
 
   'lewis6991/tcl.vim',
   -- 'lewis6991/systemverilog.vim',
@@ -62,7 +64,14 @@ packer.setup {
     cmd = 'Bufferize',
     config = function()
       vim.g.bufferize_command = 'enew'
-      vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
+      -- vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'bufferize',
+        group = 'vimrc',
+        callback = function()
+          vim.opt_local.wrap = true
+        end
+      })
     end
   },
 

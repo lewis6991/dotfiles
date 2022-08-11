@@ -3,7 +3,7 @@ require'nvim-treesitter'.define_modules {
     attach = function()
       vim.opt.foldexpr = 'nvim_treesitter#foldexpr()'
       vim.opt.foldmethod = 'expr'
-      vim.cmd'normal zx' -- recompute folds
+      vim.cmd.normal'zx' -- recompute folds
     end,
     detach = function() end,
   }
