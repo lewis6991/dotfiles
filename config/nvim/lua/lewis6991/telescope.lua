@@ -1,8 +1,8 @@
+local telescope = require 'telescope'
 
 local done_setup  = false
 
 local function setup()
-  local telescope = require 'telescope'
   local actions = require('telescope.actions')
 
   telescope.setup {
@@ -24,8 +24,9 @@ local function setup()
     }
   }
   telescope.load_extension('fzf')
-  telescope.load_extension('ui-select')
 end
+
+telescope.load_extension('ui-select')
 
 local function nmap(key)
   return function(spec)
