@@ -23,20 +23,28 @@ function M.hldefs()
   end
 end
 
+local icons = {
+  Error = '',
+  Warn  = '',
+  Hint  = '',
+  Info  = 'I',
+}
+
 function M.lsp_status(active)
-  if vim.tbl_isempty(vim.lsp.buf_get_clients(0)) then
+  if vim.tbl_isempty(vim.lsp.get_active_clients{ bufnr = 0 }) then
     return ''
   end
 
   local status = {}
 
-  for _, ty in ipairs { 'Warn', 'Error', 'Info', 'Hint' } do
+  for _, ty in ipairs { 'Error', 'Warn', 'Info', 'Hint' } do
     local n = vim.diagnostic.get(0, {severity=ty})
     if #n > 0 then
+      local icon = icons[ty]
       if active == 1 then
-        table.insert(status, ('%%#Diagnostic%sStatus# %s:%s'):format(ty, ty:sub(1,1), #n))
+        table.insert(status, ('%%#Diagnostic%sStatus#%s %s'):format(ty, icon, #n))
       else
-        table.insert(status, (' %s:%s'):format(ty:sub(1,1), #n))
+        table.insert(status, ('%s %s'):format(icon, #n))
       end
     end
   end
