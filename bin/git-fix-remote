@@ -1,7 +1,25 @@
 #! /usr/bin/env bash
 set -e
 
-remote_name=${1-origin}
+branch=$(git name-rev --name-only HEAD)
+remote_name=$(git config branch."$branch".remote)
+
+if [[ "$remote_name" =~ git@github.com:(.*)/(.*).git ]]; then
+    # Remote not set
+    # This happens with commands like "gh pr checkout".
+
+    # Create a name for the remote
+    new_remote_name="${BASH_REMATCH[1]}-${BASH_REMATCH[2]}"
+
+    # Add the remote
+    git remote add "$new_remote_name" "$remote_name" 2> /dev/null || true
+
+    remote_name="$new_remote_name"
+
+    git fetch "$remote_name"
+    git branch --set-upstream-to="$remote_name/$branch"
+    exit
+fi
 
 url=$(git remote get-url "$remote_name")
 
