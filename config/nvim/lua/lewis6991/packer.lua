@@ -24,7 +24,7 @@ local function use_local(init)
   local function try_get_local(plugin)
     local _, name = unpack(vim.split(plugin, '/'))
     local loc_install = home..'/projects/'..name
-    if vim.loop.fs_stat(loc_install) then
+    if name ~= '' and vim.loop.fs_stat(loc_install) then
       return loc_install
     else
       return plugin
