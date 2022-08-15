@@ -107,7 +107,7 @@ local function cell(index)
       end
       return
         '%#' .. hl .. '#%' .. index .. 'T' .. ' ' ..
-        title(b) .. flags(b) .. ' ' .. devicon(b, isSelected and b == bufnr)
+        devicon(b, isSelected and b == bufnr) .. title(b) .. flags(b)..' '
     end, bufnrs), ' ') .. '%T' ..
     separator(index)
 end
