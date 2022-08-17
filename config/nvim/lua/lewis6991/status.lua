@@ -14,7 +14,7 @@ local function highlight(num, active)
   end
 end
 
-function M.hldefs()
+local function hldefs()
   local bg = api.nvim_get_hl_by_name('StatusLine', true).background
   for _, ty in ipairs { 'Warn', 'Error', 'Info', 'Hint' } do
     local hl = api.nvim_get_hl_by_name('Diagnostic'..ty, true)
@@ -202,7 +202,7 @@ api.nvim_create_autocmd('VimEnter', {
 
 api.nvim_create_autocmd('ColorScheme', {
   group = 'statusline',
-  callback = M.hldefs
+  callback = hldefs
 })
 
 _G.statusline = M

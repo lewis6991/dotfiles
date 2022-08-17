@@ -262,10 +262,21 @@ autocmd 'VimResized' {'wincmd =', group='vimrc'}
 vim.cmd.abbrev(':rev:', [[<c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
 vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>]])
 vim.cmd.abbrev('function', 'function')
+vim.cmd.cabbrev('Q', 'q')
 
 _G.printf = function(...)
   print(string.format(...))
 end
+
+autocmd 'TabNew' {
+  function()
+    if not vim.bo.modified and vim.api.nvim_buf_get_name(0) == '' then
+      vim.api.nvim_buf_delete(0, {})
+    end
+  end,
+  once = true,
+  group = 'vimrc'
+}
 
 return M
 
