@@ -86,8 +86,14 @@ packer.setup {
   'raimon49/requirements.txt.vim',
   'euclidianAce/BetterLua.vim',
 
-  {'rcarriga/nvim-notify', config = function()
-    require('lewis6991.notify')
+  {'rcarriga/nvim-notify',
+    -- config = function()
+    --   require('lewis6991.notify')
+    -- end
+  },
+
+  {'j-hui/fidget.nvim', config = function()
+    require'fidget'.setup()
   end},
 
   {'mhinz/vim-grepper', config = function()
