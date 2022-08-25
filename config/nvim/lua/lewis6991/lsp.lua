@@ -66,9 +66,7 @@ local function setup(config, opts)
 end
 
 require('mason').setup()
-require('mason-lspconfig').setup{
-  automatic_installation = true,
-}
+require('mason-lspconfig').setup{}
 
 if "metals" then
   local function setup_metals()
@@ -107,6 +105,7 @@ local nvim_lsp = require'lspconfig'
 
 for _, server in ipairs{
   'clangd',
+  'cmake',
   'sumneko_lua',
   'pyright',
   -- 'jedi_language_server',
