@@ -14,6 +14,7 @@ packer.setup {
   {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
   {'lewis6991/cleanfold.nvim', config = [[require('cleanfold').setup()]]},
   'lewis6991/brodir.nvim',
+  'lewis6991/vc.nvim',
 
   {'lewis6991/foldsigns.nvim',
     config = function()
