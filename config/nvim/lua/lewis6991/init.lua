@@ -77,7 +77,7 @@ if 'Options' then
   o.clipboard      = 'unnamedplus'
   -- o.cmdheight      = 0
   o.expandtab      = true
-  o.fillchars      = 'eob: ' -- Remove tilda from signcolumn
+  o.fillchars      = {eob=' ', diff = ' '}
   o.hidden         = true
   o.ignorecase     = true
   o.inccommand     = 'split'
@@ -107,15 +107,22 @@ if 'Options' then
   o.shortmess:append('c')
   -- o.shortmess:append('I')
   -- o.shortmess:remove('F')
-  o.completeopt:append{'noinsert','menuone','noselect','preview'}
-  -- o.completeopt = 'noinsert,menuone,noselect,preview'
+  o.completeopt:append{
+    'noinsert',
+    'menuone',
+    'noselect',
+    'preview'
+  }
+
   o.showbreak   = '↳ '
   -- o.showbreak   = '    ↳ '
   o.mouse       = 'a'
 
-  o.diffopt:append('vertical')  -- Show diffs in vertical splits
-  o.diffopt:append('foldcolumn:0')  -- Show diffs in vertical splits
-  o.diffopt:append('indent-heuristic')
+  o.diffopt:append{
+    'vertical',
+    'foldcolumn:0',
+    'indent-heuristic',
+  }
 
   o.undolevels = 10000
   o.undofile   = true
