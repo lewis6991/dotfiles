@@ -56,8 +56,10 @@ packer.setup {
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',
   'dietsche/vim-lastplace',
-  'sindrets/diffview.nvim',
-  'folke/trouble.nvim',
+  {'sindrets/diffview.nvim',
+    requires = { 'nvim-lua/plenary.nvim' }
+  },
+  'folke/trouble.nvim', --  EXITFREE lag
   'bogado/file-line', -- Open file:line
 
   {'AndrewRadev/bufferize.vim',
