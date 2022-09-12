@@ -42,7 +42,6 @@ packer.setup {
   end},
 
   {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'" },
-  {'lewis6991/spellsitter.nvim', config = [[require('spellsitter').setup()]] },
 
   'tpope/vim-commentary',
   'tpope/vim-unimpaired',
