@@ -156,6 +156,8 @@ packer.setup {
       'williamboman/mason-lspconfig.nvim',
       'scalameta/nvim-metals',
       'folke/lua-dev.nvim',
+      'ray-x/lsp_signature.nvim',
+      'theHamsta/nvim-semantic-tokens',
     },
     config = "require'lewis6991.lsp'"
   },

@@ -1,44 +1,95 @@
+local api = vim.api
+local lsp = vim.lsp
+
+require'lsp_signature'.setup{
+  hi_parameter = "Visual",
+}
+
+local function map(bufnr, key, result, desc)
+  vim.keymap.set('n', key, result, {silent = true, buffer=bufnr, desc=desc})
+end
+
+local done_st = false
+
+local on_attach_fns = {
+  semantic_tokens = function(client, bufnr)
+    if not done_st then
+      require("nvim-semantic-tokens").setup {
+        preset = "default",
+        -- highlighters is a list of modules following the interface of nvim-semantic-tokens.table-highlighter or
+        -- function with the signature: highlight_token(ctx, token, highlight) where
+        --        ctx (as defined in :h lsp-handler)
+        --        token  (as defined in :h vim.lsp.semantic_tokens.on_full())
+        --        highlight (a helper function that you can call (also multiple times) with the determined highlight group(s) as the only parameter)
+        highlighters = { require 'nvim-semantic-tokens.table-highlighter'}
+      }
+      api.nvim_create_augroup('SemanticTokens', {})
+      done_st = true
+    end
+
+    local caps = client.server_capabilities
+    if caps.semanticTokensProvider and caps.semanticTokensProvider.full then
+      api.nvim_create_autocmd("TextChanged", {
+        group = 'SemanticTokens',
+        buffer = bufnr,
+        callback = function()
+          lsp.buf.semantic_tokens_full()
+        end,
+      })
+      -- fire it first time on load as well
+      lsp.buf.semantic_tokens_full()
+    end
+  end,
+
+  mappings = function(_, bufnr)
+    map(bufnr, '<C-]>'     , lsp.buf.definition, 'lsp.buf.definition'    )
+    map(bufnr, '<leader>cl', lsp.codelens.run      , 'lsp.codelens.run'      )
+    -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
+    -- map(bufnr, 'gK'        , lsp.buf.signature_help, 'lsp.buf.signature_help')
+    map(bufnr, '<C-s>'     , lsp.buf.signature_help, 'lsp.buf.signature_help')
+    map(bufnr, '<leader>rn', lsp.buf.rename        , 'lsp.buf.rename'        )
+    map(bufnr, '<leader>ca', lsp.buf.code_action   , 'lsp.buf.code_action'   )
+    -- keymap(bufnr, 'gr'        , 'lsp.buf.references()')
+    map(bufnr, 'gr', '<cmd>Trouble lsp_references<cr>')
+    map(bufnr, 'gR', '<cmd>Telescope lsp_references layout_strategy=vertical<cr>')
+  end,
+
+  aerial = function(client, bufnr)
+    local has_aerial, aerial = pcall(require, 'aerial')
+    if has_aerial then
+      aerial.setup{}
+      aerial.on_attach(client, bufnr)
+      map(bufnr, '<leader>a', '<cmd>AerialToggle!<CR>')
+    end
+  end,
+
+  code_lens = function(client, bufnr)
+    if client.server_capabilities.code_lens then
+      api.nvim_create_autocmd({'BufEnter', 'CursorHold', 'InsertLeave'}, {
+        buffer = bufnr,
+        callback = lsp.codelens.refresh
+      })
+      lsp.codelens.refresh()
+    end
+  end
+
+}
 
 local function custom_on_attach(client, bufnr)
-  local function map(key, result, desc)
-    vim.keymap.set('n', key, result, {silent = true, buffer=bufnr, desc=desc})
-  end
-
-  if client.server_capabilities.code_lens then
-    vim.api.nvim_create_autocmd({'BufEnter', 'CursorHold', 'InsertLeave'}, {
-      buffer = bufnr,
-      callback = vim.lsp.codelens.refresh
-    })
-    vim.lsp.codelens.refresh()
-  end
-
-  map('<C-]>'     , vim.lsp.buf.definition, 'vim.lsp.buf.definition'    )
-  map('<leader>cl', vim.lsp.codelens.run      , 'vim.lsp.codelens.run'      )
-  -- map('K'         , vim.lsp.buf.hover         , 'vim.lsp.buf.hover'         )
-  -- map('gK'        , vim.lsp.buf.signature_help, 'vim.lsp.buf.signature_help')
-  map('<C-s>'     , vim.lsp.buf.signature_help, 'vim.lsp.buf.signature_help')
-  map('<leader>rn', vim.lsp.buf.rename        , 'vim.lsp.buf.rename'        )
-  map('<leader>ca', vim.lsp.buf.code_action   , 'vim.lsp.buf.code_action'   )
-  -- keymap('gr'        , 'vim.lsp.buf.references()')
-  map('gr', '<cmd>Trouble lsp_references<cr>')
-
-  local has_aerial, aerial = pcall(require, 'aerial')
-  if has_aerial then
-    aerial.setup{}
-    aerial.on_attach(client, bufnr)
-    map('<leader>a', '<cmd>AerialToggle!<CR>')
+  for _, fn in pairs(on_attach_fns) do
+    fn(client, bufnr)
   end
 end
 
 local server_opts = {
   sumneko_lua = function()
     local opts = require("lua-dev").setup{
-      library = {
-        plugins = false
-      }
+      -- library = {
+      --   plugins = false
+      -- }
     }
     opts.settings.Lua.diagnostics = {
-      globals = { 'it', 'describe', 'before_each', 'after_each' }
+      globals = { 'it', 'describe', 'before_each', 'after_each', 'pending' }
     }
     return opts
   end
@@ -58,7 +109,7 @@ local function setup(config, opts)
   local has_cmp_lsp, cmp_lsp = pcall(require, 'cmp_nvm_lsp')
   if has_cmp_lsp then
     -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
-    opts.capabilities = vim.lsp.protocol.make_client_capabilities()
+    opts.capabilities = lsp.protocol.make_client_capabilities()
     opts.capabilities = cmp_lsp.update_capabilities(opts.capabilities)
   end
 
@@ -76,7 +127,7 @@ if "metals" then
       on_attach = custom_on_attach,
       handlers = {
         ["metals/status"] = function(_, status, ctx)
-          vim.lsp.handlers["$/progress"](_, {
+          lsp.handlers["$/progress"](_, {
             token = 1,
             value = {
               kind = status.show and 'begin' or status.hide and 'end' or "report",
@@ -95,7 +146,7 @@ if "metals" then
     }))
   end
 
-  vim.api.nvim_create_autocmd('FileType', {
+  api.nvim_create_autocmd('FileType', {
     pattern = {'scala', 'sbt'},
     callback = setup_metals
   })
@@ -108,6 +159,8 @@ for _, server in ipairs{
   'cmake',
   'sumneko_lua',
   'pyright',
+  'cmake',
+  'bashls',
   -- 'jedi_language_server',
 } do
   setup(nvim_lsp[server])
