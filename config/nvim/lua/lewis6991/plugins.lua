@@ -43,6 +43,14 @@ packer.setup {
 
   {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'" },
 
+  {'lewis6991/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
+
+  {'lewis6991/tmux.nvim', config = function()
+    require("tmux").setup{
+      navigation = { enable_default_keybindings = true }
+    }
+  end},
+
   'tpope/vim-commentary',
   'tpope/vim-unimpaired',
   'tpope/vim-repeat',
@@ -100,12 +108,6 @@ packer.setup {
       dir = 'repo',
     }
     vim.keymap.set({'n', 'x'}, 'gs', '<plug>(GrepperOperator)')
-  end},
-
-  {'lewis6991/tmux.nvim', config = function()
-    require("tmux").setup{
-      navigation = { enable_default_keybindings = true }
-    }
   end},
 
   'ryanoasis/vim-devicons',
@@ -196,8 +198,6 @@ packer.setup {
   {'neovim/nvimdev.nvim',
     requires = {'neomake/neomake'}
   },
-
-  {'norcalli/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
 
   {'nvim-treesitter/nvim-treesitter',
     requires = {
