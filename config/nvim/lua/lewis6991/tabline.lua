@@ -117,14 +117,16 @@ local function cell(index)
 
   local hl = not isSelected and 'TabLineFill' or 'TabLineSel'
   local common = '%#' .. hl .. '#'
-  local ret = common .. '%' .. index .. 'T' .. string.format(' %s%s%s ',
+  local ret = string.format('%s%%%dT %s%s%s ',
+    common,
+    index,
     devicon(bufnr, hl),
     title(bufnr),
     flags(bufnr)
   )
 
   if #bufnrs > 1 then
-    ret = ret .. common .. string.format('(%d) ', #bufnrs)
+    ret = string.format('%s%s(%d) ', ret, common, #bufnrs)
   end
 
   return ret .. get_diags(bufnrs, hl) .. '%T' .. separator(index)

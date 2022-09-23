@@ -88,19 +88,38 @@ packer.setup {
   --- Filetype plugins ---
   {'tmux-plugins/vim-tmux', ft = 'tmux'  },
   {'derekwyatt/vim-scala' , ft = 'scala' },
-  'cespare/vim-toml',
+  -- 'cespare/vim-toml',
   'martinda/Jenkinsfile-vim-syntax',
   'teal-language/vim-teal',
   'fladson/vim-kitty',
   'raimon49/requirements.txt.vim',
-  'euclidianAce/BetterLua.vim',
 
   {'rcarriga/nvim-notify', config = function()
     vim.notify = require("notify")
   end},
 
   {'j-hui/fidget.nvim', config = function()
-    require'fidget'.setup()
+    require'fidget'.setup{
+      text = {
+        spinner = "dots",
+      },
+      fmt = {
+        stack_upwards = false,
+        task = function(task_name, message, percentage)
+          local pct = percentage and string.format(" (%s%%)", percentage) or ""
+          if task_name then
+            return string.format("%s%s [%s]", message, pct, task_name)
+          else
+            return string.format("%s%s", message, pct)
+          end
+        end,
+      },
+      sources = {
+        ['null-ls'] = {
+          ignore = true
+        }
+      }
+    }
   end},
 
   {'mhinz/vim-grepper', config = function()

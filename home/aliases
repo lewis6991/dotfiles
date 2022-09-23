@@ -23,3 +23,5 @@ alias thist="tmux capture-pane -epS - > /tmp/tmuxhist && vim -c 'te cat /tmp/tmu
 
 alias vim="nvim"
 alias vimdiff="nvim -d"
+
+alias utop='top -u $USER'

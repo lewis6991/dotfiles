@@ -31,10 +31,6 @@ local icons = {
 }
 
 function M.lsp_status(active)
-  if vim.tbl_isempty(vim.lsp.get_active_clients{ bufnr = 0 }) then
-    return ''
-  end
-
   local status = {}
 
   for _, ty in ipairs { 'Error', 'Warn', 'Info', 'Hint' } do
@@ -137,14 +133,16 @@ end
 function M.bufname()
   ---@diagnostic disable-next-line: undefined-field
   local name = vim.api.nvim_eval_statusline('%f', {}).str
-  if vim.startswith(name, 'fugitive://') then
-    local _, _, commit, relpath = name:find([[^fugitive://.*/%.git.*/(%x-)/(.*)]])
+  local buf_name = vim.api.nvim_buf_get_name(0)
+  if vim.startswith(buf_name, 'fugitive://') then
+    local _, _, commit, relpath = buf_name:find([[^fugitive://.*/%.git.*/(%x-)/(.*)]])
     name = relpath..'@'..commit:sub(1, 7)
   end
-  if vim.startswith(name, 'gitsigns://') then
-    local _, _, revision, relpath = name:find([[^gitsigns://.*/%.git.*/(.*):(.*)]])
+  if vim.startswith(buf_name, 'gitsigns://') then
+    local _, _, revision, relpath = buf_name:find([[^gitsigns://.*/%.git.*/(.*):(.*)]])
     name = relpath..'@'..revision:sub(1, 7)
   end
+
   return name
 end
 
@@ -152,29 +150,45 @@ local function pad(x)
   return '%( '..x..' %)'
 end
 
-local function func(name, active)
+local function func(name, active, mods)
   active = active or 1
-  return '%{%v:lua.statusline.'..name..'('..tostring(active)..')%}'
+  return '%'..(mods or '')..'{%v:lua.statusline.'..name..'('..tostring(active)..')%}'
+end
+
+local function parse_sections(sections)
+  local result = {}
+  for _, s in ipairs(sections) do
+    local sub_result = {}
+    for _, part in ipairs(s) do
+      sub_result[#sub_result+1] = part
+    end
+    result[#result+1] = table.concat(sub_result)
+  end
+  -- Leading '%=' reeded for first highlight to work
+  return '%=' .. table.concat(result, '%=')
 end
 
 function M.set(active, global)
   local scope = global and 'o' or 'wo'
-  vim[scope].statusline = table.concat{
-    '%=', -- Needed for the highlight below to work
-    highlight(1, active),
-    recording(),
-    pad(func('hunks')),
-    highlight(2, active),
-    pad(func('lsp_status', active)),
-    highlight(2, active),
-    '%=',
-    pad(func('bufname')..'%m%r%h%q'),
-    -- '%<%0.60f%m%r',  -- file.txt[+][RO]
-    '%=',
-    pad(func('filetype')),
-    pad(func('encodingAndFormat')),
-    highlight(1, active),
-    ' %3p%% %2l(%02c)/%-3L ', -- 80% 65[12]/120
+  vim[scope].statusline = parse_sections{
+    {
+      highlight(1, active),
+      recording(),
+      pad(func('hunks')),
+      highlight(2, active),
+      pad(func('lsp_status', active)),
+      highlight(2, active),
+    },
+    {
+      '%<',
+      pad(func('bufname', nil, '0.60')..'%m%r%h%q'),
+    },
+    {
+      pad(func('filetype')),
+      pad(func('encodingAndFormat')),
+      highlight(1, active),
+      ' %3p%% %2l(%02c)/%-3L ', -- 80% 65[12]/120
+    }
   }
 end
 

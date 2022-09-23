@@ -3,42 +3,18 @@ require 'lewis6991.tabline'
 require 'lewis6991.diagnostic'
 require 'lewis6991.jump'
 require 'lewis6991.clipboard'
+require 'lewis6991.plugins'
+
+local nvim = require 'lewis6991.nvim'
 
 local o, api = vim.opt, vim.api
 
 local add_command = api.nvim_create_user_command
 
-local function autocmd(name)
-  return function(opts)
-    if opts[1] then
-      if type(opts[1]) == 'function' then
-        opts.callback = opts[1]
-      elseif type(opts[1]) == 'string' then
-        opts.command = opts[1]
-      end
-      opts[1] = nil
-    end
-    api.nvim_create_autocmd(name, opts)
-  end
-end
-
-local function map(mode)
-  return function(first)
-    return function(second)
-      local opts
-      if type(second) == 'table' then
-        opts = second
-        second = opts[1]
-        opts[1] = nil
-      end
-      vim.keymap.set(mode, first, second, opts)
-    end
-  end
-end
-
-local function nmap(first) return map 'n' (first) end
-local function vmap(first) return map 'v' (first) end
-local function cmap(first) return map 'c' (first) end
+local autocmd = nvim.autocmd
+local nmap = nvim.nmap
+local vmap = nvim.vmap
+local cmap = nvim.cmap
 
 local M = {}
 
@@ -56,18 +32,7 @@ if 'Plugins' then
   vim.g.loaded_tarPlugin = 1
   vim.g.loaded_gzip = 1
 
-
   api.nvim_create_augroup('vimrc', {})
-
-  -- Plugins are 'start' plugins so are loaded automatically, but to enable packer
-  -- commands we need to require plugins at some point
-  autocmd 'CursorHold' {
-    function()
-      require'lewis6991.plugins'
-    end,
-    once = true,
-    desc = 'Load Packer'
-  }
 end
 
 if 'Options' then
@@ -75,14 +40,12 @@ if 'Options' then
   o.backupdir:remove('.')
   o.breakindent    = true -- Indent wrapped lines to match start
   o.clipboard      = 'unnamedplus'
-  -- o.cmdheight      = 0
   o.expandtab      = true
   o.fillchars      = {eob=' ', diff = ' '}
   o.hidden         = true
   o.ignorecase     = true
   o.inccommand     = 'split'
   o.number         = true
-  o.previewheight  = 30
   o.pumblend       = 10
   o.relativenumber = true
   o.scrolloff      = 6
@@ -97,16 +60,13 @@ if 'Options' then
   o.tabstop        = 4
   o.termguicolors  = true
   o.textwidth      = 80
-  o.updatetime     = 200
   o.virtualedit    = 'block' -- allow cursor to exist where there is no character
   o.winblend       = 10
   o.wrap           = false
-  o.lazyredraw     = true
+  -- o.lazyredraw     = true
 
   -- Avoid showing message extra message when using completion
   o.shortmess:append('c')
-  -- o.shortmess:append('I')
-  -- o.shortmess:remove('F')
   o.completeopt:append{
     'noinsert',
     'menuone',
@@ -135,11 +95,13 @@ if 'Options' then
     o.spellfile = xdg_cfg..'/nvim/spell/en.utf-8.add'
   end
 
-  o.formatoptions:append('r') -- Automatically insert comment leader after <Enter> in Insert mode.
-  o.formatoptions:append('o') -- Automatically insert comment leader after 'o' or 'O' in Normal mode.
-  o.formatoptions:append('l') -- Long lines are not broken in insert mode.
-  o.formatoptions:remove('t') -- Do not auto wrap text
-  o.formatoptions:append('n') -- Recognise lists
+  o.formatoptions:append{
+    r = true, -- Automatically insert comment leader after <Enter> in Insert mode.
+    o = true, -- Automatically insert comment leader after 'o' or 'O' in Normal mode.
+    l = true, -- Long lines are not broken in insert mode.
+    t = true, -- Do not auto wrap text
+    n = true, -- Recognise lists
+  }
 end
 
 if 'Folding' then
@@ -178,7 +140,6 @@ if "Mappings" then
   nmap '<leader>eV' ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'
   nmap '<leader>el' ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>'
   nmap '<leader>s'  ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'
-  nmap '<leader>c'  '1z='
   nmap '<leader>w'  ':execute "resize ".line("$")<cr>'
 
   nmap 'k' {[[v:count == 0 ? 'gk' : 'k']], expr=true}
@@ -262,7 +223,8 @@ add_command('Hashbang', function()
   end
 end, {force = true})
 
-add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', force = true})
+-- add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', force = true})
+vim.cmd.cabbrev('L', 'lua=')
 
 autocmd 'VimResized' {'wincmd =', group='vimrc'}
 
