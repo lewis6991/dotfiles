@@ -105,8 +105,7 @@ local function get_diags(buflist, hl_base)
   return table.concat(diags, ' ')
 end
 
-local function cell(index)
-  local isSelected = fn.tabpagenr() == index
+local function cell(index, selected)
   local buflist = fn.tabpagebuflist(index)
   local winnr = fn.tabpagewinnr(index)
   local bufnr = buflist[winnr]
@@ -115,7 +114,7 @@ local function cell(index)
     return vim.bo[b].buftype ~= 'nofile'
   end, buflist)
 
-  local hl = not isSelected and 'TabLineFill' or 'TabLineSel'
+  local hl = not selected and 'TabLineFill' or 'TabLineSel'
   local common = '%#' .. hl .. '#'
   local ret = string.format('%s%%%dT %s%s%s ',
     common,
@@ -135,12 +134,33 @@ end
 local M = {}
 
 M.tabline = function()
-  local line = ''
-  for i = 1, fn.tabpagenr('$'), 1 do
-    line = line .. cell(i)
+  local parts = {}
+
+  local len = 0
+
+  local sel_start
+
+  for i = 1, fn.tabpagenr('$') do
+    local selected = fn.tabpagenr() == i
+
+    local part = cell(i, selected)
+
+    local width = api.nvim_eval_statusline(part, {use_tabline=true}).width
+
+    if selected then
+      sel_start = len
+    end
+
+    len = len + width
+
+    -- Make sure the start of the selected tab is always visibile
+    if sel_start and len > sel_start + vim.o.columns then
+      break
+    end
+
+    parts[#parts+1] = part
   end
-  line = line .. '%#TabLineFill#%='
-  return line
+  return table.concat(parts) .. '%#TabLineFill#%='
 end
 
 local function hldefs()
