@@ -25,6 +25,8 @@
 	au   = add -u
 	br   = branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:reset)%(align:10,left)%(refname:strip=2)%(end) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)'
 	bd   = branch -D
+	; bD   = push origin --delete
+	bdr = !sh -c 'git push origin --delete ${1} && git bd ${1}' -
 	cam  = commit --amend
 	cap  = !git ca && git publish
 	ci   = commit

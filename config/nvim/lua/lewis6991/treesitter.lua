@@ -35,7 +35,11 @@ require'nvim-treesitter.configs'.setup {
   indent = {
     enable = true,
     is_supported = function(lang)
-      return lang == 'lua'
+      return ({
+        lua = true,
+        c = true,
+        tcl = true
+      })[lang] or false
     end
   },
   incremental_selection = {
@@ -55,5 +59,3 @@ require'nvim-treesitter.configs'.setup {
   context_commentstring = { enable = true }
 }
 
--- parsers.list.lua.install_info.url = '/Users/lewis/projects/nvim-tree-sitter-lua'
--- parsers.list.lua.install_info.url = '/Users/lewis/.data/nvim/site/pack/packer/start/nvim-treesitter/grammar/lua'

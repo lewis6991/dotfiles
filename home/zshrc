@@ -158,4 +158,8 @@ add-zsh-hook precmd ring_bell
 
 ulimit -c unlimited
 
+if have_cmd jenv; then
+    eval "$(jenv init -)"
+fi
+
 unfunction have_cmd

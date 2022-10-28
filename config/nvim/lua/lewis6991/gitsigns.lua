@@ -6,6 +6,14 @@ local line = vim.fn.line
 vim.keymap.set('n', 'M', '<cmd>Gitsigns debug_messages<cr>')
 vim.keymap.set('n', 'm', '<cmd>Gitsigns dump_cache<cr>')
 
+local function wrap(f, ...)
+  local args = {...}
+  local nargs = select('#', ...)
+  return function()
+    f(unpack(args, 1, nargs))
+  end
+end
+
 local function on_attach(bufnr)
   local function map(mode, l, r, opts)
     opts = opts or {}
@@ -27,22 +35,23 @@ local function on_attach(bufnr)
 
   map('n', '<leader>hs', gitsigns.stage_hunk)
   map('n', '<leader>hr', gitsigns.reset_hunk)
-  map('v', '<leader>hs', function() gitsigns.stage_hunk({line("."), line("v")}) end)
-  map('v', '<leader>hh', function() gitsigns.reset_hunk({line("."), line("v")}) end)
+  map('v', '<leader>hs', wrap(gitsigns.stage_hunk, {line("."), line("v")}))
+  map('v', '<leader>hr', wrap(gitsigns.reset_hunk, {line("."), line("v")}))
   map('n', '<leader>hS', gitsigns.stage_buffer)
   map('n', '<leader>hu', gitsigns.undo_stage_hunk)
   map('n', '<leader>hR', gitsigns.reset_buffer)
   map('n', '<leader>hp', gitsigns.preview_hunk)
-  map('n', '<leader>hb', function() gitsigns.blame_line{full=true} end)
+  map('n', '<leader>hb', wrap(gitsigns.blame_line, {full=true}))
   map('n', '<leader>hd', gitsigns.diffthis)
-  map('n', '<leader>hD', function() gitsigns.diffthis('~') end)
+  map('n', '<leader>hD', wrap(gitsigns.diffthis, '~'))
+  map('n', '<leader>hB', wrap(gitsigns.change_base, '~'))
 
   -- Toggles
   map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
   map('n', '<leader>td', gitsigns.toggle_deleted)
   map('n', '<leader>tw', gitsigns.toggle_word_diff)
 
-  map('n', '<leader>hQ', function() gitsigns.setqflist('all') end)
+  map('n', '<leader>hQ', wrap(gitsigns.setqflist, 'all'))
   map('n', '<leader>hq', gitsigns.setqflist)
 
   map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
