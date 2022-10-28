@@ -1,9 +1,9 @@
 local api = vim.api
 local lsp = vim.lsp
 
-require'lsp_signature'.setup{
-  hi_parameter = "Visual",
-}
+---------------
+-- Functions --
+---------------
 
 local function map(bufnr, key, result, desc)
   vim.keymap.set('n', key, result, {silent = true, buffer=bufnr, desc=desc})
@@ -54,13 +54,8 @@ local on_attach_fns = {
     map(bufnr, 'gR', '<cmd>Telescope lsp_references layout_strategy=vertical<cr>')
   end,
 
-  aerial = function(client, bufnr)
-    local has_aerial, aerial = pcall(require, 'aerial')
-    if has_aerial then
-      aerial.setup{}
-      aerial.on_attach(client, bufnr)
-      map(bufnr, '<leader>a', '<cmd>AerialToggle!<CR>')
-    end
+  aerial = function(_, bufnr)
+    map(bufnr, '<leader>a', '<cmd>AerialToggle!<CR>')
   end,
 
   code_lens = function(client, bufnr)
@@ -72,7 +67,6 @@ local on_attach_fns = {
       lsp.codelens.refresh()
     end
   end
-
 }
 
 local function custom_on_attach(client, bufnr)
@@ -81,43 +75,38 @@ local function custom_on_attach(client, bufnr)
   end
 end
 
-local server_opts = {
-  sumneko_lua = function()
-    local opts = require("lua-dev").setup{
-      -- library = {
-      --   plugins = false
-      -- }
-    }
-    opts.settings.Lua.diagnostics = {
-      globals = { 'it', 'describe', 'before_each', 'after_each', 'pending' }
-    }
-    return opts
-  end
+-----------
+-- Setup --
+-----------
+
+require'lsp_signature'.setup{
+  hi_parameter = "Visual",
 }
 
-local function setup(config, opts)
-  if not config then
-    return
-  end
+require("neodev").setup{
+  library = {
+    plugins = false,
+  }
+}
 
-  local server_opts0 = server_opts[config.name] and server_opts[config.name]()
-
-  opts = vim.tbl_deep_extend('force', opts or {}, server_opts0 or {})
-
-  opts.on_attach = custom_on_attach
-
-  local has_cmp_lsp, cmp_lsp = pcall(require, 'cmp_nvm_lsp')
-  if has_cmp_lsp then
-    -- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
-    opts.capabilities = lsp.protocol.make_client_capabilities()
-    opts.capabilities = cmp_lsp.update_capabilities(opts.capabilities)
-  end
-
-  config.setup(opts)
-end
-
+require('aerial').setup()
 require('mason').setup()
 require('mason-lspconfig').setup{}
+
+local function setup(server)
+  require'lspconfig'[server].setup{
+    on_attach = custom_on_attach,
+    capabilities = require('cmp_nvim_lsp').default_capabilities()
+  }
+end
+
+setup('clangd')
+setup('cmake')
+setup('sumneko_lua')
+setup('pyright')
+setup('bashls')
+-- setup('teal-language-server')
+-- setup('jedi_language_server')
 
 if "metals" then
   local function setup_metals()
@@ -142,7 +131,8 @@ if "metals" then
       },
       settings = {
         showImplicitArguments = true,
-      }
+      },
+      capabilities = require("cmp_nvim_lsp").default_capabilities()
     }))
   end
 
@@ -150,20 +140,6 @@ if "metals" then
     pattern = {'scala', 'sbt'},
     callback = setup_metals
   })
-end
-
-local nvim_lsp = require'lspconfig'
-
-for _, server in ipairs{
-  'clangd',
-  'cmake',
-  'sumneko_lua',
-  'pyright',
-  'cmake',
-  'bashls',
-  -- 'jedi_language_server',
-} do
-  setup(nvim_lsp[server])
 end
 
 -- vim: foldminlines=1 foldnestmax=1 :
