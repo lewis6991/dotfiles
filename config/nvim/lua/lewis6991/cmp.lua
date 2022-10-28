@@ -2,14 +2,14 @@ require 'lewis6991.cmp_gh'
 
 local source_names = {
   buffer     = {'BUF'  , 'String'},
-  nvim_lsp   = {nil    , 'Question'},
+  nvim_lsp   = {'LSP'   , 'Question'},
   luasnip    = {'Snip' , 'CmpItemMenu'},
   -- nvim_lua   = {'Lua'  , 'ErrorMsg'},
   -- nvim_lua   = {'  '  , 'ErrorMsg'},
-  nvim_lua   = {nil    , 'ErrorMsg'},
-  path       = {'Path' , 'WarningMsg'},
+  nvim_lua   = {'Lua'   , 'ErrorMsg'},
+  path       = {'Path'  , 'WarningMsg'},
   -- tmux       = {'Tmux' , 'CursorLineNr'},
-  tmux       = {nil    , 'CursorLineNr'},
+  tmux       = {'Tmux' , 'CursorLineNr'},
   gh         = {'GH'   , 'CmpItemMenu'},
   rg         = {'RG'   , 'CmpItemMenu'},
   cmdline    = {'CMD'  , 'CmpItemMenu'},
@@ -33,7 +33,7 @@ local symbols = {
   Value = '',
   Enum = '',
   Keyword = '',
-  Snippet = '',
+  Snippet = ' Snip',
   Color = '',
   File = '',
   Reference = '',
@@ -55,6 +55,12 @@ local symbols = {
   Null = 'ﳠ',
 }
 
+local function min_length(min)
+  return function(entry, _)
+    return entry:get_word():len() > min
+  end
+end
+
 local cmp = require 'cmp'
 cmp.setup {
   snippet = {
@@ -71,13 +77,13 @@ cmp.setup {
       local nm = source_names[entry.source.name]
       if nm then
         vim_item.menu = nm[1]
-        vim_item.menu_hl_group = nm[2]
+        vim_item.menu_hl_group = 'NonText'
         vim_item.kind_hl_group = nm[2]
       else
         vim_item.menu = entry.source.name
       end
 
-      local maxwidth = 50
+      local maxwidth = 60
       if #vim_item.abbr > maxwidth then
         vim_item.abbr = vim_item.abbr:sub(1, maxwidth)..'...'
       end
@@ -89,36 +95,27 @@ cmp.setup {
     ['<S-Tab>'] = cmp.mapping.select_prev_item{ behavior = cmp.SelectBehavior.Insert },
     ['<CR>']    = cmp.mapping.confirm { select = true },
   },
-  sources = {
-    { name = 'gh'         },
-    { name = 'nvim_lsp'   },
-    { name = 'nvim_lsp_signature_help'},
-    { name = 'nvim_lua'   },
+  sources = cmp.config.sources({
     { name = 'luasnip'    },
-    { name = 'emoji'      },
+    { name = 'nvim_lsp'   },
     { name = 'path'       },
-    -- { name = 'treesitter' },
     { name = 'buffer'     },
-    { name = 'rg'         },
     { name = 'spell'      },
-    { name = 'tmux'       },
-  },
+    { name = 'tmux', entry_filter = min_length(2) },
+    { name = 'gh'         },
+    { name = 'emoji'      },
+  }),
   experimental = {
     ghost_text = true,
   }
 }
 
 cmp.setup.cmdline('/', {
-  sources = {
-    -- { name = 'treesitter' },
-    { name = 'buffer' }
-  },
+  sources = { { name = 'buffer' } },
   mapping = cmp.mapping.preset.cmdline()
 })
 
 cmp.setup.cmdline(':', {
-  sources = {
-    { name = 'cmdline' }
-  },
+  sources = { { name = 'cmdline' } },
   mapping = cmp.mapping.preset.cmdline()
 })
