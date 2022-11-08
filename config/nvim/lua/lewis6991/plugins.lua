@@ -60,7 +60,7 @@ packer.setup {
   'tpope/vim-fugitive',
   'tpope/vim-sleuth',
 
-  'kyazdani42/nvim-web-devicons',
+  'nvim-tree/nvim-web-devicons',
 
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',

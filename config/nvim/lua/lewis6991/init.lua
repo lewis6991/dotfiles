@@ -79,6 +79,7 @@ if 'Options' then
   o.mouse       = 'a'
 
   o.diffopt:append{
+    'linematch:100',
     'vertical',
     'foldcolumn:0',
     'indent-heuristic',
@@ -107,9 +108,9 @@ end
 if 'Folding' then
   vim.g.sh_fold_enabled = 1
 
-  o.foldmethod='syntax'
-  o.foldcolumn='0'
-  o.foldnestmax=3
+  o.foldmethod  = 'syntax'
+  o.foldcolumn  = '0'
+  o.foldnestmax = 3
   o.foldopen:append('jump')
   -- o.foldminlines=10
 end
@@ -179,6 +180,8 @@ if "Mappings" then
   -- map('n', '<S-Tab>', ':bprev<CR>', {})
   nmap '<Tab>'   {':tabnext<CR>', silent=true}
   nmap '<S-Tab>' {':tabprev<CR>', silent=true}
+
+  nmap '<C-S-O>' '<C-i>'
 
   nmap '|' {[[!v:count ? "<C-W>v<C-W><Right>" : '|']], expr=true, silent=true}
   nmap '_' {[[!v:count ? "<C-W>s<C-W><Down>"  : '_']], expr=true, silent=true}

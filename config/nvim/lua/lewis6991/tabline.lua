@@ -98,7 +98,7 @@ local function get_diags(buflist, hl_base)
       n = n + #vim.diagnostic.get(bufnr, {severity=ty})
     end
     if n > 0 then
-      diags[#diags+1] = ('%%#Diagnostic%s%s#%s %s'):format(ty, hl_base, icons[ty], n)
+      diags[#diags+1] = ('%%#Diagnostic%s%s#%s%s'):format(ty, hl_base, icons[ty], n)
     end
   end
 
@@ -153,7 +153,7 @@ M.tabline = function()
 
     len = len + width
 
-    -- Make sure the start of the selected tab is always visibile
+    -- Make sure the start of the selected tab is always visible
     if sel_start and len > sel_start + vim.o.columns then
       break
     end

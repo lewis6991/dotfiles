@@ -4,7 +4,7 @@ local api, fn = vim.api, vim.fn
 local N = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
 -- encoding
-local function enc(data)
+local function encode_base64(data)
   return ((data:gsub('.', function(x)
     local r, b = '', x:byte()
     for i = 8, 1, -1 do
@@ -23,13 +23,38 @@ local function enc(data)
     end)..({ '', '==', '=' })[#data%3+1])
 end
 
+local function osc52_copy(text)
+  local text_b64 = encode_base64(text)
+  local osc = string.format('%s]52;c;%s%s', string.char(0x1b), text_b64, string.char(0x07))
+  io.stderr:write(osc)
+end
+
 api.nvim_create_autocmd('TextYankPost', {
   callback = function()
-    local text_b64 = enc(fn.getreg(vim.v.event.regname))
-    local osc = string.format('%s]52;c;%s%s', string.char(0x1b), text_b64, string.char(0x07))
-
-    if fn.chansend(vim.v.stderr, osc) <= 0 then
-      api.nvim_echo({{'Failed to copy selection', 'ErrorMsg'}}, false, {})
-    end
+    osc52_copy(fn.getreg(vim.v.event.regname))
   end
 })
+
+-- local function paste()
+--   return {
+--     fn.split(fn.getreg(''), '\n'),
+--     fn.getregtype('')
+--   }
+-- end
+
+-- local function copy(lines, regtype)
+--   osc52_copy(table.concat(lines, '\n'))
+-- end
+
+-- vim.g.clipboard = {
+--   name = 'osc52',
+--   copy = {
+--     ["+"] = copy,
+--     ["*"] = copy
+--   },
+--   paste = {
+--     ["+"] = paste,
+--     ["*"] = paste
+--   },
+-- }
+

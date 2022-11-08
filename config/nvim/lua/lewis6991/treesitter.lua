@@ -13,22 +13,32 @@ require'treesitter-context'.setup {
   enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
   max_lines = 5, -- How many lines the window should span. Values <= 0 mean no limit.
   trim_scope = 'outer',
-}
-
-local langs = {
-  "bash",
-  "c",
-  "html",
-  "json",
-  "lua",
-  "make",
-  "python",
-  "rst",
-  "teal",
+  patterns = {
+    tcl = {
+      'procedure',
+      'conditional',
+      'while',
+      'foreach',
+      'namespace',
+    },
+  }
 }
 
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = langs,
+  ensure_installed = {
+    "bash",
+    "c",
+    "help",
+    "html",
+    "json",
+    "lua",
+    "make",
+    "markdown",
+    "markdown_inline",
+    "python",
+    "rst",
+    "teal",
+  },
   highlight = {
     enable = true,
   },
@@ -55,7 +65,15 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
     disable = {'rst', 'make'}
   },
-  playground = { enable = true }, -- EXITFREE lag
+  playground = { enable = true },
   context_commentstring = { enable = true }
 }
 
+-- local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
+-- parser_config.c = {
+--   install_info = {
+--     url = 'https://github.com/nvim-treesitter/tree-sitter-c',
+--     files = {"src/parser.c"},
+--     branch = "nvimc",
+--   }
+-- }
