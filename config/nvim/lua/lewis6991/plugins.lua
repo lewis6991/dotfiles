@@ -8,7 +8,7 @@ packer.setup {
     vim.cmd.color'github_dark'
   end},
 
-  'lewis6991/tcl.vim',
+  -- 'lewis6991/tcl.vim',
   'lewis6991/tree-sitter-tcl',
   -- 'lewis6991/systemverilog.vim',
   'lewis6991/impatient.nvim',
