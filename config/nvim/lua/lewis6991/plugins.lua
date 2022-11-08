@@ -52,7 +52,7 @@ packer.setup {
     }
   end},
 
-  'tpope/vim-commentary',
+  {'tpope/vim-commentary', keys = 'gc'}, -- plugin/commentary.vim - ~120LOC
   'tpope/vim-unimpaired',
   'tpope/vim-repeat',
   'tpope/vim-eunuch',
@@ -71,25 +71,14 @@ packer.setup {
   'folke/trouble.nvim', --  EXITFREE lag
   'bogado/file-line', -- Open file:line
 
-  {'AndrewRadev/bufferize.vim',
-    cmd = 'Bufferize',
-    config = function()
-      vim.g.bufferize_command = 'enew'
-      -- vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
-      vim.api.nvim_create_autocmd('FileType', {
-        pattern = 'bufferize',
-        group = 'vimrc',
-        callback = function()
-          vim.opt_local.wrap = true
-        end
-      })
-    end
-  },
+  {'AndrewRadev/bufferize.vim', config = function()
+    vim.g.bufferize_command = 'enew'
+    vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
+  end},
 
   --- Filetype plugins ---
-  {'tmux-plugins/vim-tmux', ft = 'tmux'  },
-  {'derekwyatt/vim-scala' , ft = 'scala' },
-  -- 'cespare/vim-toml',
+  'tmux-plugins/vim-tmux',
+  {'derekwyatt/vim-scala', ft = 'scala' },  -- plugin/scala.vim - ~150LOC
   'martinda/Jenkinsfile-vim-syntax',
   'teal-language/vim-teal',
   'fladson/vim-kitty',
@@ -132,14 +121,12 @@ packer.setup {
 
   'ryanoasis/vim-devicons',
 
-  {'neapel/vim-bnfc-syntax',
-    config = function()
-      -- Argh, why don't syntax plugins ever set commentstring!
-      vim.cmd[[autocmd vimrc FileType bnfc setlocal commentstring=--%s]]
-      -- This syntax works pretty well for regular BNF too
-      vim.cmd[[autocmd vimrc BufNewFile,BufRead *.bnf setlocal filetype=bnfc]]
-    end
-  },
+  {'neapel/vim-bnfc-syntax', config = function()
+    -- Argh, why don't syntax plugins ever set commentstring!
+    vim.cmd[[autocmd vimrc FileType bnfc setlocal commentstring=--%s]]
+    -- This syntax works pretty well for regular BNF too
+    vim.cmd[[autocmd vimrc BufNewFile,BufRead *.bnf setlocal filetype=bnfc]]
+  end},
 
   {'whatyouhide/vim-lengthmatters', config = function()
     vim.g.lengthmatters_highlight_one_column = 1
@@ -147,7 +134,7 @@ packer.setup {
   end},
 
   {'junegunn/vim-easy-align',
-    keys = 'ga',
+    keys = 'ga', -- plugin/easy_align.vim - ~ 140LOC
     config = function()
       vim.keymap.set({'x', 'n'}, 'ga', '<Plug>(EasyAlign)')
       vim.g.easy_align_delimiters = {
