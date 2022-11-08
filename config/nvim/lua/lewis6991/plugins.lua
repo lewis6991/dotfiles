@@ -1,6 +1,4 @@
-local packer = require('lewis6991.packer')
-
-packer.setup {
+require('lewis6991.packer').setup {
   'wbthomason/packer.nvim',
 
   -- 'lewis6991/moonlight.vim',
