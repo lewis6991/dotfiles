@@ -210,9 +210,7 @@ packer.setup {
     config = "require'lewis6991.telescope'"
   },
 
-  {'neovim/nvimdev.nvim',
-    requires = {'neomake/neomake'}
-  },
+  'neovim/nvimdev.nvim',
 
   {'nvim-treesitter/nvim-treesitter',
     requires = {
