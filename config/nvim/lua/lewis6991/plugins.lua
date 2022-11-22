@@ -155,18 +155,172 @@ require('lewis6991.packer').setup {
     end
   },
 
-  {'neovim/nvim-lspconfig',
-    requires = {
-      'stevearc/aerial.nvim',
-      'williamboman/mason.nvim',
-      'williamboman/mason-lspconfig.nvim',
-      'scalameta/nvim-metals',
-      'folke/lua-dev.nvim',
-      'ray-x/lsp_signature.nvim',
-      'theHamsta/nvim-semantic-tokens',
-    },
-    config = "require'lewis6991.lsp'"
-  },
+  {"SmiteshP/nvim-navic", config = function()
+    local autocmd = require 'lewis6991.nvim'.autocmd
+    autocmd 'LspAttach' {
+      desc = 'navic',
+      function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        local bufnr = args.buf
+        if client.server_capabilities.documentSymbolProvider then
+          local navic = require("nvim-navic")
+          navic.setup{ highlight = true }
+
+          if vim.o.winbar == '' then
+            vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
+          end
+          navic.attach(client, bufnr)
+        end
+      end
+    }
+
+    for k, v in pairs{
+      NavicIconsModule    = '@namespace',
+      NavicIconsNamespace = '@namespace',
+      NavicIconsPackage   = '@namespace',
+      NavicIconsClass     = '@namespace',
+      NavicIconsMethod    = '@method',
+      NavicIconsField     = '@field',
+      NavicIconsFunction  = '@function',
+      NavicIconsVariable  = '@variable',
+      NavicIconsString    = '@string',
+      NavicText           = 'TabLineFill',
+    } do
+      vim.api.nvim_set_hl(0, k, {default = true, link = v})
+    end
+    -- NavicIconsFile
+    -- NavicIconsProperty
+    -- NavicIconsConstructor
+    -- NavicIconsEnum
+    -- NavicIconsInterface
+    -- NavicIconsConstant
+    -- NavicIconsNumber
+    -- NavicIconsBoolean
+    -- NavicIconsArray
+    -- NavicIconsObject
+    -- NavicIconsKey
+    -- NavicIconsNull
+    -- NavicIconsEnumMember
+    -- NavicIconsStruct
+    -- NavicIconsEvent
+    -- NavicIconsOperator
+    -- NavicIconsTypeParameter
+    -- NavicSeparator
+  end},
+
+  {'theHamsta/nvim-semantic-tokens', config = function()
+    local autocmd = require 'lewis6991.nvim'.autocmd
+
+    autocmd 'LspAttach' {
+      desc = 'semantic_tokens setup',
+      once = true,
+      function()
+        require("nvim-semantic-tokens").setup {
+          preset = "default",
+          -- highlighters is a list of modules following the interface of nvim-semantic-tokens.table-highlighter or
+          -- function with the signature: highlight_token(ctx, token, highlight) where
+          --        ctx (as defined in :h lsp-handler)
+          --        token  (as defined in :h vim.lsp.semantic_tokens.on_full())
+          --        highlight (a helper function that you can call (also multiple times) with the determined highlight group(s) as the only parameter)
+          highlighters = { require 'nvim-semantic-tokens.table-highlighter'}
+        }
+        vim.api.nvim_create_augroup('SemanticTokens', {})
+      end
+    }
+
+    autocmd 'LspAttach' {
+      desc = 'semantic_tokens attach',
+      function(args)
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
+        local bufnr = args.buf
+        local caps = client.server_capabilities
+        if caps.semanticTokensProvider and caps.semanticTokensProvider.full then
+          autocmd 'TextChanged' {
+            group = 'SemanticTokens',
+            buffer = bufnr,
+            function()
+              vim.lsp.buf.semantic_tokens_full()
+            end,
+          }
+          -- fire it first time on load as well
+          vim.lsp.buf.semantic_tokens_full()
+        end
+      end
+    }
+  end},
+
+  {'ray-x/lsp_signature.nvim', config = function()
+    require'lsp_signature'.setup{ hi_parameter = "Visual" }
+  end},
+
+  {'folke/neodev.nvim', config = function()
+    require("neodev").setup{ library = { plugins = false } }
+  end},
+
+  {'stevearc/aerial.nvim', config = function()
+    require('aerial').setup()
+
+    vim.api.nvim_create_autocmd('LspAttach', {
+      callback = function(args)
+        vim.keymap.set('n', '<leader>a', '<cmd>AerialToggle!<CR>', { buffer = args.buf})
+      end
+    })
+  end},
+
+  {'williamboman/mason.nvim', config = function()
+    require('mason').setup()
+  end},
+
+  {'williamboman/mason-lspconfig.nvim', config = function()
+    require('mason-lspconfig').setup{}
+  end},
+
+  {'scalameta/nvim-metals', config = function()
+    local function setup_metals()
+      local metals = require'metals'
+
+      metals.initialize_or_attach(vim.tbl_deep_extend('force', metals.bare_config(), {
+        handlers = {
+          ["metals/status"] = function(_, status, ctx)
+            vim.lsp.handlers["$/progress"](_, {
+              token = 1,
+              value = {
+                kind = status.show and 'begin' or status.hide and 'end' or "report",
+                message = status.text,
+              }
+            }, ctx)
+          end
+        },
+
+        init_options = {
+          statusBarProvider = 'on'
+        },
+        settings = {
+          showImplicitArguments = true,
+        },
+        capabilities = require("cmp_nvim_lsp").default_capabilities()
+      }))
+    end
+
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = {'scala', 'sbt'},
+      callback = setup_metals
+    })
+  end},
+
+  {'neovim/nvim-lspconfig', config = function()
+    local function setup(server)
+      require'lspconfig'[server].setup{
+        capabilities = require('cmp_nvim_lsp').default_capabilities()
+      }
+    end
+
+    setup('clangd')
+    setup('cmake')
+    setup('sumneko_lua')
+    setup('pyright')
+    setup('bashls')
+  end},
 
   {'rmagatti/goto-preview', config = function()
     require('goto-preview').setup {
@@ -208,7 +362,9 @@ require('lewis6991.packer').setup {
     config = "require'lewis6991.telescope'"
   },
 
-  'neovim/nvimdev.nvim',
+  {'neovim/nvimdev.nvim', config = function()
+    vim.g.nvimdev_auto_init = 0
+  end},
 
   {'nvim-treesitter/nvim-treesitter',
     requires = {

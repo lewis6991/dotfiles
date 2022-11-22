@@ -3,11 +3,10 @@ require 'lewis6991.tabline'
 require 'lewis6991.diagnostic'
 require 'lewis6991.jump'
 require 'lewis6991.clipboard'
-require 'lewis6991.plugins'
 
 local nvim = require 'lewis6991.nvim'
 
-local o, api = vim.opt, vim.api
+local o, api, lsp = vim.opt, vim.api, vim.lsp
 
 local add_command = api.nvim_create_user_command
 
@@ -194,6 +193,33 @@ if "Mappings" then
   nmap ']d' (vim.diagnostic.goto_next)
   nmap '[d' (vim.diagnostic.goto_prev)
   nmap 'go' (vim.diagnostic.open_float)
+
+  autocmd 'LspAttach' {
+    desc = 'lsp mappings',
+    function(args)
+      local bufnr = args.buf
+      nmap '<C-]>'      {lsp.buf.definition, desc = 'lsp.buf.definition', buffer = bufnr  }
+      nmap '<leader>cl' {lsp.codelens.run  , desc = 'lsp.codelens.run'  , buffer = bufnr    }
+      -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
+      -- map(bufnr, 'gK'        , lsp.buf.signature_help, 'lsp.buf.signature_help')
+      nmap '<C-s>'      { lsp.buf.signature_help, desc = 'lsp.buf.signature_help', buffer = bufnr}
+      nmap '<leader>rn' { lsp.buf.rename        , desc = 'lsp.buf.rename'        , buffer = bufnr}
+      nmap '<leader>ca' { lsp.buf.code_action   , desc = 'lsp.buf.code_action'   , buffer = bufnr}
+
+      -- nmap 'gr' { lsp.buf.references }
+      nmap 'gr' '<cmd>Trouble lsp_references<cr>'
+      nmap 'gR' '<cmd>Telescope lsp_references layout_strategy=vertical<cr>'
+
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client.server_capabilities.code_lens then
+        autocmd {'BufEnter', 'CursorHold', 'InsertLeave'} {
+          lsp.codelens.refresh,
+          buffer = args.buf,
+        }
+        lsp.codelens.refresh()
+      end
+    end
+  }
 end
 
 add_command('Hashbang', function()
@@ -249,6 +275,8 @@ autocmd 'TabNew' {
   once = true,
   group = 'vimrc'
 }
+
+require 'lewis6991.plugins'
 
 return M
 

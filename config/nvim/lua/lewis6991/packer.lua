@@ -11,7 +11,7 @@ local function bootstap()
     print("Downloading packer.nvim...")
     print(vim.fn.system(string.format(
       'git clone %s %s',
-      'https://github.com/wbthomason/packer.nvim',
+      'https://github.com/lewis6991/packer.nvim',
       install_path
     )))
   end
@@ -46,44 +46,12 @@ local function use_local(init)
   try_local{init}
 end
 
--- Hacky way of auto clean/install/compile
-local function automize(packer)
-  vim.api.nvim_create_augroup('plugins', {})
-  vim.api.nvim_create_autocmd('BufWritePost', {
-    group = 'plugins',
-    pattern = '*/lua/lewis6991/plugins.lua',
-    callback = function()
-      package.loaded["lewis6991.plugins"] = nil
-      require("lewis6991.plugins")
-      require('packer').clean()
-    end
-  })
-
-  local state = 'cleaned'
-  local orig_complete = packer.on_complete
-  packer.on_complete = vim.schedule_wrap(function()
-    if state == 'cleaned' then
-      packer.install()
-      state = 'installed'
-    elseif state == 'installed' then
-      packer.compile()
-      -- packer.compile('profile=true')
-      state = 'compiled'
-    elseif state == 'compiled' then
-      packer.on_complete = orig_complete
-      state = 'done'
-    end
-  end)
-end
-
 function M.setup(init)
   bootstap()
 
   use_local(init)
 
   local packer = require('packer')
-
-  automize(packer)
 
   packer.startup{init,
     config = {
@@ -100,7 +68,7 @@ function M.setup(init)
         -- open_cmd = 'edit \\[packer\\]',
         prompt_border = 'rounded'
       },
-      autoremove = true
+      -- autoremove = true
     }
   }
 
