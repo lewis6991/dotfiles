@@ -87,4 +87,5 @@ gitsigns.setup{
   _extmark_signs = true,
   _threaded_diff = true,
   word_diff = true,
+  trouble = true,
 }

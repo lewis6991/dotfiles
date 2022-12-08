@@ -3,6 +3,7 @@ require 'lewis6991.tabline'
 require 'lewis6991.diagnostic'
 require 'lewis6991.jump'
 require 'lewis6991.clipboard'
+require 'lewis6991.plugins'
 
 local nvim = require 'lewis6991.nvim'
 
@@ -275,8 +276,6 @@ autocmd 'TabNew' {
   once = true,
   group = 'vimrc'
 }
-
-require 'lewis6991.plugins'
 
 return M
 

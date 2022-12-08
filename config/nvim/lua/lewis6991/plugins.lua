@@ -1,6 +1,19 @@
 require('lewis6991.packer').setup {
   'wbthomason/packer.nvim',
 
+local function keys(k)
+  return function(load_plugin)
+    vim.keymap.set('n', k, function()
+      vim.keymap.del('n', k)
+      load_plugin()
+      vim.api.nvim_input(k)
+    end, {
+        desc  = 'cond lazy_loader'
+      })
+  end
+end
+
+require('lewis6991.packer').setup {
   -- 'lewis6991/moonlight.vim',
   {'lewis6991/github_dark.nvim', config = function()
     vim.cmd.color'github_dark'
@@ -9,10 +22,10 @@ require('lewis6991.packer').setup {
   -- 'lewis6991/tcl.vim',
   'lewis6991/tree-sitter-tcl',
   -- 'lewis6991/systemverilog.vim',
-  'lewis6991/impatient.nvim',
+  {'lewis6991/impatient.nvim', start = true},
   {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
   {'lewis6991/cleanfold.nvim'},
-  'lewis6991/brodir.nvim',
+  {'lewis6991/brodir.nvim', keys = '-', cmd = 'Brodir'},
   'lewis6991/vc.nvim',
 
   {'lewis6991/foldsigns.nvim',
@@ -23,18 +36,21 @@ require('lewis6991.packer').setup {
     end
   },
 
-  {'lewis6991/hover.nvim', config  = function()
-    require('hover').setup{
-      init = function()
-        require('hover.providers.lsp')
-        require('hover.providers.gh')
-        require('hover.providers.dictionary')
-        require('hover.providers.man')
-      end
-    }
-    vim.keymap.set('n', 'K', require('hover').hover, {desc='hover.nvim'})
-    vim.keymap.set('n', 'gK', require('hover').hover_select, {desc='hover.nvim (select)'})
-  end},
+  {'lewis6991/hover.nvim',
+    config = function()
+      require('hover').setup{
+        init = function()
+          require('hover.providers.lsp')
+          require('hover.providers.gh')
+          require('hover.providers.gh_user')
+          require('hover.providers.dictionary')
+          require('hover.providers.man')
+        end
+      }
+      vim.keymap.set('n', 'K', require('hover').hover, {desc='hover.nvim'})
+      vim.keymap.set('n', 'gK', require('hover').hover_select, {desc='hover.nvim (select)'})
+    end
+  },
 
   {'lewis6991/satellite.nvim', config = function()
     require('satellite').setup()
@@ -66,7 +82,9 @@ require('lewis6991.packer').setup {
   {'sindrets/diffview.nvim',
     requires = { 'nvim-lua/plenary.nvim' }
   },
-  'folke/trouble.nvim', --  EXITFREE lag
+
+  {'folke/trouble.nvim', cmd = 'Trouble' },
+
   'bogado/file-line', -- Open file:line
 
   {'AndrewRadev/bufferize.vim', config = function()
@@ -83,8 +101,13 @@ require('lewis6991.packer').setup {
   'raimon49/requirements.txt.vim',
 
   {'rcarriga/nvim-notify', config = function()
-    vim.notify = require("notify")
+    vim.notify = function(...)
+      vim.notify = require("notify")
+      return vim.notify(...)
+    end
   end},
+
+  {'dstein64/vim-startuptime', cmd = 'StartupTime'},
 
   {'j-hui/fidget.nvim', config = function()
     require'fidget'.setup{
@@ -126,13 +149,13 @@ require('lewis6991.packer').setup {
     vim.cmd[[autocmd vimrc BufNewFile,BufRead *.bnf setlocal filetype=bnfc]]
   end},
 
-  {'whatyouhide/vim-lengthmatters', config = function()
+  {'whatyouhide/vim-lengthmatters', config_pre = function()
     vim.g.lengthmatters_highlight_one_column = 1
     vim.g.lengthmatters_excluded = {'packer'}
   end},
 
   {'junegunn/vim-easy-align',
-    keys = 'ga', -- plugin/easy_align.vim - ~ 140LOC
+    cond = keys('ga'),
     config = function()
       vim.keymap.set({'x', 'n'}, 'ga', '<Plug>(EasyAlign)')
       vim.g.easy_align_delimiters = {
@@ -253,10 +276,6 @@ require('lewis6991.packer').setup {
     require'lsp_signature'.setup{ hi_parameter = "Visual" }
   end},
 
-  {'folke/neodev.nvim', config = function()
-    require("neodev").setup{ library = { plugins = false } }
-  end},
-
   {'stevearc/aerial.nvim', config = function()
     require('aerial').setup()
 
@@ -267,13 +286,20 @@ require('lewis6991.packer').setup {
     })
   end},
 
-  {'williamboman/mason.nvim', config = function()
-    require('mason').setup()
-  end},
+  {'williamboman/mason.nvim',
+    config = function()
+      require('mason').setup()
+    end,
+  },
 
-  {'williamboman/mason-lspconfig.nvim', config = function()
-    require('mason-lspconfig').setup{}
-  end},
+  {'williamboman/mason-lspconfig.nvim',
+    config = function()
+      require('mason-lspconfig').setup{}
+    end,
+    requires = {
+      'williamboman/mason.nvim',
+    }
+  },
 
   {'scalameta/nvim-metals', config = function()
     local function setup_metals()
@@ -306,57 +332,118 @@ require('lewis6991.packer').setup {
       pattern = {'scala', 'sbt'},
       callback = setup_metals
     })
-  end},
-
-  {'neovim/nvim-lspconfig', config = function()
-    local function setup(server)
-      require'lspconfig'[server].setup{
-        capabilities = require('cmp_nvim_lsp').default_capabilities()
-      }
-    end
-
-    setup('clangd')
-    setup('cmake')
-    setup('sumneko_lua')
-    setup('pyright')
-    setup('bashls')
-  end},
-
-  {'rmagatti/goto-preview', config = function()
-    require('goto-preview').setup {
-      opacity = 0,
-      height = 30
+  end,
+    requires = {
+      'hrsh7th/cmp-nvim-lsp',
     }
-    vim.keymap.set('n', 'gp', require('goto-preview').goto_preview_definition)
-  end},
+  },
+
+  {'neovim/nvim-lspconfig',
+    requires = {
+      'hrsh7th/cmp-nvim-lsp',
+      'folke/neodev.nvim',
+    },
+    config = function()
+      local function setup(server, settings)
+        require'lspconfig'[server].setup{
+          capabilities = require('cmp_nvim_lsp').default_capabilities(),
+          settings = settings
+        }
+      end
+
+      require("neodev").setup{}
+
+      setup('clangd')
+      setup('cmake')
+      setup('sumneko_lua', {
+        Lua = {
+          diagnostics = {
+            groupSeverity = {
+              strong = 'Warning',
+              strict = 'Warning',
+            },
+            groupFileStatus = {
+              ["ambiguity"]  = "Opened",
+              ["await"]      = "Opened",
+              ["codestyle"]  = "None",
+              ["duplicate"]  = "Opened",
+              ["global"]     = "Opened",
+              ["luadoc"]     = "Opened",
+              ["redefined"]  = "Opened",
+              ["strict"]     = "Opened",
+              ["strong"]     = "Opened",
+              ["type-check"] = "Opened",
+              ["unbalanced"] = "Opened",
+              ["unused"]     = "Opened",
+            },
+            unusedLocalExclude = { '_*' },
+            globals = {
+              'it',
+              'describe',
+              'before_each',
+              'after_each',
+              'pending'
+            }
+          },
+        }
+      })
+      setup('pyright')
+      setup('bashls')
+      setup('teal_ls')
+    end,
+  },
+
+  {'rmagatti/goto-preview',
+    keys = 'gp',
+    config = function()
+      require('goto-preview').setup {
+        opacity = 0,
+        height = 30
+      }
+      vim.keymap.set('n', 'gp', require('goto-preview').goto_preview_definition)
+    end
+  },
 
   {'jose-elias-alvarez/null-ls.nvim', config = [[require('lewis6991.null-ls')]]},
 
+  -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
+  -- files
+  {'hrsh7th/cmp-nvim-lsp'               , requires = 'hrsh7th/nvim-cmp' },
+  {'hrsh7th/cmp-nvim-lsp-signature-help', requires = 'hrsh7th/nvim-cmp' },
+  {'hrsh7th/cmp-buffer'                 , requires = 'hrsh7th/nvim-cmp' },
+  {'hrsh7th/cmp-emoji'                  , requires = 'hrsh7th/nvim-cmp' },
+  {'hrsh7th/cmp-path'                   , requires = 'hrsh7th/nvim-cmp' },
+  {'hrsh7th/cmp-nvim-lua'               , requires = 'hrsh7th/nvim-cmp' },
+  {'hrsh7th/cmp-cmdline'                , requires = 'hrsh7th/nvim-cmp' },
+  {'lukas-reineke/cmp-rg'               , requires = 'hrsh7th/nvim-cmp' },
+  {'f3fora/cmp-spell'                   , requires = 'hrsh7th/nvim-cmp' },
+  {'andersevenrud/cmp-tmux'             , requires = 'hrsh7th/nvim-cmp' },
+  -- {'saadparwaiz1/cmp_luasnip'           , requires = 'hrsh7th/nvim-cmp' },
+
   {'hrsh7th/nvim-cmp',
+    -- event = {'InsertEnter', 'CmdlineEnter'},
     requires = {
-      'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/cmp-nvim-lsp-signature-help',
-      'hrsh7th/cmp-buffer',
-      'hrsh7th/cmp-emoji',
-      'hrsh7th/cmp-path',
-      'hrsh7th/cmp-nvim-lua',
-      'hrsh7th/cmp-cmdline',
+      -- {'L3MON4D3/LuaSnip', event = 'InsertEnter'},
+      {'L3MON4D3/LuaSnip' },
       -- 'dmitmel/cmp-cmdline-history',
-      'lukas-reineke/cmp-rg',
-      'f3fora/cmp-spell',
-      'andersevenrud/cmp-tmux',
-      'L3MON4D3/LuaSnip',
-      'saadparwaiz1/cmp_luasnip',
       -- 'ray-x/cmp-treesitter',
+      'nvim-lua/plenary.nvim'
     },
     config = [[require('lewis6991.cmp')]]
   },
 
-  {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
   {'nvim-lua/telescope.nvim',
+
+    -- For packer dev, not actually necessary
+    cmd = 'Telescope',
+    keys = {
+      {'n', '<C-p>'},
+      {'n', '<C- >'},
+    },
+
     requires = {
-      'nvim-telescope/telescope-ui-select.nvim',
-      'nvim-telescope/telescope-fzf-native.nvim',
+      {'nvim-telescope/telescope-ui-select.nvim' },
+      {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       'nvim-lua/plenary.nvim'
     },
     config = "require'lewis6991.telescope'"
@@ -367,6 +454,7 @@ require('lewis6991.packer').setup {
   end},
 
   {'nvim-treesitter/nvim-treesitter',
+    start = true,
     requires = {
       'nvim-treesitter/nvim-treesitter-context',
       'JoosepAlviste/nvim-ts-context-commentstring',
@@ -374,5 +462,8 @@ require('lewis6991.packer').setup {
     },
     run = ':TSUpdate',
     config = "require'lewis6991.treesitter'",
-  }
+  },
+
+  -- For testin packer. I don't use these
+  { 'folke/noice.nvim', requires = 'MunifTanjim/nui.nvim' },
 }

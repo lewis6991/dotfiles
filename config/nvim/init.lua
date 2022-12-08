@@ -1,3 +1,10 @@
+_G.__luacache_config = {
+  -- This obscures bugs in packer.nvim and plugin loading order
+  modpaths = {
+    enable = false,
+  }
+}
+
 local ok, impatient = pcall(require, 'impatient')
 if ok then
   impatient.enable_profile()
