@@ -78,13 +78,16 @@ end
 
 local function filetype_symbol()
   do return '' end
-  local ok, res = pcall(api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol', {})
-  if ok then
+  local res = vim.F.npcall(api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol', {})
+  if res then
     return res
   end
-  local name = api.nvim_buf_get_name(0)
-  res = require'nvim-web-devicons'.get_icon(name, vim.bo.filetype, {default = true})
-  return res
+  local devicons = vim.F.npcall(require, 'nvim-web-devicons')
+  if devicons then
+    local name = api.nvim_buf_get_name(0)
+    return devicons.get_icon(name, vim.bo.filetype, {default = true})
+  end
+  return ''
 end
 
 local function is_treesitter()
