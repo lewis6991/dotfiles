@@ -269,13 +269,20 @@ end
 
 autocmd 'TabNew' {
   function()
-    if not vim.bo.modified and vim.api.nvim_buf_get_name(0) == '' then
-      vim.api.nvim_buf_delete(0, {})
+    if not vim.bo.modified and api.nvim_buf_get_name(0) == '' then
+      api.nvim_buf_delete(0, {})
     end
   end,
   once = true,
   group = 'vimrc'
 }
+
+function print(...)
+  for _, x in ipairs{...} do
+    api.nvim_out_write(vim.inspect(x, {newline=' ', indent=''}))
+  end
+  api.nvim_out_write('\n')
+end
 
 return M
 

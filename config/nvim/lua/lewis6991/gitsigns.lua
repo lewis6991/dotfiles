@@ -44,8 +44,8 @@ local function on_attach(bufnr)
   map('n', '<leader>hi', gitsigns.preview_hunk_inline)
   map('n', '<leader>hb', wrap(gitsigns.blame_line, {full=true}))
   map('n', '<leader>hd', gitsigns.diffthis)
-  map('n', '<leader>hD', wrap(gitsigns.diffthis, '~'))
-  map('n', '<leader>hB', wrap(gitsigns.change_base, '~'))
+  map('n', '<leader>hD', ':Gitsigns diffthis ~')
+  map('n', '<leader>hB', ':Gitsigns change_base ~')
 
   -- Toggles
   map('n', '<leader>tb', gitsigns.toggle_current_line_blame)

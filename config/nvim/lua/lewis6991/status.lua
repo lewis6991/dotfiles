@@ -77,6 +77,7 @@ function M.blame()
 end
 
 local function filetype_symbol()
+  do return '' end
   local ok, res = pcall(api.nvim_call_function, 'WebDevIconsGetFileTypeSymbol', {})
   if ok then
     return res

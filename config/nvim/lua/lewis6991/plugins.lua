@@ -1,6 +1,3 @@
-require('lewis6991.packer').setup {
-  'wbthomason/packer.nvim',
-
 local function keys(k)
   return function(load_plugin)
     vim.keymap.set('n', k, function()
@@ -12,6 +9,8 @@ local function keys(k)
       })
   end
 end
+
+vim.opt.rtp:prepend('~/projects/packer.nvim')
 
 require('lewis6991.packer').setup {
   -- 'lewis6991/moonlight.vim',
