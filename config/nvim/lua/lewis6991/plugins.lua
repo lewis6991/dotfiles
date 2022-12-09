@@ -350,7 +350,11 @@ require('lewis6991.packer').setup {
         }
       end
 
-      require("neodev").setup{}
+      require("neodev").setup{
+        library = {
+          plugins = false, -- installed opt or start plugins in packpath
+        },
+      }
 
       setup('clangd')
       setup('cmake')
