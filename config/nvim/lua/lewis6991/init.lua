@@ -79,7 +79,7 @@ if 'Options' then
   o.mouse       = 'a'
 
   o.diffopt:append{
-    'linematch:100',
+    'linematch:50',
     'vertical',
     'foldcolumn:0',
     'indent-heuristic',

@@ -5,6 +5,7 @@
 [diff]
 	tool = vimdiff
 	colorMoved = default
+	pager = delta --side-by-side
 
 [merge]
 	conflictstyle = zdiff3
@@ -98,7 +99,6 @@
 	commitGraph  = true
 	editor       = nvim
 	excludesfile = ~/.gitignore
-	pager = delta --side-by-side
 
 [pull]
 	rebase = true
