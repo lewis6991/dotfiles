@@ -99,6 +99,7 @@ require('lewis6991.packer').setup {
   'raimon49/requirements.txt.vim',
 
   {'rcarriga/nvim-notify', config = function()
+    --- @diagnostic disable-next-line
     vim.notify = function(...)
       vim.notify = require("notify")
       return vim.notify(...)
@@ -319,10 +320,10 @@ require('lewis6991.packer').setup {
       setup('sumneko_lua', {
         Lua = {
           diagnostics = {
-            groupSeverity = {
-              strong = 'Warning',
-              strict = 'Warning',
-            },
+            -- groupSeverity = {
+            --   strong = 'Warning',
+            --   strict = 'Warning',
+            -- },
             groupFileStatus = {
               ["ambiguity"]  = "Opened",
               ["await"]      = "Opened",
@@ -331,8 +332,8 @@ require('lewis6991.packer').setup {
               ["global"]     = "Opened",
               ["luadoc"]     = "Opened",
               ["redefined"]  = "Opened",
-              ["strict"]     = "Opened",
-              ["strong"]     = "Opened",
+              -- ["strict"]     = "Opened",
+              -- ["strong"]     = "Opened",
               ["type-check"] = "Opened",
               ["unbalanced"] = "Opened",
               ["unused"]     = "Opened",
