@@ -92,15 +92,16 @@ null_ls.setup {
       }
     },
 
-    null_ls.builtins.diagnostics.shellcheck.with {
-      extra_args = {
-        '--shell', 'bash',
-        '--exclude', table.concat({
-          '1003', -- Want to escape a single quote? echo 'This is how it'\''s done'.
-          '2016', -- Expressions don't expand in single quotes
-        }, ',')
-      }
-    },
+    -- use bash-language-server
+    -- null_ls.builtins.diagnostics.shellcheck.with {
+    --   extra_args = {
+    --     '--shell', 'bash',
+    --     '--exclude', table.concat({
+    --       '1003', -- Want to escape a single quote? echo 'This is how it'\''s done'.
+    --       '2016', -- Expressions don't expand in single quotes
+    --     }, ',')
+    --   }
+    -- },
 
     -- null_ls.builtins.diagnostics.mypy,
     -- null_ls.builtins.diagnostics.pylint,
