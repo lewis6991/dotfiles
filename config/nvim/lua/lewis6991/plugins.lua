@@ -77,7 +77,6 @@ require('lewis6991.packer').setup {
 
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',
-  'dietsche/vim-lastplace',
   {'sindrets/diffview.nvim',
     requires = { 'nvim-lua/plenary.nvim' }
   },
