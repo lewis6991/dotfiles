@@ -20,9 +20,10 @@ local cmap = nvim.cmap
 local M = {}
 
 if 'Plugins' then
-  -- Load any plugins which are work sensitive.
-  for _, f in ipairs(vim.fn.globpath('~/gerrit/', '*', false, true)) do
-    o.rtp:prepend(f)
+  for path, t in vim.fs.dir('~/gerrit') do
+    if t == "directory" then
+      o.rtp:prepend('~/gerrit/'..path)
+    end
   end
 
   -- Stop loading built in plugins
