@@ -4,6 +4,7 @@ require 'lewis6991.diagnostic'
 require 'lewis6991.jump'
 require 'lewis6991.clipboard'
 require 'lewis6991.plugins'
+require 'lewis6991.luv-hygiene'
 
 local nvim = require 'lewis6991.nvim'
 
