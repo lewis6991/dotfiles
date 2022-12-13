@@ -279,7 +279,11 @@ autocmd 'TabNew' {
 
 function print(...)
   for _, x in ipairs{...} do
-    api.nvim_out_write(vim.inspect(x, {newline=' ', indent=''}))
+    if type(x) == 'string' then
+      api.nvim_out_write(x)
+    else
+      api.nvim_out_write(vim.inspect(x, {newline=' ', indent=''}))
+    end
   end
   api.nvim_out_write('\n')
 end
