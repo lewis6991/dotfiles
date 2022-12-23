@@ -22,7 +22,7 @@
 [alias]
 	a    = add
 	f    = fetch
-	ai   = !nvim -c 'Gstatus | wincmd o' .
+	ai   = !nvim -c 'Git | wincmd o' .
 	au   = add -u
 	br   = branch --format='%(color: bold green)%(align:2,left)%(HEAD)%(end)%(color:reset)%(align:10,left)%(refname:strip=2)%(end) -> %(color:blue)%(upstream:strip=2) %(color:cyan)%(upstream:track)'
 	bd   = branch -D
@@ -49,16 +49,6 @@
 	pop  = stash pop
 	lgs = lg origin...
 	sub = submodule
-	new = "!f() {\
-		    set -e; \
-			branch=$(git rev-parse --abbrev-ref HEAD); \
-			remoteBranch=$(git config branch.$branch.merge); \
-			remote=$(git config branch.$branch.remote); \
-			remoteBranch=${remoteBranch##refs/heads/}; \
-			git branch -f ${1-master} $remote/$remoteBranch; \
-			git checkout ${1-master}; \
-			git track ${2-$remoteBranch}; \
-		}; f"
 	reh = reset --hard
 	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
 	rtrack = !sh -c 'git branch --set-upstream-to $1' -
@@ -69,6 +59,12 @@
 
 	undo = "!f() { \
 			git reset --hard $(git rev-parse --abbrev-ref HEAD)@{${1-1}}; \
+		}; f"
+
+	upstream = "!f() {\
+			set -e; \
+			branch=$(git rev-parse --abbrev-ref HEAD); \
+			git config branch.$branch.upstream ${1-upstream}; \
 		}; f"
 
 	draft = "!f() {\
@@ -93,7 +89,13 @@
 		-c color.grep.match=\"reverse yellow\" \
 		grep --break --heading --line-number
 
-    change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f "
+	change-commits = "!f() { \
+		VAR=$1; \
+		OLD=$2; \
+		NEW=$3; \
+		shift 3; \
+		git filter-branch --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; \
+	}; f "
 
 [core]
 	commitGraph  = true

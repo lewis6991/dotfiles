@@ -87,6 +87,7 @@ gitsigns.setup{
   update_debounce = 50,
   _extmark_signs = true,
   _threaded_diff = true,
+  _signs_staged_enable = true,
   word_diff = true,
   trouble = true,
 }

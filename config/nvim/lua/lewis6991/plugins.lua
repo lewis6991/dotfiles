@@ -1,18 +1,4 @@
-local function keys(k)
-  return function(load_plugin)
-    vim.keymap.set('n', k, function()
-      vim.keymap.del('n', k)
-      load_plugin()
-      vim.api.nvim_input(k)
-    end, {
-        desc  = 'cond lazy_loader'
-      })
-  end
-end
-
-vim.opt.rtp:prepend('~/projects/packer.nvim')
-
-require('lewis6991.packer').setup {
+require('lewis6991.package_manager').setup {
   -- 'lewis6991/moonlight.vim',
   {'lewis6991/github_dark.nvim', config = function()
     vim.cmd.color'github_dark'
@@ -22,7 +8,11 @@ require('lewis6991.packer').setup {
   'lewis6991/tree-sitter-tcl',
   -- 'lewis6991/systemverilog.vim',
   {'lewis6991/impatient.nvim', start = true},
-  {'lewis6991/spaceless.nvim', config = [[require('spaceless').setup()]]},
+
+  {'lewis6991/spaceless.nvim', config = function()
+    require('spaceless').setup()
+  end},
+
   {'lewis6991/cleanfold.nvim'},
   {'lewis6991/brodir.nvim', keys = '-', cmd = 'Brodir'},
   'lewis6991/vc.nvim',
@@ -55,9 +45,13 @@ require('lewis6991.packer').setup {
     require('satellite').setup()
   end},
 
-  {'lewis6991/gitsigns.nvim', config = "require'lewis6991.gitsigns'" },
+  {'lewis6991/gitsigns.nvim', config = function()
+    require'lewis6991.gitsigns'
+  end},
 
-  {'lewis6991/nvim-colorizer.lua', config = [[require('colorizer').setup()]] },
+  {'lewis6991/nvim-colorizer.lua', config = function()
+    require('colorizer').setup()
+  end},
 
   {'lewis6991/tmux.nvim', config = function()
     require("tmux").setup{
@@ -87,7 +81,7 @@ require('lewis6991.packer').setup {
 
   {'AndrewRadev/bufferize.vim', config = function()
     vim.g.bufferize_command = 'enew'
-    vim.cmd('autocmd vimrc FileType bufferize setlocal wrap')
+    vim.cmd('autocmd FileType bufferize setlocal wrap')
   end},
 
   --- Filetype plugins ---
@@ -143,9 +137,9 @@ require('lewis6991.packer').setup {
 
   {'neapel/vim-bnfc-syntax', config = function()
     -- Argh, why don't syntax plugins ever set commentstring!
-    vim.cmd[[autocmd vimrc FileType bnfc setlocal commentstring=--%s]]
+    vim.cmd[[autocmd FileType bnfc setlocal commentstring=--%s]]
     -- This syntax works pretty well for regular BNF too
-    vim.cmd[[autocmd vimrc BufNewFile,BufRead *.bnf setlocal filetype=bnfc]]
+    vim.cmd[[autocmd BufNewFile,BufRead *.bnf setlocal filetype=bnfc]]
   end},
 
   {'whatyouhide/vim-lengthmatters', config_pre = function()
@@ -154,7 +148,7 @@ require('lewis6991.packer').setup {
   end},
 
   {'junegunn/vim-easy-align',
-    cond = keys('ga'),
+    keys = 'ga',
     config = function()
       vim.keymap.set({'x', 'n'}, 'ga', '<Plug>(EasyAlign)')
       vim.g.easy_align_delimiters = {
@@ -366,7 +360,9 @@ require('lewis6991.packer').setup {
     end
   },
 
-  {'jose-elias-alvarez/null-ls.nvim', config = [[require('lewis6991.null-ls')]]},
+  {'jose-elias-alvarez/null-ls.nvim', config = function()
+    require('lewis6991.null-ls')
+  end},
 
   -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
   -- files
@@ -391,7 +387,9 @@ require('lewis6991.packer').setup {
       -- 'ray-x/cmp-treesitter',
       'nvim-lua/plenary.nvim'
     },
-    config = [[require('lewis6991.cmp')]]
+    config = function()
+      require('lewis6991.cmp')
+    end
   },
 
   {'nvim-lua/telescope.nvim',
@@ -408,7 +406,9 @@ require('lewis6991.packer').setup {
       {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       'nvim-lua/plenary.nvim'
     },
-    config = "require'lewis6991.telescope'"
+    config = function()
+      require'lewis6991.telescope'
+    end
   },
 
   {'neovim/nvimdev.nvim', config = function()
@@ -423,9 +423,8 @@ require('lewis6991.packer').setup {
       'nvim-treesitter/playground',
     },
     run = ':TSUpdate',
-    config = "require'lewis6991.treesitter'",
+    config = function()
+      require'lewis6991.treesitter'
+    end
   },
-
-  -- For testin packer. I don't use these
-  { 'folke/noice.nvim', requires = 'MunifTanjim/nui.nvim' },
 }

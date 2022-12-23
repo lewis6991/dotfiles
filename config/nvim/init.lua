@@ -1,15 +1,11 @@
-_G.__luacache_config = {
-  -- This obscures bugs in packer.nvim and plugin loading order
-  modpaths = {
-    enable = false,
-  }
-}
-
-local ok, impatient = pcall(require, 'impatient')
-if ok then
-  impatient.enable_profile()
-else
-  vim.notify(impatient)
+-- vim.env.LAZY=1
+if not vim.env.LAZY then
+  local ok, impatient = pcall(require, 'impatient')
+  if ok then
+    impatient.enable_profile()
+  else
+    vim.notify(impatient)
+  end
 end
 
 -- Do all init in lewis6991/init.lua so impatient can cache it

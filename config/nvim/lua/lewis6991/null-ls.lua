@@ -83,7 +83,7 @@ local tcl_lint = {
 
 null_ls.setup {
   sources = {
-    null_ls.builtins.diagnostics.teal,
+    -- null_ls.builtins.diagnostics.teal,
     null_ls.builtins.formatting.shfmt,
     null_ls.builtins.diagnostics.luacheck.with{
       -- This shouldn't be needed but is required

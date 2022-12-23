@@ -1,9 +1,11 @@
+vim.opt.termguicolors  = true
+require 'lewis6991.plugins'
+
 require 'lewis6991.status'
 require 'lewis6991.tabline'
 require 'lewis6991.diagnostic'
 require 'lewis6991.jump'
 require 'lewis6991.clipboard'
-require 'lewis6991.plugins'
 require 'lewis6991.luv-hygiene'
 
 local nvim = require 'lewis6991.nvim'
@@ -29,7 +31,7 @@ if 'Plugins' then
   -- Stop loading built in plugins
   vim.g.loaded_netrwPlugin = 1
   vim.g.loaded_tutor_mode_plugin = 1
-  vim.g.loaded_2html_plugin = 1
+  -- vim.g.loaded_2html_plugin = 1
   vim.g.loaded_zipPlugin = 1
   vim.g.loaded_tarPlugin = 1
   vim.g.loaded_gzip = 1
@@ -279,7 +281,12 @@ autocmd 'TabNew' {
   group = 'vimrc'
 }
 
+local orig_print = print
+
 function print(...)
+  if vim.in_fast_event() then
+    return orig_print(...)
+  end
   for _, x in ipairs{...} do
     if type(x) == 'string' then
       api.nvim_out_write(x)
