@@ -168,7 +168,11 @@ if "Mappings" then
   nmap '<leader>z' '<cmd>Inspect<cr>'
 
   nmap '<leader>ts' {function()
-    vim.treesitter.stop()
+    if vim.b.ts_highlight then
+      vim.treesitter.stop()
+    else
+      vim.treesitter.start()
+    end
   end}
 
   nmap '<C-C>' ':nohlsearch<CR>'
