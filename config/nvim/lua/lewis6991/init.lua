@@ -12,8 +12,6 @@ local nvim = require 'lewis6991.nvim'
 
 local o, api, lsp = vim.opt, vim.api, vim.lsp
 
-local add_command = api.nvim_create_user_command
-
 local autocmd = nvim.autocmd
 local nmap = nvim.nmap
 local vmap = nvim.vmap
@@ -227,37 +225,6 @@ if "Mappings" then
   }
 end
 
-add_command('Hashbang', function()
-  local shells = {
-    sh    = {'#! /usr/bin/env bash'},
-    py    = {'#! /usr/bin/env python3'},
-    scala = {'#! /usr/bin/env scala'},
-    tcl   = {'#! /usr/bin/env tclsh'},
-    lua = {
-        '#! /bin/sh',
-        '_=[[',
-        'exec lua "$0" "$@"',
-        ']]'
-      }
-  }
-
-  ---@diagnostic disable-next-line: missing-parameter
-  local extension = vim.fn.expand('%:e')
-
-  if shells[extension] then
-    local hb = shells[extension]
-    hb[#hb+1] = ''
-
-    api.nvim_buf_set_lines(0, 0, 0, false, hb)
-    autocmd 'BufWritePost' {
-      'silent !chmod u+x %',
-      buffer = 0,
-      once = true,
-    }
-  end
-end, {force = true})
-
--- add_command('L', "lua vim.pretty_print(<args>)", {nargs = 1, complete = 'lua', force = true})
 vim.cmd.cabbrev('L', 'lua=')
 
 autocmd 'VimResized' {'wincmd =', group='vimrc'}
