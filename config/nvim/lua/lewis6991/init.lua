@@ -165,16 +165,11 @@ if "Mappings" then
   -- I never use macros and more often mis-hit this key
   nmap 'q' '<nop>'
 
-  -- Show syntax highlighting groups for word under cursor
-  local function syn_stack()
-    local c = api.nvim_win_get_cursor(0)
-    local stack = vim.fn.synstack(c[1], c[2]+1)
-    for i, l in ipairs(stack) do
-      stack[i] = vim.fn.synIDattr(l, 'name')
-    end
-    print(vim.inspect(stack))
-  end
-  nmap '<leader>z' (syn_stack)
+  nmap '<leader>z' '<cmd>Inspect<cr>'
+
+  nmap '<leader>ts' {function()
+    vim.treesitter.stop()
+  end}
 
   nmap '<C-C>' ':nohlsearch<CR>'
 
