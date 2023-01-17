@@ -98,6 +98,8 @@
 	}; f "
 
 [core]
+	# -R needed to track lines properly
+	pager        = less -R
 	commitGraph  = true
 	editor       = nvim
 	excludesfile = ~/.gitignore
