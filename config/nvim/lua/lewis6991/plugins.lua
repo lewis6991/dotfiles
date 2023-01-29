@@ -349,17 +349,6 @@ require('lewis6991.package_manager').setup {
     end,
   },
 
-  {'rmagatti/goto-preview',
-    keys = 'gp',
-    config = function()
-      require('goto-preview').setup {
-        opacity = 0,
-        height = 30
-      }
-      vim.keymap.set('n', 'gp', require('goto-preview').goto_preview_definition)
-    end
-  },
-
   {'jose-elias-alvarez/null-ls.nvim', config = function()
     require('lewis6991.null-ls')
   end},
