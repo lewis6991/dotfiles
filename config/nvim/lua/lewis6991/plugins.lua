@@ -14,7 +14,7 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'lewis6991/cleanfold.nvim'},
-  {'lewis6991/brodir.nvim', keys = '-', cmd = 'Brodir'},
+  'lewis6991/brodir.nvim',
   'lewis6991/vc.nvim',
 
   {'lewis6991/foldsigns.nvim',
@@ -407,7 +407,7 @@ require('lewis6991.package_manager').setup {
   {'nvim-treesitter/nvim-treesitter',
     start = true,
     requires = {
-      'nvim-treesitter/nvim-treesitter-context',
+      {'nvim-treesitter/nvim-treesitter-context', branch = 'feat/queries'},
       'JoosepAlviste/nvim-ts-context-commentstring',
       'nvim-treesitter/playground',
     },
