@@ -228,6 +228,8 @@ require('lewis6991.package_manager').setup {
     require'lsp_signature'.setup{ hi_parameter = "Visual" }
   end},
 
+  'inkarkat/vim-visualrepeat',
+
   {'stevearc/aerial.nvim', config = function()
     require('aerial').setup()
 
