@@ -16,32 +16,44 @@ local function bootstrap_packer()
   end
 end
 
----@param spec   string|table
+---@param spec   table
 ---@param field? integer|string
 ---@param fn     fun(spec: table|string): table|string
 local function walk_spec(spec, field, fn)
   field = field or 1
-  spec[field] = fn(spec[field])
   if type(spec[field]) == 'table' then
-    for j, _ in ipairs(spec[field]) do
+    for j in ipairs(spec[field]) do
       walk_spec(spec[field], j, fn)
     end
     walk_spec(spec[field], 'requires', fn)
   end
+  spec[field] = fn(spec[field])
 end
 
 local HOME = os.getenv('HOME')
 
+local function resolve(x)
+  if type(x) == 'string' and x:sub(1, 1) ~= '/' then
+    local name = vim.split(x, '/')[2]
+    local loc_install = HOME..'/projects/'..name
+    if name ~= '' and vim.fn.isdirectory(loc_install) then
+      return loc_install
+    end
+  end
+end
+
 local function try_get_local(lazy)
   return function(spec)
+    if type(spec) == 'string' and not lazy then
+      return resolve(spec) or spec
+    end
+
     if not spec or type(spec) == 'string' or type(spec[1]) ~= 'string' then
       return spec
     end
 
-    local _, name = unpack(vim.split(spec[1], '/'))
-
-    local loc_install = HOME..'/projects/'..name
-    if name ~= '' and vim.loop.fs_stat(loc_install) then
+    local loc_install = resolve(spec[1])
+    if loc_install then
       if lazy then
         spec.dir = loc_install
       else
