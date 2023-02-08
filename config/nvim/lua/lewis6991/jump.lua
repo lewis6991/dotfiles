@@ -139,7 +139,9 @@ local function do_show()
   show = show + 1
 end
 
-local function show_jumps(forward)
+local M = {}
+
+function M.show_jumps(forward)
   if not do_show() then
     return
   end
@@ -167,14 +169,4 @@ local function show_jumps(forward)
   end)
 end
 
-vim.keymap.set('n', '<C-o>', function()
-  show_jumps()
-  return '<C-o>'
-end, {expr = true, desc = 'show jumps'})
-
-vim.keymap.set('n', '<C-i>', function()
-  show_jumps(true)
-  return '<C-i>'
-end, {expr = true, desc = 'show jumps'})
-
-
+return M
