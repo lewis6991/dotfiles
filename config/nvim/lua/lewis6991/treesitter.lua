@@ -66,7 +66,12 @@ require'nvim-treesitter.configs'.setup {
     disable = {'rst', 'make'}
   },
   playground = { enable = true },
-  context_commentstring = { enable = true }
+  context_commentstring = { enable = true },
+  query_linter = {
+    enable = true,
+    use_virtual_text = true,
+    lint_events = {"BufWrite", "CursorMoved"},
+  },
 }
 
 local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
