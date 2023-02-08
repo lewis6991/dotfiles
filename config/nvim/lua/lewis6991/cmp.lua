@@ -1,21 +1,18 @@
 require 'lewis6991.cmp_gh'
 
 local source_names = {
-  buffer     = {'BUF'  , 'String'},
-  nvim_lsp   = {'LSP'   , 'Question'},
+  buffer     = {'Buf'  , 'String'},
+  nvim_lsp   = {''  , 'Question'},
   luasnip    = {'Snip' , 'CmpItemMenu'},
   -- nvim_lua   = {'Lua'  , 'ErrorMsg'},
   -- nvim_lua   = {'  '  , 'ErrorMsg'},
-  nvim_lua   = {'Lua'   , 'ErrorMsg'},
-  path       = {'Path'  , 'WarningMsg'},
-  -- tmux       = {'Tmux' , 'CursorLineNr'},
+  nvim_lua   = {'Lua'  , 'ErrorMsg'},
+  path       = {'Path' , 'WarningMsg'},
   tmux       = {'Tmux' , 'CursorLineNr'},
   gh         = {'GH'   , 'CmpItemMenu'},
   rg         = {'RG'   , 'CmpItemMenu'},
   cmdline    = {'CMD'  , 'CmpItemMenu'},
   spell      = {'Spell', 'CmpItemMenu'},
-  -- treesitter = {'TS'   , 'Delimiter'}
-  treesitter = {''    , 'Delimiter'}
 }
 
 local symbols = {
@@ -100,10 +97,11 @@ cmp.setup {
     { name = 'nvim_lsp'   },
     { name = 'path'       },
     { name = 'buffer'     },
-    { name = 'spell'      },
-    { name = 'tmux', entry_filter = min_length(2) },
+  }, {
     { name = 'gh'         },
     { name = 'emoji'      },
+    { name = 'spell'      },
+    { name = 'tmux', entry_filter = min_length(2) },
   }),
   experimental = {
     ghost_text = true,
