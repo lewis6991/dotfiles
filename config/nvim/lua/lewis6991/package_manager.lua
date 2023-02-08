@@ -36,7 +36,7 @@ local function resolve(x)
   if type(x) == 'string' and x:sub(1, 1) ~= '/' then
     local name = vim.split(x, '/')[2]
     local loc_install = HOME..'/projects/'..name
-    if name ~= '' and vim.fn.isdirectory(loc_install) then
+    if name ~= '' and vim.fn.isdirectory(loc_install) == 1 then
       return loc_install
     end
   end
