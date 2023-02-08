@@ -309,6 +309,10 @@ require('lewis6991.package_manager').setup {
         library = {
           plugins = false, -- installed opt or start plugins in packpath
         },
+        override = function(_, library)
+          library.enabled = true
+          library.plugins = {'nvim-treesitter'}
+        end,
       }
 
       setup('clangd')
