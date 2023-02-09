@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -e
+
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+function info() {
+    echo -e "$BLUE$1$NC"
+}
+
+if [[ -z "$NVIM_INSTALL_PREFIX" ]]; then
+    # Get sudo
+    sudo true
+    SUDO_OPT=sudo
+else
+    SUDO_OPT=""
+fi
+
+rm -f /tmp/nvim_build.log
+
+if [[ ! -f "/tmp/nvim_build/.git" ]]; then
+    rm -rf /tmp/nvim_build
+    info "Cloning neovim"
+    git clone https://github.com/neovim/neovim \
+        --depth 1 \
+        --quiet \
+        /tmp/nvim_build \
+        >> /tmp/nvim_build.log
+fi
+
+cd /tmp/nvim_build
+
+info "Pulling updates"
+git pull \
+    >> /tmp/nvim_build.log
+
+info "Cleaning workspace"
+make distclean \
+    >> /tmp/nvim_build.log
+
+info "Building"
+make CMAKE_BUILD_TYPE=RelWithDebInfo \
+    >> /tmp/nvim_build.log
+
+info "Installing"
+$SUDO_OPT make \
+    CMAKE_BUILD_TYPE=RelWithDebInfo \
+    "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
+    install \
+    >> /tmp/nvim_build.log
+
+info "Done!"
