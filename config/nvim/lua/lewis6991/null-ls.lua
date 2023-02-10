@@ -134,10 +134,4 @@ null_ls.setup {
     tcl_lint,
   },
   diagnostics_format = "#{s}: #{m} (#{c})",
-  on_attach = function(_, bufnr)
-    vim.api.nvim_buf_set_keymap(bufnr, 'n', '<leader>ca',
-      '<cmd>lua vim.lsp.buf.code_action()<CR>', {noremap = true, silent = true})
-
-    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-  end
 }
