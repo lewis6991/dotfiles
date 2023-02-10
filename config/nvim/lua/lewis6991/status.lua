@@ -49,9 +49,13 @@ function M.lsp_status(active)
     status[#status+1] = vim.g.metals_status:gsub('%%', '%%%%')
   end
 
-  local r = table.concat(status, ' ')
+  local names = {}
+  local attached = vim.lsp.get_active_clients({bufnr=0})
+  for _, c in ipairs(attached) do
+    names[#names+1] = c.name
+  end
 
-  return r == '' and 'LSP' or r
+  return table.concat(names, ',') ..' '.. table.concat(status, ' ')
 end
 
 function M.hunks()
