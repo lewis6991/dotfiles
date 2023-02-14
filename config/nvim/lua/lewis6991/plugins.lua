@@ -6,6 +6,8 @@ require('lewis6991.package_manager').setup {
 
   -- 'lewis6991/tcl.vim',
   'lewis6991/tree-sitter-tcl',
+  -- for lazy cache
+  {'folke/lazy.nvim', start = true},
   -- 'lewis6991/systemverilog.vim',
   {'lewis6991/impatient.nvim', start = true},
 
