@@ -319,7 +319,7 @@ require('lewis6991.package_manager').setup {
 
       setup('clangd')
       setup('cmake')
-      setup('sumneko_lua', {
+      setup('lua_ls', {
         Lua = {
           diagnostics = {
             -- groupSeverity = {

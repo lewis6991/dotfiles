@@ -46,6 +46,8 @@ local function nmap(key)
       spec[1] = nil
       opts = spec
     end
+    opts = opts or {}
+    opts.preview = false
     vim.keymap.set('n', key, function()
       if not done_setup then
         setup()
