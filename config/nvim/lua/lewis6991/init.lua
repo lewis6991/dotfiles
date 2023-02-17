@@ -20,9 +20,11 @@ local cmap = nvim.cmap
 local M = {}
 
 if 'Plugins' then
-  for path, t in vim.fs.dir('~/gerrit') do
-    if t == "directory" then
-      o.rtp:prepend('~/gerrit/'..path)
+  if vim.fn.isdirectory('~/gerrit') == 1 then
+    for path, t in vim.fs.dir('~/gerrit') do
+      if t == "directory" then
+        o.rtp:prepend('~/gerrit/'..path)
+      end
     end
   end
 
