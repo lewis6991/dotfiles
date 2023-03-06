@@ -2,20 +2,17 @@
 
 set -e
 
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
 function info() {
-    echo -e "$BLUE$1$NC"
+    local blue='\033[0;34m'
+    local nc='\033[0m' # No Color
+    echo -e "$blue$1$nc"
 }
 
-if [[ -z "$NVIM_INSTALL_PREFIX" ]]; then
-    # Get sudo
-    sudo true
-    SUDO_OPT=sudo
-else
-    SUDO_OPT=""
-fi
+function stage() {
+    info "$1"
+    shift
+    "$@" >> $BUILD_DIR.log
+}
 
 BUILD_DIR=/tmp/nvim_build
 
@@ -23,33 +20,32 @@ rm -f $BUILD_DIR.log
 
 if [[ ! -d "$BUILD_DIR/.git" ]]; then
     rm -rf $BUILD_DIR
-    info "Cloning neovim"
-    git clone https://github.com/neovim/neovim \
+    stage "Cloning neovim" \
+        git clone https://github.com/neovim/neovim \
         --depth 1 \
         --quiet \
-        $BUILD_DIR \
-        >> $BUILD_DIR.log
+        $BUILD_DIR
 fi
 
 cd $BUILD_DIR
 
-info "Pulling updates"
-git pull \
-    >> $BUILD_DIR.log
+stage "Pulling updates"    git pull
+stage "Cleaning workspace" make distclean
+stage "Building"           make CMAKE_BUILD_TYPE=RelWithDebInfo
 
-info "Cleaning workspace"
-make distclean \
-    >> $BUILD_DIR.log
+if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
+    # Get sudo
+    install_msg="Installing (with sudo)"
+    SUDO_OPT=sudo
+else
+    install_msg="Installing"
+    SUDO_OPT=""
+fi
 
-info "Building"
-make CMAKE_BUILD_TYPE=RelWithDebInfo \
-    >> $BUILD_DIR.log
-
-info "Installing"
-$SUDO_OPT make \
+stage "$install_msg" \
+    $SUDO_OPT make \
     CMAKE_BUILD_TYPE=RelWithDebInfo \
     "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
-    install \
-    >> $BUILD_DIR.log
+    install
 
 info "Done!"
