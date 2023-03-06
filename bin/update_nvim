@@ -17,37 +17,39 @@ else
     SUDO_OPT=""
 fi
 
-rm -f /tmp/nvim_build.log
+BUILD_DIR=/tmp/nvim_build
 
-if [[ ! -f "/tmp/nvim_build/.git" ]]; then
-    rm -rf /tmp/nvim_build
+rm -f $BUILD_DIR.log
+
+if [[ ! -d "$BUILD_DIR/.git" ]]; then
+    rm -rf $BUILD_DIR
     info "Cloning neovim"
     git clone https://github.com/neovim/neovim \
         --depth 1 \
         --quiet \
-        /tmp/nvim_build \
-        >> /tmp/nvim_build.log
+        $BUILD_DIR \
+        >> $BUILD_DIR.log
 fi
 
-cd /tmp/nvim_build
+cd $BUILD_DIR
 
 info "Pulling updates"
 git pull \
-    >> /tmp/nvim_build.log
+    >> $BUILD_DIR.log
 
 info "Cleaning workspace"
 make distclean \
-    >> /tmp/nvim_build.log
+    >> $BUILD_DIR.log
 
 info "Building"
 make CMAKE_BUILD_TYPE=RelWithDebInfo \
-    >> /tmp/nvim_build.log
+    >> $BUILD_DIR.log
 
 info "Installing"
 $SUDO_OPT make \
     CMAKE_BUILD_TYPE=RelWithDebInfo \
     "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
     install \
-    >> /tmp/nvim_build.log
+    >> $BUILD_DIR.log
 
 info "Done!"
