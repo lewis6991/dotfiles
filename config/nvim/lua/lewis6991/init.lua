@@ -214,6 +214,7 @@ if "Mappings" then
     function(args)
       local bufnr = args.buf
       nmap '<C-]>'      {lsp.buf.definition, desc = 'lsp.buf.definition', buffer = bufnr  }
+      nmap '<M-]>'      {lsp.buf.type_definition, desc = 'lsp.buf.type_definition', buffer = bufnr  }
       nmap '<leader>cl' {lsp.codelens.run  , desc = 'lsp.codelens.run'  , buffer = bufnr    }
       -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
       -- map(bufnr, 'gK'        , lsp.buf.signature_help, 'lsp.buf.signature_help')
