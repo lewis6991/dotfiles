@@ -417,7 +417,6 @@ require('lewis6991.package_manager').setup {
     requires = {
       {'nvim-treesitter/nvim-treesitter-context', branch = 'feat/queries'},
       'JoosepAlviste/nvim-ts-context-commentstring',
-      'nvim-treesitter/playground',
     },
     run = ':TSUpdate',
     config = function()

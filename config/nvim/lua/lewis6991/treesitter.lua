@@ -1,7 +1,7 @@
 require'nvim-treesitter'.define_modules {
   fold = {
     attach = function()
-      vim.opt_local.foldexpr = 'nvim_treesitter#foldexpr()'
+      vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
       vim.opt_local.foldmethod = 'expr'
       vim.cmd.normal'zx' -- recompute folds
     end,
@@ -65,13 +65,7 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
     disable = {'rst', 'make'}
   },
-  playground = { enable = true },
   context_commentstring = { enable = true },
-  query_linter = {
-    enable = true,
-    use_virtual_text = true,
-    lint_events = {"BufWrite", "CursorMoved"},
-  },
 }
 
 local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
