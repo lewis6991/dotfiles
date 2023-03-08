@@ -307,25 +307,17 @@ require('lewis6991.package_manager').setup {
         }
       end
 
-      require("neodev").setup{
-        library = {
-          plugins = false, -- installed opt or start plugins in packpath
-        },
-        override = function(_, library)
-          library.enabled = true
-          library.plugins = {'nvim-treesitter'}
-        end,
-      }
+      require("neodev").setup()
 
       setup('clangd')
       setup('cmake')
       setup('lua_ls', {
         Lua = {
           diagnostics = {
-            -- groupSeverity = {
-            --   strong = 'Warning',
-            --   strict = 'Warning',
-            -- },
+            groupSeverity = {
+              strong = 'Warning',
+              strict = 'Warning',
+            },
             groupFileStatus = {
               ["ambiguity"]  = "Opened",
               ["await"]      = "Opened",
@@ -334,8 +326,8 @@ require('lewis6991.package_manager').setup {
               ["global"]     = "Opened",
               ["luadoc"]     = "Opened",
               ["redefined"]  = "Opened",
-              -- ["strict"]     = "Opened",
-              -- ["strong"]     = "Opened",
+              ["strict"]     = "Opened",
+              ["strong"]     = "Opened",
               ["type-check"] = "Opened",
               ["unbalanced"] = "Opened",
               ["unused"]     = "Opened",
