@@ -81,55 +81,50 @@ local tcl_lint = {
   }
 }
 
+local flake8 = null_ls.builtins.diagnostics.flake8.with{
+  extra_args = function(params)
+    -- params.root is set to the first parent dir with with either .git or
+    -- Makefile
+    if vim.loop.fs_stat(params.root..'/setup.cfg') then
+      return {}
+    end
+    -- These ignores will override setup.cfg
+    return { '--ignore', table.concat({
+      'E501', -- line too long
+      'E221', -- multiple space before operators
+      'E201', -- whitespace before/after '['/']'
+      'E202', -- whitespace before ']'
+      'E272', -- multiple spaces before keyword
+      'E241', -- multiple spaces after ':'
+      'E231', -- missing whitespace after ':'
+      'E203', -- whitespace before ':'
+      'E741', -- ambiguous variable name
+      'E226', -- missing whitespace around arithmetic operator
+      'E305', 'E302', -- expected 2 blank lines after class
+      'E251', -- unexpected spaces around keyword / parameter equals (E251)
+    }, ',')}
+  end
+}
+
 null_ls.setup {
   sources = {
     -- null_ls.builtins.diagnostics.teal,
     null_ls.builtins.formatting.shfmt,
-    null_ls.builtins.diagnostics.luacheck.with{
-      -- This shouldn't be needed but is required
-      extra_args = {
-        '--config', '$XDG_CONFIG_HOME/luacheck/.luacheckrc'
-      }
-    },
+    null_ls.builtins.formatting.stylua,
 
-    -- use bash-language-server
-    -- null_ls.builtins.diagnostics.shellcheck.with {
-    --   extra_args = {
-    --     '--shell', 'bash',
-    --     '--exclude', table.concat({
-    --       '1003', -- Want to escape a single quote? echo 'This is how it'\''s done'.
-    --       '2016', -- Expressions don't expand in single quotes
-    --     }, ',')
-    --   }
+    -- null_ls.builtins.diagnostics.cppcheck.with{
+    --   timeout = 100000,
+    --   extra_args = { '-include=build/cmake.config/auto/config.h' }
+    -- },
+
+    -- null_ls.builtins.diagnostics.luacheck.with{
+    --   -- This shouldn't be needed but is required
+    --   extra_args = { '--config', '$XDG_CONFIG_HOME/luacheck/.luacheckrc' }
     -- },
 
     -- null_ls.builtins.diagnostics.mypy,
     -- null_ls.builtins.diagnostics.pylint,
-    null_ls.builtins.diagnostics.flake8.with{
-      extra_args = function(params)
-        -- params.root is set to the first parent dir with with either .git or
-        -- Makefile
-        if vim.loop.fs_stat(params.root..'/setup.cfg') then
-          return {}
-        end
-        -- These ignores will override setup.cfg
-        return { '--ignore', table.concat({
-          'E501', -- line too long
-          'E221', -- multiple space before operators
-          'E201', -- whitespace before/after '['/']'
-          'E202', -- whitespace before ']'
-          'E272', -- multiple spaces before keyword
-          'E241', -- multiple spaces after ':'
-          'E231', -- missing whitespace after ':'
-          'E203', -- whitespace before ':'
-          'E741', -- ambiguous variable name
-          'E226', -- missing whitespace around arithmetic operator
-          'E305', 'E302', -- expected 2 blank lines after class
-          'E251', -- unexpected spaces around keyword / parameter equals (E251)
-        }, ',')}
-      end
-    },
-
+    flake8,
     jenkins_lint,
     tcl_lint,
   },
