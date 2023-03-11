@@ -24,6 +24,14 @@ require'treesitter-context'.setup {
   }
 }
 
+vim.api.nvim_create_autocmd('FileType', {
+  callback = function()
+    if pcall(vim.treesitter.get_parser) then
+      vim.treesitter.start()
+    end
+  end
+})
+
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
     "bash",
@@ -38,9 +46,6 @@ require'nvim-treesitter.configs'.setup {
     "python",
     "rst",
     "teal",
-  },
-  highlight = {
-    enable = true,
   },
   indent = {
     enable = true,
