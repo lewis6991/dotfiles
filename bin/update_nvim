@@ -11,23 +11,23 @@ function info() {
 function stage() {
     info "$1"
     shift
-    "$@" >> $BUILD_DIR.log
+    "$@" >> "$BUILD_DIR.log"
 }
 
-BUILD_DIR=/tmp/nvim_build
+BUILD_DIR="$XDG_CACHE_HOME/nvim_build"
 
-rm -f $BUILD_DIR.log
+rm -f "$BUILD_DIR.log"
 
 if [[ ! -d "$BUILD_DIR/.git" ]]; then
-    rm -rf $BUILD_DIR
+    rm -rf "$BUILD_DIR"
     stage "Cloning neovim" \
         git clone https://github.com/neovim/neovim \
         --depth 1 \
         --quiet \
-        $BUILD_DIR
+        "$BUILD_DIR"
 fi
 
-cd $BUILD_DIR
+cd "$BUILD_DIR"
 
 stage "Pulling updates"    git pull
 stage "Cleaning workspace" make distclean
