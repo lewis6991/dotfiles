@@ -1,16 +1,7 @@
 require'treesitter-context'.setup {
   enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
   max_lines = 5, -- How many lines the window should span. Values <= 0 mean no limit.
-  trim_scope = 'outer',
-  patterns = {
-    tcl = {
-      'procedure',
-      'conditional',
-      'while',
-      'foreach',
-      'namespace',
-    },
-  }
+  trim_scope = 'outer'
 }
 
 vim.api.nvim_create_autocmd('FileType', {
