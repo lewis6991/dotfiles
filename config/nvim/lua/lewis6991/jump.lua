@@ -4,11 +4,10 @@ local win_timer
 local key_timer
 
 local win
-local show = 0
 
 local buf = vim.api.nvim_create_buf(false, true)
 do
-  local blank = {}
+  local blank = {} ---@type string[]
   for i = 1, 100 do
     blank[i]  = ''
   end
@@ -16,11 +15,10 @@ do
 end
 
 local WIN_TIMEOUT = 2000
-local KEY_TIMEOUT = 2000
 local CONTEXT = 8
 
 -- Autocmd ID for cursor moved
-local cmoved_au
+local cmoved_au ---@type integer?
 
 local function enable_cmoved_au()
   cmoved_au = vim.api.nvim_create_autocmd('CursorMoved,CursorMovedI', {
@@ -29,7 +27,6 @@ local function enable_cmoved_au()
       if win then
         vim.api.nvim_win_close(win, true)
         win = nil
-        show = 0
       end
       cmoved_au = nil
     end
@@ -67,7 +64,7 @@ end
 
 local function refresh_win_timer()
   if not win_timer then
-    win_timer = vim.loop.new_timer()
+    win_timer = assert(vim.loop.new_timer())
   end
 
   win_timer:start(WIN_TIMEOUT, 0, function()
@@ -77,12 +74,12 @@ local function refresh_win_timer()
       vim.schedule(function()
         vim.api.nvim_win_close(win, true)
         win = nil
-        show = 0
       end)
     end
   end)
 end
 
+---@param lines string[]
 local function render_buf(lines, current_line)
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
   for i, l in ipairs(lines) do
@@ -96,8 +93,8 @@ end
 
 local function get_text(jumplist, current)
   local width = 0
-  local lines = {}
-  local current_line
+  local lines = {} ---@type table[]
+  local current_line ---@type integer
   for i = current-3, current+10 do
     local j = jumplist[i]
     if j then
@@ -121,31 +118,9 @@ local function get_text(jumplist, current)
   return lines, current_line, width
 end
 
-local function do_show()
-  -- Only show on second succesive jump within KEY_TIMEOUT
-  if not key_timer then
-    key_timer = vim.loop.new_timer()
-  end
-  key_timer:start(KEY_TIMEOUT, 0, function()
-    key_timer:close()
-    key_timer = nil
-    show = 0
-  end)
-
-  if show == 2 then
-    return true
-  end
-
-  show = show + 1
-end
-
 local M = {}
 
 function M.show_jumps(forward)
-  if not do_show() then
-    return
-  end
-
   disable_cmoved_au()
 
   local jumplist, last_jump_pos = unpack(vim.fn.getjumplist())

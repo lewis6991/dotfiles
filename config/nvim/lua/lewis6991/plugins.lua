@@ -6,8 +6,6 @@ require('lewis6991.package_manager').setup {
 
   -- 'lewis6991/tcl.vim',
   'lewis6991/tree-sitter-tcl',
-  -- for lazy cache
-  {'folke/lazy.nvim', start = true},
   -- 'lewis6991/systemverilog.vim',
   {'lewis6991/impatient.nvim', start = true},
 
@@ -279,6 +277,7 @@ require('lewis6991.package_manager').setup {
         },
         settings = {
           showImplicitArguments = true,
+          enableSemanticHighlighting = true,
         },
         capabilities = require("cmp_nvim_lsp").default_capabilities()
       }))
@@ -368,12 +367,9 @@ require('lewis6991.package_manager').setup {
   -- {'saadparwaiz1/cmp_luasnip'           , requires = 'hrsh7th/nvim-cmp' },
 
   {'hrsh7th/nvim-cmp',
-    -- event = {'InsertEnter', 'CmdlineEnter'},
     requires = {
-      -- {'L3MON4D3/LuaSnip', event = 'InsertEnter'},
-      {'L3MON4D3/LuaSnip' },
+      {'L3MON4D3/LuaSnip', event = 'InsertEnter'},
       -- 'dmitmel/cmp-cmdline-history',
-      -- 'ray-x/cmp-treesitter',
       'nvim-lua/plenary.nvim'
     },
     config = function()
@@ -382,17 +378,10 @@ require('lewis6991.package_manager').setup {
   },
 
   {'nvim-lua/telescope.nvim',
-
-    -- For packer dev, not actually necessary
-    cmd = 'Telescope',
-    keys = {
-      {'n', '<C-p>'},
-      {'n', '<C- >'},
-    },
-
     requires = {
-      {'nvim-telescope/telescope-ui-select.nvim' },
+      'nvim-telescope/telescope-ui-select.nvim',
       {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
+      'nvim-telescope/telescope-frecency.nvim',
       'nvim-lua/plenary.nvim'
     },
     config = function()

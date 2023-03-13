@@ -263,7 +263,7 @@ autocmd 'TabNew' {
 
 local orig_print = print
 
-function print(...)
+function _G.print(...)
   if vim.in_fast_event() then
     return orig_print(...)
   end

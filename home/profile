@@ -63,10 +63,17 @@ export HOMEBREW_CACHE="$XDG_CACHE_HOME"
 # Misc
 # ------------------------------------------------------------------------------
 
+if [ -z "$BREW_PREFIX" ] && [ -d /opt/homebrew ]; then
+    BREW_PREFIX=/opt/homebrew
+fi
+
 if [ -n "$BREW_PREFIX" ]; then
   COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
   [ -d "$COREUTILS_PATH/gnubin" ] && PATH="$COREUTILS_PATH/gnubin:$PATH"
   [ -d "$COREUTILS_PATH/gnuman" ] && MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
+
+  MAKE_PATH="$BREW_PREFIX/opt/make/libexec/gnubin"
+  [ -d "$MAKE_PATH" ] && PATH="$MAKE_PATH:$PATH"
 fi
 
 for i in \
