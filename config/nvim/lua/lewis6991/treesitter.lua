@@ -1,10 +1,13 @@
-
--- buffer to determine filetype options
-local buf = vim.api.nvim_create_buf(false, true)
+local api = vim.api
 
 ---@return string
 local function get_ft_option(filetype, option)
+  -- We need to create a new buffer each time to ensure a clean state
+  -- e.g. some filetypes might not set 'commentstring' so we may end up
+  -- returning 'commentstring' for another filetype if a buffer is re-used.
+  local buf = api.nvim_create_buf(false, true)
   vim.bo[buf].filetype = filetype
+  api.nvim_buf_delete(buf, {})
   return vim.bo[buf][option]
 end
 
@@ -15,7 +18,7 @@ local function get_lang()
     return
   end
 
-  local cpos = vim.api.nvim_win_get_cursor(0)
+  local cpos = api.nvim_win_get_cursor(0)
   local row, col = cpos[1] - 1, cpos[2]
   local range = { row, col, row, col + 1 }
 
@@ -33,7 +36,7 @@ end
 local commentstrings = {} ---@type table<string,string>
 
 local function enable_commenstrings()
-  vim.api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
+  api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
     buffer = 0,
     callback = function()
       local lang = get_lang() or vim.bo.filetype
@@ -53,7 +56,7 @@ end
 vim.treesitter.language.add('bash', { filetype = { 'bash', 'sh' } })
 vim.treesitter.language.add('diff')
 
-vim.api.nvim_create_autocmd('FileType', {
+api.nvim_create_autocmd('FileType', {
   callback = function()
     if not pcall(vim.treesitter.start) then
       return
