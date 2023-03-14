@@ -1,18 +1,77 @@
-require'treesitter-context'.setup {
-  enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
-  max_lines = 5, -- How many lines the window should span. Values <= 0 mean no limit.
-  trim_scope = 'outer'
-}
+
+-- buffer to determine filetype options
+local buf = vim.api.nvim_create_buf(false, true)
+
+---@return string
+local function get_ft_option(filetype, option)
+  vim.bo[buf].filetype = filetype
+  return vim.bo[buf][option]
+end
+
+---@return string?
+local function get_lang()
+  local ok, parser = pcall(vim.treesitter.get_parser)
+  if not ok then
+    return
+  end
+
+  local cpos = vim.api.nvim_win_get_cursor(0)
+  local row, col = cpos[1] - 1, cpos[2]
+  local range = { row, col, row, col + 1 }
+
+  local lang ---@type string?
+  parser:for_each_child(function(tree, lang_)
+    if tree:contains(range) then
+      lang = lang_
+      return
+    end
+  end)
+
+  return lang
+end
+
+local commentstrings = {} ---@type table<string,string>
+
+local function enable_commenstrings()
+  vim.api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
+    buffer = 0,
+    callback = function()
+      local lang = get_lang() or vim.bo.filetype
+
+      if not commentstrings[lang] then
+        commentstrings[lang] = get_ft_option(lang, 'commentstring')
+      end
+
+      local cs = commentstrings[lang]
+      if vim.bo.commentstring ~= cs then
+        vim.bo.commentstring = cs
+      end
+    end
+  })
+end
+
+vim.treesitter.language.add('bash', { filetype = { 'bash', 'sh' } })
+vim.treesitter.language.add('diff')
 
 vim.api.nvim_create_autocmd('FileType', {
   callback = function()
-    if pcall(vim.treesitter.get_parser) then
-      vim.treesitter.start()
-      vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-      vim.opt_local.foldmethod = 'expr'
+    if not pcall(vim.treesitter.start) then
+      return
     end
+
+    vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+    vim.opt_local.foldmethod = 'expr'
+    vim.cmd.normal'zx'
+
+    enable_commenstrings()
   end
 })
+
+require'treesitter-context'.setup {
+  enable = true,
+  max_lines = 5,
+  trim_scope = 'outer'
+}
 
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
@@ -31,15 +90,14 @@ require'nvim-treesitter.configs'.setup {
   },
   indent = {
     enable = true,
-    is_supported = function(lang)
-      return ({
-        lua = true,
-        c = true,
-        tcl = true
-      })[lang] or false
-    end
+    -- is_supported = function(lang)
+    --   return ({
+    --     lua = true,
+    --     c = true,
+    --     tcl = true
+    --   })[lang] or false
+    -- end
   },
-  context_commentstring = { enable = true },
 }
 
 local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
