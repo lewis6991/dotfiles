@@ -75,23 +75,6 @@ export LESS="\
 
 export MANPAGER='nvim +Man!'
 
-# Plugins ----------------------------------------------------------------------
-
-# zinit lucid light-mode for \
-#     mafredri/zsh-async \
-#     wait hlissner/zsh-autopair \
-#     wait zsh-users/zsh-history-substring-search \
-#     wait blockf atpull'zinit creinstall -q .' \
-#         zsh-users/zsh-completions \
-#     wait atload'_zsh_autosuggest_start' \
-#         zsh-users/zsh-autosuggestions \
-#     atload"FAST_HIGHLIGHT[chroma-ssh]=''" \
-#     atinit"ZINIT[COMPINIT_OPTS]=-C; zpcompinit; zpcdreplay" \
-#         zdharma/fast-syntax-highlighting \
-
-# atload"FAST_HIGHLIGHT[chroma-ssh]=''" Disables ssh highlighting which has bad
-# performance issues: https://github.com/zdharma/fast-syntax-highlighting/issues/139
-
 # Other ----------------------------------------------------------------------
 
 fpath=($HOME/zsh_completions $fpath)

@@ -17,11 +17,10 @@ local nmap = nvim.nmap
 local vmap = nvim.vmap
 local cmap = nvim.cmap
 
-local M = {}
-
 if 'Plugins' then
-  if vim.fn.isdirectory('~/gerrit') == 1 then
-    for path, t in vim.fs.dir('~/gerrit') do
+  local dir = vim.fn.expand('~/gerrit')
+  if vim.fn.isdirectory(dir) == 1 then
+    for path, t in vim.fs.dir(dir) do
       if t == "directory" then
         o.rtp:prepend('~/gerrit/'..path)
       end
@@ -67,7 +66,6 @@ if 'Options' then
   o.virtualedit    = 'block' -- allow cursor to exist where there is no character
   o.winblend       = 10
   o.wrap           = false
-  -- o.lazyredraw     = true
 
   -- Avoid showing message extra message when using completion
   o.shortmess:append('c')
@@ -107,16 +105,10 @@ if 'Options' then
     t = true, -- Do not auto wrap text
     n = true, -- Recognise lists
   }
-end
 
-if 'Folding' then
-  vim.g.sh_fold_enabled = 1
-
-  o.foldmethod  = 'syntax'
   o.foldcolumn  = '0'
   o.foldnestmax = 3
   o.foldopen:append('jump')
-  -- o.foldminlines=10
 end
 
 if 'Whitespace' then
@@ -145,7 +137,6 @@ if "Mappings" then
   nmap '<leader>eV' ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'
   nmap '<leader>el' ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>'
   nmap '<leader>s'  ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'
-  nmap '<leader>w'  ':execute "resize ".line("$")<cr>'
 
   nmap 'k' {[[v:count == 0 ? 'gk' : 'k']], expr=true}
   nmap 'j' {[[v:count == 0 ? 'gj' : 'j']], expr=true}
@@ -207,7 +198,6 @@ if "Mappings" then
 
   nmap ']d' (vim.diagnostic.goto_next)
   nmap '[d' (vim.diagnostic.goto_prev)
-  nmap 'go' (vim.diagnostic.open_float)
 
   autocmd 'LspAttach' {
     desc = 'lsp mappings',
@@ -238,45 +228,37 @@ if "Mappings" then
   }
 end
 
-vim.cmd.cabbrev('L', 'lua=')
+if "Abbrev" then
+  vim.cmd.cabbrev('L', 'lua=')
+
+  vim.cmd.abbrev(':rev:', [[<c-r>=printf(&commentstring, 'REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
+  vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
+  vim.cmd.abbrev('function', 'function')
+  vim.cmd.cabbrev('Q', 'q')
+end
+
+if "Custom print" then
+  _G.printf = function(...)
+    print(string.format(...))
+  end
+
+  local orig_print = print
+
+  function _G.print(...)
+    if vim.in_fast_event() then
+      return orig_print(...)
+    end
+    for _, x in ipairs{...} do
+      if type(x) == 'string' then
+        api.nvim_out_write(x)
+      else
+        api.nvim_out_write(vim.inspect(x, {newline=' ', indent=''}))
+      end
+    end
+    api.nvim_out_write('\n')
+  end
+end
 
 autocmd 'VimResized' {'wincmd =', group='vimrc'}
-
-vim.cmd.abbrev(':rev:', [[<c-r>=printf(&commentstring, ' REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
-vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, ' TODO(lewis6991):')<CR>]])
-vim.cmd.abbrev('function', 'function')
-vim.cmd.cabbrev('Q', 'q')
-
-_G.printf = function(...)
-  print(string.format(...))
-end
-
-autocmd 'TabNew' {
-  function()
-    if not vim.bo.modified and api.nvim_buf_get_name(0) == '' then
-      api.nvim_buf_delete(0, {})
-    end
-  end,
-  once = true,
-  group = 'vimrc'
-}
-
-local orig_print = print
-
-function _G.print(...)
-  if vim.in_fast_event() then
-    return orig_print(...)
-  end
-  for _, x in ipairs{...} do
-    if type(x) == 'string' then
-      api.nvim_out_write(x)
-    else
-      api.nvim_out_write(vim.inspect(x, {newline=' ', indent=''}))
-    end
-  end
-  api.nvim_out_write('\n')
-end
-
-return M
 
 -- vim: foldminlines=0:

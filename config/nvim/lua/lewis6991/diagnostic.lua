@@ -15,12 +15,13 @@ set_lsp_sign("DiagnosticSignWarn" , "●")
 set_lsp_sign("DiagnosticSignInfo" , "●")
 set_lsp_sign("DiagnosticSignHint" , "○")
 
-local orig_signs_handler = vim.diagnostic.handlers.signs
+local handlers = vim.diagnostic.handlers
+
+local orig_signs_handler = handlers.signs
 
 -- Override the built-in signs handler to aggregate signs
-vim.diagnostic.handlers.signs = {
-  show = function(ns, bufnr, _, opts)
-    local diagnostics = vim.diagnostic.get(bufnr)
+handlers.signs = {
+  show = function(ns, bufnr, diagnostics, opts)
 
     -- Find the "worst" diagnostic per line
     local max_severity_per_line = {}
@@ -38,4 +39,47 @@ vim.diagnostic.handlers.signs = {
   end,
 
   hide = orig_signs_handler.hide
+}
+
+local function filter_unecessary(diag, include)
+  return vim.tbl_filter(function(x)
+    if x.user_data
+        and x.user_data.lsp
+        and x.user_data.lsp.tags
+        and x.user_data.lsp.tags[1] == 1 then
+      return include
+    end
+    return not include
+  end, diag)
+end
+
+for _, t in ipairs{ 'signs', 'virtual_text', 'underline' } do
+  local orig_handler = handlers[t]
+  handlers[t] = {
+    show = function(ns, bufnr, diagnostics, opts)
+      orig_handler.show(ns, bufnr, filter_unecessary(diagnostics, false), opts)
+    end,
+
+    hide = orig_handler.hide
+  }
+end
+
+local ns = vim.api.nvim_create_namespace('diag-unnecessary')
+
+-- see https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticTag
+-- and https://github.com/microsoft/pyright/issues/1118#issuecomment-835528161
+handlers.unnecessary = {
+  show = function(_, bufnr, diagnostics, _opts)
+    diagnostics = filter_unecessary(diagnostics, true)
+    for _, d in ipairs(diagnostics) do
+      vim.highlight.range(bufnr, ns, 'DiagnosticHint',
+        { d.lnum, d.col }, { d.end_lnum, d.end_col },
+        { priority = vim.highlight.priorities.diagnostics }
+      )
+    end
+  end,
+
+  hide = function(_, bufnr)
+    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+  end,
 }

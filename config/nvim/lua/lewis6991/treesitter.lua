@@ -1,31 +1,5 @@
 local api = vim.api
 
-local function noautocmd(f)
-  local ei = vim.o.eventignore
-  vim.o.eventignore = 'all'
-  f()
-  vim.o.eventignore = ei
-end
-
--- Potential bug: some filetypes might not set 'commentstring' so we may end up
--- returning 'commentstring' for another filetype if the buffer is re-used.
-local buf = api.nvim_create_buf(false, true)
-
----@return string
-local function get_ft_option(filetype, option)
-  -- Change the filetype without triggering any autocmds
-  noautocmd(function()
-    vim.bo[buf].filetype = filetype
-  end)
-
-  -- Trigger the FileType autocmd in ftplugin.vim
-  api.nvim_buf_call(buf, function()
-    api.nvim_exec_autocmds('FileType', { group = 'filetypeplugin', buffer = buf })
-  end)
-
-  return vim.bo[buf][option]
-end
-
 ---@return string?
 local function get_lang()
   local ok, parser = pcall(vim.treesitter.get_parser)
@@ -57,7 +31,7 @@ local function enable_commenstrings()
       local lang = get_lang() or vim.bo.filetype
 
       if not commentstrings[lang] then
-        commentstrings[lang] = get_ft_option(lang, 'commentstring')
+        commentstrings[lang] = vim.filetype.get_option(lang, 'commentstring') --[[@as string]]
       end
 
       local cs = commentstrings[lang]
