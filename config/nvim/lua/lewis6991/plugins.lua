@@ -171,59 +171,6 @@ require('lewis6991.package_manager').setup {
     end
   },
 
-  {"SmiteshP/nvim-navic", config = function()
-    local autocmd = require 'lewis6991.nvim'.autocmd
-    autocmd 'LspAttach' {
-      desc = 'navic',
-      function(args)
-        local client = vim.lsp.get_client_by_id(args.data.client_id)
-        local bufnr = args.buf
-        if client.server_capabilities.documentSymbolProvider then
-          local navic = require("nvim-navic")
-          navic.setup{ highlight = true }
-
-          if vim.o.winbar == '' then
-            vim.o.winbar = "%{%v:lua.require'nvim-navic'.get_location()%}"
-          end
-          navic.attach(client, bufnr)
-        end
-      end
-    }
-
-    for k, v in pairs{
-      NavicIconsModule    = '@namespace',
-      NavicIconsNamespace = '@namespace',
-      NavicIconsPackage   = '@namespace',
-      NavicIconsClass     = '@namespace',
-      NavicIconsMethod    = '@method',
-      NavicIconsField     = '@field',
-      NavicIconsFunction  = '@function',
-      NavicIconsVariable  = '@variable',
-      NavicIconsString    = '@string',
-      NavicText           = 'TabLineFill',
-    } do
-      vim.api.nvim_set_hl(0, k, {default = true, link = v})
-    end
-    -- NavicIconsFile
-    -- NavicIconsProperty
-    -- NavicIconsConstructor
-    -- NavicIconsEnum
-    -- NavicIconsInterface
-    -- NavicIconsConstant
-    -- NavicIconsNumber
-    -- NavicIconsBoolean
-    -- NavicIconsArray
-    -- NavicIconsObject
-    -- NavicIconsKey
-    -- NavicIconsNull
-    -- NavicIconsEnumMember
-    -- NavicIconsStruct
-    -- NavicIconsEvent
-    -- NavicIconsOperator
-    -- NavicIconsTypeParameter
-    -- NavicSeparator
-  end},
-
   {'ray-x/lsp_signature.nvim', config = function()
     require'lsp_signature'.setup{ hi_parameter = "Visual" }
   end},
