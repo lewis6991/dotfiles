@@ -59,7 +59,7 @@ require('lewis6991.package_manager').setup {
     }
   end},
 
-  {'tpope/vim-commentary', keys = 'gc'}, -- plugin/commentary.vim - ~120LOC
+  'tpope/vim-commentary',
   'tpope/vim-unimpaired',
   'tpope/vim-repeat',
   'tpope/vim-eunuch',
@@ -75,8 +75,7 @@ require('lewis6991.package_manager').setup {
     requires = { 'nvim-lua/plenary.nvim' }
   },
 
-  {'folke/trouble.nvim', cmd = 'Trouble' },
-
+  'folke/trouble.nvim',
   'bogado/file-line', -- Open file:line
 
   {'AndrewRadev/bufferize.vim', config = function()
@@ -100,7 +99,7 @@ require('lewis6991.package_manager').setup {
     end
   end},
 
-  {'dstein64/vim-startuptime', cmd = 'StartupTime'},
+  'dstein64/vim-startuptime',
 
   {'j-hui/fidget.nvim', config = function()
     require'fidget'.setup{
@@ -148,7 +147,6 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'junegunn/vim-easy-align',
-    keys = 'ga',
     config = function()
       vim.keymap.set({'x', 'n'}, 'ga', '<Plug>(EasyAlign)')
       vim.g.easy_align_delimiters = {
@@ -344,7 +342,6 @@ require('lewis6991.package_manager').setup {
     start = true,
     requires = {
       {'nvim-treesitter/nvim-treesitter-context', branch = 'feat/queries'},
-      'JoosepAlviste/nvim-ts-context-commentstring',
     },
     run = ':TSUpdate',
     config = function()
