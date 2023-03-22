@@ -13,7 +13,7 @@ local function get_lang()
 
   local lang ---@type string?
   parser:for_each_child(function(tree, lang_)
-    if tree:contains(range) then
+    if lang_ ~= 'comment' and tree:contains(range) then
       lang = lang_
       return
     end
@@ -22,24 +22,20 @@ local function get_lang()
   return lang
 end
 
-local commentstrings = {} ---@type table<string,string>
-
 local function enable_commenstrings()
   api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
     buffer = 0,
     callback = function()
       local lang = get_lang() or vim.bo.filetype
-
-      if not commentstrings[lang] then
-        commentstrings[lang] = vim.filetype.get_option(lang, 'commentstring') --[[@as string]]
-      end
-
-      local cs = commentstrings[lang]
-      if vim.bo.commentstring ~= cs then
-        vim.bo.commentstring = cs
-      end
+      vim.bo.commentstring = vim.filetype.get_option(lang, 'commentstring') --[[@as string]]
     end
   })
+end
+
+local function enable_foldexpr()
+  vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+  vim.opt_local.foldmethod = 'expr'
+  vim.cmd.normal'zx'
 end
 
 vim.treesitter.language.add('bash', { filetype = { 'bash', 'sh' } })
@@ -51,10 +47,7 @@ api.nvim_create_autocmd('FileType', {
       return
     end
 
-    vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-    vim.opt_local.foldmethod = 'expr'
-    vim.cmd.normal'zx'
-
+    enable_foldexpr()
     enable_commenstrings()
   end
 })
@@ -67,18 +60,23 @@ require'treesitter-context'.setup {
 
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    "bash",
-    "c",
-    "help",
-    "html",
-    "json",
-    "lua",
-    "make",
-    "markdown",
-    "markdown_inline",
-    "python",
-    "rst",
-    "teal",
+    'bash',
+    'c',
+    'comment',
+    'diff',
+    'gitcommit',
+    'help',
+    'html',
+    'json',
+    'lua',
+    'make',
+    'markdown',
+    'markdown_inline',
+    'python',
+    'query',
+    'rst',
+    'teal',
+    'yaml',
   },
   indent = {
     enable = true,
