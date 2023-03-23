@@ -8,12 +8,8 @@ require('lewis6991.package_manager').setup {
   'lewis6991/tree-sitter-tcl',
   -- 'lewis6991/systemverilog.vim',
   {'lewis6991/impatient.nvim', start = true},
-
-  {'lewis6991/spaceless.nvim', config = function()
-    require('spaceless').setup()
-  end},
-
-  {'lewis6991/cleanfold.nvim'},
+  'lewis6991/spaceless.nvim',
+  'lewis6991/cleanfold.nvim',
   'lewis6991/brodir.nvim',
   'lewis6991/vc.nvim',
 
