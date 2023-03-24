@@ -306,11 +306,9 @@ require('lewis6991.package_manager').setup {
   {'lukas-reineke/cmp-rg'               , requires = 'hrsh7th/nvim-cmp' },
   {'f3fora/cmp-spell'                   , requires = 'hrsh7th/nvim-cmp' },
   {'andersevenrud/cmp-tmux'             , requires = 'hrsh7th/nvim-cmp' },
-  {'saadparwaiz1/cmp_luasnip'           , requires = 'hrsh7th/nvim-cmp' },
 
   {'hrsh7th/nvim-cmp',
     requires = {
-      {'L3MON4D3/LuaSnip', event = 'InsertEnter'},
       -- 'dmitmel/cmp-cmdline-history',
       'nvim-lua/plenary.nvim'
     },

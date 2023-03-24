@@ -60,11 +60,6 @@ end
 
 local cmp = require 'cmp'
 cmp.setup {
-  snippet = {
-    expand = function(args)
-      require'luasnip'.lsp_expand(args.body)
-    end,
-  },
   formatting = {
     fields = { 'kind', 'abbr', 'menu' },
     format = function(entry, vim_item)
@@ -93,7 +88,6 @@ cmp.setup {
     ['<CR>']    = cmp.mapping.confirm { select = true },
   },
   sources = cmp.config.sources({
-    { name = 'luasnip'    },
     { name = 'nvim_lsp'   },
     { name = 'path'       },
     { name = 'buffer'     },
