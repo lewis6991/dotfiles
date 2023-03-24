@@ -170,10 +170,13 @@ require('lewis6991.package_manager').setup {
   'inkarkat/vim-visualrepeat',
 
   {'stevearc/aerial.nvim', config = function()
-    require('aerial').setup()
-
+    local done_setup = false
     vim.api.nvim_create_autocmd('LspAttach', {
       callback = function(args)
+        if not done_setup then
+          require('aerial').setup()
+          done_setup = true
+        end
         vim.keymap.set('n', '<leader>a', '<cmd>AerialToggle!<CR>', { buffer = args.buf})
       end
     })
@@ -303,7 +306,7 @@ require('lewis6991.package_manager').setup {
   {'lukas-reineke/cmp-rg'               , requires = 'hrsh7th/nvim-cmp' },
   {'f3fora/cmp-spell'                   , requires = 'hrsh7th/nvim-cmp' },
   {'andersevenrud/cmp-tmux'             , requires = 'hrsh7th/nvim-cmp' },
-  -- {'saadparwaiz1/cmp_luasnip'           , requires = 'hrsh7th/nvim-cmp' },
+  {'saadparwaiz1/cmp_luasnip'           , requires = 'hrsh7th/nvim-cmp' },
 
   {'hrsh7th/nvim-cmp',
     requires = {
