@@ -45,9 +45,7 @@ require('lewis6991.package_manager').setup {
     require'lewis6991.gitsigns'
   end},
 
-  {'lewis6991/nvim-colorizer.lua', config = function()
-    require('colorizer').setup()
-  end},
+  'lewis6991/nvim-colorizer.lua',
 
   {'lewis6991/tmux.nvim', config = function()
     require("tmux").setup{
