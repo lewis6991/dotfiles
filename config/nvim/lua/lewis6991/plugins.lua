@@ -337,10 +337,20 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'nvim-treesitter/nvim-treesitter',
-    requires = 'nvim-treesitter/nvim-treesitter-context',
     run = ':TSUpdate',
     config = function()
       require'lewis6991.treesitter'
     end
   },
+
+  {'nvim-treesitter/nvim-treesitter-context',
+    requires = 'nvim-treesitter/nvim-treesitter',
+    config = function()
+      require'treesitter-context'.setup {
+        enable = true,
+        max_lines = 5,
+        trim_scope = 'outer'
+      }
+    end
+  }
 }
