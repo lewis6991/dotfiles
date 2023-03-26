@@ -98,3 +98,4 @@ pointcuts
 Overridable
 treesitter
 reparsing
+Memoize

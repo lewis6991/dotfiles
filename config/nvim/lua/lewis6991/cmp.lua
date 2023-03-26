@@ -60,6 +60,11 @@ end
 
 local cmp = require 'cmp'
 cmp.setup {
+  snippet = {
+    expand = function(args)
+      require('snippy').expand_snippet(args.body) -- For `snippy` users.
+    end,
+  },
   formatting = {
     fields = { 'kind', 'abbr', 'menu' },
     format = function(entry, vim_item)

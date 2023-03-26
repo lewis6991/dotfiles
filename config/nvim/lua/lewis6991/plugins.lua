@@ -7,7 +7,6 @@ require('lewis6991.package_manager').setup {
   -- 'lewis6991/tcl.vim',
   'lewis6991/tree-sitter-tcl',
   -- 'lewis6991/systemverilog.vim',
-  {'lewis6991/impatient.nvim', start = true},
   'lewis6991/spaceless.nvim',
   'lewis6991/cleanfold.nvim',
   'lewis6991/brodir.nvim',
@@ -307,11 +306,15 @@ require('lewis6991.package_manager').setup {
   {'f3fora/cmp-spell'                   , requires = 'hrsh7th/nvim-cmp' },
   {'andersevenrud/cmp-tmux'             , requires = 'hrsh7th/nvim-cmp' },
 
-  {'hrsh7th/nvim-cmp',
+  {'dcampos/cmp-snippy',
     requires = {
-      -- 'dmitmel/cmp-cmdline-history',
-      'nvim-lua/plenary.nvim'
-    },
+      'hrsh7th/nvim-cmp',
+      'dcampos/nvim-snippy',
+    }
+  },
+
+  {'hrsh7th/nvim-cmp',
+    requires = 'dcampos/nvim-snippy',
     config = function()
       require('lewis6991.cmp')
     end
@@ -334,10 +337,7 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'nvim-treesitter/nvim-treesitter',
-    start = true,
-    requires = {
-      {'nvim-treesitter/nvim-treesitter-context', branch = 'feat/queries'},
-    },
+    requires = 'nvim-treesitter/nvim-treesitter-context',
     run = ':TSUpdate',
     config = function()
       require'lewis6991.treesitter'
