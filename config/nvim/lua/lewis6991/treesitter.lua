@@ -1,7 +1,14 @@
 local api = vim.api
 
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'comment',
+  callback = function()
+    vim.bo.commentstring = ''
+  end
+})
+
 ---@return string?
-local function get_lang()
+local function get_injection_filetype()
   local ok, parser = pcall(vim.treesitter.get_parser)
   if not ok then
     return
@@ -11,23 +18,29 @@ local function get_lang()
   local row, col = cpos[1] - 1, cpos[2]
   local range = { row, col, row, col + 1 }
 
-  local lang ---@type string?
-  parser:for_each_child(function(tree, lang_)
-    if lang_ ~= 'comment' and tree:contains(range) then
-      lang = lang_
-      return
+  local ft  --- @type string?
+
+  parser:for_each_child(function(tree, lang)
+    if tree:contains(range) then
+      local fts = vim.treesitter.language.get_filetypes(lang)
+      for _, ft0 in ipairs(fts) do
+        if vim.filetype.get_option(ft0, 'commentstring') ~= '' then
+          ft = fts[1]
+          break
+        end
+      end
     end
   end)
 
-  return lang
+  return ft
 end
 
 local function enable_commenstrings()
   api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
     buffer = 0,
     callback = function()
-      local lang = get_lang() or vim.bo.filetype
-      vim.bo.commentstring = vim.filetype.get_option(lang, 'commentstring') --[[@as string]]
+      local ft = get_injection_filetype() or vim.bo.filetype
+      vim.bo.commentstring = vim.filetype.get_option(ft, 'commentstring') --[[@as string]]
     end
   })
 end
