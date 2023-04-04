@@ -1,4 +1,4 @@
-require 'lewis6991.cmp_gh'
+-- require 'lewis6991.cmp_gh'
 
 local source_names = {
   buffer     = {'Buf'  , 'String'},
@@ -58,10 +58,26 @@ local function min_length(min)
   end
 end
 
+local did_snippy = false
+
 local cmp = require 'cmp'
 cmp.setup {
   snippet = {
     expand = function(args)
+      if not did_snippy then
+        require('snippy').setup({
+          mappings = {
+            is = {
+              ['<Tab>'] = 'expand_or_advance',
+              ['<S-Tab>'] = 'previous',
+            },
+            nx = {
+              ['<leader>x'] = 'cut_text',
+            },
+          },
+        })
+        did_snippy = true
+      end
       require('snippy').expand_snippet(args.body) -- For `snippy` users.
     end,
   },

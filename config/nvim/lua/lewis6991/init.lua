@@ -202,7 +202,7 @@ if "Mappings" then
   autocmd 'LspAttach' {
     desc = 'lsp mappings',
     function(args)
-      local bufnr = args.buf
+      local bufnr = args.buf --- @type integer
       nmap '<C-]>'      {lsp.buf.definition, desc = 'lsp.buf.definition', buffer = bufnr  }
       nmap '<M-]>'      {lsp.buf.type_definition, desc = 'lsp.buf.type_definition', buffer = bufnr  }
       nmap '<leader>cl' {lsp.codelens.run  , desc = 'lsp.codelens.run'  , buffer = bufnr    }
@@ -215,13 +215,11 @@ if "Mappings" then
       -- nmap 'gr' { lsp.buf.references }
       nmap 'gr' '<cmd>Trouble lsp_references<cr>'
       nmap 'gR' '<cmd>Telescope lsp_references layout_strategy=vertical<cr>'
+      nmap 'gi' {lsp.buf.implementation, desc = 'lsp.buf.implementation', buffer = bufnr  }
 
       local client = vim.lsp.get_client_by_id(args.data.client_id)
       if client.server_capabilities.code_lens then
-        autocmd {'BufEnter', 'CursorHold', 'InsertLeave'} {
-          lsp.codelens.refresh,
-          buffer = args.buf,
-        }
+        autocmd {'BufEnter', 'CursorHold', 'InsertLeave'} { lsp.codelens.refresh, buffer = bufnr }
         lsp.codelens.refresh()
       end
     end
@@ -235,6 +233,11 @@ if "Abbrev" then
   vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
   vim.cmd.abbrev('function', 'function')
   vim.cmd.cabbrev('Q', 'q')
+
+  vim.cmd.abbrev('-@T', '--- @type')
+  vim.cmd.abbrev('-@P', '--- @param')
+  vim.cmd.abbrev('-@R', '--- @return')
+  vim.cmd.abbrev('-@F', '--- @field')
 end
 
 if 'Treesitter' then
