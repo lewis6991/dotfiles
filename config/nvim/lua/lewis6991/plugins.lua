@@ -197,37 +197,7 @@ require('lewis6991.package_manager').setup {
   },
 
   {'scalameta/nvim-metals', config = function()
-    local function setup_metals()
-      local metals = require'metals'
-
-      metals.initialize_or_attach(vim.tbl_deep_extend('force', metals.bare_config(), {
-        handlers = {
-          ["metals/status"] = function(_, status, ctx)
-            vim.lsp.handlers["$/progress"](_, {
-              token = 1,
-              value = {
-                kind = status.show and 'begin' or status.hide and 'end' or "report",
-                message = status.text,
-              }
-            }, ctx)
-          end
-        },
-
-        init_options = {
-          statusBarProvider = 'on'
-        },
-        settings = {
-          showImplicitArguments = true,
-          enableSemanticHighlighting = true,
-        },
-        capabilities = require("cmp_nvim_lsp").default_capabilities()
-      }))
-    end
-
-    vim.api.nvim_create_autocmd('FileType', {
-      pattern = {'scala', 'sbt'},
-      callback = setup_metals
-    })
+    require('lewis6991.metals')
   end,
     requires = {
       'hrsh7th/cmp-nvim-lsp',
@@ -240,52 +210,7 @@ require('lewis6991.package_manager').setup {
       'folke/neodev.nvim',
     },
     config = function()
-      local function setup(server, settings)
-        require'lspconfig'[server].setup{
-          capabilities = require('cmp_nvim_lsp').default_capabilities(),
-          settings = settings
-        }
-      end
-
-      require("neodev").setup()
-
-      setup('clangd')
-      setup('cmake')
-      setup('lua_ls', {
-        Lua = {
-          diagnostics = {
-            groupSeverity = {
-              strong = 'Warning',
-              strict = 'Warning',
-            },
-            groupFileStatus = {
-              ["ambiguity"]  = "Opened",
-              ["await"]      = "Opened",
-              ["codestyle"]  = "None",
-              ["duplicate"]  = "Opened",
-              ["global"]     = "Opened",
-              ["luadoc"]     = "Opened",
-              ["redefined"]  = "Opened",
-              ["strict"]     = "Opened",
-              ["strong"]     = "Opened",
-              ["type-check"] = "Opened",
-              ["unbalanced"] = "Opened",
-              ["unused"]     = "Opened",
-            },
-            unusedLocalExclude = { '_*' },
-            globals = {
-              'it',
-              'describe',
-              'before_each',
-              'after_each',
-              'pending'
-            }
-          },
-        }
-      })
-      setup('pyright')
-      setup('bashls')
-      setup('teal_ls')
+      require('lewis6991.lsp')
     end,
   },
 
