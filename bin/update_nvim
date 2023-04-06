@@ -14,6 +14,44 @@ function stage() {
     "$@" >> "$BUILD_DIR.log"
 }
 
+function changes() {
+    local upstream
+    upstream=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}")
+
+    local ahead_behind
+    read -ra ahead_behind <<< "$(git rev-list --left-right --count "$upstream...HEAD")"
+
+    local -i behind=${ahead_behind[0]}
+
+    if [[ $behind == 0 ]]; then
+        info "No changes"
+        return 1
+    fi
+
+    info "$behind new changes"
+    git log --oneline "$upstream...HEAD"
+
+    return 0
+}
+
+function install() {
+    local install_msg
+    if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
+        # Get sudo
+        install_msg="Installing (with sudo)"
+        SUDO_OPT=sudo
+    else
+        install_msg="Installing"
+        SUDO_OPT=""
+    fi
+
+    stage "$install_msg" \
+        $SUDO_OPT make \
+        CMAKE_BUILD_TYPE=RelWithDebInfo \
+        "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
+        install
+}
+
 BUILD_DIR="$XDG_CACHE_HOME/nvim_build"
 
 rm -f "$BUILD_DIR.log"
@@ -29,23 +67,17 @@ fi
 
 cd "$BUILD_DIR"
 
-stage "Pulling updates"    git pull
-stage "Cleaning workspace" make distclean
-stage "Building"           make CMAKE_BUILD_TYPE=RelWithDebInfo
+stage "Fetching updates"   git fetch
 
-if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
-    # Get sudo
-    install_msg="Installing (with sudo)"
-    SUDO_OPT=sudo
-else
-    install_msg="Installing"
-    SUDO_OPT=""
+if ! changes; then
+    info "Done!"
+    exit
 fi
 
-stage "$install_msg" \
-    $SUDO_OPT make \
-    CMAKE_BUILD_TYPE=RelWithDebInfo \
-    "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
-    install
+stage "Rebasing"           git rebase
+stage "Cleaning workspace" make distclean
+stage "Building"           make
+# stage "Building"           make CMAKE_BUILD_TYPE=RelWithDebInfo
+install
 
 info "Done!"
