@@ -2,82 +2,162 @@
 
 set -e
 
+BUILD_DIR="$XDG_CACHE_HOME/nvim_build"
+
 function info() {
-    local blue='\033[0;34m'
-    local nc='\033[0m' # No Color
-    echo -e "$blue$1$nc"
+  local blue='\033[0;34m'
+  local nc='\033[0m' # No Color
+  echo -e "$blue$1$nc"
 }
 
 function stage() {
-    info "$1"
-    shift
-    "$@" >> "$BUILD_DIR.log"
+  info "$1"
+  shift
+  "$@" >> "$BUILD_DIR.log"
 }
 
 function changes() {
-    local upstream
-    upstream=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}")
+  local upstream
+  upstream=$(git rev-parse --abbrev-ref --symbolic-full-name "@{u}")
 
-    local ahead_behind
-    read -ra ahead_behind <<< "$(git rev-list --left-right --count "$upstream...HEAD")"
+  local ahead_behind
+  read -ra ahead_behind <<< "$(git rev-list --left-right --count "$upstream...HEAD")"
 
-    local -i behind=${ahead_behind[0]}
+  local -i behind=${ahead_behind[0]}
 
-    if [[ $behind == 0 ]]; then
-        info "No changes"
-        return 1
-    fi
+  if [[ $behind == 0 ]]; then
+      info "No changes"
+      return 1
+  fi
 
-    info "$behind new changes"
-    git log --oneline "$upstream...HEAD"
+  info "$behind new changes"
+  git log --oneline "$upstream...HEAD"
 
-    return 0
+  return 0
+}
+
+function do_patch() {
+  rm -rf "$BUILD_DIR"/*.patch
+
+  cat <<'EOF' > "$BUILD_DIR/spell.patch"
+diff --git a/src/nvim/spell.c b/src/nvim/spell.c
+index a14a02b9f..9f6ae0072 100644
+--- a/src/nvim/spell.c
++++ b/src/nvim/spell.c
+@@ -2873,7 +2873,8 @@ static void spell_soundfold_wsal(slang_T *slang, const char *inword, char *res)
+   int i = reslen = z = 0;
+   while ((c = word[i]) != NUL) {
+     // Start with the first rule that has the character in the word.
+-    int n = slang->sl_sal_first[c & 0xff];
++    int cf = c & 0xff;
++    int n = slang->sl_sal_first[cf];
+     int z0 = 0;
+
+     if (n >= 0) {
+@@ -2947,7 +2948,8 @@ static void spell_soundfold_wsal(slang_T *slang, const char *inword, char *res)
+           // search for followup rules, if:
+           // followup and k > 1  and  NO '-' in searchstring
+           c0 = word[i + k - 1];
+-          n0 = slang->sl_sal_first[c0 & 0xff];
++          int c0f = c0 && 0xff;
++          n0 = slang->sl_sal_first[c0f];
+
+           if (slang->sl_followup && k > 1 && n0 >= 0
+               && p0 != '-' && word[i + k] != NUL) {
+EOF
+
+  cat <<'EOF' > "$BUILD_DIR/exitfree.patch"
+diff --git a/src/nvim/main.c b/src/nvim/main.c
+index 6ff26b6e9..5e03f4e52 100644
+--- a/src/nvim/main.c
++++ b/src/nvim/main.c
+@@ -670,7 +670,7 @@ void os_exit(int r)
+   ILOG("Nvim exit: %d", r);
+
+ #ifdef EXITFREE
+-  free_all_mem();
++  // free_all_mem();
+ #endif
+
+   exit(r);
+EOF
+
+  stage "Patching"
+  git reset --hard HEAD
+  for patch in "$BUILD_DIR"/*.patch; do
+    info "applying patch $patch"
+    git apply "$patch"
+  done
 }
 
 function install() {
-    local install_msg
-    if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
-        # Get sudo
-        install_msg="Installing (with sudo)"
-        SUDO_OPT=sudo
-    else
-        install_msg="Installing"
-        SUDO_OPT=""
-    fi
+  local install_msg
+  if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
+    # Get sudo
+    install_msg="Installing (with sudo)"
+    SUDO_OPT=sudo
+  else
+    install_msg="Installing"
+    SUDO_OPT=""
+  fi
 
-    stage "$install_msg" \
-        $SUDO_OPT make \
-        CMAKE_BUILD_TYPE=RelWithDebInfo \
-        "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
-        install
+  stage "$install_msg" \
+    $SUDO_OPT make \
+    CMAKE_BUILD_TYPE=RelWithDebInfo \
+    "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
+    install
 }
 
-BUILD_DIR="$XDG_CACHE_HOME/nvim_build"
+function main() {
+  ASAN=0
+  FORCE=0
 
-rm -f "$BUILD_DIR.log"
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      -a) ASAN=1 ;;
+      -f) FORCE=1 ;;
+    esac
+    shift
+  done
 
-if [[ ! -d "$BUILD_DIR/.git" ]]; then
+  rm -f "$BUILD_DIR.log"
+
+  if [[ ! -d "$BUILD_DIR/.git" ]]; then
     rm -rf "$BUILD_DIR"
     stage "Cloning neovim" \
-        git clone https://github.com/neovim/neovim \
-        --depth 1 \
-        --quiet \
-        "$BUILD_DIR"
-fi
+      git clone https://github.com/neovim/neovim \
+      --depth 1 \
+      --quiet \
+      "$BUILD_DIR"
+  fi
 
-cd "$BUILD_DIR"
+  cd "$BUILD_DIR"
 
-stage "Fetching updates"   git fetch
+  stage "Fetching updates"   git fetch
 
-if ! changes; then
+  if ((!FORCE)) && ! changes; then
     info "Done!"
     exit
-fi
+  fi
 
-stage "Rebasing"           git rebase
-stage "Cleaning workspace" make distclean
-stage "Building"           make
-# stage "Building"           make CMAKE_BUILD_TYPE=RelWithDebInfo
-install
+  stage "Rebasing"           git rebase
+  stage "Cleaning workspace" make distclean
 
-info "Done!"
+  if ((ASAN)); then
+    do_patch
+    stage "Building (ASAN enabled)" \
+        make CMAKE_EXTRA_FLAGS="-DCMAKE_C_COMPILER=clang -DENABLE_ASAN_UBSAN=1"
+    # ASAN_OPTIONS=detect_leaks=1:check_initialization_order=1:handle_abort=1:handle_sigill=1:log_path=nvim_asan:intercept_tls_get_addr=0
+    # UBSAN_OPTIONS=print_stacktrace=1 log_path=nvim_ubsan
+  else
+    # stage "Building" make
+    stage "Building" \
+        make CMAKE_BUILD_TYPE=RelWithDebInfo
+  fi
+
+  install
+
+  info "Done!"
+}
+
+main "$@"
