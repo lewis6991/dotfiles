@@ -230,9 +230,12 @@ require('lewis6991.package_manager').setup {
     end
   },
 
+  {'stevearc/dressing.nvim', config = function()
+    require('dressing').setup()
+  end},
+
   {'nvim-lua/telescope.nvim',
     requires = {
-      'nvim-telescope/telescope-ui-select.nvim',
       {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       'nvim-telescope/telescope-frecency.nvim',
       'nvim-lua/plenary.nvim'
