@@ -4,7 +4,6 @@ require'nvim-treesitter.configs'.setup {
     'bash',
     'c',
     'comment',
-    'diff',
     'gitcommit',
     'help',
     'html',
