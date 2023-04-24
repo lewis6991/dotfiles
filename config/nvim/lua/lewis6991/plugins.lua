@@ -181,21 +181,6 @@ require('lewis6991.package_manager').setup {
     })
   end},
 
-  {'williamboman/mason.nvim',
-    config = function()
-      require('mason').setup()
-    end,
-  },
-
-  {'williamboman/mason-lspconfig.nvim',
-    config = function()
-      require('mason-lspconfig').setup{}
-    end,
-    requires = {
-      'williamboman/mason.nvim',
-    }
-  },
-
   {'scalameta/nvim-metals', config = function()
     require('lewis6991.metals')
   end,
