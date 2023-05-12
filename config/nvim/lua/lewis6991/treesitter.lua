@@ -32,6 +32,6 @@ require'nvim-treesitter.configs'.setup {
 
 local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
 local c_info = parser_config.c.install_info
--- url = 'https://github.com/nvim-treesitter/tree-sitter-c',
-c_info.url = '~/projects/tree-sitter-c'
+c_info.url = 'https://github.com/nvim-treesitter/tree-sitter-c'
+-- c_info.url = '~/projects/tree-sitter-c'
 c_info.revision = 'nvimc'

@@ -86,8 +86,9 @@ function M.hunks()
 end
 
 local function filetype_symbol()
-  if vim.fn.WebDevIconsGetFileTypeSymbol then
-    return vim.fn.WebDevIconsGetFileTypeSymbol()
+  local res = vim.F.npcall(vim.fn.WebDevIconsGetFileTypeSymbol)
+  if res then
+    return res
   end
   local ok, devicons = pcall(require, 'nvim-web-devicons')
   if ok then

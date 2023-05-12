@@ -203,7 +203,8 @@ if "Mappings" then
     desc = 'lsp mappings',
     function(args)
       local bufnr = args.buf --- @type integer
-      nmap '<C-]>'      {lsp.buf.definition, desc = 'lsp.buf.definition', buffer = bufnr  }
+      -- nmap '<C-]>'      {lsp.buf.definition, desc = 'lsp.buf.definition', buffer = bufnr  }
+      nmap '<C-]>'      '<cmd>Trouble lsp_definitions<cr>'
       nmap '<M-]>'      {lsp.buf.type_definition, desc = 'lsp.buf.type_definition', buffer = bufnr  }
       nmap '<leader>cl' {lsp.codelens.run  , desc = 'lsp.codelens.run'  , buffer = bufnr    }
       -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
@@ -233,6 +234,8 @@ if "Abbrev" then
   vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
   vim.cmd.abbrev('function', 'function')
   vim.cmd.cabbrev('Q', 'q')
+  vim.cmd.cabbrev('git', 'Git')
+  vim.cmd.cabbrev('packer', 'Packer')
 
   vim.cmd.abbrev('-@T', '--- @type')
   vim.cmd.abbrev('-@P', '--- @param')

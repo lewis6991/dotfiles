@@ -1,16 +1,22 @@
 require('lewis6991.package_manager').setup {
-  -- 'lewis6991/moonlight.vim',
+
+  --- Filetype plugins ---
+  'derekwyatt/vim-scala',
+  'martinda/Jenkinsfile-vim-syntax',
+  'teal-language/vim-teal',
+  'fladson/vim-kitty',
+  'raimon49/requirements.txt.vim',
+  'lewis6991/vc.nvim',
+  -- 'lewis6991/systemverilog.vim',
+  'lewis6991/tree-sitter-tcl',
+
   {'lewis6991/github_dark.nvim', config = function()
     vim.cmd.color'github_dark'
   end},
 
-  -- 'lewis6991/tcl.vim',
-  'lewis6991/tree-sitter-tcl',
-  -- 'lewis6991/systemverilog.vim',
   'lewis6991/spaceless.nvim',
   'lewis6991/cleanfold.nvim',
   'lewis6991/brodir.nvim',
-  'lewis6991/vc.nvim',
 
   {'lewis6991/foldsigns.nvim',
     config = function()
@@ -64,25 +70,18 @@ require('lewis6991.package_manager').setup {
 
   'wellle/targets.vim',
   'michaeljsmith/vim-indent-object',
-  {'sindrets/diffview.nvim',
-    requires = { 'nvim-lua/plenary.nvim' }
-  },
-
+  {'sindrets/diffview.nvim', requires = { 'nvim-lua/plenary.nvim' } },
   'folke/trouble.nvim',
   'bogado/file-line', -- Open file:line
+  'dstein64/vim-startuptime',
 
   {'AndrewRadev/bufferize.vim', config = function()
     vim.g.bufferize_command = 'enew'
-    vim.cmd('autocmd FileType bufferize setlocal wrap')
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = 'bufferize',
+      command = 'setlocal wrap',
+    })
   end},
-
-  --- Filetype plugins ---
-  'tmux-plugins/vim-tmux',
-  {'derekwyatt/vim-scala', ft = 'scala' },  -- plugin/scala.vim - ~150LOC
-  'martinda/Jenkinsfile-vim-syntax',
-  'teal-language/vim-teal',
-  'fladson/vim-kitty',
-  'raimon49/requirements.txt.vim',
 
   {'rcarriga/nvim-notify', config = function()
     --- @diagnostic disable-next-line
@@ -91,8 +90,6 @@ require('lewis6991.package_manager').setup {
       return vim.notify(...)
     end
   end},
-
-  'dstein64/vim-startuptime',
 
   {'j-hui/fidget.nvim', config = function()
     require'fidget'.setup{
@@ -119,13 +116,10 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'mhinz/vim-grepper', config = function()
-    vim.g.grepper = {
-      dir = 'repo',
-    }
+    vim.g.grepper = { dir = 'repo' }
     vim.keymap.set({'n', 'x'}, 'gs', '<plug>(GrepperOperator)')
   end},
 
-  'ryanoasis/vim-devicons',
 
   {'neapel/vim-bnfc-syntax', config = function()
     -- Argh, why don't syntax plugins ever set commentstring!

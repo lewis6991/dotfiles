@@ -90,5 +90,5 @@ gitsigns.setup{
   _signs_staged_enable = true,
   word_diff = true,
   trouble = true,
-  _signs_staged_enable = true
+  _inline2 = true
 }
