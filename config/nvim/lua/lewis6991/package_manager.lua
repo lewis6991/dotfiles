@@ -1,21 +1,5 @@
 local M = {}
 
-local function bootstrap_packer()
-  if not pcall(require, 'packer') then
-    --- @diagnostic disable-next-line
-    if vim.fn.input("Download Packer? (y for yes): ") ~= "y" then
-      return
-    end
-
-    print("Downloading packer.nvim...")
-    print(vim.fn.system(string.format(
-      'git clone %s %s --branch=main',
-      'https://github.com/lewis6991/packer.nvim',
-      vim.fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
-    )))
-  end
-end
-
 ---@param spec   table
 ---@param field? integer|string
 ---@param fn     fun(spec: table|string): table|string
@@ -65,8 +49,20 @@ local function try_get_local(lazy)
 end
 
 local function setup_packer(init)
-  vim.opt.rtp:prepend('~/projects/packer.nvim')
-  bootstrap_packer()
+  -- local packer_path = vim.fn.expand('~/projects/packer2.nvim')
+  local packer_path = vim.fn.stdpath("data") .. "/packer/packer2.nvim"
+  vim.opt.rtp:prepend(packer_path)
+
+  if not vim.loop.fs_stat(packer_path) then
+    vim.fn.system({
+      'git',
+      'clone',
+      "--filter=blob:none",
+      'https://github.com/lewis6991/packer2.nvim',
+      packer_path
+    })
+  end
+
   local packer = require('packer')
 
   packer.setup{
@@ -85,10 +81,6 @@ local function setup_packer(init)
   packer.add(init)
 
   vim.keymap.set('n', '<leader>u', '<cmd>Packer update<CR>', {silent=true})
-  P = function()
-    return require('packer.plugin').plugins
-  end
-
 end
 
 local function setup_lazy(init)
@@ -130,7 +122,6 @@ local function setup_lazy(init)
   end
 
   vim.opt.runtimepath:prepend(lazypath)
-  -- print(vim.inspect(init))
 
   require("lazy").setup(init)
 end
@@ -144,7 +135,6 @@ function M.setup(init)
   else
     setup_packer(init)
   end
-
 end
 
 return M
