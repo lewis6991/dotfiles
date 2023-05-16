@@ -5,6 +5,7 @@ require'nvim-treesitter'.setup {
     'c',
     'comment',
     'gitcommit',
+    'vimdoc',
     'html',
     'json',
     'lua',
