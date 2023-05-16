@@ -61,7 +61,7 @@ end
 
 gitsigns.setup{
   debug_mode = true,
-  max_file_length = 1000000000,
+  max_file_length = 100000,
   signs = {
     add          = {show_count = false},
     change       = {show_count = false},

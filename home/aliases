@@ -3,7 +3,6 @@
 alias ga="git a"
 alias gd="git d"
 alias gf="git fetch"
-alias grg="git rg"
 alias gr="git remote -v"
 alias gs="git st --ignore-submodules"
 alias gss="git st"
@@ -23,6 +22,8 @@ alias gitconfig='vim $XDG_CONFIG_HOME/git/config'
 alias thist="tmux capture-pane -epS - > /tmp/tmuxhist && vim -c 'te cat /tmp/tmuxhist' -c stopinsert"
 
 alias vim="nvim"
-alias vimdiff="nvim -d"
 
 alias utop='top -u $USER'
+
+alias .nv='cd ~/projects/neovim'
+alias .dot='cd ~/projects/dotfiles'

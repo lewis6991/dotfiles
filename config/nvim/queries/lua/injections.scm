@@ -1,5 +1,19 @@
 ;; extends
 
+; pcall(exec_lua, [[code]])
+(
+  (function_call
+    (identifier)
+    (arguments
+      (identifier) @_exec_lua
+      (string) @lua
+    )
+  )
+  (#eq? @_exec_lua "exec_lua")
+  (#lua-match? @lua "^%[%[")
+  (#offset! @lua 0 2 0 -2)
+)
+
 (
   (function_call
     (identifier) @_exec_lua
