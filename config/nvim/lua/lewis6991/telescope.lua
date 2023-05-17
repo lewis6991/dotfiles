@@ -5,11 +5,6 @@ telescope.setup {
     selection_strategy = "reset",
     winblend = 15,
   },
-  -- pickers = {
-  --   git_files = file_picker_opts,
-  --   live_grep = file_picker_opts,
-  --   find_files = file_picker_opts,
-  -- },
   extensions = {
     ["ui-select"] = {
       require("telescope.themes").get_dropdown{}
@@ -18,7 +13,6 @@ telescope.setup {
 }
 
 telescope.load_extension('fzf')
-telescope.load_extension("frecency")
 
 local function nmap(key)
   return function(spec)

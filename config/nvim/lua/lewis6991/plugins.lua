@@ -46,9 +46,7 @@ require('lewis6991.package_manager').setup {
     require('satellite').setup()
   end},
 
-  {'lewis6991/gitsigns.nvim', config = function()
-    require'lewis6991.gitsigns'
-  end},
+  {'lewis6991/gitsigns.nvim', config = 'lewis6991.gitsigns'},
 
   'lewis6991/nvim-colorizer.lua',
 
@@ -175,9 +173,8 @@ require('lewis6991.package_manager').setup {
     })
   end},
 
-  {'scalameta/nvim-metals', config = function()
-    require('lewis6991.metals')
-  end,
+  {'scalameta/nvim-metals',
+    config = 'lewis6991.metals',
     requires = {
       'hrsh7th/cmp-nvim-lsp',
     }
@@ -188,14 +185,10 @@ require('lewis6991.package_manager').setup {
       'hrsh7th/cmp-nvim-lsp',
       'folke/neodev.nvim',
     },
-    config = function()
-      require('lewis6991.lsp')
-    end,
+    config = 'lewis6991.lsp'
   },
 
-  {'jose-elias-alvarez/null-ls.nvim', config = function()
-    require('lewis6991.null-ls')
-  end},
+  {'jose-elias-alvarez/null-ls.nvim', config = 'lewis6991.null-ls'},
 
   -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
   -- files
@@ -219,9 +212,7 @@ require('lewis6991.package_manager').setup {
 
   {'hrsh7th/nvim-cmp',
     requires = 'dcampos/nvim-snippy',
-    config = function()
-      require('lewis6991.cmp')
-    end
+    config = 'lewis6991.cmp'
   },
 
   {'stevearc/dressing.nvim', config = function()
@@ -229,14 +220,12 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'nvim-lua/telescope.nvim',
+    branch = 'nvim-ts',
     requires = {
       {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
-      'nvim-telescope/telescope-frecency.nvim',
       'nvim-lua/plenary.nvim'
     },
-    config = function()
-      require'lewis6991.telescope'
-    end
+    config = 'lewis6991.telescope'
   },
 
   {'neovim/nvimdev.nvim', config = function()
@@ -254,7 +243,6 @@ require('lewis6991.package_manager').setup {
     requires = 'nvim-treesitter/nvim-treesitter',
     config = function()
       require'treesitter-context'.setup {
-        enable = true,
         max_lines = 5,
         trim_scope = 'outer'
       }
