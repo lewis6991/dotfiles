@@ -1,26 +1,53 @@
 #! /usr/bin/env bash
 
 # arrow='->'
-arrow='\uf553'
-this='\uf111'
+ARROW='\uf553'
+THIS='\uf111'
+
+prs=$(python3 <<< "
+import json
+import subprocess
+out = subprocess.run(
+    'gh pr list --json url,isDraft,headRefName --author @me',
+    shell = True,
+    stdout = subprocess.PIPE,
+    stderr = subprocess.DEVNULL
+).stdout
+obj = out and json.loads(out) or []
+for e in obj:
+    ref, url, isdraft = e['headRefName'], e['url'], e['isDraft']
+    isdraft = '[DRAFT]' if isdraft else ''
+    print(f'{ref} {url} {isdraft}')
+")
 
 git for-each-ref --shell --format="%(refname:short)" refs/heads |
     while read -r entry; do
         branch=$(echo "$entry" | xargs)  # Unquote
         upstream=$(git branch --list "$branch" --format='%(upstream:short)')
         upstream_track=$(git branch --list "$branch" --format='%(upstream:track)')
-        branch_info=$(git branch \
+
+        prinfo=$(grep "^$branch " <<< "$prs")
+        url=""
+        isdraft=""
+        if [[ "$prinfo" != "" ]]; then
+            url="($(cut -d' ' -f2 <<< "$prinfo"))"
+            isdraft="$(cut -d' ' -f3 <<< "$prinfo")"
+        fi
+
+        echo -e "$(git branch \
             --color=always \
             --list \
             --format="\
-%(color: bold green)%(if)%(HEAD)%(then)$this %(else)  %(end)\
-%(color:yellow)%(refname:short)%(color:reset) $arrow \
+%(color: bold green)%(if)%(HEAD)%(then)$THIS %(else)  %(end)\
+%(color:yellow)%(refname:short)%(color:reset) $ARROW \
 %(color:blue)%(upstream:short) \
 %(if:equals=<>)%(upstream:trackshort)%(then)%(color:red)%(else)%(color:cyan)%(end)\
 %(if:equals=<)%(upstream:trackshort)%(then)%(color:magenta)%(end)\
-%(upstream:track)" \
-            "$branch")
-        echo -e "$branch_info"
+%(upstream:track) \
+%(color:cyan)$url \
+%(color:white)$isdraft" \
+            "$branch")"
+
         if [[ "$upstream" != "" ]] && [[ "$upstream_track" != "[gone]" ]]; then
             git --no-pager log --format="      %s" "$upstream..$branch"
         fi
