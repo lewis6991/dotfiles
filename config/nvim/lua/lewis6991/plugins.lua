@@ -220,7 +220,6 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'nvim-lua/telescope.nvim',
-    branch = 'nvim-ts',
     requires = {
       {'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       'nvim-lua/plenary.nvim'
@@ -233,6 +232,7 @@ require('lewis6991.package_manager').setup {
   end},
 
   {'nvim-treesitter/nvim-treesitter',
+    branch = 'main',
     run = ':TSUpdate',
     config = function()
       require'lewis6991.treesitter'
