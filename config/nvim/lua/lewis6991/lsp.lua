@@ -1,6 +1,11 @@
 local function setup(server, settings)
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  vim.tbl_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+
+  capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+
   require'lspconfig'[server].setup{
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),
+    capabilities = capabilities,
     settings = settings
   }
 end

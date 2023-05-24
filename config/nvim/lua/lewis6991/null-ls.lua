@@ -124,7 +124,7 @@ null_ls.setup {
 
     -- null_ls.builtins.diagnostics.mypy,
     -- null_ls.builtins.diagnostics.pylint,
-    flake8,
+    -- flake8,
     jenkins_lint,
     tcl_lint,
   },
