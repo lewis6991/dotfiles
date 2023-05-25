@@ -5,7 +5,6 @@ require'nvim-treesitter'.setup {
     'c',
     'comment',
     'gitcommit',
-    'vimdoc',
     'html',
     'json',
     'lua',
@@ -15,7 +14,10 @@ require'nvim-treesitter'.setup {
     'python',
     'query',
     'rst',
+    'scala',
     'teal',
+    'vim',
+    'vimdoc',
     'yaml',
   }
 }
