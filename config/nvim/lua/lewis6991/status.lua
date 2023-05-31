@@ -2,6 +2,12 @@ local M = {}
 
 local api = vim.api
 
+--- @param name string
+--- @return table<string,any>
+local function get_hl(name)
+  return api.nvim_get_hl(0, { name = name })
+end
+
 local function highlight(num, active)
   if active == 1 then
     if num == 1 then
@@ -20,14 +26,17 @@ local DIAG_ATTRS = {
 }
 
 local function hldefs()
-  local bg = api.nvim_get_hl_by_name('StatusLine', true).background
+  local bg = get_hl('StatusLine').bg
   for _, attrs in ipairs(DIAG_ATTRS) do
-    local hl = api.nvim_get_hl_by_name('Diagnostic'..attrs[1], true)
-    api.nvim_set_hl(0, attrs[3], { fg = hl.foreground, bg = bg})
+    local fg = get_hl('Diagnostic'..attrs[1]).fg
+    api.nvim_set_hl(0, attrs[3], { fg = fg, bg = bg})
   end
 
-  local dhl = api.nvim_get_hl_by_name('Debug', true)
-  api.nvim_set_hl(0, 'LspName', { fg = dhl.foreground, bg = bg})
+  local dhl = get_hl('Debug')
+  api.nvim_set_hl(0, 'LspName', { fg = dhl.fg, bg = bg})
+
+  local fg = get_hl('MoreMsg').fg
+  api.nvim_set_hl(0, 'StatusTS', { fg = fg, bg = bg })
 end
 
 local function hl(name, active)
@@ -85,17 +94,21 @@ function M.hunks()
   return ''
 end
 
-local function filetype_symbol()
-  local res = vim.F.npcall(vim.fn.WebDevIconsGetFileTypeSymbol)
-  if res then
-    return res
-  end
+--- @param active 0|1
+--- @return string
+local function filetype_symbol(active)
   local ok, devicons = pcall(require, 'nvim-web-devicons')
-  if ok then
-    local name = api.nvim_buf_get_name(0)
-    return devicons.get_icon(name, vim.bo.filetype, {default = true})
+  if not ok then
+    return ''
   end
-  return ''
+
+  local name = api.nvim_buf_get_name(0)
+  local icon, iconhl = devicons.get_icon_color(name, vim.bo.filetype, {default = true})
+
+  local hlname = iconhl:gsub('#', 'Status')
+  api.nvim_set_hl(0, hlname, { fg = iconhl, bg = get_hl('StatusLine').bg })
+
+  return hl(hlname, active)..icon
 end
 
 local function is_treesitter()
@@ -103,14 +116,17 @@ local function is_treesitter()
   return vim.treesitter.highlighter.active[bufnr] ~= nil
 end
 
-function M.filetype()
-  return table.concat({
+function M.filetype(active)
+  local r = {
     vim.bo.filetype,
-    filetype_symbol(),
-    -- Causes artifacts in ruler section
-    -- is_treesitter() and '🌴' or nil
-    is_treesitter() and '' or nil
-  } , ' ')
+    filetype_symbol(active)
+  }
+
+  if is_treesitter() then
+    r[#r+1] = hl('StatusTS', active)..''
+  end
+
+  return table.concat(r, ' ')
 end
 
 function M.encodingAndFormat()
@@ -172,6 +188,7 @@ local F = setmetatable({}, {
 })
 
 ---@param sections string[][]
+---@return string
 local function parse_sections(sections)
   local result = {} ---@type string[]
   for _, s in ipairs(sections) do
@@ -201,7 +218,7 @@ local function set(active, global)
       pad(F.bufname(nil, '0.60')..'%m%r%h%q'),
     },
     {
-      pad(F.filetype()),
+      pad(F.filetype(active)),
       pad(F.encodingAndFormat()),
       highlight(1, active),
       ' %3p%% %2l(%02c)/%-3L ', -- 80% 65[12]/120
