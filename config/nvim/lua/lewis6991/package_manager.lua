@@ -48,24 +48,24 @@ local function try_get_local(lazy)
   end
 end
 
-local function setup_packer(init)
-  -- local packer_path = vim.fn.expand('~/projects/packer2.nvim')
-  local packer_path = vim.fn.stdpath("data") .. "/packer/packer2.nvim"
-  vim.opt.rtp:prepend(packer_path)
+local function setup_pckr(init)
+  -- local pckr_path = vim.fn.expand('~/projects/pckr.nvim')
+  local pckr_path = vim.fn.stdpath("data") .. "/pckr/pckr.nvim"
+  vim.opt.rtp:prepend(pckr_path)
 
-  if not vim.loop.fs_stat(packer_path) then
+  if not vim.loop.fs_stat(pckr_path) then
     vim.fn.system({
       'git',
       'clone',
       "--filter=blob:none",
-      'https://github.com/lewis6991/packer2.nvim',
-      packer_path
+      'https://github.com/lewis6991/pckr.nvim',
+      pckr_path
     })
   end
 
-  local packer = require('packer')
+  local pckr = require('pckr')
 
-  packer.setup{
+  pckr.setup{
     git = {
       default_url_format = 'git@github.com:/%s',
     },
@@ -78,9 +78,9 @@ local function setup_packer(init)
     -- }
   }
 
-  packer.add(init)
+  pckr.add(init)
 
-  vim.keymap.set('n', '<leader>u', '<cmd>Packer update<CR>', {silent=true})
+  vim.keymap.set('n', '<leader>u', '<cmd>Pckr update<CR>', {silent=true})
 end
 
 local function setup_lazy(init)
@@ -133,7 +133,7 @@ function M.setup(init)
   if vim.env.LAZY then
     setup_lazy(init)
   else
-    setup_packer(init)
+    setup_pckr(init)
   end
 end
 
