@@ -89,35 +89,32 @@ require('lewis6991.package_manager').setup {
     end
   end},
 
-  {'j-hui/fidget.nvim', config = function()
-    require'fidget'.setup{
-      text = {
-        spinner = "dots",
-      },
-      fmt = {
-        stack_upwards = false,
-        task = function(task_name, message, percentage)
-          local pct = percentage and string.format(" (%s%%)", percentage) or ""
-          if task_name then
-            return string.format("%s%s [%s]", message, pct, task_name)
-          else
-            return string.format("%s%s", message, pct)
-          end
-        end,
-      },
-      sources = {
-        ['null-ls'] = {
-          ignore = true
+  {'j-hui/fidget.nvim',
+    tag = 'legacy',
+    config = function()
+      require'fidget'.setup{
+        text = {
+          spinner = "dots",
+        },
+        fmt = {
+          stack_upwards = false,
+          task = function(task_name, message, percentage)
+            local pct = percentage and string.format(" (%s%%)", percentage) or ""
+            if task_name then
+              return string.format("%s%s [%s]", message, pct, task_name)
+            else
+              return string.format("%s%s", message, pct)
+            end
+          end,
+        },
+        sources = {
+          ['null-ls'] = {
+            ignore = true
+          }
         }
       }
-    }
-  end},
-
-  {'mhinz/vim-grepper', config = function()
-    vim.g.grepper = { dir = 'repo' }
-    vim.keymap.set({'n', 'x'}, 'gs', '<plug>(GrepperOperator)')
-  end},
-
+    end
+  },
 
   {'neapel/vim-bnfc-syntax', config = function()
     -- Argh, why don't syntax plugins ever set commentstring!
