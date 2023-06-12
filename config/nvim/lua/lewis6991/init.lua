@@ -234,8 +234,6 @@ if "Abbrev" then
   vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
   vim.cmd.abbrev('function', 'function')
   vim.cmd.cabbrev('Q', 'q')
-  vim.cmd.cabbrev('git', 'Git')
-  vim.cmd.cabbrev('packer', 'Packer')
 
   vim.cmd.abbrev('-@T', '--- @type')
   vim.cmd.abbrev('-@P', '--- @param')
