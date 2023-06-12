@@ -100,17 +100,13 @@ if have_cmd rlwrap; then
     fi
 fi
 
-if have_cmd rg; then
-    rg() {
-        if [[ -t 1 ]]; then
-            command rg --pretty --smart-case "$@" | less
-        else
-            command rg "$@"
-        fi
-    }
-
-    export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --glob "!.git/*" 2> /dev/null'
-fi
+rg() {
+    if [[ -t 1 ]]; then
+        command rg --pretty --smart-case "$@" | less
+    else
+        command rg "$@"
+    fi
+}
 
 # --RAW-CONTROL-CHARS cause --quit-if-one-screen to not work
 export LESS="\
