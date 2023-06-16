@@ -17,6 +17,7 @@ require('lewis6991.package_manager').setup {
   'lewis6991/spaceless.nvim',
   'lewis6991/cleanfold.nvim',
   'lewis6991/brodir.nvim',
+  'lewis6991/fileline.nvim',
 
   {'lewis6991/foldsigns.nvim',
     config = function()
@@ -70,7 +71,6 @@ require('lewis6991.package_manager').setup {
   'michaeljsmith/vim-indent-object',
   {'sindrets/diffview.nvim', requires = { 'nvim-lua/plenary.nvim' } },
   'folke/trouble.nvim',
-  'bogado/file-line', -- Open file:line
   'dstein64/vim-startuptime',
 
   {'AndrewRadev/bufferize.vim', config = function()
