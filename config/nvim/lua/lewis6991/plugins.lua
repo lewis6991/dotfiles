@@ -3,7 +3,6 @@ require('lewis6991.package_manager').setup {
   --- Filetype plugins ---
   'derekwyatt/vim-scala',
   'martinda/Jenkinsfile-vim-syntax',
-  'teal-language/vim-teal',
   'fladson/vim-kitty',
   'raimon49/requirements.txt.vim',
   'lewis6991/vc.nvim',
