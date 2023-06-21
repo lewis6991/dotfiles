@@ -17,6 +17,12 @@ setup('clangd')
 
 setup('lua_ls', {
   Lua = {
+    hint = {
+      enable = true,
+      paramName = 'Literal',
+      setType = true
+    },
+
     diagnostics = {
       groupSeverity = {
         strong = 'Warning',
