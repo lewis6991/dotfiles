@@ -1,9 +1,8 @@
 local ns = vim.api.nvim_create_namespace('jumper')
 
-local win_timer
-local key_timer
+local win_timer --- @type uv_timer_t?
 
-local win
+local win --- @type integer?
 
 local buf = vim.api.nvim_create_buf(false, true)
 do
@@ -64,7 +63,7 @@ end
 
 local function refresh_win_timer()
   if not win_timer then
-    win_timer = assert(vim.loop.new_timer())
+    win_timer = assert(vim.uv.new_timer())
   end
 
   win_timer:start(WIN_TIMEOUT, 0, function()
@@ -80,6 +79,7 @@ local function refresh_win_timer()
 end
 
 ---@param lines string[]
+---@param current_line integer
 local function render_buf(lines, current_line)
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
   for i, l in ipairs(lines) do
