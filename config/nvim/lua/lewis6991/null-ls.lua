@@ -85,7 +85,7 @@ local flake8 = null_ls.builtins.diagnostics.flake8.with{
   extra_args = function(params)
     -- params.root is set to the first parent dir with with either .git or
     -- Makefile
-    if vim.loop.fs_stat(params.root..'/setup.cfg') then
+    if vim.uv.fs_stat(params.root..'/setup.cfg') then
       return {}
     end
     -- These ignores will override setup.cfg
@@ -108,9 +108,11 @@ local flake8 = null_ls.builtins.diagnostics.flake8.with{
 
 null_ls.setup {
   sources = {
-    null_ls.builtins.diagnostics.teal,
     null_ls.builtins.formatting.shfmt,
     null_ls.builtins.formatting.stylua,
+    null_ls.builtins.diagnostics.selene.with{
+      runtime_condition = required_files{'selene.toml'}
+    },
 
     -- null_ls.builtins.diagnostics.cppcheck.with{
     --   timeout = 100000,
