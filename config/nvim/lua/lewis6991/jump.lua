@@ -79,6 +79,7 @@ local function refresh_win_timer()
 end
 
 ---@param lines string[]
+---@param current_line integer
 local function render_buf(lines, current_line)
   vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
   for i, l in ipairs(lines) do
