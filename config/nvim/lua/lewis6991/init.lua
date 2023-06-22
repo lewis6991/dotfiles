@@ -6,6 +6,7 @@ require 'lewis6991.tabline'
 require 'lewis6991.diagnostic'
 require 'lewis6991.jump'
 require 'lewis6991.clipboard'
+require 'lewis6991.ts_matchparen'
 
 local nvim = require 'lewis6991.nvim'
 
