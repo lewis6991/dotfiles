@@ -18,6 +18,7 @@ local function setup()
       statusBarProvider = 'on'
     },
     settings = {
+      showInferredType = true,
       showImplicitArguments = true,
       enableSemanticHighlighting = true,
     },

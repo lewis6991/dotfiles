@@ -10,7 +10,7 @@ extract() {
        print -P "usage: \e[1;36mextract\e[1;0m < filename >"
        print -P "       Extract the file specified based on the extension"
    elif [[ -f $1 ]]; then
-       case ${(L)1} in
+       case ${1} in
            *.tar.xz)   tar -Jxf   "$1" ;;
            *.tar.bz2)  tar -jxvf  "$1" ;;
            *.tar.gz)   tar -zxvf  "$1" ;;
@@ -30,14 +30,3 @@ extract() {
        echo "File ('$1') does not exist!"
    fi
 }
-
-# ssh() {
-#     if [ -n "$TMUX" ]; then
-#         tmux rename-window "ssh:$(echo $* | sed 's/\.arm\.com$//')"
-#         command ssh "$@"
-#         tmux set-window-option automatic-rename "on" 1>/dev/null
-#     else
-#         command ssh "$@"
-#     fi
-# }
-

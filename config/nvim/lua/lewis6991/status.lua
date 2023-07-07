@@ -252,6 +252,7 @@ api.nvim_create_autocmd('ColorScheme', {
   group = group,
   callback = hldefs
 })
+hldefs()
 
 _G.statusline = M
 

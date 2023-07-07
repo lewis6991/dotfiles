@@ -17,6 +17,7 @@ require('lewis6991.package_manager').setup {
   'lewis6991/cleanfold.nvim',
   'lewis6991/brodir.nvim',
   'lewis6991/fileline.nvim',
+  'lewis6991/satellite.nvim',
 
   {'lewis6991/foldsigns.nvim',
     config = function()
@@ -41,10 +42,6 @@ require('lewis6991.package_manager').setup {
       vim.keymap.set('n', 'gK', require('hover').hover_select, {desc='hover.nvim (select)'})
     end
   },
-
-  {'lewis6991/satellite.nvim', config = function()
-    require('satellite').setup()
-  end},
 
   {'lewis6991/gitsigns.nvim', config = 'lewis6991.gitsigns'},
 
@@ -243,5 +240,5 @@ require('lewis6991.package_manager').setup {
         trim_scope = 'outer'
       }
     end
-  }
+  },
 }

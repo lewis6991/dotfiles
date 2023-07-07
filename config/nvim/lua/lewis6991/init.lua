@@ -1,21 +1,6 @@
-vim.opt.termguicolors  = true
-require 'lewis6991.plugins'
-
-require 'lewis6991.status'
-require 'lewis6991.tabline'
-require 'lewis6991.diagnostic'
-require 'lewis6991.jump'
-require 'lewis6991.clipboard'
-require 'lewis6991.ts_matchparen'
-
-local nvim = require 'lewis6991.nvim'
-
 local o, api, lsp = vim.opt, vim.api, vim.lsp
 
-local autocmd = nvim.autocmd
-local nmap = nvim.nmap
-local vmap = nvim.vmap
-local cmap = nvim.cmap
+vim.opt.termguicolors  = true
 
 if 'Plugins' then
   local dir = vim.fn.expand('~/gerrit')
@@ -37,6 +22,22 @@ if 'Plugins' then
 
   api.nvim_create_augroup('vimrc', {})
 end
+
+require 'lewis6991.plugins'
+
+require 'lewis6991.status'
+require 'lewis6991.tabline'
+require 'lewis6991.diagnostic'
+require 'lewis6991.jump'
+require 'lewis6991.clipboard'
+require 'lewis6991.ts_matchparen'
+
+local nvim = require 'lewis6991.nvim'
+
+local autocmd = nvim.autocmd
+local nmap = nvim.nmap
+local vmap = nvim.vmap
+local cmap = nvim.cmap
 
 if 'Options' then
   o.backup         = true

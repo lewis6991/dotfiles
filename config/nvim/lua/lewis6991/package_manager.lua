@@ -104,6 +104,13 @@ local function setup_lazy(init)
       spec.config_pre = nil
     end
 
+    if type(spec.config) == 'string' then
+      local m = spec.config
+      spec.config = function()
+        require(m)
+      end
+    end
+
     spec.start = nil
 
     return spec
