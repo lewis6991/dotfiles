@@ -4,17 +4,17 @@ local function do_setup()
   local linters = nvimlint.linters
 
   linters.jenkins_lint = {
-    command = "java",
+    cmd = "java",
     args = {'-jar', os.getenv('JENKINS_CLI'), 'declarative-linter'},
     stdin = true,
     ignore_exitcode = true,
     parser = function(output)
-      local diags = {}
+      local diags = {} --- @type Diagnostic[]
       for _, line in ipairs(vim.split(output, "\n")) do
-        local ok, _, msg, row, col = line:find('^WorkflowScript: %d+: (.+) @ line (%d+), column (%d+).')
+        local ok, _, msg, lnum, col = line:find('^WorkflowScript: %d+: (.+) @ line (%d+), column (%d+).')
         if ok then
           diags[#diags+1] = {
-            row = row,
+            lnum = tonumber(lnum - 1) --[[@as integer]],
             col = col - 1,
             message = msg,
             severity = 1,
@@ -35,35 +35,34 @@ local function do_setup()
     stream = 'stdout',
     ignore_exitcode = true, -- set this to true if the linter exits with a code != 0 and that's considered normal.
     parser = function(output, bufnr)
-      print('OUTPUT ', output)
-      local diags = {}
-      -- local bufname = vim.api.nvim_buf_get_name(bufnr)
-      -- for _, line in ipairs(vim.split(output, "\n")) do
-      --   -- tcl/fts_xprop.tcl: Line   7: W Unknown command "cfg_get"
-      --   local ok, _, path, row, sev, msg = line:find('^([^:]+): Line%s+(%d+): (.) (.+)$')
-      --   if ok and vim.endswith(bufname, path) then
-      --     diags[#diags+1] = {
-      --       row = row,
-      --       message = msg,
-      --       severity = sev,
-      --       source = "TCL",
-      --     }
-      --   end
-      -- end
+      local diags = {} --- @type Diagnostic[]
+      local bufname = vim.api.nvim_buf_get_name(bufnr)
+      for _, line in ipairs(vim.split(output, "\n")) do
+        local ok, _, path, lnum, sev, msg = line:find('^([^:]+): Line%s+(%d+): (.) (.+)$')
+        if ok and vim.endswith(bufname, path) then
+          diags[#diags+1] = {
+            lnum = tonumber(lnum - 1) --[[@as integer]],
+            col = 0,
+            message = msg,
+            severity = sev,
+            source = "TCL",
+          }
+        end
+      end
 
       return diags
     end,
   }
 
   nvimlint.linters_by_ft = {
-    tcl = 'tcl_lint',
-    Jenkinsfile = 'jenkins_lint'
+    tcl = {'tcl_lint'},
+    Jenkinsfile = {'jenkins_lint'}
   }
 end
 
 local did_setup = false
 
-vim.api.nvim_create_autocmd({ 'BufWritePost' }, {
+vim.api.nvim_create_autocmd({ 'FileType', 'BufWritePost', 'TextChanged', 'InsertLeave' }, {
   callback = function()
     if not did_setup then
       do_setup()
