@@ -102,11 +102,6 @@ require('lewis6991.package_manager').setup {
               return string.format("%s%s", message, pct)
             end
           end,
-        },
-        sources = {
-          ['null-ls'] = {
-            ignore = true
-          }
         }
       }
     end
@@ -181,7 +176,7 @@ require('lewis6991.package_manager').setup {
     config = 'lewis6991.lsp'
   },
 
-  {'jose-elias-alvarez/null-ls.nvim', config = 'lewis6991.null-ls'},
+  {'mfussenegger/nvim-lint', config = 'lewis6991.nvim-lint'},
 
   -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
   -- files
