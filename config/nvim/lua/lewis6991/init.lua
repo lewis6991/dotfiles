@@ -28,7 +28,6 @@ require 'lewis6991.plugins'
 require 'lewis6991.status'
 require 'lewis6991.tabline'
 require 'lewis6991.diagnostic'
-require 'lewis6991.jump'
 require 'lewis6991.clipboard'
 require 'lewis6991.ts_matchparen'
 
@@ -177,17 +176,6 @@ if "Mappings" then
   nmap '<S-Tab>' {':tabprev<CR>', silent=true}
 
   nmap '<C-o>' '<nop>'
-
-  -- <Tab> == <C-i> in tmux so need other mappings for navigating the jump list
-  vim.keymap.set('n', '<M-k>', function()
-    require 'lewis6991.jump'.show_jumps()
-    return '<C-o>'
-  end, {expr = true, desc = 'show jumps'})
-
-  vim.keymap.set('n', '<M-j>', function()
-    require 'lewis6991.jump'.show_jumps()
-    return '<C-i>'
-  end, {expr = true, desc = 'show jumps'})
 
   nmap '|' {[[!v:count ? "<C-W>v<C-W><Right>" : '|']], expr=true, silent=true}
   nmap '_' {[[!v:count ? "<C-W>s<C-W><Down>"  : '_']], expr=true, silent=true}

@@ -19,6 +19,19 @@ require('lewis6991.package_manager').setup {
   'lewis6991/fileline.nvim',
   'lewis6991/satellite.nvim',
 
+  {'lewis6991/whatthejump.nvim', config = function()
+    -- <Tab> == <C-i> in tmux so need other mappings for navigating the jump list
+    vim.keymap.set('n', '<M-k>', function()
+      require('whatthejump').show_jumps(false)
+      return '<C-o>'
+    end, {expr = true})
+
+    vim.keymap.set('n', '<M-j>', function()
+      require('whatthejump').show_jumps(true)
+      return '<C-i>'
+    end, {expr = true})
+  end},
+
   {'lewis6991/foldsigns.nvim',
     config = function()
       require'foldsigns'.setup{
