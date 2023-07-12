@@ -23,13 +23,21 @@ if 'Plugins' then
   api.nvim_create_augroup('vimrc', {})
 end
 
-require 'lewis6991.plugins'
+--- Same as require() but don't abort on error
+--- @param mod string
+local function safe_require(mod)
+  local ok, r = pcall(require, mod)
+  if not ok then
+    vim.notify(string.format('Error loading %s:\n%s', mod, r), vim.log.levels.ERROR)
+  end
+end
 
-require 'lewis6991.status'
-require 'lewis6991.tabline'
-require 'lewis6991.diagnostic'
-require 'lewis6991.clipboard'
-require 'lewis6991.ts_matchparen'
+safe_require 'lewis6991.plugins'
+safe_require 'lewis6991.status'
+safe_require 'lewis6991.tabline'
+safe_require 'lewis6991.diagnostic'
+safe_require 'lewis6991.clipboard'
+safe_require 'lewis6991.ts_matchparen'
 
 local nvim = require 'lewis6991.nvim'
 
