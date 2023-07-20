@@ -276,9 +276,13 @@ if 'Treesitter' then
     return ft
   end
 
+  local ts_commentstring = api.nvim_create_augroup('ts_commentstring', {})
+
   local function enable_commenstrings()
+    api.nvim_clear_autocmds({ buffer = 0, group = ts_commentstring })
     api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
       buffer = 0,
+      group = ts_commentstring,
       callback = function()
         local ft = get_injection_filetype() or vim.bo.filetype
         vim.bo.commentstring = vim.filetype.get_option(ft, 'commentstring') --[[@as string]]
@@ -287,6 +291,9 @@ if 'Treesitter' then
   end
 
   local function enable_foldexpr()
+    if api.nvim_buf_line_count(0) > 40000 then
+      return
+    end
     vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
     vim.opt_local.foldmethod = 'expr'
     vim.cmd.normal'zx'
