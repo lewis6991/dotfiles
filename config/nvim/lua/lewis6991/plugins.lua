@@ -181,13 +181,7 @@ require('lewis6991.package_manager').setup {
     }
   },
 
-  {'neovim/nvim-lspconfig',
-    requires = {
-      'hrsh7th/cmp-nvim-lsp',
-      'folke/neodev.nvim',
-    },
-    config = 'lewis6991.lsp'
-  },
+  'folke/neodev.nvim',
 
   {'mfussenegger/nvim-lint', config = 'lewis6991.nvim-lint'},
 
