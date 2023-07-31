@@ -301,14 +301,15 @@ if 'Treesitter' then
   end
 
   api.nvim_create_autocmd('FileType', {
-    callback = function()
+    -- schedule_wrap is used to stop dlopen from crashing on MacOS
+    callback = vim.schedule_wrap(function()
       if not pcall(vim.treesitter.start) then
         return
       end
 
       enable_foldexpr()
       enable_commenstrings()
-    end
+    end)
   })
 
 end
