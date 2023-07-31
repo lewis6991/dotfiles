@@ -17,7 +17,7 @@ local function get_char(row, col)
 end
 
 local function hl_col(row, col)
-  api.nvim_buf_set_extmark(0, ns, row, col, {
+  pcall(api.nvim_buf_set_extmark, 0, ns, row, col, {
     end_row = row,
     end_col = col + 1,
     hl_group = 'MatchParen'
@@ -43,7 +43,12 @@ api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
       return
     end
 
-    local srow, scol, erow, ecol = vim.treesitter.get_node():range()
+    local node = vim.treesitter.get_node()
+    if not node then
+      return
+    end
+
+    local srow, scol, erow, ecol = node:range()
 
     local row2, col2 --- @type integer, integer
     if match then
