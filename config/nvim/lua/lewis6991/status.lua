@@ -230,6 +230,7 @@ end
 local group = api.nvim_create_augroup('statusline', {})
 api.nvim_create_autocmd({'WinLeave', 'FocusLost'}, {
   group = group,
+  once = true,
   callback = function()
     api.nvim_create_autocmd({'BufWinEnter', 'WinEnter', 'FocusGained'}, {
       group = group,
@@ -237,6 +238,12 @@ api.nvim_create_autocmd({'WinLeave', 'FocusLost'}, {
         set(1)
       end
     })
+  end
+})
+
+api.nvim_create_autocmd({'WinLeave', 'FocusLost'}, {
+  group = group,
+  callback = function()
     set(0)
   end
 })
