@@ -3,7 +3,7 @@ require'nvim-treesitter'.setup {
   ensure_install = {
     'bash',
     'c',
-    'comment',
+    -- 'comment',
     'gitcommit',
     'vimdoc',
     'html',
