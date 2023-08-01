@@ -181,8 +181,6 @@ require('lewis6991.package_manager').setup {
     }
   },
 
-  'folke/neodev.nvim',
-
   {'mfussenegger/nvim-lint', config = 'lewis6991.nvim-lint'},
 
   -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
