@@ -31,7 +31,8 @@ local function setup(config)
       table.insert(config.markers, '.git')
       config.root_dir = find_root(args.file, config.markers)
 
-      vim.lsp.start(config)
+      -- buffer could have switched due to schedule_wrap so need to run buf_call
+      vim.lsp.start(config, { bufnr = args.buf })
     end),
   })
 end

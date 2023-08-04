@@ -279,36 +279,40 @@ if 'Treesitter' then
 
   local ts_commentstring = api.nvim_create_augroup('ts_commentstring', {})
 
-  local function enable_commenstrings()
-    api.nvim_clear_autocmds({ buffer = 0, group = ts_commentstring })
+  --- @param bufnr integer
+  local function enable_commenstrings(bufnr)
+    api.nvim_clear_autocmds({ buffer = bufnr, group = ts_commentstring })
     api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
-      buffer = 0,
+      buffer = bufnr,
       group = ts_commentstring,
       callback = function()
-        local ft = get_injection_filetype() or vim.bo.filetype
-        vim.bo.commentstring = vim.filetype.get_option(ft, 'commentstring') --[[@as string]]
+        local ft = get_injection_filetype() or vim.bo[bufnr].filetype
+        vim.bo[bufnr].commentstring = vim.filetype.get_option(ft, 'commentstring') --[[@as string]]
       end
     })
   end
 
-  local function enable_foldexpr()
-    if api.nvim_buf_line_count(0) > 40000 then
+  --- @param bufnr integer
+  local function enable_foldexpr(bufnr)
+    if api.nvim_buf_line_count(bufnr) > 40000 then
       return
     end
-    vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-    vim.opt_local.foldmethod = 'expr'
-    vim.cmd.normal'zx'
+    vim.api.nvim_buf_call(bufnr, function()
+      vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      vim.opt_local.foldmethod = 'expr'
+      vim.cmd.normal'zx'
+    end)
   end
 
   api.nvim_create_autocmd('FileType', {
     -- schedule_wrap is used to stop dlopen from crashing on MacOS
-    callback = vim.schedule_wrap(function()
-      if not pcall(vim.treesitter.start) then
+    callback = vim.schedule_wrap(function(args)
+      if not pcall(vim.treesitter.start, args.buf) then
         return
       end
 
-      enable_foldexpr()
-      enable_commenstrings()
+      enable_foldexpr(args.buf)
+      enable_commenstrings(args.buf)
     end)
   })
 
