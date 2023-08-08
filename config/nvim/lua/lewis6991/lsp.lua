@@ -62,6 +62,7 @@ setup {
           version = 'LuaJIT'
         },
         workspace = {
+          checkThirdParty = false,
           library = { vim.env.VIMRUNTIME }
           -- library = vim.api.nvim_get_runtime_file("", true)
         }
@@ -73,42 +74,10 @@ setup {
   end,
   settings = {
     Lua = {
-      workspace = {
-        checkThirdParty = false
-      },
       hint = {
         enable = true,
         paramName = 'Literal',
         setType = true
-      },
-
-      diagnostics = {
-        groupSeverity = {
-          strong = 'Warning',
-          strict = 'Warning',
-        },
-        groupFileStatus = {
-          ["ambiguity"]  = "Opened",
-          ["await"]      = "Opened",
-          ["codestyle"]  = "None",
-          ["duplicate"]  = "Opened",
-          ["global"]     = "Opened",
-          ["luadoc"]     = "Opened",
-          ["redefined"]  = "Opened",
-          ["strict"]     = "Opened",
-          ["strong"]     = "Opened",
-          ["type-check"] = "Opened",
-          ["unbalanced"] = "Opened",
-          ["unused"]     = "Opened",
-        },
-        unusedLocalExclude = { '_*' },
-        globals = {
-          'it',
-          'describe',
-          'before_each',
-          'after_each',
-          'pending'
-        }
       }
     }
   }
