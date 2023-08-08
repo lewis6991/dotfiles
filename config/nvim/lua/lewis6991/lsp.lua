@@ -49,6 +49,12 @@ setup {
   markers = { 'compile_commands.json' },
 }
 
+local function add_settings(client, settings)
+  local config = client.config
+  config.settings = vim.tbl_deep_extend('force', config.settings, settings)
+  client.notify("workspace/didChangeConfiguration", { settings = config.settings })
+end
+
 setup {
   name = 'luals',
   filetype = 'lua',
@@ -57,18 +63,22 @@ setup {
   on_init = function(client)
     local path = client.workspace_folders[1].name
     if not vim.uv.fs_stat(path..'/.luarc.json') and not vim.uv.fs_stat(path..'/.luarc.jsonc') then
-      local settings = vim.tbl_deep_extend('force', client.config.settings.Lua, {
-        runtime = {
-          version = 'LuaJIT'
-        },
-        workspace = {
-          checkThirdParty = false,
-          library = { vim.env.VIMRUNTIME }
-          -- library = vim.api.nvim_get_runtime_file("", true)
+      add_settings(client, {
+        Lua = {
+          runtime = {
+            version = 'LuaJIT'
+          },
+          workspace = {
+            checkThirdParty = false,
+            library = {
+              vim.env.VIMRUNTIME,
+              "${3rd}/busted/library",
+              "${3rd}/luv/library"
+            }
+            -- library = vim.api.nvim_get_runtime_file("", true)
+          }
         }
       })
-
-      client.notify("workspace/didChangeConfiguration", { settings = settings })
     end
     return true
   end,
