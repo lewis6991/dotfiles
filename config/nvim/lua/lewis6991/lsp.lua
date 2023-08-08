@@ -6,7 +6,7 @@ local function find_root(path, markers)
   if not match then
     return
   end
-  local stat = vim.loop.fs_stat(match)
+  local stat = vim.uv.fs_stat(match)
   local isdir = stat and stat.type == "directory"
   return vim.fn.fnamemodify(match, isdir and ':p:h:h' or ':p:h')
 end
@@ -22,7 +22,13 @@ local function setup(config)
   vim.api.nvim_create_autocmd('FileType', {
     pattern = config.filetype,
     group = lsp_group,
-    callback = vim.schedule_wrap(function(args)
+    callback = function(args)
+      local exe = config.cmd[1]
+      if vim.fn.executable(exe) ~= 1 then
+        vim.notify(string.format("Cannot start %s: '%s' not in PATH", config.name, exe), vim.log.levels.ERROR)
+        return true
+      end
+
       setup_cmp(config)
 
       config.capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
@@ -33,7 +39,7 @@ local function setup(config)
 
       -- buffer could have switched due to schedule_wrap so need to run buf_call
       vim.lsp.start(config, { bufnr = args.buf })
-    end),
+    end
   })
 end
 
@@ -48,6 +54,17 @@ setup {
   filetype = 'lua',
   cmd = { 'lua-language-server' },
   markers = { '.luarc.json' },
+  on_init = function(client)
+    local path = client.workspace_folders[1].name
+    if not vim.uv.fs_stat(path..'/.luarc.json') then
+        -- Make the server aware of Neovim runtime files
+      client.config.settings.Lua.workspace.library = { vim.env.VIMRUNTIME }
+      client.notify("workspace/didChangeConfiguration", {
+        settings = client.config.settings
+      })
+    end
+    return true
+  end,
   settings = {
     Lua = {
       workspace = {
@@ -110,6 +127,14 @@ setup {
   name = 'bashls',
   cmd = { 'bash-language-server', 'start' },
   filetype = 'sh',
+}
+
+--- npm i -g vscode-langservers-extracted
+setup {
+  name = 'jsonls',
+  cmd = { 'vscode-json-language-server', '--stdio' },
+  filetype = { 'json', 'jsonc' },
+  install = {'npm', 'i', '-g', 'vscode-langservers-extracted' }
 }
 
 -- vim.api.nvim_create_autocmd('LspAttach', {
