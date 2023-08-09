@@ -161,19 +161,6 @@ require('lewis6991.package_manager').setup {
 
   'inkarkat/vim-visualrepeat',
 
-  {'stevearc/aerial.nvim', config = function()
-    local done_setup = false
-    vim.api.nvim_create_autocmd('LspAttach', {
-      callback = function(args)
-        if not done_setup then
-          require('aerial').setup()
-          done_setup = true
-        end
-        vim.keymap.set('n', '<leader>a', '<cmd>AerialToggle!<CR>', { buffer = args.buf})
-      end
-    })
-  end},
-
   {'scalameta/nvim-metals',
     config = 'lewis6991.metals',
     requires = {
