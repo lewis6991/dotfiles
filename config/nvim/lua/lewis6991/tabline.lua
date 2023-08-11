@@ -1,28 +1,50 @@
 local api, fn = vim.api, vim.fn
 
+local filetypes = {
+  git = 'Git',
+  fugitive = 'Fugitive',
+  TelescopePrompt = 'Telescope'
+}
+
+--- @param name string
+--- @return {bg?:integer, fg?:integer}
+local function get_hl(name)
+  return api.nvim_get_hl(0, { name = name })
+end
+
+local buftypes = {
+  help = function(file)
+    return 'help:' .. fn.fnamemodify(file, ':t:r')
+  end,
+  quickfix = 'quickfix',
+  terminal = function(file)
+    local mtch = string.match(file, "term:.*:(%a+)")
+    return mtch or fn.fnamemodify(vim.env.SHELL, ':t')
+  end
+}
+
 local function title(bufnr)
-  local file = fn.bufname(bufnr)
-  local buftype = vim.bo[bufnr].buftype
   local filetype = vim.bo[bufnr].filetype
 
-  if buftype == 'help' then
-    return 'help:' .. fn.fnamemodify(file, ':t:r')
-  elseif buftype == 'quickfix' then
-    return 'quickfix'
-  elseif filetype == 'TelescopePrompt' then
-    return 'Telescope'
-  elseif filetype == 'git' then
-    return 'Git'
-  elseif filetype == 'fugitive' then
-    return 'Fugitive'
-  elseif buftype == 'terminal' then
-    local _, mtch = string.match(file, "term:(.*):(%a+)")
-    return mtch ~= nil and mtch or fn.fnamemodify(vim.env.SHELL, ':t')
-  elseif file == '' then
-    return '[No Name]'
-  else
-    return fn.pathshorten(fn.fnamemodify(file, ':p:~:t'))
+  if filetypes[filetype] then
+    return filetypes[filetype]
   end
+
+  local file = fn.bufname(bufnr)
+  local buftype = vim.bo[bufnr].buftype
+
+  local bt = buftypes[buftype]
+  if bt then
+    if type(bt) == 'function' then
+      return bt(file)
+    end
+    return bt
+  end
+
+  if file == '' then
+    return '[No Name]'
+  end
+  return fn.pathshorten(fn.fnamemodify(file, ':p:~:t'))
 end
 
 local function flags(bufnr)
@@ -52,7 +74,6 @@ local function devicon(bufnr, hl_base)
   elseif buftype == 'terminal' then
     icon, devhl = devicons.get_icon('zsh')
   else
-    ---@diagnostic disable-next-line:missing-parameter
     icon, devhl = devicons.get_icon(file, fn.expand('#'..bufnr..':e'))
   end
 
@@ -60,9 +81,9 @@ local function devicon(bufnr, hl_base)
     local hl = hl_base..'Dev'..devhl
     if not devhls[hl] then
       devhls[hl] = true
-      vim.api.nvim_set_hl(0, hl, {
-        fg = api.nvim_get_hl_by_name(devhl, true).foreground,
-        bg = api.nvim_get_hl_by_name(hl_base, true).background
+      api.nvim_set_hl(0, hl, {
+        fg = get_hl(devhl).fg,
+        bg = get_hl(hl_base).bg
       })
     end
 
@@ -165,11 +186,11 @@ end
 
 local function hldefs()
   for _, hl_base in ipairs{'TabLineSel', 'TabLineFill'} do
-    local bg = api.nvim_get_hl_by_name(hl_base, true).background
+    local bg = get_hl(hl_base).bg
     for _, ty in ipairs { 'Warn', 'Error', 'Info', 'Hint' } do
-      local hl = api.nvim_get_hl_by_name('Diagnostic'..ty, true)
+      local hl = get_hl('Diagnostic'..ty)
       local name = ('Diagnostic%s%s'):format(ty, hl_base)
-      api.nvim_set_hl(0, name, { fg = hl.foreground, bg = bg})
+      api.nvim_set_hl(0, name, { fg = hl.fg, bg = bg})
     end
   end
 end
@@ -179,6 +200,7 @@ api.nvim_create_autocmd('ColorScheme', {
   group = group,
   callback = hldefs
 })
+hldefs()
 
 vim.opt.tabline = '%!v:lua.require\'lewis6991.tabline\'.tabline()'
 
