@@ -29,8 +29,8 @@ config.colors = {
 
   tab_bar = {
     inactive_tab_edge = color[3],
-    inactive_tab       = { bg_color = color[0], fg_color = color[8] },
-    active_tab         = { bg_color = color[2], fg_color = color[7] },
+    inactive_tab         = { bg_color = color[0], fg_color = color[8] },
+    active_tab       = { bg_color = color[2], fg_color = color[7] },
     inactive_tab_hover = { bg_color = color[3], fg_color = color[7] },
     new_tab            = { bg_color = color[0], fg_color = color[6] },
     new_tab_hover      = { bg_color = color[3], fg_color = color[7] }

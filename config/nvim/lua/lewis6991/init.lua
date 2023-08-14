@@ -305,9 +305,9 @@ if 'Treesitter' then
     if api.nvim_buf_line_count(bufnr) > 40000 then
       return
     end
-    vim.api.nvim_buf_call(bufnr, function()
-      vim.opt_local.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-      vim.opt_local.foldmethod = 'expr'
+    api.nvim_buf_call(bufnr, function()
+      vim.wo[0][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      vim.wo[0][0].foldmethod = 'expr'
       vim.cmd.normal'zx'
     end)
   end
@@ -350,4 +350,5 @@ end
 
 autocmd 'VimResized' {'wincmd =', group='vimrc'}
 
+vim.treesitter.language.register('bash', 'zsh')
 -- vim: foldminlines=0:

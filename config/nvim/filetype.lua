@@ -17,8 +17,8 @@ vim.filetype.add {
     ['.*'] = {
       priority = -math.huge,
       function(_, bufnr)
-        local content = vim.filetype.getlines(bufnr, 1)
-        if vim.filetype.matchregex(content, '^#%Module.*') then
+        local content = vim.api.nvim_buf_get_lines(bufnr, 0, 1, true)[1]
+        if vim.regex('^#%Module.*'):match_str(content) ~= nil then
           return 'tcl'
         end
       end,

@@ -215,7 +215,7 @@ require('lewis6991.package_manager').setup {
     branch = 'main',
     run = ':TSUpdate',
     config = function()
-      require'lewis6991.treesitter'
+      require'lewis6991.nvim-treesitter'
     end
   },
 
