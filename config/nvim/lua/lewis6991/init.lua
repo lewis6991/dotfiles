@@ -28,7 +28,9 @@ end
 local function safe_require(mod)
   local ok, r = pcall(require, mod)
   if not ok then
-    vim.notify(string.format('Error loading %s:\n%s', mod, r), vim.log.levels.ERROR)
+    vim.schedule(function()
+      error(r)
+    end)
   end
 end
 
