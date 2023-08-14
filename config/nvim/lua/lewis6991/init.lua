@@ -3,7 +3,7 @@ local o, api, lsp = vim.opt, vim.api, vim.lsp
 vim.opt.termguicolors  = true
 
 if 'Plugins' then
-  local dir = vim.fn.expand('~/gerrit')
+  local dir = vim.fn.expand('~/gerrit') --[[@as string]]
   if vim.fn.isdirectory(dir) == 1 then
     for path, t in vim.fs.dir(dir) do
       if t == "directory" then
@@ -39,6 +39,7 @@ safe_require 'lewis6991.diagnostic'
 safe_require 'lewis6991.clipboard'
 safe_require 'lewis6991.lsp'
 safe_require 'lewis6991.ts_matchparen'
+safe_require 'lewis6991.treesitter'
 
 local nvim = require 'lewis6991.nvim'
 
@@ -169,14 +170,6 @@ if "Mappings" then
 
   nmap '<leader>z' '<cmd>Inspect<cr>'
 
-  nmap '<leader>ts' {function()
-    if vim.b.ts_highlight then
-      vim.treesitter.stop()
-    else
-      vim.treesitter.start()
-    end
-  end}
-
   nmap '<C-C>' ':nohlsearch<CR>'
 
   -- map('n', '<Tab>'  , ':bnext<CR>', {})
@@ -196,6 +189,9 @@ if "Mappings" then
 
   nmap ']d' (vim.diagnostic.goto_next)
   nmap '[d' (vim.diagnostic.goto_prev)
+
+  nmap ']D' (function() vim.diagnostic.goto_next{severity = 'ERROR'} end)
+  nmap '[D' (function() vim.diagnostic.goto_prev{severity = 'ERROR'} end)
 
   autocmd 'LspAttach' {
     desc = 'lsp mappings',
@@ -217,7 +213,7 @@ if "Mappings" then
       nmap 'gR' '<cmd>Telescope lsp_references layout_strategy=vertical<cr>'
       nmap 'gi' {lsp.buf.implementation, desc = 'lsp.buf.implementation', buffer = bufnr  }
 
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
       if client.server_capabilities.code_lens then
         autocmd {'BufEnter', 'CursorHold', 'InsertLeave'} { lsp.codelens.refresh, buffer = bufnr }
         lsp.codelens.refresh()
@@ -248,84 +244,6 @@ if "Abbrev" then
 
 end
 
-if 'Treesitter' then
-
-  api.nvim_create_autocmd('FileType', {
-    pattern = 'comment',
-    callback = function()
-      vim.bo.commentstring = ''
-    end
-  })
-
-  ---@return string?
-  local function get_injection_filetype()
-    local ok, parser = pcall(vim.treesitter.get_parser)
-    if not ok then
-      return
-    end
-
-    local cpos = api.nvim_win_get_cursor(0)
-    local row, col = cpos[1] - 1, cpos[2]
-    local range = { row, col, row, col + 1 }
-
-    local ft  --- @type string?
-
-    parser:for_each_child(function(tree, lang)
-      if tree:contains(range) then
-        local fts = vim.treesitter.language.get_filetypes(lang)
-        for _, ft0 in ipairs(fts) do
-          if vim.filetype.get_option(ft0, 'commentstring') ~= '' then
-            ft = fts[1]
-            break
-          end
-        end
-      end
-    end)
-
-    return ft
-  end
-
-  local ts_commentstring = api.nvim_create_augroup('ts_commentstring', {})
-
-  --- @param bufnr integer
-  local function enable_commenstrings(bufnr)
-    api.nvim_clear_autocmds({ buffer = bufnr, group = ts_commentstring })
-    api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
-      buffer = bufnr,
-      group = ts_commentstring,
-      callback = function()
-        local ft = get_injection_filetype() or vim.bo[bufnr].filetype
-        vim.bo[bufnr].commentstring = vim.filetype.get_option(ft, 'commentstring') --[[@as string]]
-      end
-    })
-  end
-
-  --- @param bufnr integer
-  local function enable_foldexpr(bufnr)
-    if api.nvim_buf_line_count(bufnr) > 40000 then
-      return
-    end
-    api.nvim_buf_call(bufnr, function()
-      vim.wo[0][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
-      vim.wo[0][0].foldmethod = 'expr'
-      vim.cmd.normal'zx'
-    end)
-  end
-
-  api.nvim_create_autocmd('FileType', {
-    -- schedule_wrap is used to stop dlopen from crashing on MacOS
-    callback = vim.schedule_wrap(function(args)
-      if not pcall(vim.treesitter.start, args.buf) then
-        return
-      end
-
-      enable_foldexpr(args.buf)
-      enable_commenstrings(args.buf)
-    end)
-  })
-
-end
-
 if "Custom print" then
   _G.printf = function(...)
     print(string.format(...))
@@ -350,5 +268,4 @@ end
 
 autocmd 'VimResized' {'wincmd =', group='vimrc'}
 
-vim.treesitter.language.register('bash', 'zsh')
 -- vim: foldminlines=0:
