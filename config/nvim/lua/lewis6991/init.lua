@@ -227,22 +227,30 @@ if "Mappings" then
 end
 
 if "Abbrev" then
-  vim.cmd.cabbrev('L', 'lua=')
+  local map = vim.keymap.set
 
-  vim.cmd.abbrev(':rev:', [[<c-r>=printf(&commentstring, 'REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
-  vim.cmd.abbrev(':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
-  vim.cmd.abbrev('function', 'function')
-  vim.cmd.cabbrev('Q', 'q')
+  map('ca', 'L', 'lua=')
 
-  vim.cmd.abbrev('-@T', '--- @type')
-  vim.cmd.abbrev('-@P', '--- @param')
-  vim.cmd.abbrev('-@R', '--- @return')
-  vim.cmd.abbrev('-@F', '--- @field')
+  map('!a', ':rev:', [[<c-r>=printf(&commentstring, 'REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
+  map('!a', ':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
+  map('!a', 'funciton', 'function')
+  map('ca', 'Q', 'q')
+
+  autocmd 'FileType' {
+    pattern = 'lua',
+    function()
+      map('!a', '--T', '--- @type', {buffer = true})
+      map('!a', '--P', '--- @param', {buffer = true})
+      map('!a', '--R', '--- @return', {buffer = true})
+      map('!a', '--F', '--- @field', {buffer = true})
+    end
+  }
+
 end
 
 if 'Treesitter' then
 
-  vim.api.nvim_create_autocmd('FileType', {
+  api.nvim_create_autocmd('FileType', {
     pattern = 'comment',
     callback = function()
       vim.bo.commentstring = ''
