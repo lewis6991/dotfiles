@@ -39,7 +39,6 @@ safe_require 'lewis6991.status'
 safe_require 'lewis6991.tabline'
 safe_require 'lewis6991.diagnostic'
 safe_require 'lewis6991.clipboard'
-safe_require 'lewis6991.lsp'
 safe_require 'lewis6991.ts_matchparen'
 safe_require 'lewis6991.treesitter'
 
