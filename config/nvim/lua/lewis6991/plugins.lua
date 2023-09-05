@@ -1,7 +1,6 @@
 require('lewis6991.package_manager').setup {
 
   --- Filetype plugins ---
-  'derekwyatt/vim-scala',
   'martinda/Jenkinsfile-vim-syntax',
   'fladson/vim-kitty',
   'raimon49/requirements.txt.vim',
