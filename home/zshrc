@@ -8,16 +8,14 @@ WORDCHARS=${WORDCHARS//[\/]}
 if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   # Download zimfw script if missing.
   command mkdir -p ${ZIM_HOME}
-  if (( ${+commands[curl]} )); then
-    command curl -fsSL -o ${ZIM_HOME}/zimfw.zsh https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-  else
-    command wget -nv -O ${ZIM_HOME}/zimfw.zsh https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-  fi
+  command curl -fsSL -o ${ZIM_HOME}/zimfw.zsh https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
 fi
+
 if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
   # Update static initialization script if it does not exist or it's outdated, before sourcing it
   source ${ZIM_HOME}/zimfw.zsh init -q
 fi
+
 source ${ZIM_HOME}/init.zsh
 
 # ------------------------------
@@ -116,6 +114,7 @@ export LESS="\
     --quit-if-one-screen \
     --chop-long-lines"
 
+# Stop tmux clobbering TERM
 if [[ -n "$TMUX" ]]; then
     if [[ -n "$TERM_BACK" ]]; then
         export TERM=$TERM_BACK
@@ -123,12 +122,6 @@ if [[ -n "$TMUX" ]]; then
 else
     export TERM_BACK=$TERM
 fi
-
-ring_bell() {
-    echo -n -e '\a'
-}
-
-add-zsh-hook precmd ring_bell
 
 ! [ -f ~/.aliases        ] || source ~/.aliases
 ! [ -f ~/.bash_functions ] || source ~/.bash_functions
