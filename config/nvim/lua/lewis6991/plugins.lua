@@ -89,35 +89,39 @@ require('lewis6991.package_manager').setup {
     })
   end},
 
-  {'rcarriga/nvim-notify', config = function()
-    --- @diagnostic disable-next-line
-    vim.notify = function(...)
-      vim.notify = require("notify")
-      return vim.notify(...)
-    end
-  end},
+  -- { "vigoux/notifier.nvim", config = function()
+  --   require'notifier'.setup()
+  -- end },
 
-  {'j-hui/fidget.nvim',
-    tag = 'legacy',
-    config = function()
-      require'fidget'.setup{
-        text = {
-          spinner = "dots",
-        },
-        fmt = {
-          stack_upwards = false,
-          task = function(task_name, message, percentage)
-            local pct = percentage and string.format(" (%s%%)", percentage) or ""
-            if task_name then
-              return string.format("%s%s [%s]", message, pct, task_name)
-            else
-              return string.format("%s%s", message, pct)
-            end
-          end,
-        }
-      }
-    end
-  },
+   {'rcarriga/nvim-notify', config = function()
+     --- @diagnostic disable-next-line
+     vim.notify = function(...)
+       vim.notify = require("notify")
+       return vim.notify(...)
+     end
+   end},
+
+   {'j-hui/fidget.nvim',
+     tag = 'legacy',
+     config = function()
+       require'fidget'.setup{
+         text = {
+           spinner = "dots",
+         },
+         fmt = {
+           stack_upwards = false,
+           task = function(task_name, message, percentage)
+             local pct = percentage and string.format(" (%s%%)", percentage) or ""
+             if task_name then
+               return string.format("%s%s [%s]", message, pct, task_name)
+             else
+               return string.format("%s%s", message, pct)
+             end
+           end,
+         }
+       }
+     end
+   },
 
   {'neapel/vim-bnfc-syntax', config = function()
     -- Argh, why don't syntax plugins ever set commentstring!
