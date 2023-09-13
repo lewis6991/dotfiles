@@ -2,6 +2,12 @@ local wezterm = require('wezterm')
 
 local config = wezterm.config_builder()
 
+--- Make sure to set the shell correctly, otherwise compinit will re-run as
+--- fpath is different when we use homebrew's zsh
+config.set_environment_variables = {
+  SHELL = '/opt/homebrew/bin/zsh',
+}
+
 config.font = wezterm.font('Monaco', { weight = 'Bold' })
 config.font_size = 12.5
 config.harfbuzz_features = { 'liga=0' }
@@ -29,8 +35,8 @@ config.colors = {
 
   tab_bar = {
     inactive_tab_edge = color[3],
-    inactive_tab         = { bg_color = color[0], fg_color = color[8] },
-    active_tab       = { bg_color = color[2], fg_color = color[7] },
+    inactive_tab       = { bg_color = color[0], fg_color = color[8] },
+    active_tab         = { bg_color = color[2], fg_color = color[7] },
     inactive_tab_hover = { bg_color = color[3], fg_color = color[7] },
     new_tab            = { bg_color = color[0], fg_color = color[6] },
     new_tab_hover      = { bg_color = color[3], fg_color = color[7] }
@@ -43,6 +49,14 @@ config.window_frame = {
   font_size = 13,
   active_titlebar_bg = color[0],
   inactive_titlebar_bg = color[0],
+}
+
+config.mouse_bindings = {
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'CTRL',
+    action = wezterm.action.OpenLinkAtMouseCursor,
+  }
 }
 
 config.term = 'wezterm'
