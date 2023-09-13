@@ -3,7 +3,6 @@ require'nvim-treesitter'.setup {
   ensure_install = {
     'bash',
     'c',
-    -- 'comment',
     'gitcommit',
     'vimdoc',
     'html',
@@ -16,7 +15,6 @@ require'nvim-treesitter'.setup {
     'query',
     'rst',
     'scala',
-    'teal',
     'vim',
     'vimdoc',
     'yaml',
@@ -25,6 +23,6 @@ require'nvim-treesitter'.setup {
 
 local parser_config = require "nvim-treesitter.parsers".configs
 local c_info = parser_config.c.install_info
-c_info.url = 'https://github.com/nvim-treesitter/tree-sitter-c'
+c_info.url = 'https://github.com/neovim/tree-sitter-c'
 -- c_info.url = '~/projects/tree-sitter-c'
 c_info.revision = 'nvimc'
