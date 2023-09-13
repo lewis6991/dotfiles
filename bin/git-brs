@@ -8,16 +8,16 @@ prs=$(python3 <<< "
 import json
 import subprocess
 out = subprocess.run(
-    'gh pr list --json url,isDraft,headRefName --author @me',
+    'gh pr list --json url,isDraft,headRefName,state --state all --limit 280 --author @me',
     shell = True,
     stdout = subprocess.PIPE,
     stderr = subprocess.DEVNULL
 ).stdout
 obj = out and json.loads(out) or []
 for e in obj:
-    ref, url, isdraft = e['headRefName'], e['url'], e['isDraft']
+    ref, url, isdraft, state = e['headRefName'], e['url'], e['isDraft'], e['state']
     isdraft = '[DRAFT]' if isdraft else ''
-    print(f'{ref} {url} {isdraft}')
+    print(f'{ref} {url} {isdraft} {state}')
 ")
 
 git for-each-ref --shell --format="%(refname:short)" refs/heads |
@@ -32,6 +32,7 @@ git for-each-ref --shell --format="%(refname:short)" refs/heads |
         if [[ "$prinfo" != "" ]]; then
             url="($(cut -d' ' -f2 <<< "$prinfo"))"
             isdraft="$(cut -d' ' -f3 <<< "$prinfo")"
+            state="$(cut -d' ' -f4 <<< "$prinfo")"
         fi
 
         echo -e "$(git branch \
@@ -45,7 +46,7 @@ git for-each-ref --shell --format="%(refname:short)" refs/heads |
 %(if:equals=<)%(upstream:trackshort)%(then)%(color:magenta)%(end)\
 %(upstream:track) \
 %(color:cyan)$url \
-%(color:white)$isdraft" \
+%(color:white)$state $isdraft" \
             "$branch")"
 
         if [[ "$upstream" != "" ]] && [[ "$upstream_track" != "[gone]" ]]; then
