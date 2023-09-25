@@ -20,9 +20,9 @@ local function get_injection_filetype()
 
   local ft  --- @type string?
 
-  parser:for_each_child(function(tree, lang)
-    if tree:contains(range) then
-      local fts = vim.treesitter.language.get_filetypes(lang)
+  parser:for_each_tree(function(_tree, ltree)
+    if ltree:contains(range) then
+      local fts = vim.treesitter.language.get_filetypes(ltree:lang())
       for _, ft0 in ipairs(fts) do
         if vim.filetype.get_option(ft0, 'commentstring') ~= '' then
           ft = fts[1]
