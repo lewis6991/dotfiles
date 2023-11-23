@@ -36,7 +36,9 @@ local function default_lua_settings()
 end
 
 -- Clangd
-setup('clangd')
+setup('clangd', {
+  cmd = { 'clangd', '--clang-tidy' },
+})
 
 -- LuaLS
 setup('lua_ls', {

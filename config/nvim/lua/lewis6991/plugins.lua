@@ -50,8 +50,11 @@ require('lewis6991.package_manager').setup {
           require('hover.providers.man')
         end
       }
-      vim.keymap.set('n', 'K', require('hover').hover, {desc='hover.nvim'})
-      vim.keymap.set('n', 'gK', require('hover').hover_select, {desc='hover.nvim (select)'})
+      vim.keymap.set('n', 'K', require('hover').hover, { desc = 'hover.nvim' })
+      vim.keymap.set('n', 'gK', require('hover').hover_select, { desc = 'hover.nvim (select)' })
+
+      vim.keymap.set('n', '<MouseMove>', require('hover').hover_mouse, { desc = "hover.nvim (mouse)" })
+      vim.o.mousemoveevent = true
     end
   },
 

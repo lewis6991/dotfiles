@@ -77,6 +77,7 @@ if 'Options' then
   o.virtualedit    = 'block' -- allow cursor to exist where there is no character
   o.winblend       = 10
   o.wrap           = false
+  o.mousemoveevent = true
 
   -- Avoid showing message extra message when using completion
   o.shortmess:append('c')
