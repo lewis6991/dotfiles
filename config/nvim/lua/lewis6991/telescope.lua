@@ -34,7 +34,7 @@ end
 -- default: CTRL-B   scroll N screens Backwards
 nmap('<C-b>', 'buffers')
 
-nmap('<C-p>', 'git_files', { use_git_root=true})
+nmap('<C-p>', 'git_files', { use_git_root=true, previewer=false})
 nmap('<C- >', 'git_files', { cwd="$HOME/projects/dotfiles", hidden=true})
 
 nmap('<leader>f', 'find_files')

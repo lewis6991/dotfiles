@@ -4,7 +4,7 @@ local line = vim.fn.line
 
 --  TODO(lewis6991): doesn't work properly
 vim.keymap.set('n', 'M', '<cmd>Gitsigns debug_messages<cr>')
-vim.keymap.set('n', 'm', '<cmd>Gitsigns dump_cache<cr>')
+vim.keymap.set('n', 'mm', '<cmd>Gitsigns dump_cache<cr>')
 
 local function wrap(f, ...)
   local args = {...}
