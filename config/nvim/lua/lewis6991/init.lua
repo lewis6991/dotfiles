@@ -199,7 +199,7 @@ if "Mappings" then
       -- nmap '<C-]>'      {lsp.buf.definition, desc = 'lsp.buf.definition', buffer = bufnr  }
       nmap '<C-]>'      {'<cmd>Trouble lsp_definitions<cr>' , buffer = bufnr }
       nmap '<M-]>'      {lsp.buf.type_definition, desc = 'lsp.buf.type_definition', buffer = bufnr  }
-      nmap '<M-i>'      {function() lsp.inlay_hint(bufnr) end, desc = 'lsp.buf.inlay_hint', buffer = bufnr  }
+      nmap '<M-i>'      {function() lsp.inlay_hint.enable(bufnr) end, desc = 'lsp.buf.inlay_hint', buffer = bufnr  }
       nmap '<leader>cl' {lsp.codelens.run  , desc = 'lsp.codelens.run'  , buffer = bufnr    }
       -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
       -- map(bufnr, 'gK'        , lsp.buf.signature_help, 'lsp.buf.signature_help')
