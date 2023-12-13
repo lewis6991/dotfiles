@@ -236,4 +236,5 @@ require('lewis6991.package_manager').setup {
       }
     end
   },
+
 }
