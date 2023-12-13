@@ -2,18 +2,17 @@ vim.diagnostic.config {
   virtual_text = { source = true },
   severity_sort = true,
   update_in_insert = true,
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = '●',
+      [vim.diagnostic.severity.WARN] = '●',
+      [vim.diagnostic.severity.INFO] = '●',
+      [vim.diagnostic.severity.HINT]= '○'
+    }
+  }
 }
 
-local function set_lsp_sign(name, text)
-  vim.fn.sign_define(name, {text = text, texthl = name})
-end
-
 vim.api.nvim_set_hl(0, 'LspCodeLens', {link='WarningMsg'})
-
-set_lsp_sign("DiagnosticSignError", "●")
-set_lsp_sign("DiagnosticSignWarn" , "●")
-set_lsp_sign("DiagnosticSignInfo" , "●")
-set_lsp_sign("DiagnosticSignHint" , "○")
 
 local handlers = vim.diagnostic.handlers
 
