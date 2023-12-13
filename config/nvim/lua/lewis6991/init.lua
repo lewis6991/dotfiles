@@ -1,7 +1,5 @@
 local o, api, lsp = vim.opt, vim.api, vim.lsp
 
-vim.opt.termguicolors  = true
-
 if 'Plugins' then
   local dir = vim.fn.expand('~/gerrit') --[[@as string]]
   if vim.fn.isdirectory(dir) == 1 then
@@ -72,7 +70,6 @@ if 'Options' then
   o.startofline    = false
   o.swapfile       = false
   o.tabstop        = 4
-  o.termguicolors  = true
   o.textwidth      = 80
   o.virtualedit    = 'block' -- allow cursor to exist where there is no character
   o.winblend       = 10
