@@ -54,6 +54,7 @@ function main {
     done
 
     link_file ./config/kitty "$HOME/.config/kitty"
+    link_file ./config/wezterm "$HOME/.config/wezterm"
 
     message "${GREEN}Finished successfully${NC}"
 }
