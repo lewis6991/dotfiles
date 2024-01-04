@@ -262,6 +262,13 @@ api.nvim_create_autocmd('ColorScheme', {
 })
 hldefs()
 
+api.nvim_create_autocmd('DiagnosticChanged', {
+  group = group,
+  callback = function()
+    vim.cmd.redrawstatus()
+  end,
+})
+
 _G.statusline = M
 
 return M
