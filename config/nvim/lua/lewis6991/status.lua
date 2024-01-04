@@ -21,8 +21,8 @@ end
 local DIAG_ATTRS = {
   { 'Error', '', 'DiagnosticErrorStatus' },
   { 'Warn', '', 'DiagnosticWarnStatus' },
-  { 'Hint', '', 'DiagnosticHintStatus' },
   { 'Info', 'I', 'DiagnosticInfoStatus' },
+  { 'Hint', '', 'DiagnosticHintStatus' },
 }
 
 local function hldefs()
@@ -49,13 +49,14 @@ end
 function M.lsp_status(active)
   local status = {} ---@type string[]
 
-  for _, attrs in ipairs(DIAG_ATTRS) do
-    local n = vim.diagnostic.get(0, {severity=attrs[1]})
-    if #n > 0 then
-      table.insert(status, ('%s %s %d'):format(
+  local diags = vim.diagnostic.count(0)
+  for i, attrs in ipairs(DIAG_ATTRS) do
+    local n = diags[i] or 0
+    if n > 0 then
+      table.insert(status, (' %s%s %d'):format(
         hl(attrs[3], active),
         attrs[2],
-        #n
+        n
       ))
     end
   end
