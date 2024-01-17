@@ -203,9 +203,7 @@ require('lewis6991.package_manager').setup {
     config = 'lewis6991.cmp'
   },
 
-  {'stevearc/dressing.nvim', config = function()
-    require('dressing').setup()
-  end},
+  'stevearc/dressing.nvim',
 
   {'nvim-lua/telescope.nvim',
     requires = {
