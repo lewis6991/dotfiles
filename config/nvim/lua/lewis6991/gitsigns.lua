@@ -85,9 +85,7 @@ gitsigns.setup{
     '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
   },
   update_debounce = 50,
-  _extmark_signs = true,
   _signs_staged_enable = true,
   word_diff = true,
   trouble = true,
-  _inline2 = true
 }
