@@ -33,9 +33,7 @@ require('lewis6991.package_manager').setup {
 
   {'lewis6991/foldsigns.nvim',
     config = function()
-      require'foldsigns'.setup{
-        exclude = {'GitSigns.*'}
-      }
+      require'foldsigns'.setup()
     end
   },
 
@@ -163,9 +161,9 @@ require('lewis6991.package_manager').setup {
 
   { 'neovim/nvim-lspconfig', config = 'lewis6991.lsp' },
 
-  {'ray-x/lsp_signature.nvim', config = function()
-    require'lsp_signature'.setup{ hi_parameter = "Visual" }
-  end},
+  -- {'ray-x/lsp_signature.nvim', config = function()
+  --   require'lsp_signature'.setup{ hi_parameter = "Visual" }
+  -- end},
 
   'inkarkat/vim-visualrepeat',
 
@@ -203,7 +201,18 @@ require('lewis6991.package_manager').setup {
     config = 'lewis6991.cmp'
   },
 
-  'stevearc/dressing.nvim',
+  {'stevearc/dressing.nvim', config = function()
+    require("dressing").setup({
+      input = {
+        mappings = {
+          i = {
+            ["<C-a>"] = "<HOME>",
+            ["<C-e>"] = "<END>",
+          },
+        },
+      },
+    })
+  end},
 
   {'nvim-lua/telescope.nvim',
     requires = {
