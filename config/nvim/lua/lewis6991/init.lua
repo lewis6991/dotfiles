@@ -48,12 +48,13 @@ local vmap = nvim.vmap
 local cmap = nvim.cmap
 
 if 'Options' then
+  o.showmode       = false
   o.backup         = true
   o.backupdir:remove('.')
   o.breakindent    = true -- Indent wrapped lines to match start
   o.clipboard      = 'unnamedplus'
   o.expandtab      = true
-  o.fillchars      = {eob=' ', diff = ' '}
+  o.fillchars      = {eob=' ', diff = ' ', fold = ' '}
   o.hidden         = true
   o.ignorecase     = true
   o.inccommand     = 'split'
@@ -118,6 +119,7 @@ if 'Options' then
   o.foldcolumn  = '0'
   o.foldnestmax = 3
   o.foldopen:append('jump')
+  o.foldtext = ''
 end
 
 if 'Whitespace' then

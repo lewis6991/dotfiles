@@ -13,7 +13,6 @@ require('lewis6991.package_manager').setup {
   end},
 
   'lewis6991/spaceless.nvim',
-  'lewis6991/cleanfold.nvim',
   'lewis6991/brodir.nvim',
   'lewis6991/fileline.nvim',
   'lewis6991/satellite.nvim',
