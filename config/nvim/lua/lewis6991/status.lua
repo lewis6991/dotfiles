@@ -8,6 +8,8 @@ local function get_hl(name)
   return api.nvim_get_hl(0, { name = name })
 end
 
+--- @param num integer
+--- @param active 0|1
 local function highlight(num, active)
   if active == 1 then
     if num == 1 then
@@ -39,6 +41,9 @@ local function hldefs()
   api.nvim_set_hl(0, 'StatusTS', { fg = fg, bg = bg })
 end
 
+--- @param name string
+--- @param active 0|1
+--- @return string
 local function hl(name, active)
   if active == 0 then
     return ''
@@ -46,6 +51,21 @@ local function hl(name, active)
   return '%#'..name..'#'
 end
 
+--- @param active 0|1
+local function lsp_name(active)
+  local names = {} ---@type string[]
+  for _, client in ipairs(vim.lsp.get_clients({bufnr=0})) do
+    names[#names+1] = client.name
+  end
+
+  if #names == 0 then
+    return ''
+  end
+
+  return hl('LspName', active)..table.concat(names, ',')
+end
+
+--- @param active 0|1
 function M.lsp_status(active)
   local status = {} ---@type string[]
 
@@ -65,18 +85,7 @@ function M.lsp_status(active)
     status[#status+1] = vim.g.metals_status:gsub('%%', '%%%%')
   end
 
-  local names = {} ---@type string[]
-  local attached = vim.lsp.get_active_clients({bufnr=0})
-  for _, c in ipairs(attached) do
-    names[#names+1] = c.name
-  end
-
-  local name = ''
-  if #names > 0 then
-    name = hl('LspName', active)..table.concat(names, ',')
-  end
-
-  return name ..' '.. table.concat(status, ' ')
+  return lsp_name(active) ..' '.. table.concat(status, ' ')
 end
 
 function M.hunks()
@@ -117,6 +126,7 @@ local function is_treesitter()
   return vim.treesitter.highlighter.active[bufnr] ~= nil
 end
 
+--- @param active 0|1
 function M.filetype(active)
   local r = {
     vim.bo.filetype,
@@ -174,6 +184,7 @@ function M.bufname()
   return name
 end
 
+--- @param x string
 local function pad(x)
   return '%( '..x..' %)'
 end
@@ -188,8 +199,8 @@ local F = setmetatable({}, {
   end
 })
 
----@param sections string[][]
----@return string
+--- @param sections string[][]
+--- @return string
 local function parse_sections(sections)
   local result = {} ---@type string[]
   for _, s in ipairs(sections) do
@@ -203,6 +214,8 @@ local function parse_sections(sections)
   return '%=' .. table.concat(result, '%=')
 end
 
+--- @param active 0|1
+--- @param global? boolean
 local function set(active, global)
   local scope = global and 'o' or 'wo'
   vim[scope].statusline = parse_sections{
@@ -227,8 +240,9 @@ local function set(active, global)
   }
 end
 
--- Only set up WinEnter autocmd when the WinLeave autocmd runs
 local group = api.nvim_create_augroup('statusline', {})
+
+-- Only set up WinEnter autocmd when the WinLeave autocmd runs
 api.nvim_create_autocmd({'WinLeave', 'FocusLost'}, {
   group = group,
   once = true,
@@ -260,6 +274,7 @@ api.nvim_create_autocmd('ColorScheme', {
   group = group,
   callback = hldefs
 })
+
 hldefs()
 
 api.nvim_create_autocmd('DiagnosticChanged', {
