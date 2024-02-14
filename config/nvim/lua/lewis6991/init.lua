@@ -55,7 +55,7 @@ if 'Options' then
   o.breakindent    = true -- Indent wrapped lines to match start
   o.clipboard      = 'unnamedplus'
   o.expandtab      = true
-  o.fillchars      = { eob = ' ', diff = ' ' }
+  o.fillchars      = {eob=' ', diff = ' ', fold = ' '}
   o.hidden         = true
   o.ignorecase     = true
   o.inccommand     = 'split'
@@ -205,7 +205,11 @@ if "Mappings" then
     function(args)
       local bufnr = args.buf --- @type integer
       nmap '<M-]>' { lsp.buf.type_definition, desc = 'lsp.buf.type_definition', buffer = bufnr }
-      nmap '<M-i>' { function() lsp.inlay_hint.enable(bufnr) end, desc = 'lsp.buf.inlay_hint', buffer = bufnr }
+
+      nmap '<M-i>' {function()
+        lsp.inlay_hint.enable(bufnr, not lsp.inlay_hint.is_enabled(0))
+      end, desc = 'lsp.buf.inlay_hint', buffer = bufnr  }
+
       nmap '<leader>cl' { lsp.codelens.run, desc = 'lsp.codelens.run', buffer = bufnr }
       -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
       -- map(bufnr, 'gK'        , lsp.buf.signature_help, 'lsp.buf.signature_help')
