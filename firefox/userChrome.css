@@ -4,6 +4,8 @@
     --transition-time: 0.2s;
     --positionX1: 48px; /* '48px' for left, '0px' for right sidebar */
     --positionX2: absolute; /* 'absolute' for left, 'none' for right sidebar */
+    /* width of the collapsed sidebar in fullscreen mode ('1px' or '48px') */
+    --fullscreen-sidebar-width: 1px;
 }
 
 /* macOS specific styles */
@@ -13,7 +15,7 @@
     }
 
     :root:not([customizing="true"]) #nav-bar:not([inFullscreen]) {
-        padding-left: 80px;
+        padding-left: 80px !important;
     }
 
     :root:not([customizing="true"]) #TabsToolbar .titlebar-buttonbox-container {
@@ -26,7 +28,13 @@
 }
 
 /* Linux/GTK specific styles */
-@media (-moz-gtk-csd-available) {
+@media (-moz-gtk-csd-available),
+       (-moz-platform: linux) {
+    .browser-toolbar:not(.titlebar-color){ /* Fixes wrong coloring applied with --toolbar-bgcolor by Firefox (#101) */
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
+
     #TabsToolbar:not([customizing="true"]) {
         visibility: collapse !important;
     }
@@ -130,7 +138,8 @@
 }
 
 /* Windows specific styles */
-@media (-moz-platform: windows-win10) {
+@media (-moz-platform: windows),
+       (-moz-platform: windows-win10) {
     /* Hide main tabs toolbar */
     :root[tabsintitlebar]{
         --uc-window-control-width: 137px; /* Space at the right of nav-bar for window controls */
@@ -184,7 +193,7 @@
         visibility: hidden !important;
     }
     /* Line up the Windows controls with the rest of the icons in the toolbar. */
-    .titlebar-buttonbox-container {
+    :root:not([sizemode="maximized"]) .titlebar-buttonbox-container {
         margin-top: 3px;
     }
 
@@ -202,14 +211,20 @@
 
     /* For a rounded button design, uncomment both lines in .titlebar-buttonbox. */
     .titlebar-buttonbox {
-        z-index:3 !important;
+        z-index: 3 !important;
         /* padding-right:3px; */
     }
 
     .titlebar-buttonbox * {
         /* border-radius: 5px; */
-        width:35px;
-        height:38px;
+        width: 35px;
+        height: 38px;
+        pointer-events: auto;
+    }
+
+    #titlebar {
+        z-index: 3;
+        pointer-events: none;
     }
 
     #main-menubar {
@@ -258,17 +273,17 @@
     display: none;
 }
 
-[sidebarcommand*="tabcenter"] #sidebar,
-#sidebar-box[sidebarcommand*="tabcenter"] {
+#main-window:not([chromehidden~="toolbar"]) [sidebarcommand*="tabcenter"] #sidebar,
+#main-window:not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:not([hidden="true"]) {
+    display: block !important;
     min-width: 48px !important;
     max-width: 48px !important;
     width: 48px;
 }
 
-#sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) {
+#main-window:not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) {
     display: block;
     position: var(--positionX2);
-    box-sizing: content-box;
     min-width: 48px;
     max-width: 48px;
     overflow: hidden;
@@ -278,13 +293,14 @@
     bottom: 0;
 }
 
-#main-window[inFullscreen] #sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) {
-    min-width: 1px;
-    max-width: 1px;
+/* use :where() selector to lower specificity */
+:where(#main-window[inFullscreen]:not([chromehidden~="toolbar"])) #sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) {
+    min-width: var(--fullscreen-sidebar-width) !important;
+    max-width: var(--fullscreen-sidebar-width) !important;
 }
 
-#sidebar-box[sidebarcommand*="tabcenter"]:hover #sidebar,
-#sidebar-box[sidebarcommand*="tabcenter"]:hover {
+#main-window:not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:hover #sidebar,
+#main-window:not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:hover {
     min-width: 10vw !important;
     width: 30vw !important;
     max-width: 200px !important;
@@ -299,8 +315,8 @@
 }
 
 @media (width >= 1200px) {
-    #sidebar-box[sidebarcommand*="tabcenter"]:hover #sidebar,
-    #sidebar-box[sidebarcommand*="tabcenter"]:hover {
+    #main-window:not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:hover #sidebar,
+    #main-window:not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:hover {
         max-width: 250px !important;
     }
 }
@@ -314,12 +330,12 @@
     height: 100%;
 }
 
-#main-window:not([inFullscreen]) #sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) ~ #appcontent {
+#main-window:not([inFullscreen]):not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) ~ #appcontent {
     margin-left: var(--positionX1);
 }
 
-#main-window[inFullscreen][inDOMFullscreen] #appcontent {
-    margin-left: 0;
+#main-window[inFullscreen]:not([inDOMFullscreen]):not([chromehidden~="toolbar"]) #sidebar-box[sidebarcommand*="tabcenter"]:not([hidden]) ~ #appcontent {
+    margin-left: var(--fullscreen-sidebar-width);
 }
 
 #main-window[inFullscreen] #sidebar {

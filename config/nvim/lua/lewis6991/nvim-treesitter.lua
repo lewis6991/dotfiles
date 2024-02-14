@@ -21,8 +21,7 @@ require'nvim-treesitter'.setup {
   }
 }
 
-local parser_config = require "nvim-treesitter.parsers".configs
-local c_info = parser_config.c.install_info
-c_info.url = 'https://github.com/neovim/tree-sitter-c'
--- c_info.url = '~/projects/tree-sitter-c'
-c_info.revision = 'nvimc'
+-- local parser_config = require "nvim-treesitter.parsers".configs
+-- local make_info = parser_config.make
+-- make_info.install_info.url = '~/projects/tree-sitter-make'
+-- make_info.install_info.requires_generate_from_grammar = '~/projects/tree-sitter-make'

@@ -8,7 +8,7 @@ config.set_environment_variables = {
   SHELL = '/opt/homebrew/bin/zsh',
 }
 
-config.font = wezterm.font('Monaco', { weight = 'Bold' })
+config.font = wezterm.font('Monaco')
 config.font_size = 12.5
 config.harfbuzz_features = { 'liga=0' }
 

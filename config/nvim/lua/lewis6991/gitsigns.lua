@@ -84,6 +84,7 @@ gitsigns.setup{
     '⒈', '⒉', '⒊', '⒋', '⒌', '⒍', '⒎', '⒏', '⒐',
     '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
   },
+  attach_to_untracked = true,
   update_debounce = 50,
   _signs_staged_enable = true,
   word_diff = true,

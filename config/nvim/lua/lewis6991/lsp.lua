@@ -10,6 +10,8 @@ local function setup(name, user_config)
   lspconfig[name].setup(user_config)
 end
 
+--- @param client lsp.Client
+--- @param settings table
 local function add_settings(client, settings)
   local config = client.config
   config.settings = vim.tbl_deep_extend('force', config.settings, settings)
@@ -69,7 +71,6 @@ setup('jsonls')
 
 -- vim.api.nvim_create_autocmd('LspAttach', {
 --   callback = function(args)
---     local bufnr = args.buf
 --     local client = vim.lsp.get_client_by_id(args.data.client_id)
 --     client.server_capabilities.semanticTokensProvider = nil
 --   end

@@ -75,8 +75,8 @@ export MANPAGER='nvim +Man!'
 
 # Other ----------------------------------------------------------------------
 
-fpath=($HOME/zsh_completions $fpath)
-autoload -U +X bashcompinit && bashcompinit
+# fpath=($HOME/zsh_completions $fpath)
+# autoload -U +X bashcompinit && bashcompinit
 
 setopt NO_BEEP
 
