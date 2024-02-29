@@ -66,16 +66,6 @@
 			git config branch.$branch.upstream ${1-upstream}; \
 		}; f"
 
-	draft = "!f() {\
-			set -e; \
-			branch=$(git rev-parse --abbrev-ref HEAD); \
-			remoteBranch=$(git config branch.$branch.merge); \
-			remoteBranch=${remoteBranch##refs/heads/}; \
-			git push origin HEAD:refs/drafts/${1-$remoteBranch}; \
-		}; f"
-
-	fix-fetch = config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-
 	# Get the latest patchset for a given change number it checkout to a local
 	# branch
 	# $1: change number
