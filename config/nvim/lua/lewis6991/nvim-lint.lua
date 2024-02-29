@@ -9,7 +9,7 @@ local function do_setup()
     stdin = true,
     ignore_exitcode = true,
     parser = function(output)
-      local diags = {} --- @type Diagnostic[]
+      local diags = {} --- @type vim.Diagnostic[]
       for _, line in ipairs(vim.split(output, "\n")) do
         local ok, _, msg, lnum, col = line:find('^WorkflowScript: %d+: (.+) @ line (%d+), column (%d+).')
         if ok then
@@ -35,7 +35,7 @@ local function do_setup()
     stream = 'stdout',
     ignore_exitcode = true, -- set this to true if the linter exits with a code != 0 and that's considered normal.
     parser = function(output, bufnr)
-      local diags = {} --- @type Diagnostic[]
+      local diags = {} --- @type vim.Diagnostic[]
       local bufname = vim.api.nvim_buf_get_name(bufnr)
       for _, line in ipairs(vim.split(output, "\n")) do
         local ok, _, path, lnum, sev, msg = line:find('^([^:]+): Line%s+(%d+): (.) (.+)$')
@@ -56,13 +56,14 @@ local function do_setup()
 
   nvimlint.linters_by_ft = {
     tcl = {'tcl_lint'},
-    Jenkinsfile = {'jenkins_lint'}
+    -- Jenkinsfile = {'jenkins_lint'},
+    python = {'pylint'},
   }
 end
 
 local did_setup = false
 
-vim.api.nvim_create_autocmd({ 'FileType', 'BufWritePost', 'TextChanged', 'InsertLeave' }, {
+vim.api.nvim_create_autocmd({ 'FileType', 'BufWritePost', 'CursorHold' }, {
   callback = function()
     if not did_setup then
       do_setup()

@@ -7,7 +7,7 @@ local ns = api.nvim_create_namespace('ts_matchparen')
 --- @param bufnr integer
 --- @param row integer
 --- @param col integer
---- @return {[1]: TSNode, [2]: Query}[]
+--- @return {[1]: TSNode, [2]: vim.treesitter.Query}[]
 local function get_hl_ctx(bufnr, row, col)
   local buf_highlighter = vim.treesitter.highlighter.active[bufnr]
 
@@ -15,7 +15,7 @@ local function get_hl_ctx(bufnr, row, col)
     return {}
   end
 
-  --- @type {[1]: TSNode, [2]: Query}[]
+  --- @type {[1]: TSNode, [2]: vim.treesitter.Query}[]
   local ret = {}
 
   buf_highlighter.tree:for_each_tree(function(tstree, tree)
@@ -28,6 +28,7 @@ local function get_hl_ctx(bufnr, row, col)
     end)
 
     if ok then
+      --- @cast query vim.treesitter.Query
       ret[#ret+1] = { tstree:root(), query }
     end
   end)
@@ -36,11 +37,11 @@ local function get_hl_ctx(bufnr, row, col)
 end
 
 --- @param bufnr integer
---- @param ctx? {[1]: TSNode, [2]: Query}[]
+--- @param ctx? {[1]: TSNode, [2]: vim.treesitter.Query}[]
 --- @param row integer
 --- @param col integer
 --- @param pred fun(capture: string): boolean?
---- @return TSNode?, Query?
+--- @return TSNode?, vim.treesitter.Query?
 local function get_node_at_pos(bufnr, ctx, row, col, pred)
   ctx = ctx or get_hl_ctx(bufnr, row, col)
 
@@ -60,8 +61,8 @@ end
 --- @param bufnr integer
 --- @param row integer
 --- @param col integer
---- @param ctx? {[1]: TSNode, [2]: Query}[]
---- @return TSNode?, Query?
+--- @param ctx? {[1]: TSNode, [2]: vim.treesitter.Query}[]
+--- @return TSNode?, vim.treesitter.Query?
 local function get_pairnode_at_pos(bufnr, row, col, ctx)
   return get_node_at_pos(bufnr, ctx, row, col, function(c)
     if c:match('^keyword%.?') or c:match('^punctuation%.bracket%.?') then

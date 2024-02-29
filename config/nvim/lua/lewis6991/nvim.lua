@@ -2,6 +2,7 @@
 local M = {}
 
 function M.autocmd(name)
+  --- @param opts vim.api.keyset.create_autocmd
   return function(opts)
     if opts[1] then
       if type(opts[1]) == 'function' then

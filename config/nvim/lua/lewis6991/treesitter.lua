@@ -64,6 +64,10 @@ end
 
 api.nvim_create_autocmd('FileType', {
   callback = function(args)
+    -- if args.match == 'asl' and api.nvim_buf_line_count(args.buf) > 40000 then
+    if args.match == 'asl' then
+      return
+    end
     if not pcall(vim.treesitter.start, args.buf) then
       return
     end

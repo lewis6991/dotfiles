@@ -48,7 +48,7 @@ local function title(bufnr)
 end
 
 local function flags(bufnr)
-  local ret = {}
+  local ret = {} --- @type string[]
   if vim.bo[bufnr].modified then
     ret[#ret+1] = '[+]'
   end
@@ -58,22 +58,31 @@ local function flags(bufnr)
   return table.concat(ret)
 end
 
+--- @type table<string,true>
 local devhls = {}
 
+--- @param bufnr integer
+--- @param hl_base string
+--- @return string
 local function devicon(bufnr, hl_base)
   local file = fn.bufname(bufnr)
   local buftype = vim.bo[bufnr].buftype
   local filetype = vim.bo[bufnr].filetype
   local devicons = require'nvim-web-devicons'
 
+  --- @type string, string
   local icon, devhl
   if filetype == 'fugitive' then
+    --- @type string, string
     icon, devhl = devicons.get_icon('git')
   elseif filetype == 'vimwiki' then
+    --- @type string, string
     icon, devhl = devicons.get_icon('markdown')
   elseif buftype == 'terminal' then
+    --- @type string, string
     icon, devhl = devicons.get_icon('zsh')
   else
+    --- @type string, string
     icon, devhl = devicons.get_icon(file, fn.expand('#'..bufnr..':e'))
   end
 
@@ -111,8 +120,11 @@ local icons = {
   Info  = 'I',
 }
 
+--- @param buflist integer[]
+--- @param hl_base string
+--- @return string
 local function get_diags(buflist, hl_base)
-  local diags = {}
+  local diags = {} --- @type string[]
   for _, ty in ipairs { 'Error', 'Warn', 'Info', 'Hint' } do
     local n = 0
     for _, bufnr in ipairs(buflist) do
@@ -126,6 +138,9 @@ local function get_diags(buflist, hl_base)
   return table.concat(diags, ' ')
 end
 
+--- @param index integer
+--- @param selected boolean
+--- @return string
 local function cell(index, selected)
   local buflist = fn.tabpagebuflist(index)
   local winnr = fn.tabpagewinnr(index)
@@ -155,17 +170,18 @@ end
 local M = {}
 
 M.tabline = function()
-  local parts = {}
+  local parts = {} --- @type string[]
 
   local len = 0
 
-  local sel_start
+  local sel_start --- @type integer
 
   for i = 1, fn.tabpagenr('$') do
     local selected = fn.tabpagenr() == i
 
     local part = cell(i, selected)
 
+    --- @type integer
     local width = api.nvim_eval_statusline(part, {use_tabline=true}).width
 
     if selected then

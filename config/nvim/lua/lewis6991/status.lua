@@ -11,6 +11,7 @@ end
 
 --- @param num integer
 --- @param active 0|1
+--- @return string
 local function highlight(num, active)
   if active == 1 then
     if num == 1 then
@@ -53,6 +54,7 @@ local function hl(name, active)
 end
 
 --- @param active 0|1
+--- @return string
 local function lsp_name(active)
   local names = {} ---@type string[]
   for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
@@ -67,6 +69,7 @@ local function lsp_name(active)
 end
 
 --- @param active 0|1
+--- @return string?
 local function diagnostics(active)
   local status = {} ---@type string[]
   local diags = vim.diagnostic.count(0)
@@ -90,6 +93,7 @@ local function diagnostics(active)
 end
 
 --- @param active 0|1
+--- @return string
 function M.lsp_status(active)
   local status = {} ---@type string[]
 
@@ -128,6 +132,7 @@ local function filetype_symbol(active)
   end
 
   local name = api.nvim_buf_get_name(0)
+  --- @type string, string
   local icon, iconhl = devicons.get_icon_color(name, vim.bo.filetype, { default = true })
 
   local hlname = iconhl:gsub('#', 'Status')
@@ -142,6 +147,7 @@ local function is_treesitter()
 end
 
 --- @param active 0|1
+--- @return string
 function M.filetype(active)
   local r = {
     vim.bo.filetype,
@@ -194,6 +200,7 @@ function M.bufname()
 end
 
 --- @param x string
+--- @return string
 local function pad(x)
   return '%( ' .. x .. ' %)'
 end

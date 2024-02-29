@@ -63,11 +63,12 @@ setup('lua_ls', {
 })
 
 setup('pyright')
+setup('ruff_lsp')
 setup('bashls')
 
 -- install with:
 --   npm install -g vscode-langservers-extracted
-setup('jsonls')
+-- setup('jsonls')
 
 -- vim.api.nvim_create_autocmd('LspAttach', {
 --   callback = function(args)
