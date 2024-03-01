@@ -12,6 +12,7 @@ require('lewis6991.package_manager').setup {
     vim.cmd.color'github_dark'
   end},
 
+  'lewis6991/nvim-treesitter-pairs',
   'lewis6991/spaceless.nvim',
   'lewis6991/brodir.nvim',
   'lewis6991/fileline.nvim',
