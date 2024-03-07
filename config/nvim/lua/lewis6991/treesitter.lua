@@ -4,7 +4,7 @@ api.nvim_create_autocmd('FileType', {
   pattern = 'comment',
   callback = function()
     vim.bo.commentstring = ''
-  end
+  end,
 })
 
 ---@return string?
@@ -18,7 +18,7 @@ local function get_injection_filetype()
   local row, col = cpos[1] - 1, cpos[2]
   local range = { row, col, row, col + 1 }
 
-  local ft  --- @type string?
+  local ft --- @type string?
 
   parser:for_each_tree(function(_tree, ltree)
     if ltree:contains(range) then
@@ -40,13 +40,13 @@ local ts_commentstring = api.nvim_create_augroup('ts_commentstring', {})
 --- @param bufnr integer
 local function enable_commenstrings(bufnr)
   api.nvim_clear_autocmds({ buffer = bufnr, group = ts_commentstring })
-  api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
+  api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
     buffer = bufnr,
     group = ts_commentstring,
     callback = function()
       local ft = get_injection_filetype() or vim.bo[bufnr].filetype
       vim.bo[bufnr].commentstring = vim.filetype.get_option(ft, 'commentstring') --[[@as string]]
-    end
+    end,
   })
 end
 
@@ -58,7 +58,7 @@ local function enable_foldexpr(bufnr)
   api.nvim_buf_call(bufnr, function()
     vim.wo[0][0].foldexpr = 'v:lua.vim.treesitter.foldexpr()'
     vim.wo[0][0].foldmethod = 'expr'
-    vim.cmd.normal'zx'
+    vim.cmd.normal('zx')
   end)
 end
 
@@ -74,7 +74,7 @@ api.nvim_create_autocmd('FileType', {
 
     enable_foldexpr(args.buf)
     enable_commenstrings(args.buf)
-  end
+  end,
 })
 
 vim.keymap.set('n', '<leader>ts', function()

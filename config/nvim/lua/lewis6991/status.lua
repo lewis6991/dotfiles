@@ -76,14 +76,9 @@ local function diagnostics(active)
   for i, attrs in ipairs(DIAG_ATTRS) do
     local n = diags[i] or 0
     if n > 0 then
-      table.insert(status, (' %s%s %d'):format(
-        hl(attrs[3], active),
-        attrs[2],
-        n
-      ))
+      table.insert(status, (' %s%s %d'):format(hl(attrs[3], active), attrs[2], n))
     end
   end
-
 
   if #status == 0 then
     return
@@ -151,7 +146,7 @@ end
 function M.filetype(active)
   local r = {
     vim.bo.filetype,
-    filetype_symbol(active)
+    filetype_symbol(active),
   }
 
   if is_treesitter() then
@@ -214,7 +209,7 @@ local F = setmetatable({}, {
       return '%' .. mods .. '{%v:lua.statusline.' .. name .. '(' .. tostring(active) .. ')%}'
     end
     return t[name]
-  end
+  end,
 })
 
 --- @param sections string[][]
@@ -236,7 +231,7 @@ end
 --- @param global? boolean
 local function set(active, global)
   local scope = global and 'o' or 'wo'
-  vim[scope].statusline = parse_sections {
+  vim[scope].statusline = parse_sections({
     {
       highlight(1, active),
       recording(),
@@ -254,8 +249,8 @@ local function set(active, global)
       pad(F.encodingAndFormat()),
       highlight(1, active),
       ' %3p%% %2l(%02c)/%-3L ', -- 80% 65[12]/120
-    }
-  }
+    },
+  })
 end
 
 local group = api.nvim_create_augroup('statusline', {})
@@ -269,28 +264,28 @@ api.nvim_create_autocmd({ 'WinLeave', 'FocusLost' }, {
       group = group,
       callback = function()
         set(1)
-      end
+      end,
     })
-  end
+  end,
 })
 
 api.nvim_create_autocmd({ 'WinLeave', 'FocusLost' }, {
   group = group,
   callback = function()
     set(0)
-  end
+  end,
 })
 
 api.nvim_create_autocmd('VimEnter', {
   group = group,
   callback = function()
     set(1, true)
-  end
+  end,
 })
 
 api.nvim_create_autocmd('ColorScheme', {
   group = group,
-  callback = hldefs
+  callback = hldefs,
 })
 
 hldefs()

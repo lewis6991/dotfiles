@@ -1,16 +1,13 @@
 local o, api, lsp = vim.opt, vim.api, vim.lsp
 
-local nvim = require 'lewis6991.nvim'
-local autocmd = nvim.autocmd
-local nmap = nvim.nmap
-local vmap = nvim.vmap
-local cmap = nvim.cmap
+local autocmd = api.nvim_create_autocmd
+local map = vim.keymap.set
 
 if 'Plugins' then
   local dir = vim.fn.expand('~/gerrit') --[[@as string]]
   if vim.fn.isdirectory(dir) == 1 then
     for path, t in vim.fs.dir(dir) do
-      if t == "directory" then
+      if t == 'directory' then
         o.rtp:prepend('~/gerrit/' .. path)
       end
     end
@@ -19,7 +16,7 @@ if 'Plugins' then
   -- Stop loading built in plugins
   vim.g.loaded_netrwPlugin = 1
   vim.g.loaded_tutor_mode_plugin = 1
-  vim.g.loaded_2html_plugin = 1
+  -- vim.g.loaded_2html_plugin = 1
   vim.g.loaded_zipPlugin = 1
   vim.g.loaded_tarPlugin = 1
   vim.g.loaded_gzip = 1
@@ -39,217 +36,227 @@ if 'Modules' then
     end
   end
 
-  safe_require 'lewis6991.plugins'
-  safe_require 'lewis6991.status'
-  safe_require 'lewis6991.tabline'
-  safe_require 'lewis6991.diagnostic'
+  safe_require('lewis6991.plugins')
+  safe_require('lewis6991.status')
+  safe_require('lewis6991.tabline')
+  safe_require('lewis6991.diagnostic')
   -- safe_require 'lewis6991.ts_matchparen'
-  safe_require 'lewis6991.treesitter'
+  safe_require('lewis6991.treesitter')
 end
 
 if 'Options' then
-  o.backup   = true
+  o.backup = true
   o.backupdir:remove('.')
   -- o.showbreak   = '    ↳ '
-  o.breakindent    = true -- Indent wrapped lines to match start
-  o.clipboard      = 'unnamedplus'
-  o.expandtab      = true
-  o.fillchars      = {eob=' ', diff = ' ', fold = ' '}
-  o.hidden         = true
-  o.ignorecase     = true
-  o.inccommand     = 'split'
-  o.list           = true
-  o.listchars      = 'tab:▸ ' -- Show tabs as '▸   ▸   '
-  o.mouse          = 'a'
+  o.breakindent = true -- Indent wrapped lines to match start
+  o.clipboard = 'unnamedplus'
+  o.expandtab = true
+  o.fillchars = { eob = ' ', diff = ' ', fold = ' ' }
+  o.hidden = true
+  o.ignorecase = true
+  o.inccommand = 'split'
+  o.list = true
+  o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
+  o.mouse = 'a'
   o.mousemoveevent = true
-  o.number         = true
-  o.pumblend       = 10
+  o.number = true
+  o.pumblend = 10
   o.relativenumber = true
-  o.scrolloff      = 6
-  o.shiftwidth     = 4
-  o.showbreak      = '↳ '
-  o.showmode       = false
-  o.sidescroll     = 6
-  o.sidescrolloff  = 6
-  o.signcolumn     = 'auto:3'
-  o.smartcase      = true
-  o.softtabstop    = 4
-  o.spell          = true
-  o.splitbelow     = true
-  o.splitright     = true
-  o.startofline    = false
-  o.swapfile       = false
-  o.tabstop        = 4
-  o.textwidth      = 80
-  o.undofile       = true
-  o.undolevels     = 10000
-  o.virtualedit    = 'block' -- allow cursor to exist where there is no character
-  o.winblend       = 10
-  o.wrap           = false
+  o.scrolloff = 6
+  o.shiftwidth = 4
+  o.showbreak = '↳ '
+  o.showmode = false
+  o.sidescroll = 6
+  o.sidescrolloff = 6
+  o.signcolumn = 'auto:3'
+  o.smartcase = true
+  o.softtabstop = 4
+  o.spell = true
+  o.splitbelow = true
+  o.splitright = true
+  o.startofline = false
+  o.swapfile = false
+  o.tabstop = 4
+  o.textwidth = 80
+  o.undofile = true
+  o.undolevels = 10000
+  o.virtualedit = 'block' -- allow cursor to exist where there is no character
+  o.winblend = 10
+  o.wrap = false
 
   -- Avoid showing message extra message when using completion
   o.shortmess:append('c')
-  o.completeopt:append {
+  o.completeopt:append({
     'noinsert',
     'menuone',
     'noselect',
-    'preview'
-  }
+    'preview',
+  })
 
-  o.diffopt:append {
+  o.diffopt:append({
     'linematch:30',
     'vertical',
     'foldcolumn:0',
     'indent-heuristic',
-  }
+  })
 
-  o.foldcolumn  = '0'
+  o.foldcolumn = '0'
   o.foldnestmax = 3
   o.foldopen:append('jump')
   o.foldtext = ''
-  o.fillchars:append{ fold = ' ' }
+  o.fillchars:append({ fold = ' ' })
 
   local xdg_cfg = os.getenv('XDG_CONFIG_HOME')
   if xdg_cfg then
     o.spellfile = xdg_cfg .. '/nvim/spell/en.utf-8.add'
   end
 
-  o.formatoptions:append {
+  o.formatoptions:append({
     r = true, -- Automatically insert comment leader after <Enter> in Insert mode.
     o = true, -- Automatically insert comment leader after 'o' or 'O' in Normal mode.
     l = true, -- Long lines are not broken in insert mode.
     t = true, -- Do not auto wrap text
     n = true, -- Recognise lists
-  }
+  })
 end
 
 if 'Whitespace' then
   -- Highlight trailing whitespace
   -- setup in VimEnter to stop the intro screen being cleared
-  autocmd 'VimEnter' {
+  autocmd('VimEnter', {
     group = 'vimrc',
-    function()
-      autocmd 'BufEnter' {
+    callback = function()
+      autocmd('BufEnter', {
         group = 'vimrc',
-        vim.schedule_wrap(function()
-          if vim.bo.buftype == "" then
+        callback = vim.schedule_wrap(function()
+          if vim.bo.buftype == '' then
             vim.fn.matchadd('ColorColumn', '\\s\\+$')
           end
-        end)
-      }
-    end
-  }
+        end),
+      })
+    end,
+  })
 end
 
-if "Mappings" then
-  nmap '<leader>ev' ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>'
-  nmap '<leader>eV' ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>'
-  nmap '<leader>el' ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>'
-  nmap '<leader>s' ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>'
+if 'Mappings' then
+  map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>')
 
-  nmap 'k' { [[v:count == 0 ? 'gk' : 'k']], expr = true }
-  nmap 'j' { [[v:count == 0 ? 'gj' : 'j']], expr = true }
+  map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>')
+  map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>')
+  map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>')
+  map('n', '<leader>s', ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>')
 
-  nmap 'Y' 'y$'
+  map('n', 'k', [[v:count == 0 ? 'gk' : 'k']], { expr = true })
+  map('n', 'j', [[v:count == 0 ? 'gj' : 'j']], { expr = true })
 
-  nmap 'Q' ':w<cr>'
-  vmap 'Q' '<nop>'
-  nmap 'gQ' '<nop>'
-  vmap 'gQ' '<nop>'
+  map('n', 'Y', 'y$')
+
+  map('n', 'Q', ':w<cr>')
+  map('v', 'Q', '<nop>')
+  map('n', 'gQ', '<nop>')
+  map('v', 'gQ', '<nop>')
 
   -- delete the current buffer without deleting the window
-  nmap '<leader>b' ':b#|bd#<CR>'
+  map('n', '<leader>b', ':b#|bd#<CR>')
 
   -- I never use macros and more often mis-hit this key
-  nmap 'q' '<nop>'
+  map('n', 'q', '<nop>')
 
-  nmap '<leader>z' '<cmd>Inspect<cr>'
+  map('n', '<leader>z', '<cmd>Inspect<cr>')
 
-  nmap '<C-C>' ':nohlsearch<CR>'
+  map('n', '<C-C>', ':nohlsearch<CR>')
 
-  nmap '<Tab>' { function()
+  map('n', '<Tab>', function()
     if #api.nvim_list_tabpages() > 1 then
       vim.cmd.tabnext()
     else
       vim.cmd.bnext()
     end
-  end, silent = true }
+  end, { silent = true })
 
-  nmap '<S-Tab>' { function()
+  map('n', '<S-Tab>', function()
     if #api.nvim_list_tabpages() > 1 then
       vim.cmd.tabprev()
     else
       vim.cmd.bprev()
     end
-  end, silent = true }
+  end, { silent = true })
 
-  nmap '<C-o>' '<nop>'
+  map('n', '<C-o>', '<nop>')
 
-  nmap '|' { [[!v:count ? "<C-W>v<C-W><Right>" : '|']], expr = true, silent = true }
-  nmap '_' { [[!v:count ? "<C-W>s<C-W><Down>"  : '_']], expr = true, silent = true }
+  map('n', '|', [[!v:count ? "<C-W>v<C-W><Right>" : '|']], { expr = true, silent = true })
+  map('n', '_', [[!v:count ? "<C-W>s<C-W><Down>"  : '_']], { expr = true, silent = true })
 
-  cmap '<C-P>' '<up>'
-  cmap '<C-N>' '<down>'
-  cmap '<C-A>' '<Home>'
-  cmap '<C-D>' '<Del>'
+  map('c', '<C-P>', '<up>')
+  map('c', '<C-N>', '<down>')
+  map('c', '<C-A>', '<Home>')
+  map('c', '<C-D>', '<Del>')
 
-  nmap ']d' (vim.diagnostic.goto_next)
-  nmap '[d' (vim.diagnostic.goto_prev)
+  map('n', ']d', vim.diagnostic.goto_next)
+  map('n', '[d', vim.diagnostic.goto_prev)
 
-  nmap ']D' (function() vim.diagnostic.goto_next { severity = 'ERROR' } end)
-  nmap '[D' (function() vim.diagnostic.goto_prev { severity = 'ERROR' } end)
+  map('n', ']D', function()
+    vim.diagnostic.goto_next({ severity = 'ERROR' })
+  end)
+  map('n', '[D', function()
+    vim.diagnostic.goto_prev({ severity = 'ERROR' })
+  end)
 
-  autocmd 'LspAttach' {
+  autocmd('LspAttach', {
     desc = 'lsp mappings',
-    function(args)
+    callback = function(args)
       local bufnr = args.buf --- @type integer
-      nmap '<M-]>' { lsp.buf.type_definition, desc = 'lsp.buf.type_definition', buffer = bufnr }
+      map(
+        'n',
+        '<M-]>',
+        lsp.buf.type_definition,
+        { desc = 'lsp.buf.type_definition', buffer = bufnr }
+      )
 
-      nmap '<M-i>' {function()
+      map('n', '<M-i>', function()
         lsp.inlay_hint.enable(bufnr, not lsp.inlay_hint.is_enabled(0))
-      end, desc = 'lsp.buf.inlay_hint', buffer = bufnr  }
+      end, { desc = 'lsp.buf.inlay_hint', buffer = bufnr })
 
-      nmap '<leader>cl' { lsp.codelens.run, desc = 'lsp.codelens.run', buffer = bufnr }
+      map('n', '<leader>cl', lsp.codelens.run, { desc = 'lsp.codelens.run', buffer = bufnr })
       -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
       -- map(bufnr, 'gK'        , lsp.buf.signature_help, 'lsp.buf.signature_help')
-      nmap '<C-s>' { lsp.buf.signature_help, desc = 'lsp.buf.signature_help', buffer = bufnr }
-      nmap '<leader>rn' { lsp.buf.rename, desc = 'lsp.buf.rename', buffer = bufnr }
-      nmap '<leader>ca' { lsp.buf.code_action, desc = 'lsp.buf.code_action', buffer = bufnr }
+      map('n', '<C-s>', lsp.buf.signature_help, { desc = 'lsp.buf.signature_help', buffer = bufnr })
+      map('n', '<leader>rn', lsp.buf.rename, { desc = 'lsp.buf.rename', buffer = bufnr })
+      map('n', '<leader>ca', lsp.buf.code_action, { desc = 'lsp.buf.code_action', buffer = bufnr })
 
-      -- nmap 'gr' { lsp.buf.references }
-      nmap 'gr' '<cmd>Trouble lsp_references<cr>'
-      nmap 'gR' '<cmd>Telescope lsp_references layout_strategy=vertical<cr>'
-      nmap 'gi' { lsp.buf.implementation, desc = 'lsp.buf.implementation', buffer = bufnr }
-
-      local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
-      if client.server_capabilities.code_lens then
-        autocmd { 'BufEnter', 'CursorHold', 'InsertLeave' } { lsp.codelens.refresh, buffer = bufnr }
-        lsp.codelens.refresh()
-      end
-    end
-  }
+      -- keymap('n', 'gr' { lsp.buf.references }
+      map('n', 'gr', '<cmd>Trouble lsp_references<cr>')
+      map('n', 'gR', '<cmd>Telescope lsp_references layout_strategy=vertical<cr>')
+      map('n', 'gi', lsp.buf.implementation, { desc = 'lsp.buf.implementation', buffer = bufnr })
+    end,
+  })
 end
 
-if "Abbrev" then
-  local map = vim.keymap.set
-
-  map('!a', ':rev:', [[<c-r>=printf(&commentstring, 'REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]])
+if 'Abbrev' then
+  map(
+    '!a',
+    ':rev:',
+    [[<c-r>=printf(&commentstring, 'REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]]
+  )
   map('!a', ':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
   map('ca', 'Q', 'q')
 
-  autocmd 'FileType' {
+  autocmd('FileType', {
     pattern = 'lua',
-    function()
+    callback = function()
       map('!a', '--T', '--- @type', { buffer = true })
       map('!a', '--P', '--- @param', { buffer = true })
       map('!a', '--R', '--- @return', { buffer = true })
       map('!a', '--F', '--- @field', { buffer = true })
       map('!a', '--A', '--[[@as', { buffer = true })
-    end
-  }
+    end,
+  })
 
   -- auto spell
   map('!a', 'funciton', 'function')
 end
 
-autocmd 'VimResized' { 'wincmd =', group = 'vimrc' }
+autocmd('VimResized', {
+  group = 'vimrc',
+  command = 'wincmd =',
+})

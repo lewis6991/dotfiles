@@ -1,18 +1,16 @@
--- require 'lewis6991.cmp_gh'
-
 local source_names = {
-  buffer     = {'Buf'  , 'String'},
-  nvim_lsp   = {''  , 'Question'},
-  luasnip    = {'Snip' , 'CmpItemMenu'},
+  buffer = { 'Buf', 'String' },
+  nvim_lsp = { '', 'Question' },
+  luasnip = { 'Snip', 'CmpItemMenu' },
   -- nvim_lua   = {'Lua'  , 'ErrorMsg'},
   -- nvim_lua   = {'  '  , 'ErrorMsg'},
-  nvim_lua   = {'Lua'  , 'ErrorMsg'},
-  path       = {'Path' , 'WarningMsg'},
-  tmux       = {'Tmux' , 'CursorLineNr'},
-  gh         = {'GH'   , 'CmpItemMenu'},
-  rg         = {'RG'   , 'CmpItemMenu'},
-  cmdline    = {'CMD'  , 'CmpItemMenu'},
-  spell      = {'Spell', 'CmpItemMenu'},
+  nvim_lua = { 'Lua', 'ErrorMsg' },
+  path = { 'Path', 'WarningMsg' },
+  tmux = { 'Tmux', 'CursorLineNr' },
+  gh = { 'GH', 'CmpItemMenu' },
+  rg = { 'RG', 'CmpItemMenu' },
+  cmdline = { 'CMD', 'CmpItemMenu' },
+  spell = { 'Spell', 'CmpItemMenu' },
 }
 
 local symbols = {
@@ -60,8 +58,8 @@ end
 
 local did_snippy = false
 
-local cmp = require 'cmp'
-cmp.setup {
+local cmp = require('cmp')
+cmp.setup({
   snippet = {
     expand = function(args)
       if not did_snippy then
@@ -86,7 +84,7 @@ cmp.setup {
     format = function(entry, vim_item)
       vim_item.kind = symbols[vim_item.kind]
 
-       -- set a name for each source
+      -- set a name for each source
       local nm = source_names[entry.source.name]
       if nm then
         vim_item.menu = nm[1]
@@ -98,37 +96,37 @@ cmp.setup {
 
       local maxwidth = 60
       if #vim_item.abbr > maxwidth then
-        vim_item.abbr = vim_item.abbr:sub(1, maxwidth)..'...'
+        vim_item.abbr = vim_item.abbr:sub(1, maxwidth) .. '...'
       end
       return vim_item
-    end
+    end,
   },
-  mapping = cmp.mapping.preset.insert{
-    ['<Tab>']   = cmp.mapping.select_next_item{ behavior = cmp.SelectBehavior.Insert },
-    ['<S-Tab>'] = cmp.mapping.select_prev_item{ behavior = cmp.SelectBehavior.Insert },
-    ['<CR>']    = cmp.mapping.confirm { select = true },
-  },
+  mapping = cmp.mapping.preset.insert({
+    ['<Tab>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<S-Tab>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+  }),
   sources = cmp.config.sources({
-    { name = 'nvim_lsp'   },
-    { name = 'path'       },
-    { name = 'buffer'     },
+    { name = 'nvim_lsp' },
+    { name = 'path' },
+    { name = 'buffer' },
   }, {
-    { name = 'gh'         },
-    { name = 'emoji'      },
-    { name = 'spell'      },
+    { name = 'gh' },
+    { name = 'emoji' },
+    { name = 'spell' },
     { name = 'tmux', entry_filter = min_length(2) },
   }),
   experimental = {
     ghost_text = true,
-  }
-}
+  },
+})
 
 cmp.setup.cmdline('/', {
   sources = { { name = 'buffer' } },
-  mapping = cmp.mapping.preset.cmdline()
+  mapping = cmp.mapping.preset.cmdline(),
 })
 
 cmp.setup.cmdline(':', {
   sources = { { name = 'cmdline' } },
-  mapping = cmp.mapping.preset.cmdline()
+  mapping = cmp.mapping.preset.cmdline(),
 })

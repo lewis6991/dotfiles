@@ -1,4 +1,4 @@
-vim.diagnostic.config {
+vim.diagnostic.config({
   virtual_text = { source = true },
   severity_sort = true,
   update_in_insert = true,
@@ -7,12 +7,12 @@ vim.diagnostic.config {
       [vim.diagnostic.severity.ERROR] = '●',
       [vim.diagnostic.severity.WARN] = '●',
       [vim.diagnostic.severity.INFO] = '●',
-      [vim.diagnostic.severity.HINT]= '○'
-    }
-  }
-}
+      [vim.diagnostic.severity.HINT] = '○',
+    },
+  },
+})
 
-vim.api.nvim_set_hl(0, 'LspCodeLens', {link='WarningMsg'})
+vim.api.nvim_set_hl(0, 'LspCodeLens', { link = 'WarningMsg' })
 
 local handlers = vim.diagnostic.handlers
 
@@ -21,7 +21,6 @@ local orig_signs_handler = handlers.signs
 -- Override the built-in signs handler to aggregate signs
 handlers.signs = {
   show = function(ns, bufnr, diagnostics, opts)
-
     -- Find the "worst" diagnostic per line
     local max_severity_per_line = {}
     for _, d in pairs(diagnostics) do
@@ -37,5 +36,5 @@ handlers.signs = {
     orig_signs_handler.show(ns, bufnr, filtered_diagnostics, opts)
   end,
 
-  hide = orig_signs_handler.hide
+  hide = orig_signs_handler.hide,
 }

@@ -7,7 +7,7 @@ vim.keymap.set('n', 'M', '<cmd>Gitsigns debug_messages<cr>')
 vim.keymap.set('n', 'mm', '<cmd>Gitsigns dump_cache<cr>')
 
 local function wrap(f, ...)
-  local args = {...}
+  local args = { ... }
   local nargs = select('#', ...)
   return function()
     f(unpack(args, 1, nargs))
@@ -22,27 +22,35 @@ local function on_attach(bufnr)
   end
 
   map('n', ']c', function()
-    if vim.wo.diff then return ']c' end
+    if vim.wo.diff then
+      return ']c'
+    end
     vim.schedule(gitsigns.next_hunk)
     return '<Ignore>'
-  end, {expr=true})
+  end, { expr = true })
 
   map('n', '[c', function()
-    if vim.wo.diff then return '[c' end
+    if vim.wo.diff then
+      return '[c'
+    end
     vim.schedule(gitsigns.prev_hunk)
     return '<Ignore>'
-  end, {expr=true})
+  end, { expr = true })
 
   map('n', '<leader>hs', gitsigns.stage_hunk)
   map('n', '<leader>hr', gitsigns.reset_hunk)
-  map('v', '<leader>hs', function() gitsigns.stage_hunk {line("."), line("v")} end)
-  map('v', '<leader>hr', function() gitsigns.reset_hunk {line("."), line("v")} end)
+  map('v', '<leader>hs', function()
+    gitsigns.stage_hunk({ line('.'), line('v') })
+  end)
+  map('v', '<leader>hr', function()
+    gitsigns.reset_hunk({ line('.'), line('v') })
+  end)
   map('n', '<leader>hS', gitsigns.stage_buffer)
   map('n', '<leader>hu', gitsigns.undo_stage_hunk)
   map('n', '<leader>hR', gitsigns.reset_buffer)
   map('n', '<leader>hp', gitsigns.preview_hunk)
   map('n', '<leader>hi', gitsigns.preview_hunk_inline)
-  map('n', '<leader>hb', wrap(gitsigns.blame_line, {full=true}))
+  map('n', '<leader>hb', wrap(gitsigns.blame_line, { full = true }))
   map('n', '<leader>hi', gitsigns.preview_hunk_inline)
   map('n', '<leader>hd', gitsigns.diffthis)
   map('n', '<leader>hD', ':Gitsigns diffthis ~')
@@ -56,18 +64,18 @@ local function on_attach(bufnr)
   map('n', '<leader>hQ', wrap(gitsigns.setqflist, 'all'))
   map('n', '<leader>hq', gitsigns.setqflist)
 
-  map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+  map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
 end
 
-gitsigns.setup{
+gitsigns.setup({
   debug_mode = true,
   max_file_length = 100000,
   signs = {
-    add          = {show_count = false},
-    change       = {show_count = false},
-    delete       = {show_count = true },
-    topdelete    = {show_count = true },
-    changedelete = {show_count = true },
+    add = { show_count = false },
+    change = { show_count = false },
+    delete = { show_count = true },
+    topdelete = { show_count = true },
+    changedelete = { show_count = true },
   },
   on_attach = on_attach,
   preview_config = {
@@ -75,18 +83,36 @@ gitsigns.setup{
   },
   current_line_blame = true,
   current_line_blame_formatter_opts = {
-    relative_time = true
+    relative_time = true,
   },
   current_line_blame_opts = {
-    delay = 50
+    delay = 50,
   },
   count_chars = {
-    '⒈', '⒉', '⒊', '⒋', '⒌', '⒍', '⒎', '⒏', '⒐',
-    '⒑', '⒒', '⒓', '⒔', '⒕', '⒖', '⒗', '⒘', '⒙', '⒚', '⒛',
+    '⒈',
+    '⒉',
+    '⒊',
+    '⒋',
+    '⒌',
+    '⒍',
+    '⒎',
+    '⒏',
+    '⒐',
+    '⒑',
+    '⒒',
+    '⒓',
+    '⒔',
+    '⒕',
+    '⒖',
+    '⒗',
+    '⒘',
+    '⒙',
+    '⒚',
+    '⒛',
   },
   attach_to_untracked = true,
   update_debounce = 50,
   _signs_staged_enable = true,
   word_diff = true,
   trouble = true,
-}
+})

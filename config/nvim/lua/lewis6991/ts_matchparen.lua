@@ -29,7 +29,7 @@ local function get_hl_ctx(bufnr, row, col)
 
     if ok then
       --- @cast query vim.treesitter.Query
-      ret[#ret+1] = { tstree:root(), query }
+      ret[#ret + 1] = { tstree:root(), query }
     end
   end)
 
@@ -109,12 +109,12 @@ local function matchit()
     api.nvim_buf_set_extmark(0, ns, w2row, w2scol, {
       end_row = w2row,
       end_col = w2ecol,
-      hl_group = 'MatchParen'
+      hl_group = 'MatchParen',
     })
   end
 end
 
 api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
   group = api.nvim_create_augroup('ts_matchparen', {}),
-  callback = matchit
+  callback = matchit,
 })

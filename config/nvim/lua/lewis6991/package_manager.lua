@@ -19,7 +19,7 @@ local HOME = os.getenv('HOME')
 local function resolve(x)
   if type(x) == 'string' and x:sub(1, 1) ~= '/' then
     local name = vim.split(x, '/')[2]
-    local loc_install = HOME..'/projects/'..name
+    local loc_install = HOME .. '/projects/' .. name
     if name ~= '' and vim.fn.isdirectory(loc_install) == 1 then
       return loc_install
     end
@@ -59,32 +59,32 @@ local function setup_pckr(init)
       'clone',
       -- "--filter=blob:none",
       'https://github.com/lewis6991/pckr.nvim',
-      pckr_path
+      pckr_path,
     })
   end
 
   local pckr = require('pckr')
 
-  pckr.setup{
+  pckr.setup({
     git = {
       default_url_format = 'git@github.com:/%s',
     },
     max_jobs = 30,
     display = {
-      prompt_border = 'rounded'
+      prompt_border = 'rounded',
     },
     -- log = {
     --   level = 'trace'
     -- }
-  }
+  })
 
   pckr.add(init)
 
-  vim.keymap.set('n', '<leader>u', '<cmd>Pckr update<CR>', {silent=true})
+  vim.keymap.set('n', '<leader>u', '<cmd>Pckr update<CR>', { silent = true })
 end
 
 local function setup_lazy(init)
-  walk_spec({init}, nil, function(spec)
+  walk_spec({ init }, nil, function(spec)
     if not spec or type(spec) == 'string' then
       return spec
     end
@@ -116,26 +116,26 @@ local function setup_lazy(init)
     return spec
   end)
 
-  local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+  local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
   if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
-      "git",
-      "clone",
-      "--filter=blob:none",
-      "--single-branch",
-      "https://github.com/folke/lazy.nvim.git",
+      'git',
+      'clone',
+      '--filter=blob:none',
+      '--single-branch',
+      'https://github.com/folke/lazy.nvim.git',
       lazypath,
     })
   end
 
   vim.opt.runtimepath:prepend(lazypath)
 
-  require("lazy").setup(init)
+  require('lazy').setup(init)
 end
 
 function M.setup(init)
   -- look for local version of plugins in $HOME/projects and use them instead
-  walk_spec({init}, nil, try_get_local(vim.env.LAZY))
+  walk_spec({ init }, nil, try_get_local(vim.env.LAZY))
 
   if vim.env.LAZY then
     setup_lazy(init)

@@ -1,17 +1,17 @@
-vim.filetype.add {
+vim.filetype.add({
   extension = {
     tmk = 'tcl',
-    conf = 'toml'
+    conf = 'toml',
   },
   filename = {
-    ['gerrit_hooks']  = 'toml',
-    ['setup.cfg']     = 'toml',
-    ['lit.cfg']       = 'python',
+    ['gerrit_hooks'] = 'toml',
+    ['setup.cfg'] = 'toml',
+    ['lit.cfg'] = 'python',
     ['lit.local.cfg'] = 'python',
-    ['dotshrc']       = 'sh',
-    ['dotsh']         = 'sh',
-    ['dotcshrc']      = 'csh',
-    ['gitconfig']     = 'gitconfig',
+    ['dotshrc'] = 'sh',
+    ['dotsh'] = 'sh',
+    ['dotcshrc'] = 'csh',
+    ['gitconfig'] = 'gitconfig',
   },
   pattern = {
     ['.*'] = {
@@ -24,5 +24,4 @@ vim.filetype.add {
       end,
     },
   },
-}
-
+})

@@ -1,5 +1,4 @@
-
-require'nvim-treesitter'.setup {
+require('nvim-treesitter').setup({
   ensure_install = {
     'bash',
     'c',
@@ -18,8 +17,8 @@ require'nvim-treesitter'.setup {
     'vim',
     'vimdoc',
     'yaml',
-  }
-}
+  },
+})
 
 -- local parser_config = require "nvim-treesitter.parsers".configs
 -- local make_info = parser_config.make
