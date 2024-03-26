@@ -5,7 +5,6 @@ require('lewis6991.package_manager').setup({
   'fladson/vim-kitty',
   'raimon49/requirements.txt.vim',
   'lewis6991/vc.nvim',
-  -- 'lewis6991/systemverilog.vim',
   'lewis6991/tree-sitter-tcl',
 
   {
