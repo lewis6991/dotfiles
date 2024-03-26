@@ -148,14 +148,6 @@ require('lewis6991.package_manager').setup({
   },
 
   {
-    'whatyouhide/vim-lengthmatters',
-    config_pre = function()
-      vim.g.lengthmatters_highlight_one_column = 1
-      vim.g.lengthmatters_excluded = { 'packer' }
-    end,
-  },
-
-  {
     'junegunn/vim-easy-align',
     config = function()
       vim.keymap.set({ 'x', 'n' }, 'ga', '<Plug>(EasyAlign)')

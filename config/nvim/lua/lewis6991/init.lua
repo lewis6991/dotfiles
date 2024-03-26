@@ -260,3 +260,19 @@ autocmd('VimResized', {
   group = 'vimrc',
   command = 'wincmd =',
 })
+
+local ns = api.nvim_create_namespace('overlength')
+api.nvim_set_decoration_provider(ns, {
+  on_line = function(_, _winid, bufnr, row)
+    local line = api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
+    local tw = vim.bo[bufnr].textwidth
+    if #line > tw then
+      api.nvim_buf_set_extmark(bufnr, ns, row, tw, {
+        end_row = row,
+        end_col = tw + 1,
+        hl_group = 'ColorColumn',
+        ephemeral = true
+      })
+    end
+  end
+})
