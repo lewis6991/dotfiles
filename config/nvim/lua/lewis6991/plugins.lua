@@ -2,8 +2,6 @@ require('lewis6991.package_manager').setup({
 
   --- Filetype plugins ---
   'martinda/Jenkinsfile-vim-syntax',
-  'fladson/vim-kitty',
-  'raimon49/requirements.txt.vim',
   'lewis6991/vc.nvim',
   'lewis6991/tree-sitter-tcl',
 
