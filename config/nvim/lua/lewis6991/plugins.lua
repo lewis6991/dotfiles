@@ -38,13 +38,6 @@ require('lewis6991.package_manager').setup({
   },
 
   {
-    'lewis6991/foldsigns.nvim',
-    config = function()
-      require('foldsigns').setup()
-    end,
-  },
-
-  {
     'lewis6991/hover.nvim',
     config = function()
       require('hover').setup({
