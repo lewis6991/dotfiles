@@ -30,6 +30,9 @@ local function setup(config)
         return
       end
       local capabilities = lsp.protocol.make_client_capabilities()
+      if config.name == 'pyright' and vim.uv.os_uname().sysname == 'Linux' then
+        capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+      end
       config.capabilities =
         vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
@@ -38,13 +41,6 @@ local function setup(config)
       vim.lsp.start(config)
     end,
   })
-end
-
---- @param client vim.lsp.Client
---- @param settings table
-local function add_settings(client, settings)
-  client.settings = vim.tbl_deep_extend('force', client.settings, settings)
-  client.notify('workspace/didChangeConfiguration', { settings = client.settings })
 end
 
 local function default_lua_settings()
@@ -135,10 +131,12 @@ setup({
     if client.workspace_folders then
       local path = client.workspace_folders[1].name
       if not vim.uv.fs_stat(path .. '/.luarc.json') and not vim.uv.fs_stat(path .. '/.luarc.jsonc') then
-        add_settings(client, default_lua_settings())
+        client.settings = vim.tbl_deep_extend('force', client.settings, default_lua_settings())
+        client.notify('workspace/didChangeConfiguration', { settings = client.settings })
       end
     else
-      add_settings(client, default_lua_settings())
+      client.settings = vim.tbl_deep_extend('force', client.settings, default_lua_settings())
+      client.notify('workspace/didChangeConfiguration', { settings = client.settings })
     end
   end,
   settings = {
