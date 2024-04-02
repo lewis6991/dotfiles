@@ -26,6 +26,9 @@ local function setup(config)
     pattern = config.filetypes,
     group = lsp_group,
     callback = function(args)
+      if vim.bo[args.buf].buftype == 'nofile' then
+        return
+      end
       local capabilities = lsp.protocol.make_client_capabilities()
       config.capabilities =
         vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
@@ -129,8 +132,12 @@ setup({
     '.git',
   },
   on_init = function(client)
-    local path = client.workspace_folders[1].name
-    if not vim.uv.fs_stat(path .. '/.luarc.json') and not vim.uv.fs_stat(path .. '/.luarc.jsonc') then
+    if client.workspace_folders then
+      local path = client.workspace_folders[1].name
+      if not vim.uv.fs_stat(path .. '/.luarc.json') and not vim.uv.fs_stat(path .. '/.luarc.jsonc') then
+        add_settings(client, default_lua_settings())
+      end
+    else
       add_settings(client, default_lua_settings())
     end
   end,
