@@ -1,17 +1,40 @@
 local api, lsp = vim.api, vim.lsp
+local get_clients = vim.lsp.get_clients
 
-local lspconfig = require('lspconfig')
+local function find_root(markers, path)
+  local match = vim.fs.find(markers, { path = path, upward = true })[1]
+  if match then
+    local stat = vim.uv.fs_stat(match)
+    if stat and stat.type == 'directory' then
+      return vim.fn.fnamemodify(match, ':p:h:h')
+    end
+    return vim.fn.fnamemodify(match, ':p:h')
+  end
+end
+
+local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 
 --- @class LspClientConfig : vim.lsp.ClientConfig
---- @field cmd? string[]
+--- @field name string
+--- @field filetypes string[]
+--- @field cmd string[]
+--- @field markers string[]
 
---- @param name string
---- @param user_config? LspClientConfig
-local function setup(name, user_config)
-  user_config = user_config or {}
-  local capabilities = lsp.protocol.make_client_capabilities()
-  user_config.capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-  lspconfig[name].setup(user_config)
+--- @param config LspClientConfig
+local function setup(config)
+  api.nvim_create_autocmd('FileType', {
+    pattern = config.filetypes,
+    group = lsp_group,
+    callback = function(args)
+      local capabilities = lsp.protocol.make_client_capabilities()
+      config.capabilities =
+        vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+
+      local f = vim.fn.fnamemodify(args.file, ':p')
+      config.root_dir = find_root(config.markers, f)
+      vim.lsp.start(config)
+    end,
+  })
 end
 
 --- @param client vim.lsp.Client
@@ -34,24 +57,80 @@ local function default_lua_settings()
           '${3rd}/busted/library',
           '${3rd}/luv/library',
         },
-        -- library = api.nvim_get_runtime_file("", true)
+        -- library = api.nvim_get_runtime_file('', true)
       },
     },
   }
 end
 
--- Clangd
-setup('clangd', {
-  cmd = { 'clangd', '--clang-tidy' },
+api.nvim_create_user_command('LspRestart', function(kwargs)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local name = kwargs.fargs[1]
+  for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
+    local bufs = vim.deepcopy(client.attached_buffers)
+    client.stop()
+    vim.wait(30000, function()
+      return lsp.get_client_by_id(client.id) == nil
+    end)
+    local client_id = lsp.start_client(client.config)
+    if client_id then
+      for buf in pairs(bufs) do
+        lsp.buf_attach_client(buf, client_id)
+      end
+    end
+  end
+end, {
+  nargs = '*',
+  complete = function()
+    return vim.tbl_map(function(c)
+      return c.name
+    end, get_clients())
+  end,
 })
 
--- LuaLS
-setup('lua_ls', {
+api.nvim_create_user_command('LspStop', function(kwargs)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local name = kwargs.fargs[1]
+  for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
+    client.stop()
+  end
+end, {
+  nargs = '*',
+  complete = function()
+    return vim.tbl_map(function(c)
+      return c.name
+    end, get_clients())
+  end,
+})
+
+setup({
+  name = 'clangd',
+  cmd = { 'clangd', '--clang-tidy' },
+  markers = {
+    '.clangd',
+    'compile_commands.json',
+    '.git',
+  },
+  filetypes = { 'c', 'cpp' },
+})
+
+setup({
+  name = 'lua_ls',
+  cmd = { 'lua-language-server' },
+  filetypes = { 'lua' },
+  markers = {
+    '.luarc.json',
+    '.luarc.jsonc',
+    '.luacheckrc',
+    '.stylua.toml',
+    'stylua.toml',
+    'selene.toml',
+    'selene.yml',
+    '.git',
+  },
   on_init = function(client)
     local path = client.workspace_folders[1].name
-    if
-      not vim.uv.fs_stat(path .. '/.luarc.json') and not vim.uv.fs_stat(path .. '/.luarc.jsonc')
-    then
+    if not vim.uv.fs_stat(path .. '/.luarc.json') and not vim.uv.fs_stat(path .. '/.luarc.jsonc') then
       add_settings(client, default_lua_settings())
     end
   end,
@@ -66,9 +145,22 @@ setup('lua_ls', {
   },
 })
 
-setup('pyright')
-setup('ruff_lsp')
-setup('bashls')
+setup({
+  name = 'pyright',
+  cmd = { 'pyright-langserver', '--stdio' },
+  filetypes = { 'python' },
+  markers = {
+    'pyproject.toml',
+    'setup.py',
+    'setup.cfg',
+    'requirements.txt',
+    'Pipfile',
+    'pyrightconfig.json',
+    '.git',
+  },
+})
+
+-- setup('bashls')
 
 local function debounce(ms, fn)
   local timer = assert(vim.uv.new_timer())

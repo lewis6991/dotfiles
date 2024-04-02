@@ -171,8 +171,6 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  { 'neovim/nvim-lspconfig', config = 'lewis6991.lsp', requires = 'hrsh7th/cmp-nvim-lsp' },
-
   -- {'ray-x/lsp_signature.nvim', config = function()
   --   require'lsp_signature'.setup{ hi_parameter = "Visual" }
   -- end},
