@@ -165,7 +165,12 @@ setup({
   },
 })
 
--- setup('bashls')
+setup({
+  name = 'bashls',
+  cmd = { 'bash-language-server', 'start' },
+  filetypes = { 'sh' },
+  markers = { '.git' }
+})
 
 local function debounce(ms, fn)
   local timer = assert(vim.uv.new_timer())
