@@ -72,7 +72,6 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  'tpope/vim-commentary',
   'tpope/vim-unimpaired',
   'tpope/vim-repeat',
   'tpope/vim-eunuch',
