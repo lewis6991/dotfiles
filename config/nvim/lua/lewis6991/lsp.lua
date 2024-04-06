@@ -19,9 +19,14 @@ local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 --- @field filetypes string[]
 --- @field cmd string[]
 --- @field markers string[]
+--- @field disable? boolean
+--- @field on_setup? fun(capabilities: lsp.ClientCapabilities)
 
 --- @param config LspClientConfig
 local function setup(config)
+  if config.disable then
+    return
+  end
   api.nvim_create_autocmd('FileType', {
     pattern = config.filetypes,
     group = lsp_group,
@@ -29,10 +34,13 @@ local function setup(config)
       if vim.bo[args.buf].buftype == 'nofile' then
         return
       end
+
       local capabilities = lsp.protocol.make_client_capabilities()
-      if config.name == 'pyright' and vim.uv.os_uname().sysname == 'Linux' then
-        capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+
+      if config.on_setup then
+        config.on_setup(capabilities)
       end
+
       config.capabilities =
         vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
@@ -163,6 +171,11 @@ setup({
     'pyrightconfig.json',
     '.git',
   },
+  on_setup = function(capabilities)
+    if vim.uv.os_uname().sysname == 'Linux' then
+      capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+    end
+  end
 })
 
 setup({
