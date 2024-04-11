@@ -70,9 +70,17 @@ local function default_lua_settings()
   }
 end
 
+local function client_complete()
+  --- @param c vim.lsp.Client
+  --- @return string
+  return vim.tbl_map(function(c)
+    return c.name
+  end, get_clients())
+end
+
 api.nvim_create_user_command('LspRestart', function(kwargs)
   local bufnr = vim.api.nvim_get_current_buf()
-  local name = kwargs.fargs[1]
+  local name = kwargs.fargs[1] --- @type string
   for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
     local bufs = vim.deepcopy(client.attached_buffers)
     client.stop()
@@ -88,26 +96,18 @@ api.nvim_create_user_command('LspRestart', function(kwargs)
   end
 end, {
   nargs = '*',
-  complete = function()
-    return vim.tbl_map(function(c)
-      return c.name
-    end, get_clients())
-  end,
+  complete = client_complete,
 })
 
 api.nvim_create_user_command('LspStop', function(kwargs)
   local bufnr = vim.api.nvim_get_current_buf()
-  local name = kwargs.fargs[1]
+  local name = kwargs.fargs[1] --- @type string
   for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
     client.stop()
   end
 end, {
   nargs = '*',
-  complete = function()
-    return vim.tbl_map(function(c)
-      return c.name
-    end, get_clients())
-  end,
+  complete = client_complete,
 })
 
 setup({
@@ -209,9 +209,11 @@ api.nvim_create_autocmd('LspAttach', {
     if client.supports_method('textDocument/codeLens') then
       api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
         buffer = args.buf,
-        callback = lsp.codelens.refresh,
+        callback = function()
+          lsp.codelens.refresh({bufnr = args.buf})
+        end
       })
-      lsp.codelens.refresh()
+      lsp.codelens.refresh({bufnr = args.buf})
     end
 
     if client.supports_method('textDocument/documentHighlight') then
@@ -229,10 +231,3 @@ api.nvim_create_autocmd('LspAttach', {
     end
   end,
 })
-
--- api.nvim_create_autocmd('LspAttach', {
---   callback = function(args)
---     local client = lsp.get_client_by_id(args.data.client_id)
---     client.server_capabilities.semanticTokensProvider = nil
---   end
--- })
