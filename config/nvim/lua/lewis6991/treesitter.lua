@@ -22,6 +22,7 @@ api.nvim_create_autocmd('FileType', {
       return
     end
 
+    vim.api.nvim_exec_autocmds('User', {pattern = 'ts_attach'})
     enable_foldexpr(args.buf)
   end,
 })
@@ -35,4 +36,5 @@ vim.keymap.set('n', '<leader>ts', function()
 end)
 
 vim.treesitter.language.register('bash', 'zsh')
+vim.treesitter.language.register('verilog', 'systemverilog')
 -- vim.g.__ts_debug = 1
