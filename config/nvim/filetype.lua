@@ -2,6 +2,9 @@ vim.filetype.add({
   extension = {
     tmk = 'tcl',
     conf = 'toml',
+    v = 'verilog',
+    h = 'c',
+    cpp = 'cpp',
   },
   filename = {
     ['gerrit_hooks'] = 'toml',
