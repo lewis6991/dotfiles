@@ -78,7 +78,7 @@ export MANPAGER='nvim +Man!'
 # fpath=($HOME/zsh_completions $fpath)
 # autoload -U +X bashcompinit && bashcompinit
 
-setopt NO_BEEP
+# setopt NO_BEEP
 
 # Stop ctrl-d from closing the shell
 setopt IGNORE_EOF
@@ -100,7 +100,11 @@ fi
 
 rg() {
     if [[ -t 1 ]]; then
-        command rg --pretty --smart-case "$@" | less
+        if have_cmd delta; then
+            command rg --json --smart-case "$@" | delta
+        else
+            command rg --pretty --smart-case "$@" | less
+        fi
     else
         command rg "$@"
     fi
