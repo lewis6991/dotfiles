@@ -18,7 +18,7 @@ local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 --- @field name string
 --- @field filetypes string[]
 --- @field cmd string[]
---- @field markers string[]
+--- @field markers? string[]
 --- @field disable? boolean
 --- @field on_setup? fun(capabilities: lsp.ClientCapabilities)
 
@@ -43,6 +43,9 @@ local function setup(config)
 
       config.capabilities =
         vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+
+      config.markers = config.markers or {}
+      table.insert(config.markers, '.git')
 
       local f = vim.fn.fnamemodify(args.file, ':p')
       config.root_dir = find_root(config.markers, f)
@@ -113,11 +116,7 @@ end, {
 setup({
   name = 'clangd',
   cmd = { 'clangd', '--clang-tidy' },
-  markers = {
-    '.clangd',
-    'compile_commands.json',
-    '.git',
-  },
+  markers = { '.clangd', 'compile_commands.json' },
   filetypes = { 'c', 'cpp' },
 })
 
@@ -133,7 +132,6 @@ setup({
     'stylua.toml',
     'selene.toml',
     'selene.yml',
-    '.git',
   },
   on_init = function(client)
     if client.workspace_folders then
@@ -169,7 +167,6 @@ setup({
     'requirements.txt',
     'Pipfile',
     'pyrightconfig.json',
-    '.git',
   },
   on_setup = function(capabilities)
     if vim.uv.os_uname().sysname == 'Linux' then
@@ -181,8 +178,15 @@ setup({
 setup({
   name = 'bashls',
   cmd = { 'bash-language-server', 'start' },
-  filetypes = { 'sh' },
-  markers = { '.git' }
+  filetypes = { 'sh' }
+})
+
+-- install with:
+--   npm install -g vscode-langservers-extracted
+setup({
+  name = 'jsonls',
+  cmd = { 'vscode-json-language-server', '--stdio' },
+  filetypes = { 'json', 'jsonc' }
 })
 
 local function debounce(ms, fn)
