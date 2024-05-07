@@ -22,7 +22,7 @@ local orig_signs_handler = handlers.signs
 handlers.signs = {
   show = function(ns, bufnr, diagnostics, opts)
     -- Find the "worst" diagnostic per line
-    local max_severity_per_line = {}
+    local max_severity_per_line = {} --- @type table<integer,vim.Diagnostic>
     for _, d in pairs(diagnostics) do
       local m = max_severity_per_line[d.lnum]
       if not m or d.severity < m.severity then
