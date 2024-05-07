@@ -26,6 +26,10 @@ local function setup(config)
 
       local capabilities = lsp.protocol.make_client_capabilities()
 
+      if vim.uv.os_uname().sysname == 'Linux' then
+        capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+      end
+
       if config.on_setup then
         config.on_setup(capabilities)
       end
@@ -156,11 +160,6 @@ setup({
     'Pipfile',
     'pyrightconfig.json',
   },
-  on_setup = function(capabilities)
-    if vim.uv.os_uname().sysname == 'Linux' then
-      capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
-    end
-  end
 })
 
 setup({
