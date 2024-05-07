@@ -1,17 +1,6 @@
 local api, lsp = vim.api, vim.lsp
 local get_clients = vim.lsp.get_clients
 
-local function find_root(markers, path)
-  local match = vim.fs.find(markers, { path = path, upward = true })[1]
-  if match then
-    local stat = vim.uv.fs_stat(match)
-    if stat and stat.type == 'directory' then
-      return vim.fn.fnamemodify(match, ':p:h:h')
-    end
-    return vim.fn.fnamemodify(match, ':p:h')
-  end
-end
-
 local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 
 --- @class LspClientConfig : vim.lsp.ClientConfig
@@ -47,8 +36,7 @@ local function setup(config)
       config.markers = config.markers or {}
       table.insert(config.markers, '.git')
 
-      local f = vim.fn.fnamemodify(args.file, ':p')
-      config.root_dir = find_root(config.markers, f)
+      config.root_dir = vim.fs.root(args.file, config.markers)
       vim.lsp.start(config)
     end,
   })
