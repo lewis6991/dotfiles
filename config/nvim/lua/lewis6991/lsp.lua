@@ -36,7 +36,7 @@ local function setup(config)
       config.markers = config.markers or {}
       table.insert(config.markers, '.git')
 
-      config.root_dir = vim.fs.root(args.file, config.markers)
+      config.root_dir = vim.fs.root(args.buf, config.markers)
       vim.lsp.start(config)
     end,
   })
