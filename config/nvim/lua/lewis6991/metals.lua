@@ -1,6 +1,13 @@
 local function setup()
   local metals = require('metals')
 
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  if vim.uv.os_uname().sysname == 'Linux' then
+    capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
+  end
+
+  capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+
   metals.initialize_or_attach(vim.tbl_deep_extend('force', metals.bare_config(), {
     handlers = {
       ['metals/status'] = function(_, status, ctx)
@@ -22,7 +29,7 @@ local function setup()
       showImplicitArguments = true,
       enableSemanticHighlighting = true,
     },
-    capabilities = require('cmp_nvim_lsp').default_capabilities(),
+    capabilities = capabilities,
   }))
 end
 
