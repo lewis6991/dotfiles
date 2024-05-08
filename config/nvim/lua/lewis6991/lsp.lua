@@ -160,6 +160,10 @@ setup({
     'Pipfile',
     'pyrightconfig.json',
   },
+  settings = {
+    -- needed to make it work
+    python = {},
+  },
 })
 
 setup({
