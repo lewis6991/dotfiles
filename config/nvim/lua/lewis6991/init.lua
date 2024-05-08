@@ -193,6 +193,9 @@ if 'Mappings' then
   map('c', '<C-A>', '<Home>')
   map('c', '<C-D>', '<Del>')
 
+  map('n', ']d', vim.diagnostic.goto_next)
+  map('n', '[d', vim.diagnostic.goto_prev)
+
   autocmd('LspAttach', {
     desc = 'lsp mappings',
     callback = function(args)
