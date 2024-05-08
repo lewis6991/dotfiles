@@ -100,7 +100,7 @@ fi
 
 rg() {
     if [[ -t 1 ]]; then
-        if have_cmd delta; then
+        if ! hash delta 2>/dev/null; then
             command rg --json --smart-case "$@" | delta
         else
             command rg --pretty --smart-case "$@" | less
