@@ -148,22 +148,31 @@ setup({
   },
 })
 
+local python_markers = {
+  'pyproject.toml',
+  'setup.py',
+  'setup.cfg',
+  'requirements.txt',
+  'Pipfile',
+  'pyrightconfig.json',
+}
+
 setup({
   name = 'pyright',
   cmd = { 'pyright-langserver', '--stdio' },
   filetypes = { 'python' },
-  markers = {
-    'pyproject.toml',
-    'setup.py',
-    'setup.cfg',
-    'requirements.txt',
-    'Pipfile',
-    'pyrightconfig.json',
-  },
+  markers = python_markers,
   settings = {
     -- needed to make it work
     python = {},
   },
+})
+
+setup({
+  name = 'ruff',
+  cmd = { 'ruff-lsp' },
+  filetypes = { 'python' },
+  markers = python_markers,
 })
 
 setup({
@@ -193,10 +202,6 @@ local function debounce(ms, fn)
   end
 end
 
--- install with:
---   npm install -g vscode-langservers-extracted
--- setup('jsonls')
-
 api.nvim_create_autocmd('LspAttach', {
   callback = function(args)
     local client = assert(lsp.get_client_by_id(args.data.client_id))
@@ -210,6 +215,12 @@ api.nvim_create_autocmd('LspAttach', {
       })
       lsp.codelens.refresh({bufnr = args.buf})
     end
+  end,
+})
+
+api.nvim_create_autocmd('LspAttach', {
+  callback = function(args)
+    local client = assert(lsp.get_client_by_id(args.data.client_id))
 
     if client.supports_method('textDocument/documentHighlight') then
       api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved', 'CursorHold', 'CursorHoldI' }, {
