@@ -1,21 +1,21 @@
 local api, lsp = vim.api, vim.lsp
-local get_clients = vim.lsp.get_clients
 
 local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 
 --- @class LspClientConfig : vim.lsp.ClientConfig
---- @field name string
 --- @field filetypes string[]
 --- @field cmd string[]
 --- @field markers? string[]
 --- @field disable? boolean
 --- @field on_setup? fun(capabilities: lsp.ClientCapabilities)
 
+--- @param name string
 --- @param config LspClientConfig
-local function setup(config)
+local function add(name, config)
   if config.disable then
     return
   end
+  config.name = name
   api.nvim_create_autocmd('FileType', {
     pattern = config.filetypes,
     group = lsp_group,
@@ -65,66 +65,13 @@ local function default_lua_settings()
   }
 end
 
-local function client_complete()
-  --- @param c vim.lsp.Client
-  --- @return string
-  return vim.tbl_map(function(c)
-    return c.name
-  end, get_clients())
-end
-
-api.nvim_create_user_command('LspRestart', function(kwargs)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local name = kwargs.fargs[1] --- @type string
-  for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
-    local bufs = vim.deepcopy(client.attached_buffers)
-    client.stop()
-    vim.wait(30000, function()
-      return lsp.get_client_by_id(client.id) == nil
-    end)
-    local client_id = lsp.start_client(client.config)
-    if client_id then
-      for buf in pairs(bufs) do
-        lsp.buf_attach_client(buf, client_id)
-      end
-    end
-  end
-end, {
-  nargs = '*',
-  complete = client_complete,
-})
-
-api.nvim_create_user_command('LspStop', function(kwargs)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local name = kwargs.fargs[1] --- @type string
-  for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
-    client.stop()
-  end
-end, {
-  nargs = '*',
-  complete = client_complete,
-})
-
-do
-  local path = vim.lsp.get_log_path()
-  vim.fn.delete(path)
-  vim.lsp.log.set_level(vim.lsp.log.levels.DEBUG)
-  vim.lsp.log.set_format_func(vim.inspect)
-
-  api.nvim_create_user_command('LspLog', function()
-    vim.cmd.split(path)
-  end, {})
-end
-
-setup({
-  name = 'clangd',
+add('clangd', {
   cmd = { 'clangd', '--clang-tidy' },
   markers = { '.clangd', 'compile_commands.json' },
   filetypes = { 'c', 'cpp' },
 })
 
-setup({
-  name = 'lua_ls',
+add('lua_ls', {
   cmd = { 'lua-language-server' },
   filetypes = { 'lua' },
   markers = {
@@ -168,8 +115,7 @@ local python_markers = {
   'pyrightconfig.json',
 }
 
-setup({
-  name = 'pyright',
+add('pyright', {
   cmd = { 'pyright-langserver', '--stdio' },
   filetypes = { 'python' },
   markers = python_markers,
@@ -179,23 +125,20 @@ setup({
   },
 })
 
-setup({
-  name = 'ruff',
+add('ruff', {
   cmd = { 'ruff-lsp' },
   filetypes = { 'python' },
   markers = python_markers,
 })
 
-setup({
-  name = 'bashls',
+add('bashls', {
   cmd = { 'bash-language-server', 'start' },
   filetypes = { 'sh' }
 })
 
 -- install with:
 --   npm install -g vscode-langservers-extracted
-setup({
-  name = 'jsonls',
+add('jsonls', {
   cmd = { 'vscode-json-language-server', '--stdio' },
   filetypes = { 'json', 'jsonc' }
 })
@@ -223,30 +166,37 @@ local function lsp_attach(fn)
   })
 end
 
+-- 'textDocument/codeLens'
 lsp_attach(function(bufnr, client)
-  if client.supports_method('textDocument/codeLens') then
-    api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
-      buffer = bufnr,
-      callback = function()
-        lsp.codelens.refresh({bufnr = bufnr})
-      end
-    })
-    lsp.codelens.refresh({bufnr = bufnr})
+  if not client.supports_method('textDocument/codeLens') then
+    return
   end
+
+  api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
+    buffer = bufnr,
+    callback = function()
+      lsp.codelens.refresh({bufnr = bufnr})
+    end
+  })
+  lsp.codelens.refresh({bufnr = bufnr})
 end)
 
+-- 'textDocument/documentHighlight'
 lsp_attach(function(bufnr, client)
-  if client.supports_method('textDocument/documentHighlight') then
-    api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved', 'CursorHold', 'CursorHoldI' }, {
-      buffer = bufnr,
-      callback = debounce(200, function()
-        lsp.buf.clear_references()
-        lsp.buf.document_highlight()
-      end)
-    })
-    api.nvim_create_autocmd({ 'FocusLost', 'WinLeave', 'BufLeave' }, {
-      buffer = bufnr,
-      callback = lsp.buf.clear_references
-    })
+  if not client.supports_method('textDocument/documentHighlight') then
+    return
   end
+
+  api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved', 'CursorHold', 'CursorHoldI' }, {
+    buffer = bufnr,
+    callback = debounce(200, function()
+      lsp.buf.clear_references()
+      lsp.buf.document_highlight()
+    end)
+  })
+
+  api.nvim_create_autocmd({ 'FocusLost', 'WinLeave', 'BufLeave' }, {
+    buffer = bufnr,
+    callback = lsp.buf.clear_references
+  })
 end)
