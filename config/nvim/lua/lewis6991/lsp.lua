@@ -105,6 +105,17 @@ end, {
   complete = client_complete,
 })
 
+do
+  local path = vim.lsp.get_log_path()
+  vim.fn.delete(path)
+  vim.lsp.log.set_level(vim.lsp.log.levels.DEBUG)
+  vim.lsp.log.set_format_func(vim.inspect)
+
+  api.nvim_create_user_command('LspLog', function()
+    vim.cmd.split(path)
+  end, {})
+end
+
 setup({
   name = 'clangd',
   cmd = { 'clangd', '--clang-tidy' },
@@ -202,38 +213,40 @@ local function debounce(ms, fn)
   end
 end
 
-api.nvim_create_autocmd('LspAttach', {
-  callback = function(args)
-    local client = assert(lsp.get_client_by_id(args.data.client_id))
-
-    if client.supports_method('textDocument/codeLens') then
-      api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
-        buffer = args.buf,
-        callback = function()
-          lsp.codelens.refresh({bufnr = args.buf})
-        end
-      })
-      lsp.codelens.refresh({bufnr = args.buf})
+--- @param fn fun(bufnr: integer, client: vim.lsp.Client)
+local function lsp_attach(fn)
+  api.nvim_create_autocmd('LspAttach', {
+    callback = function(args)
+      local client = assert(lsp.get_client_by_id(args.data.client_id))
+      fn(args.buf, client)
     end
-  end,
-})
+  })
+end
 
-api.nvim_create_autocmd('LspAttach', {
-  callback = function(args)
-    local client = assert(lsp.get_client_by_id(args.data.client_id))
+lsp_attach(function(bufnr, client)
+  if client.supports_method('textDocument/codeLens') then
+    api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
+      buffer = bufnr,
+      callback = function()
+        lsp.codelens.refresh({bufnr = bufnr})
+      end
+    })
+    lsp.codelens.refresh({bufnr = bufnr})
+  end
+end)
 
-    if client.supports_method('textDocument/documentHighlight') then
-      api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved', 'CursorHold', 'CursorHoldI' }, {
-        buffer = args.buf,
-        callback = debounce(200, function()
-          lsp.buf.clear_references()
-          lsp.buf.document_highlight()
-        end)
-      })
-      api.nvim_create_autocmd({ 'FocusLost', 'WinLeave', 'BufLeave' }, {
-        buffer = args.buf,
-        callback = lsp.buf.clear_references
-      })
-    end
-  end,
-})
+lsp_attach(function(bufnr, client)
+  if client.supports_method('textDocument/documentHighlight') then
+    api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved', 'CursorHold', 'CursorHoldI' }, {
+      buffer = bufnr,
+      callback = debounce(200, function()
+        lsp.buf.clear_references()
+        lsp.buf.document_highlight()
+      end)
+    })
+    api.nvim_create_autocmd({ 'FocusLost', 'WinLeave', 'BufLeave' }, {
+      buffer = bufnr,
+      callback = lsp.buf.clear_references
+    })
+  end
+end)
