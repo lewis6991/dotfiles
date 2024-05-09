@@ -4,3 +4,5 @@ font-thicken = true
 font-size = 12
 macos-option-as-alt = true
 macos-titlebar-tabs = true
+unfocused-split-opacity = 1
+mouse-hide-while-typing = true
