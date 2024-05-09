@@ -1,0 +1,6 @@
+font-family = "Monaco"
+font-family-bold = "Monego"
+font-thicken = true
+font-size = 12
+macos-option-as-alt = true
+macos-titlebar-tabs = true
