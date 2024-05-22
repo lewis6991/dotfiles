@@ -3,7 +3,6 @@ require('nvim-treesitter').setup({
     'bash',
     'c',
     'gitcommit',
-    'vimdoc',
     'html',
     'json',
     'lua',
