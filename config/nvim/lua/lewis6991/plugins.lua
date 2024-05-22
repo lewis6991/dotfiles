@@ -78,7 +78,6 @@ require('lewis6991.package_manager').setup({
   'nvim-tree/nvim-web-devicons',
 
   'wellle/targets.vim',
-  'michaeljsmith/vim-indent-object',
   { 'sindrets/diffview.nvim', requires = { 'nvim-lua/plenary.nvim' } },
   'folke/trouble.nvim',
   'dstein64/vim-startuptime',
