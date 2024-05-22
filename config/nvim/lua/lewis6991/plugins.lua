@@ -199,12 +199,7 @@ require('lewis6991.package_manager').setup({
   { 'f3fora/cmp-spell', requires = 'hrsh7th/nvim-cmp' },
   { 'andersevenrud/cmp-tmux', requires = 'hrsh7th/nvim-cmp' },
 
-  { 'dcampos/cmp-snippy', requires = {
-    'hrsh7th/nvim-cmp',
-    'dcampos/nvim-snippy',
-  } },
-
-  { 'hrsh7th/nvim-cmp', requires = 'dcampos/nvim-snippy', config = 'lewis6991.cmp' },
+  { 'hrsh7th/nvim-cmp', config = 'lewis6991.cmp' },
 
   {
     'stevearc/dressing.nvim',

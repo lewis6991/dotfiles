@@ -1,7 +1,6 @@
 local source_names = {
   buffer = { 'Buf', 'String' },
   nvim_lsp = { '', 'Question' },
-  luasnip = { 'Snip', 'CmpItemMenu' },
   -- nvim_lua   = {'Lua'  , 'ErrorMsg'},
   -- nvim_lua   = {'  '  , 'ErrorMsg'},
   nvim_lua = { 'Lua', 'ErrorMsg' },
@@ -56,29 +55,8 @@ local function min_length(min)
   end
 end
 
-local did_snippy = false
-
 local cmp = require('cmp')
 cmp.setup({
-  snippet = {
-    expand = function(args)
-      if not did_snippy then
-        require('snippy').setup({
-          mappings = {
-            is = {
-              ['<Tab>'] = 'expand_or_advance',
-              ['<S-Tab>'] = 'previous',
-            },
-            nx = {
-              ['<leader>x'] = 'cut_text',
-            },
-          },
-        })
-        did_snippy = true
-      end
-      require('snippy').expand_snippet(args.body) -- For `snippy` users.
-    end,
-  },
   formatting = {
     fields = { 'kind', 'abbr', 'menu' },
     format = function(entry, vim_item)
