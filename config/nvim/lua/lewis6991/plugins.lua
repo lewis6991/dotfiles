@@ -5,8 +5,7 @@ require('lewis6991.package_manager').setup({
   'lewis6991/vc.nvim',
   'lewis6991/tree-sitter-tcl',
 
-  {
-    'lewis6991/github_dark.nvim',
+  { 'lewis6991/github_dark.nvim',
     config = function()
       vim.cmd.color('github_dark')
     end,
@@ -18,8 +17,7 @@ require('lewis6991.package_manager').setup({
   'lewis6991/fileline.nvim',
   'lewis6991/satellite.nvim',
 
-  {
-    'lewis6991/whatthejump.nvim',
+  { 'lewis6991/whatthejump.nvim',
     config = function()
       -- <Tab> == <C-i> in tmux so need other mappings for navigating the jump list
       vim.keymap.set('n', '<M-k>', function()
@@ -34,8 +32,7 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  {
-    'lewis6991/hover.nvim',
+  { 'lewis6991/hover.nvim',
     config = function()
       require('hover').setup({
         init = function()
@@ -63,8 +60,7 @@ require('lewis6991.package_manager').setup({
 
   'lewis6991/nvim-colorizer.lua',
 
-  {
-    'lewis6991/tmux.nvim',
+  { 'lewis6991/tmux.nvim',
     config = function()
       require('tmux').setup({
         navigation = { enable_default_keybindings = true },
@@ -87,8 +83,7 @@ require('lewis6991.package_manager').setup({
   'folke/trouble.nvim',
   'dstein64/vim-startuptime',
 
-  {
-    'AndrewRadev/bufferize.vim',
+  { 'AndrewRadev/bufferize.vim',
     config = function()
       vim.g.bufferize_command = 'enew'
       vim.api.nvim_create_autocmd('FileType', {
@@ -98,12 +93,7 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  -- { "vigoux/notifier.nvim", config = function()
-  --   require'notifier'.setup()
-  -- end },
-
-  {
-    'rcarriga/nvim-notify',
+  { 'rcarriga/nvim-notify',
     config = function()
       --- @diagnostic disable-next-line
       vim.notify = function(...)
@@ -113,26 +103,9 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  {
-    'j-hui/fidget.nvim',
-    tag = 'legacy',
+  { 'j-hui/fidget.nvim',
     config = function()
-      require('fidget').setup({
-        text = {
-          spinner = 'dots',
-        },
-        fmt = {
-          stack_upwards = false,
-          task = function(task_name, message, percentage)
-            local pct = percentage and string.format(' (%s%%)', percentage) or ''
-            if task_name then
-              return string.format('%s%s [%s]', message, pct, task_name)
-            else
-              return string.format('%s%s', message, pct)
-            end
-          end,
-        },
-      })
+      require('fidget').setup()
     end,
   },
 
@@ -176,8 +149,7 @@ require('lewis6991.package_manager').setup({
 
   'inkarkat/vim-visualrepeat',
 
-  {
-    'scalameta/nvim-metals',
+  { 'scalameta/nvim-metals',
     config = 'lewis6991.metals',
     requires = {
       'hrsh7th/cmp-nvim-lsp',
@@ -201,8 +173,7 @@ require('lewis6991.package_manager').setup({
 
   { 'hrsh7th/nvim-cmp', config = 'lewis6991.cmp' },
 
-  {
-    'stevearc/dressing.nvim',
+  { 'stevearc/dressing.nvim',
     config = function()
       require('dressing').setup({
         input = {
@@ -217,8 +188,7 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  {
-    'nvim-lua/telescope.nvim',
+  { 'nvim-lua/telescope.nvim',
     requires = {
       { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       'nvim-lua/plenary.nvim',
@@ -226,15 +196,13 @@ require('lewis6991.package_manager').setup({
     config = 'lewis6991.telescope',
   },
 
-  {
-    'neovim/nvimdev.nvim',
+  { 'neovim/nvimdev.nvim',
     config = function()
       vim.g.nvimdev_auto_init = 0
     end,
   },
 
-  {
-    'nvim-treesitter/nvim-treesitter',
+  { 'nvim-treesitter/nvim-treesitter',
     branch = 'main',
     run = ':TSUpdate',
     config = function()
@@ -242,8 +210,7 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  {
-    'nvim-treesitter/nvim-treesitter-context',
+  { 'nvim-treesitter/nvim-treesitter-context',
     requires = 'nvim-treesitter/nvim-treesitter',
     config = function()
       require('treesitter-context').setup({
@@ -252,4 +219,5 @@ require('lewis6991.package_manager').setup({
       })
     end,
   },
+
 })
