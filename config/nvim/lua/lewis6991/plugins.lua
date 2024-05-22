@@ -109,8 +109,7 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  {
-    'neapel/vim-bnfc-syntax',
+  { 'neapel/vim-bnfc-syntax',
     config = function()
       -- Argh, why don't syntax plugins ever set commentstring!
       vim.cmd([[autocmd FileType bnfc setlocal commentstring=--%s]])
@@ -119,8 +118,7 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  {
-    'junegunn/vim-easy-align',
+  { 'junegunn/vim-easy-align',
     config = function()
       vim.keymap.set({ 'x', 'n' }, 'ga', '<Plug>(EasyAlign)')
       vim.g.easy_align_delimiters = {
@@ -143,9 +141,9 @@ require('lewis6991.package_manager').setup({
     end,
   },
 
-  -- {'ray-x/lsp_signature.nvim', config = function()
-  --   require'lsp_signature'.setup{ hi_parameter = "Visual" }
-  -- end},
+  {'ray-x/lsp_signature.nvim', config = function()
+    require'lsp_signature'.setup{ hi_parameter = "Visual" }
+  end},
 
   'inkarkat/vim-visualrepeat',
 
