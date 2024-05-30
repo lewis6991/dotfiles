@@ -7,7 +7,6 @@ local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 --- @field cmd string[]
 --- @field markers? string[]
 --- @field disable? boolean
---- @field on_setup? fun(capabilities: lsp.ClientCapabilities)
 
 --- @param name string
 --- @param config LspClientConfig
@@ -24,18 +23,10 @@ local function add(name, config)
         return
       end
 
-      local capabilities = lsp.protocol.make_client_capabilities()
-
-      if vim.uv.os_uname().sysname == 'Linux' then
-        capabilities.workspace.didChangeWatchedFiles.dynamicRegistration = false
-      end
-
-      if config.on_setup then
-        config.on_setup(capabilities)
-      end
+      config.capabilities = lsp.protocol.make_client_capabilities()
 
       config.capabilities =
-        vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+        vim.tbl_deep_extend('force', config.capabilities, require('cmp_nvim_lsp').default_capabilities())
 
       config.markers = config.markers or {}
       table.insert(config.markers, '.git')
