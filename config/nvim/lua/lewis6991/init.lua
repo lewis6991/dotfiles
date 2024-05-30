@@ -142,8 +142,6 @@ end
 
 if 'Mappings' then
   map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>')
-
-  map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>')
   map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>')
   map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>')
   map('n', '<leader>s', ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>')
@@ -194,9 +192,6 @@ if 'Mappings' then
   map('c', '<C-A>', '<Home>')
   map('c', '<C-D>', '<Del>')
 
-  map('n', ']d', vim.diagnostic.goto_next)
-  map('n', '[d', vim.diagnostic.goto_prev)
-
   autocmd('LspAttach', {
     desc = 'lsp mappings',
     callback = function(args)
@@ -209,7 +204,7 @@ if 'Mappings' then
       )
 
       map('n', '<M-i>', function()
-        lsp.inlay_hint.enable(bufnr, not lsp.inlay_hint.is_enabled(0))
+        lsp.inlay_hint.enable(not lsp.inlay_hint.is_enabled({bufnr = bufnr}), {bufnr = bufnr})
       end, { desc = 'lsp.buf.inlay_hint', buffer = bufnr })
 
       map('n', '<leader>cl', lsp.codelens.run, { desc = 'lsp.codelens.run', buffer = bufnr })

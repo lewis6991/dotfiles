@@ -10,6 +10,9 @@ vim.diagnostic.config({
       [vim.diagnostic.severity.HINT] = '○',
     },
   },
+  jump = {
+    float = true
+  }
 })
 
 vim.api.nvim_set_hl(0, 'LspCodeLens', { link = 'WarningMsg' })
