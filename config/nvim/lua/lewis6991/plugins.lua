@@ -79,7 +79,9 @@ require('lewis6991.package_manager').setup({
 
   'wellle/targets.vim',
   { 'sindrets/diffview.nvim', requires = { 'nvim-lua/plenary.nvim' } },
-  'folke/trouble.nvim',
+  {'folke/trouble.nvim', config = function()
+    require('trouble').setup()
+  end},
   'dstein64/vim-startuptime',
 
   { 'AndrewRadev/bufferize.vim',
