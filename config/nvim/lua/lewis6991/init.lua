@@ -254,6 +254,9 @@ autocmd('VimResized', {
 local ns = api.nvim_create_namespace('overlength')
 api.nvim_set_decoration_provider(ns, {
   on_line = function(_, _winid, bufnr, row)
+    if vim.bo[bufnr].buftype == 'nofile' then
+      return
+    end
     local line = api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
     local tw = vim.bo[bufnr].textwidth
     if line and #line > tw then
