@@ -112,6 +112,7 @@ gitsigns.setup({
     '⒚',
     '⒛',
   },
+  sign_priority = 100,
   attach_to_untracked = true,
   update_debounce = 50,
   _signs_staged_enable = true,
