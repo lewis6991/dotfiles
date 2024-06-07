@@ -1,35 +1,38 @@
 local env = vim.env
 
-local jenkins_lint = {
-  cmd = 'java',
-  args = {
-    '-jar', env.JENKINS_CLI,
-    '-s', env.JENKINS_URL,
-    '-noCertificateCheck',
-    '-auth', env.JENKINS_USER .. ':' .. env.JENKINS_AUTH_TOKEN,
-    'declarative-linter'
-  },
-  stdin = true,
-  ignore_exitcode = true,
-  parser = function(output)
-    local diags = {} --- @type vim.Diagnostic[]
-    for _, line in ipairs(vim.split(output, '\n')) do
-      local ok, _, msg, lnum, col =
-        line:find('^WorkflowScript: %d+: (.+) @ line (%d+), column (%d+).')
-      if ok then
-        diags[#diags + 1] = {
-          lnum = tonumber(lnum - 1) --[[@as integer]],
-          col = col - 1,
-          message = msg,
-          severity = 1,
-          source = 'Jenkins',
-        }
+local jenkins_lint --- @type table<string,any>
+if env.JENKINS_CLI and env.JENKINS_URL and env.JENKINS_USER and env.JENKINS_AUTH_TOKEN then
+  jenkins_lint = {
+    cmd = 'java',
+    args = {
+      '-jar', env.JENKINS_CLI,
+      '-s', env.JENKINS_URL,
+      '-noCertificateCheck',
+      '-auth', env.JENKINS_USER .. ':' .. env.JENKINS_AUTH_TOKEN,
+      'declarative-linter'
+    },
+    stdin = true,
+    ignore_exitcode = true,
+    parser = function(output)
+      local diags = {} --- @type vim.Diagnostic[]
+      for _, line in ipairs(vim.split(output, '\n')) do
+        local ok, _, msg, lnum, col =
+          line:find('^WorkflowScript: %d+: (.+) @ line (%d+), column (%d+).')
+        if ok then
+          diags[#diags + 1] = {
+            lnum = tonumber(lnum - 1) --[[@as integer]],
+            col = col - 1,
+            message = msg,
+            severity = 1,
+            source = 'Jenkins',
+          }
+        end
       end
-    end
 
-    return diags
-  end,
-}
+      return diags
+    end,
+  }
+end
 
 local tcl_lint = {
   cmd = 'make',
