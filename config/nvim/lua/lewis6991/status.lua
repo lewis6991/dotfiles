@@ -290,19 +290,19 @@ api.nvim_create_autocmd('ColorScheme', {
 
 hldefs()
 
+local redrawstatus = vim.schedule_wrap(function()
+  api.nvim__redraw({ statusline = true })
+end)
+
 api.nvim_create_autocmd('User', {
   pattern = 'GitSignsUpdate',
   group = group,
-  callback = vim.schedule_wrap(function()
-    vim.cmd.redrawstatus()
-  end),
+  callback = redrawstatus
 })
 
 api.nvim_create_autocmd('DiagnosticChanged', {
   group = group,
-  callback = function()
-    vim.cmd.redrawstatus()
-  end,
+  callback = redrawstatus
 })
 
 _G.statusline = M
