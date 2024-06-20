@@ -48,6 +48,10 @@ local function on_attach(bufnr)
     gitsigns.blame_line({full=true})
   end)
 
+  map('n', '<leader>hg', function()
+    gitsigns.blame()
+  end)
+
   map('n', '<leader>hi', gitsigns.preview_hunk_inline)
   map('n', '<leader>hd', gitsigns.diffthis)
   map('n', '<leader>hD', ':Gitsigns diffthis ~')
@@ -84,9 +88,6 @@ gitsigns.setup({
     border = 'rounded',
   },
   current_line_blame = true,
-  current_line_blame_formatter_opts = {
-    relative_time = true,
-  },
   current_line_blame_opts = {
     delay = 50,
   },
@@ -115,7 +116,6 @@ gitsigns.setup({
   sign_priority = 100,
   attach_to_untracked = true,
   update_debounce = 50,
-  _signs_staged_enable = true,
   word_diff = true,
   trouble = true,
 })
