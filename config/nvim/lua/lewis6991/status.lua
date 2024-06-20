@@ -290,7 +290,10 @@ api.nvim_create_autocmd('ColorScheme', {
 
 hldefs()
 
-local redrawstatus = vim.schedule_wrap(vim.cmd.redrawstatus)
+local redrawstatus = vim.schedule_wrap(function()
+  vim.cmd.redrawstatus()
+  -- api.nvim__redraw({ statusline = true })
+end)
 
 api.nvim_create_autocmd('User', {
   pattern = 'GitSignsUpdate',
