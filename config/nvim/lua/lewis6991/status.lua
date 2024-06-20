@@ -185,10 +185,10 @@ function M.bufname()
   local buf_name = api.nvim_buf_get_name(0)
   if vim.startswith(buf_name, 'fugitive://') then
     local _, _, revision, relpath = buf_name:find([[^fugitive://.*/%.git.*/(%x-)/(.*)]])
-    return relpath .. '@' .. revision:sub(1, 7)
+    return relpath .. '@' .. revision:sub(1, 8)
   elseif vim.startswith(buf_name, 'gitsigns://') then
     local _, _, revision, relpath = buf_name:find([[^gitsigns://.*/%.git.*/(.*):(.*)]])
-    return relpath .. '@' .. revision:sub(1, 7)
+    return relpath .. '@' ..  (tonumber(revision, 16) and revision:sub(1, 8) or revision)
   end
 
   return api.nvim_eval_statusline('%f', {}).str
@@ -290,9 +290,7 @@ api.nvim_create_autocmd('ColorScheme', {
 
 hldefs()
 
-local redrawstatus = vim.schedule_wrap(function()
-  api.nvim__redraw({ statusline = true })
-end)
+local redrawstatus = vim.schedule_wrap(vim.cmd.redrawstatus)
 
 api.nvim_create_autocmd('User', {
   pattern = 'GitSignsUpdate',
