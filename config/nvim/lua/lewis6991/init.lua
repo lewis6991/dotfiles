@@ -215,8 +215,8 @@ if 'Mappings' then
       map('n', '<leader>ca', lsp.buf.code_action, { desc = 'lsp.buf.code_action', buffer = bufnr })
 
       -- keymap('n', 'gr' { lsp.buf.references }
-      map('n', 'gr', '<cmd>Trouble lsp toggle<cr>')
-      map('n', 'gd', '<cmd>Trouble diagnostics toggle<cr>')
+      map('n', 'gr', '<cmd>Trouble lsp_references<cr>')
+      map('n', 'gd', '<cmd>Trouble diagnostics<cr>')
       map('n', 'gi', lsp.buf.implementation, { desc = 'lsp.buf.implementation', buffer = bufnr })
     end,
   })
