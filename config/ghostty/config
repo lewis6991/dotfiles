@@ -856,7 +856,7 @@ shell-integration-features = cursor,no-sudo,title
 #
 # This option only applies to new windows when changed.
 # macos-titlebar-tabs = false
-macos-titlebar-tabs = true
+ macos-titlebar-style = tabs
 
 # If `true`, the *Option* key will be treated as *Alt*. This makes terminal
 # sequences expecting *Alt* to work properly, but will break Unicode input
