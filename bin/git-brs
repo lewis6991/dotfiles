@@ -4,32 +4,50 @@
 ARROW='\uf553'
 THIS='\uf111'
 
-prs=$(python3 <<< "
-import json
-import subprocess
-out = subprocess.run(
-    'gh pr list --json url,isDraft,headRefName,state --state all --limit 280 --author @me',
-    shell = True,
-    stdout = subprocess.PIPE,
-    stderr = subprocess.DEVNULL
-).stdout
-obj = out and json.loads(out) or []
-for e in obj:
-    ref, url, isdraft, state = e['headRefName'], e['url'], e['isDraft'], e['state']
-    isdraft = '[DRAFT]' if isdraft else ''
-    print(f'{ref} {url} {isdraft} {state}')
-")
+function get_prs() {
+    gh pr list \
+        --json headRefName,url,isDraft,state \
+        --template='{{range .}}{{.headRefName}} {{.url}} {{.isDraft}} {{.state}}{{"\n"}}{{end}}' \
+        --state all \
+        --limit 300 \
+        --author @me
+}
+
+prs=$(get_prs)
 
 function get_pr() {
-    # Extract PR information
-    prinfo=$(grep "^$branch " <<< "$prs")
+    local branch="$1"
+
+    local prinfo="$(grep "^$branch" <<< "$prs")"
+
     if [[ "$prinfo" == "" ]]; then
         return
     fi
-    local url="$(cut -d' ' -f2 <<< "$prinfo")"
-    local isdraft="$(cut -d' ' -f3 <<< "$prinfo")"
-    local state="$(cut -d' ' -f4 <<< "$prinfo")"
-    echo "\n      %(color:white)PR: %(color:cyan)$url%(color:white) $state $isdraft"
+
+    local url="$(cut -f2 -d' ' <<< "$prinfo")"
+    local isdraft="$(cut -f3 -d' ' <<< "$prinfo")"
+    local state="$(cut -f4 -d' ' <<< "$prinfo")"
+
+    local draft=""
+    [[ $isdraft == true ]] && draft="[DRAFT]"
+
+    local state_color=white
+    if [[ $state == MERGED ]]; then
+        state_color=green
+    elif [[ $state == OPEN ]]; then
+        state_color=blue
+    elif [[ $state == CLOSED ]]; then
+        state_color=red
+    fi
+
+    # Only list open PR's for master/main
+    if [[ $branch == master ]] || [[ $branch == main ]]; then
+        if [[ $state != OPEN ]]; then
+            return
+        fi
+    fi
+
+    echo "\n      %(color:$state_color)$state$draft: %(color:cyan)$url"
 }
 
 function process_branch() {
@@ -43,6 +61,18 @@ function process_branch() {
     local upstream_track="$(git branch --list "$branch" --format='%(upstream:track)')"
 
     local prline="$(get_pr $branch)"
+    local date="$(git log -1 --format=%cd --date=relative $branch)"
+
+    local track_short="$(git branch --list "$branch" --format='%(upstream:trackshort)')"
+
+    local track_color="cyan"
+    if [[ $track_short == "" ]]; then
+        track_color="red"
+    elif [[ $track_short == "<>" ]]; then
+        track_color="red"
+    elif [[ $track_short == "<" ]]; then
+        track_color="white"
+    fi
 
     echo -e "$(git branch \
         --color=always \
@@ -51,9 +81,8 @@ function process_branch() {
 %(color: bold green)%(if)%(HEAD)%(then)$THIS %(else)  %(end)\
 %(color:yellow)%(refname:short)%(color:reset) $ARROW \
 %(color:blue)%(upstream:short) \
-%(if:equals=<>)%(upstream:trackshort)%(then)%(color:red)%(else)%(color:cyan)%(end)\
-%(if:equals=<)%(upstream:trackshort)%(then)%(color:magenta)%(end)\
-%(upstream:track) \
+%(color:$track_color)$upstream_track \
+%(color:magenta)($date)\
 $prline" \
             "$branch")"
 
