@@ -20,36 +20,51 @@ for e in obj:
     print(f'{ref} {url} {isdraft} {state}')
 ")
 
-git for-each-ref --shell --format="%(refname:short)" refs/heads |
-    while read -r entry; do
-        branch=$(echo "$entry" | xargs)  # Unquote
-        upstream=$(git branch --list "$branch" --format='%(upstream:short)')
-        upstream_track=$(git branch --list "$branch" --format='%(upstream:track)')
+function get_pr() {
+    # Extract PR information
+    prinfo=$(grep "^$branch " <<< "$prs")
+    if [[ "$prinfo" == "" ]]; then
+        return
+    fi
+    local url="$(cut -d' ' -f2 <<< "$prinfo")"
+    local isdraft="$(cut -d' ' -f3 <<< "$prinfo")"
+    local state="$(cut -d' ' -f4 <<< "$prinfo")"
+    echo "\n      %(color:white)PR: %(color:cyan)$url%(color:white) $state $isdraft"
+}
 
-        prinfo=$(grep "^$branch " <<< "$prs")
-        url=""
-        isdraft=""
-        if [[ "$prinfo" != "" ]]; then
-            url="($(cut -d' ' -f2 <<< "$prinfo"))"
-            isdraft="$(cut -d' ' -f3 <<< "$prinfo")"
-            state="$(cut -d' ' -f4 <<< "$prinfo")"
-        fi
+function process_branch() {
+    # feat/foo
+    local branch="$1"
 
-        echo -e "$(git branch \
-            --color=always \
-            --list \
-            --format="\
+    # origin/feat/foo
+    local upstream="$(git branch --list "$branch" --format='%(upstream:short)')"
+
+    # [ahead 1, behind 20]
+    local upstream_track="$(git branch --list "$branch" --format='%(upstream:track)')"
+
+    local prline="$(get_pr $branch)"
+
+    echo -e "$(git branch \
+        --color=always \
+        --list \
+        --format="\
 %(color: bold green)%(if)%(HEAD)%(then)$THIS %(else)  %(end)\
 %(color:yellow)%(refname:short)%(color:reset) $ARROW \
 %(color:blue)%(upstream:short) \
 %(if:equals=<>)%(upstream:trackshort)%(then)%(color:red)%(else)%(color:cyan)%(end)\
 %(if:equals=<)%(upstream:trackshort)%(then)%(color:magenta)%(end)\
 %(upstream:track) \
-%(color:cyan)$url \
-%(color:white)$state $isdraft" \
+$prline" \
             "$branch")"
 
-        if [[ "$upstream" != "" ]] && [[ "$upstream_track" != "[gone]" ]]; then
-            git --no-pager log --format="      %s" "$upstream..$branch"
-        fi
+    # Show commits
+    if [[ "$upstream" != "" ]] && [[ "$upstream_track" != "[gone]" ]]; then
+        git --no-pager log --format="      %s" "$upstream..$branch"
+    fi
+}
+
+git for-each-ref --shell --format="%(refname:short)" refs/heads |
+    while read -r entry; do
+        branch=$(echo "$entry" | xargs)  # Unquote
+        process_branch $branch
     done
