@@ -10,7 +10,7 @@ function get_prs() {
         --template='{{range .}}{{.headRefName}} {{.url}} {{.isDraft}} {{.state}}{{"\n"}}{{end}}' \
         --state all \
         --limit 300 \
-        --author @me
+        --author @me 2>/dev/null
 }
 
 prs=$(get_prs)
