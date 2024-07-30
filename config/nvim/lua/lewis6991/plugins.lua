@@ -170,7 +170,21 @@ require('lewis6991.package_manager').setup({
   { 'f3fora/cmp-spell', requires = 'hrsh7th/nvim-cmp' },
   { 'andersevenrud/cmp-tmux', requires = 'hrsh7th/nvim-cmp' },
 
-  { 'hrsh7th/nvim-cmp', config = 'lewis6991.cmp' },
+  { 'zbirenbaum/copilot-cmp',
+    requires = 'zbirenbaum/copilot.lua',
+    config = function ()
+      require('copilot').setup({
+        -- suggestion = { enabled = false },
+        -- panel = { enabled = false },
+      })
+      require('copilot_cmp').setup()
+    end,
+  },
+
+  { 'hrsh7th/nvim-cmp',
+    requires = 'zbirenbaum/copilot-cmp',
+    config = 'lewis6991.cmp',
+  },
 
   { 'stevearc/dressing.nvim',
     config = function()
