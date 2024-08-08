@@ -282,7 +282,6 @@ font-thicken = true
 # the mouse is used. The mouse is only hidden if the mouse cursor is over the
 # active terminal surface.
 # mouse-hide-while-typing = false
-mouse-hide-while-typing = true
 
 # Determines whether running programs can detect the shift key pressed with a
 # mouse click. Typically, the shift key is used to extend mouse selection.
@@ -856,7 +855,7 @@ shell-integration-features = cursor,no-sudo,title
 #
 # This option only applies to new windows when changed.
 # macos-titlebar-tabs = false
- macos-titlebar-style = tabs
+macos-titlebar-style = tabs
 
 # If `true`, the *Option* key will be treated as *Alt*. This makes terminal
 # sequences expecting *Alt* to work properly, but will break Unicode input

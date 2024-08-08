@@ -165,6 +165,11 @@ if 'Mappings' then
   map('n', '<leader>z', '<cmd>Inspect<cr>')
 
   map('n', '<C-C>', ':nohlsearch<CR>')
+  api.nvim_create_autocmd('InsertEnter', {
+    callback = vim.schedule_wrap(function()
+      vim.cmd.nohlsearch()
+    end)
+  })
 
   map('n', '<Tab>', function()
     if #api.nvim_list_tabpages() > 1 then
