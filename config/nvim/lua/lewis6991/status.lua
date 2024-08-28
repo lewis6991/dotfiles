@@ -185,10 +185,14 @@ function M.bufname()
   local buf_name = api.nvim_buf_get_name(0)
   if vim.startswith(buf_name, 'fugitive://') then
     local _, _, revision, relpath = buf_name:find([[^fugitive://.*/%.git.*/(%x-)/(.*)]])
-    return relpath .. '@' .. revision:sub(1, 8)
+    if revision then
+      return relpath .. '@' .. revision:sub(1, 8)
+    end
   elseif vim.startswith(buf_name, 'gitsigns://') then
-    local _, _, revision, relpath = buf_name:find([[^gitsigns://.*/%.git.*/(.*):(.*)]])
-    return relpath .. '@' ..  (tonumber(revision, 16) and revision:sub(1, 8) or revision)
+    local _, _, revision, relpath = buf_name:find([[^gitsigns://.*/%.git.*/(.*)[:/](.*)]])
+    if revision then
+      return relpath .. '@' ..  (tonumber(revision, 16) and revision:sub(1, 8) or revision)
+    end
   end
 
   return api.nvim_eval_statusline('%f', {}).str

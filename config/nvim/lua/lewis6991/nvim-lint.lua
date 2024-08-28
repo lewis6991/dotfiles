@@ -71,7 +71,7 @@ local function do_setup()
 
   nvimlint.linters_by_ft = {
     tcl = { 'tcl_lint' },
-    Jenkinsfile = {'jenkins_lint'},
+    Jenkinsfile = jenkins_lint and {'jenkins_lint'} or nil,
     python = { 'pylint' },
   }
 end

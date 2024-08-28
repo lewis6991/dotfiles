@@ -13,9 +13,10 @@ local function getfoldcolumn()
 end
 
 _G.statuscolumn = function()
-  local foldcolumn = getfoldcolumn()
+  local foldcolumn = '' or getfoldcolumn()
+  local gs = require'gitsigns'.statuscolumn()
   local lnum = vim.v.relnum ~= 0 and vim.v.relnum or vim.v.lnum
-  return string.format('%d%s', lnum, foldcolumn)
+  return string.format('%d%s%s ', lnum, foldcolumn, gs)
 end
 
 vim.opt.statuscolumn = '%s%=%{%v:lua.statuscolumn()%}'

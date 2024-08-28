@@ -173,11 +173,12 @@ require('lewis6991.package_manager').setup({
   { 'zbirenbaum/copilot-cmp',
     requires = 'zbirenbaum/copilot.lua',
     config = function ()
-      require('copilot').setup({
-        -- suggestion = { enabled = false },
-        -- panel = { enabled = false },
-      })
-      require('copilot_cmp').setup()
+      vim.api.nvim_create_autocmd('InsertEnter', {
+        once = true,
+        callback = function()
+          require('copilot').setup()
+          require('copilot_cmp').setup()
+        end})
     end,
   },
 
@@ -194,6 +195,7 @@ require('lewis6991.package_manager').setup({
             i = {
               ['<C-a>'] = '<HOME>',
               ['<C-e>'] = '<END>',
+              ['<C-d>'] = '<DEL>',
             },
           },
         },
@@ -217,11 +219,22 @@ require('lewis6991.package_manager').setup({
 
   { 'nvim-treesitter/nvim-treesitter',
     branch = 'main',
-    run = ':TSUpdate',
+    config_pre = function()
+      vim.g.loaded_nvim_treesitter = 1
+    end
+  },
+
+  { 'lewis6991/ts-install.nvim',
+    requires = 'nvim-treesitter/nvim-treesitter',
+    run = ':TS update',
     config = function()
-      require('lewis6991.nvim-treesitter')
+      require('ts-install').setup({
+        auto_install = true
+      })
     end,
   },
+
+  'uga-rosa/translate.nvim',
 
   { 'nvim-treesitter/nvim-treesitter-context',
     requires = 'nvim-treesitter/nvim-treesitter',
