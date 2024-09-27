@@ -4,38 +4,45 @@ local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 
 --- @class LspClientConfig : vim.lsp.ClientConfig
 --- @field filetypes string[]
---- @field cmd string[]
 --- @field markers? string[]
---- @field disable? boolean
+
+--- @param bufnr integer
+--- @param config LspClientConfig
+local function lsp_start(bufnr, config)
+  if vim.bo[bufnr].buftype == 'nofile' then
+    return
+  end
+
+  if vim.fn.executable(config.cmd[1]) == 0 then
+    return
+  end
+
+  config.capabilities = lsp.protocol.make_client_capabilities()
+
+  config.capabilities = vim.tbl_deep_extend(
+    'force',
+    config.capabilities,
+    require('cmp_nvim_lsp').default_capabilities()
+  )
+
+  vim.keymap.set('n', '<C-]>', "<cmd>Trouble lsp_definitions<cr>", { buffer = args.buf })
+
+  config.markers = config.markers or {}
+  table.insert(config.markers, '.git')
+  config.root_dir = vim.fs.root(bufnr, config.markers)
+
+  vim.lsp.start(config)
+end
 
 --- @param name string
 --- @param config LspClientConfig
 local function add(name, config)
-  if config.disable then
-    return
-  end
   config.name = name
   api.nvim_create_autocmd('FileType', {
     pattern = config.filetypes,
     group = lsp_group,
     callback = function(args)
-      if vim.bo[args.buf].buftype == 'nofile' then
-        return
-      end
-
-      config.capabilities = lsp.protocol.make_client_capabilities()
-
-      config.capabilities =
-        vim.tbl_deep_extend('force', config.capabilities, require('cmp_nvim_lsp').default_capabilities())
-
-      config.markers = config.markers or {}
-      table.insert(config.markers, '.git')
-
-      config.root_dir = vim.fs.root(args.buf, config.markers)
-
-      vim.keymap.set('n', '<C-]>', "<cmd>Trouble lsp_definitions<cr>", { buffer = args.buf })
-
-      vim.lsp.start(config)
+      lsp_start(args.buf, config)
     end,
   })
 end
