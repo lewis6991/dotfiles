@@ -32,28 +32,12 @@ local function add(name, config)
       table.insert(config.markers, '.git')
 
       config.root_dir = vim.fs.root(args.buf, config.markers)
+
+      vim.keymap.set('n', '<C-]>', "<cmd>Trouble lsp_definitions<cr>", { buffer = args.buf })
+
       vim.lsp.start(config)
     end,
   })
-end
-
-local function default_lua_settings()
-  return {
-    Lua = {
-      runtime = {
-        version = 'LuaJIT',
-      },
-      workspace = {
-        checkThirdParty = false,
-        library = {
-          vim.env.VIMRUNTIME,
-          '${3rd}/busted/library',
-          '${3rd}/luv/library',
-        },
-        -- library = api.nvim_get_runtime_file('', true)
-      },
-    },
-  }
 end
 
 add('clangd', {
@@ -62,65 +46,96 @@ add('clangd', {
   filetypes = { 'c', 'cpp' },
 })
 
-add('lua_ls', {
-  cmd = { 'lua-language-server' },
-  filetypes = { 'lua' },
-  markers = {
-    '.luarc.json',
-    '.luarc.jsonc',
-    '.luacheckrc',
-    '.stylua.toml',
-    'stylua.toml',
-    'selene.toml',
-    'selene.yml',
-  },
-  on_init = function(client)
-    if client.workspace_folders then
-      local path = client.workspace_folders[1].name
-      if not vim.uv.fs_stat(path .. '/.luarc.json') and not vim.uv.fs_stat(path .. '/.luarc.jsonc') then
+do -- Lua
+  local function default_lua_settings()
+    return {
+      Lua = {
+        runtime = {
+          version = 'LuaJIT',
+        },
+        workspace = {
+          checkThirdParty = false,
+          library = {
+            vim.env.VIMRUNTIME,
+            '${3rd}/busted/library',
+            '${3rd}/luv/library',
+          },
+        },
+      },
+    }
+  end
+
+  --- @param client vim.lsp.Client
+  --- @return boolean
+  local function use_default_lua_settings(client)
+    if not client.workspace_folders then
+      return true
+    end
+
+    local path = client.workspace_folders[1].name
+    if vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc') then
+      return true
+    end
+
+    return false
+  end
+
+  add('lua_ls', {
+    cmd = { 'lua-language-server' },
+    filetypes = { 'lua' },
+    markers = {
+      '.luarc.json',
+      '.luarc.jsonc',
+      '.luacheckrc',
+      '.stylua.toml',
+      'stylua.toml',
+      'selene.toml',
+      'selene.yml',
+    },
+    on_init = function(client)
+      if use_default_lua_settings(client) then
         client.settings = vim.tbl_deep_extend('force', client.settings, default_lua_settings())
         client.notify('workspace/didChangeConfiguration', { settings = client.settings })
       end
-    else
-      client.settings = vim.tbl_deep_extend('force', client.settings, default_lua_settings())
-      client.notify('workspace/didChangeConfiguration', { settings = client.settings })
-    end
-  end,
-  settings = {
-    Lua = {
-      hint = {
-        enable = true,
-        paramName = 'Literal',
-        setType = true,
+    end,
+    settings = {
+      Lua = {
+        hint = {
+          enable = true,
+          paramName = 'Literal',
+          setType = true,
+        },
       },
     },
-  },
-})
+  })
+end
 
-local python_markers = {
-  'pyproject.toml',
-  'setup.py',
-  'setup.cfg',
-  'requirements.txt',
-  'Pipfile',
-  'pyrightconfig.json',
-}
+do -- Python
+  local python_markers = {
+    'pyproject.toml',
+    'setup.py',
+    'setup.cfg',
+    'requirements.txt',
+    'Pipfile',
+    'pyrightconfig.json',
+  }
 
-add('pyright', {
-  cmd = { 'pyright-langserver', '--stdio' },
-  filetypes = { 'python' },
-  markers = python_markers,
-  settings = {
-    -- needed to make it work
-    python = {},
-  },
-})
+  add('pyright', {
+    cmd = { 'pyright-langserver', '--stdio' },
+    filetypes = { 'python' },
+    markers = python_markers,
+    settings = {
+      -- needed to make it work
+      python = {},
+    },
+  })
 
-add('ruff', {
-  cmd = { 'ruff-lsp' },
-  filetypes = { 'python' },
-  markers = python_markers,
-})
+  add('ruff', {
+    cmd = { 'ruff-lsp' },
+    filetypes = { 'python' },
+    markers = python_markers,
+  })
+end
 
 add('bashls', {
   cmd = { 'bash-language-server', 'start' },
