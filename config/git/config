@@ -91,6 +91,7 @@
 
 [fetch]
 	prune = true
+	all = true
 
 [color "diff-highlight"]
 	oldNormal    = red   bold

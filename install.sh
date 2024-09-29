@@ -55,6 +55,7 @@ function main {
 
     link_file ./config/kitty "$HOME/.config/kitty"
     link_file ./config/wezterm "$HOME/.config/wezterm"
+    link_file ./config/ghostty "$HOME/.config/ghostty"
 
     message "${GREEN}Finished successfully${NC}"
 }
