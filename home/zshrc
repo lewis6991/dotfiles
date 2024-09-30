@@ -61,6 +61,11 @@ zmodload zsh/complist
 bindkey -M menuselect '^[[Z' reverse-menu-complete
 setopt menu_complete
 
+! [ -f ~/.aliases        ] || source ~/.aliases
+! [ -f ~/.bash_functions ] || source ~/.bash_functions
+! [ -f ~/.aliases_local  ] || source ~/.aliases_local
+! [ -f ~/.zshrc_local    ] || source ~/.zshrc_local
+
 # Pager ------------------------------------------------------------------------
 export PAGER="less"
 
@@ -126,11 +131,6 @@ if [[ -n "$TMUX" ]]; then
 else
     export TERM_BACK=$TERM
 fi
-
-! [ -f ~/.aliases        ] || source ~/.aliases
-! [ -f ~/.bash_functions ] || source ~/.bash_functions
-! [ -f ~/.aliases_local  ] || source ~/.aliases_local
-! [ -f ~/.zshrc_local    ] || source ~/.zshrc_local
 
 ulimit -c unlimited
 

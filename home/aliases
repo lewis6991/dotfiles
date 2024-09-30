@@ -1,11 +1,10 @@
 #! /bin/usr/env bash
 
-alias ga="git a"
-alias gd="git d"
+alias ga="git add"
+alias gd="git diff"
 alias gf="git fetch"
 alias gr="git remote -v"
-alias gs="git st --ignore-submodules"
-alias gss="git st"
+alias gs="git status"
 
 alias re-csh="exec zsh -l"
 

@@ -120,16 +120,23 @@ do -- Python
     'pyrightconfig.json',
   }
 
+  -- pip install basedpyright
+  local pyright = vim.fn.executable('basedpyright') == 1 and 'basedpyright' or 'pyright'
+
   add('pyright', {
-    cmd = { 'pyright-langserver', '--stdio' },
+    cmd = { pyright..'-langserver', '--stdio' },
     filetypes = { 'python' },
     markers = python_markers,
     settings = {
-      -- needed to make it work
-      python = {},
-    },
+      basedpyright = {
+        analysis = {
+          typeCheckingMode = 'strict',
+        }
+      }
+    }
   })
 
+  -- pip install ruff-lsp
   add('ruff', {
     cmd = { 'ruff-lsp' },
     filetypes = { 'python' },
@@ -162,47 +169,39 @@ local function debounce(ms, fn)
   end
 end
 
---- @param fn fun(bufnr: integer, client: vim.lsp.Client)
-local function lsp_attach(fn)
+do -- textDocument/codelens
   api.nvim_create_autocmd('LspAttach', {
     callback = function(args)
       local client = assert(lsp.get_client_by_id(args.data.client_id))
-      fn(args.buf, client)
+      if client.supports_method('textDocument/codeLens') then
+        lsp.codelens.refresh({bufnr = args.buf})
+        api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
+          callback = function(args0)
+            lsp.codelens.refresh({bufnr = args0.buf})
+          end
+        })
+      end
     end
   })
 end
 
--- 'textDocument/codeLens'
-lsp_attach(function(bufnr, client)
-  if not client.supports_method('textDocument/codeLens') then
-    return
-  end
-
-  api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
-    buffer = bufnr,
-    callback = function()
-      lsp.codelens.refresh({bufnr = bufnr})
-    end
-  })
-  lsp.codelens.refresh({bufnr = bufnr})
-end)
-
--- 'textDocument/documentHighlight'
-lsp_attach(function(bufnr, client)
-  if not client.supports_method('textDocument/documentHighlight') then
-    return
-  end
+do -- textDocument/documentHighlight
+  local method = 'textDocument/documentHighlight'
 
   api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved', 'CursorHold', 'CursorHoldI' }, {
-    buffer = bufnr,
-    callback = debounce(200, function()
+    callback = debounce(200, function(args)
       lsp.buf.clear_references()
-      lsp.buf.document_highlight()
+      local bufnr = args.buf --- @type integer
+      for _, client in ipairs(lsp.get_clients({ bufnr = bufnr })) do
+        if client.supports_method(method, { bufnr = bufnr }) then
+          local params = lsp.util.make_position_params()
+          client.request(method, params, nil, bufnr)
+        end
+      end
     end)
   })
 
   api.nvim_create_autocmd({ 'FocusLost', 'WinLeave', 'BufLeave' }, {
-    buffer = bufnr,
     callback = lsp.buf.clear_references
   })
-end)
+end
