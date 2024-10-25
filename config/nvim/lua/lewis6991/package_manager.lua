@@ -42,7 +42,7 @@ local function try_get_local(spec)
   return spec
 end
 
-local function setup_pckr(init)
+function M.bootstrap()
   local pckr_path = vim.fn.expand('~/projects/pckr.nvim')
   -- local pckr_path = vim.fn.stdpath("data") .. "/pckr/pckr.nvim"
   vim.opt.rtp:prepend(pckr_path)
@@ -56,7 +56,9 @@ local function setup_pckr(init)
       pckr_path,
     })
   end
+end
 
+local function setup_pckr(init)
   local pckr = require('pckr')
 
   pckr.setup({

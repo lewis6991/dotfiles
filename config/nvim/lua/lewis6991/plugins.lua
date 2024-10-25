@@ -1,4 +1,9 @@
-require('lewis6991.package_manager').setup({
+local manager = require('lewis6991.package_manager')
+manager.bootstrap()
+
+local event = require('pckr.loader.event')
+
+manager.setup({
 
   --- Filetype plugins ---
   'martinda/Jenkinsfile-vim-syntax',
@@ -78,7 +83,7 @@ require('lewis6991.package_manager').setup({
   'nvim-tree/nvim-web-devicons',
 
   'wellle/targets.vim',
-  { 'sindrets/diffview.nvim', requires = { 'nvim-lua/plenary.nvim' } },
+  'sindrets/diffview.nvim',
   {'folke/trouble.nvim', config = function()
     require('trouble').setup()
   end},
@@ -229,12 +234,16 @@ require('lewis6991.package_manager').setup({
     run = ':TS update',
     config = function()
       require('ts-install').setup({
-        auto_install = true
+        auto_install = true,
+        ignore_install = {
+          'verilog',
+        },
       })
     end,
   },
 
-  'uga-rosa/translate.nvim',
+  -- TODO(lewis6991): optimize this plugin
+  { 'uga-rosa/translate.nvim', cond = event('CmdlineEnter') },
 
   { 'nvim-treesitter/nvim-treesitter-context',
     requires = 'nvim-treesitter/nvim-treesitter',
