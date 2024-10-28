@@ -25,7 +25,7 @@ local function lsp_start(bufnr, config)
     require('cmp_nvim_lsp').default_capabilities()
   )
 
-  vim.keymap.set('n', '<C-]>', "<cmd>Trouble lsp_definitions<cr>", { buffer = args.buf })
+  vim.keymap.set('n', '<C-]>', "<cmd>Trouble lsp_definitions<cr>", { buffer = bufnr })
 
   config.markers = config.markers or {}
   table.insert(config.markers, '.git')
