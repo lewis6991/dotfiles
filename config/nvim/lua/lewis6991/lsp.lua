@@ -182,11 +182,13 @@ do -- textDocument/codelens
       local client = assert(lsp.get_client_by_id(args.data.client_id))
       if client.supports_method('textDocument/codeLens') then
         lsp.codelens.refresh({bufnr = args.buf})
-        api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
-          callback = function(args0)
+        api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
+          callback = debounce(200, function(args0)
             lsp.codelens.refresh({bufnr = args0.buf})
-          end
+          end)
         })
+        -- Code lens setup, don't call again
+        return true
       end
     end
   })
@@ -195,15 +197,24 @@ end
 do -- textDocument/documentHighlight
   local method = 'textDocument/documentHighlight'
 
-  api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved', 'CursorHold', 'CursorHoldI' }, {
+  api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
     callback = debounce(200, function(args)
       lsp.buf.clear_references()
+      local win = api.nvim_get_current_win()
       local bufnr = args.buf --- @type integer
-      for _, client in ipairs(lsp.get_clients({ bufnr = bufnr })) do
-        if client.supports_method(method, { bufnr = bufnr }) then
-          local params = lsp.util.make_position_params()
-          client.request(method, params, nil, bufnr)
-        end
+      for _, client in ipairs(lsp.get_clients({ bufnr = bufnr, method = method })) do
+        local enc = client.offset_encoding
+        client.request(
+          method,
+          lsp.util.make_position_params(0, enc),
+          function(_, result, ctx)
+            if not result or win ~= api.nvim_get_current_win() then
+              return
+            end
+            lsp.util.buf_highlight_references(ctx.bufnr, result, enc)
+          end,
+          bufnr
+        )
       end
     end)
   })
