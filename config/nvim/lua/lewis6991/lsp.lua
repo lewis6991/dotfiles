@@ -212,3 +212,14 @@ do -- textDocument/documentHighlight
     callback = lsp.buf.clear_references
   })
 end
+
+local function with(f, config)
+  return function(c)
+    return f(vim.tbl_deep_extend('force', config, c or {}))
+  end
+end
+
+vim.lsp.buf.signature_help = with(vim.lsp.buf.signature_help, {
+  border = 'rounded',
+  title_pos = 'left',
+})

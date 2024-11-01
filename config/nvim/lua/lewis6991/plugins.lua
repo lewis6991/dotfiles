@@ -1,6 +1,7 @@
 local manager = require('lewis6991.package_manager')
 manager.bootstrap()
 
+--- @type fun(event: string): function
 local event = require('pckr.loader.event')
 
 manager.setup({
@@ -39,24 +40,35 @@ manager.setup({
 
   { 'lewis6991/hover.nvim',
     config = function()
-      require('hover').setup({
-        init = function()
-          require('hover.providers.lsp')
-          require('hover.providers.gh')
-          require('hover.providers.gh_user')
-          require('hover.providers.dictionary')
-          require('hover.providers.man')
-        end,
-      })
-      vim.keymap.set('n', 'K', require('hover').hover, { desc = 'hover.nvim' })
-      vim.keymap.set('n', 'gK', require('hover').hover_select, { desc = 'hover.nvim (select)' })
+      local did_setup = false
+      local function hover_action(action)
+        return function()
+          if not did_setup then
+            require('hover').setup({
+              init = function()
+                require('hover.providers.lsp')
+                require('hover.providers.gh')
+                require('hover.providers.gh_user')
+                require('hover.providers.dictionary')
+                require('hover.providers.man')
+                require('hover.providers.diagnostic')
+              end,
+            })
+            did_setup = true
+          end
+          require('hover')[action]()
+        end
+      end
 
-      vim.keymap.set(
-        'n',
-        '<MouseMove>',
-        require('hover').hover_mouse,
-        { desc = 'hover.nvim (mouse)' }
-      )
+      vim.keymap.set('n', 'K',
+        hover_action('hover'), { desc = 'hover.nvim' })
+
+      vim.keymap.set('n', 'gK',
+        hover_action('hover_select'), { desc = 'hover.nvim (select)' })
+
+      vim.keymap.set( 'n', '<MouseMove>',
+        hover_action('hover_mouse'), { desc = 'hover.nvim (mouse)' })
+
       vim.o.mousemoveevent = true
     end,
   },
@@ -115,15 +127,6 @@ manager.setup({
     end,
   },
 
-  { 'neapel/vim-bnfc-syntax',
-    config = function()
-      -- Argh, why don't syntax plugins ever set commentstring!
-      vim.cmd([[autocmd FileType bnfc setlocal commentstring=--%s]])
-      -- This syntax works pretty well for regular BNF too
-      vim.cmd([[autocmd BufNewFile,BufRead *.bnf setlocal filetype=bnfc]])
-    end,
-  },
-
   { 'junegunn/vim-easy-align',
     config = function()
       vim.keymap.set({ 'x', 'n' }, 'ga', '<Plug>(EasyAlign)')
@@ -147,10 +150,6 @@ manager.setup({
     end,
   },
 
-  {'ray-x/lsp_signature.nvim', config = function()
-    require'lsp_signature'.setup{ hi_parameter = "Visual" }
-  end},
-
   'inkarkat/vim-visualrepeat',
 
   { 'scalameta/nvim-metals',
@@ -160,20 +159,28 @@ manager.setup({
     },
   },
 
+  { 'rcarriga/nvim-dap-ui',
+    requires = {
+      'mfussenegger/nvim-dap',
+      'nvim-neotest/nvim-nio'
+    },
+  },
+
   { 'mfussenegger/nvim-lint', config = 'lewis6991.nvim-lint' },
 
   -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
   -- files
-  { 'hrsh7th/cmp-nvim-lsp', requires = 'hrsh7th/nvim-cmp' },
+
   { 'hrsh7th/cmp-nvim-lsp-signature-help', requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-buffer', requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-emoji', requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-path', requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-nvim-lua', requires = 'hrsh7th/nvim-cmp' },
   { 'hrsh7th/cmp-cmdline', requires = 'hrsh7th/nvim-cmp' },
-  { 'lukas-reineke/cmp-rg', requires = 'hrsh7th/nvim-cmp' },
-  { 'f3fora/cmp-spell', requires = 'hrsh7th/nvim-cmp' },
-  { 'andersevenrud/cmp-tmux', requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-nvim-lsp'  , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-buffer'    , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-emoji'     , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-path'      , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-nvim-lua'  , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'lukas-reineke/cmp-rg'  , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'f3fora/cmp-spell'      , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'andersevenrud/cmp-tmux', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
 
   { 'zbirenbaum/copilot-cmp',
     requires = 'zbirenbaum/copilot.lua',

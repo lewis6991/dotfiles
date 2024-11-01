@@ -18,15 +18,15 @@ prs=$(get_prs)
 function get_pr() {
     local branch="$1"
 
-    local prinfo="$(grep "^$branch" <<< "$prs")"
+    local prinfo; prinfo="$(grep "^$branch" <<< "$prs")"
 
     if [[ "$prinfo" == "" ]]; then
         return
     fi
 
-    local url="$(cut -f2 -d' ' <<< "$prinfo")"
-    local isdraft="$(cut -f3 -d' ' <<< "$prinfo")"
-    local state="$(cut -f4 -d' ' <<< "$prinfo")"
+    local url; url="$(cut -f2 -d' ' <<< "$prinfo")"
+    local isdraft; isdraft="$(cut -f3 -d' ' <<< "$prinfo")"
+    local state; state="$(cut -f4 -d' ' <<< "$prinfo")"
 
     local draft=""
     [[ $isdraft == true ]] && draft="[DRAFT]"
@@ -47,7 +47,7 @@ function get_pr() {
         fi
     fi
 
-    echo "\n      %(color:$state_color)$state$draft: %(color:cyan)$url"
+    printf '%s' "\n      %(color:$state_color)$state$draft: %(color:cyan)$url"
 }
 
 function process_branch() {
@@ -55,10 +55,12 @@ function process_branch() {
     local branch="$1"
 
     # origin/feat/foo
-    local upstream="$(git branch --list "$branch" --format='%(upstream:short)')"
+    local upstream
+    upstream="$(git branch --list "$branch" --format='%(upstream:short)')"
 
     # [ahead 1, behind 20]
-    local upstream_track="$(git branch --list "$branch" --format='%(upstream:track)')"
+    local upstream_track
+    upstream_track="$(git branch --list "$branch" --format='%(upstream:track)')"
 
     local prline="$(get_pr $branch)"
     local date="$(git log -1 --format=%cd --date=relative $branch)"
@@ -95,5 +97,5 @@ $prline" \
 git for-each-ref --shell --format="%(refname:short)" refs/heads |
     while read -r entry; do
         branch=$(echo "$entry" | xargs)  # Unquote
-        process_branch $branch
+        process_branch "$branch"
     done
