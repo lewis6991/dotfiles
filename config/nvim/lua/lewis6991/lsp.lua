@@ -1,4 +1,5 @@
 local api, lsp = vim.api, vim.lsp
+local autocmd = api.nvim_create_autocmd
 
 local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
 
@@ -38,7 +39,7 @@ end
 --- @param config LspClientConfig
 local function add(name, config)
   config.name = name
-  api.nvim_create_autocmd('FileType', {
+  autocmd('FileType', {
     pattern = config.filetypes,
     group = lsp_group,
     callback = function(args)
@@ -54,37 +55,68 @@ add('clangd', {
 })
 
 do -- Lua
-  local function default_lua_settings()
-    return {
-      Lua = {
-        runtime = {
-          version = 'LuaJIT',
-        },
-        workspace = {
-          checkThirdParty = false,
-          library = {
-            vim.env.VIMRUNTIME,
-            '${3rd}/busted/library',
-            '${3rd}/luv/library',
-          },
-        },
-      },
-    }
+  --- @param x string
+  --- @return string?
+  local function match_require(x)
+    return x:match('require') and (
+      x:match("require%s*%(%s*'([^.']+).*'%)") or
+      x:match('require%s*%(%s*"([^."]+).*"%)') or
+      x:match("require%s*'([^.']+).*'%)") or
+      x:match('require%s*"([^."]+).*"%)')
+    )
   end
 
   --- @param client vim.lsp.Client
-  --- @return boolean
-  local function use_default_lua_settings(client)
-    if not client.workspace_folders then
-      return true
+  --- @param bufnr integer
+  local function auto_add_lua_libs(client, bufnr)
+    if client.workspace_folders then
+      local path = client.workspace_folders[1].name
+      if vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc') then
+        -- Updates to settings are ingored if a .luarc.json is present
+        return
+      end
     end
 
-    local path = client.workspace_folders[1].name
-    if vim.uv.fs_stat(path .. '/.luarc.json') or vim.uv.fs_stat(path .. '/.luarc.jsonc') then
-      return true
+    client.settings = vim.tbl_deep_extend('keep', client.settings, {
+      Lua = { workspace = { library = {} } }
+    })
+
+    --- @param first? integer
+    --- @param last? integer
+    local function on_lines(first, last)
+      local do_change = false
+
+      local lines = api.nvim_buf_get_lines(bufnr, first or 0, last or -1, false)
+      for _, line in ipairs(lines) do
+        local m = match_require(line)
+        if m then
+          for _, mod in ipairs(vim.loader.find(m, { patterns = { '', '.lua' } })) do
+            local lib = vim.fs.dirname(mod.modpath)
+            local libs = client.settings.Lua.workspace.library
+            if not vim.tbl_contains(libs, lib) then
+              libs[#libs + 1] = lib
+              do_change = true
+            end
+          end
+        end
+      end
+
+      if do_change then
+        client.notify('workspace/didChangeConfiguration', { settings = client.settings })
+      end
     end
 
-    return false
+    api.nvim_buf_attach(bufnr, false, {
+      on_lines = function(_, _, _, first, _, last)
+        on_lines(first, last)
+      end,
+      on_reload = function()
+        on_lines()
+      end,
+    })
+
+    -- Initial scan
+    on_lines()
   end
 
   add('lua_ls', {
@@ -99,21 +131,23 @@ do -- Lua
       'selene.toml',
       'selene.yml',
     },
-    on_init = function(client)
-      if use_default_lua_settings(client) then
-        client.settings = vim.tbl_deep_extend('force', client.settings, default_lua_settings())
-        client.notify('workspace/didChangeConfiguration', { settings = client.settings })
-      end
-    end,
+    -- Note this is ignored if the project has a .luarc.json
     settings = {
       Lua = {
-        hint = {
-          enable = true,
-          paramName = 'Literal',
-          setType = true,
+        runtime = {
+          version = 'LuaJIT',
+        },
+        workspace = {
+          checkThirdParty = false,
+          library = {
+            vim.env.VIMRUNTIME,
+            '${3rd}/busted/library',
+            '${3rd}/luv/library',
+          },
         },
       },
     },
+    on_attach = auto_add_lua_libs,
   })
 end
 
@@ -177,12 +211,12 @@ local function debounce(ms, fn)
 end
 
 do -- textDocument/codelens
-  api.nvim_create_autocmd('LspAttach', {
+  autocmd('LspAttach', {
     callback = function(args)
       local client = assert(lsp.get_client_by_id(args.data.client_id))
       if client.supports_method('textDocument/codeLens') then
         lsp.codelens.refresh({bufnr = args.buf})
-        api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
+        autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
           callback = debounce(200, function(args0)
             lsp.codelens.refresh({bufnr = args0.buf})
           end)
@@ -197,7 +231,7 @@ end
 do -- textDocument/documentHighlight
   local method = 'textDocument/documentHighlight'
 
-  api.nvim_create_autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
+  autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
     callback = debounce(200, function(args)
       lsp.buf.clear_references()
       local win = api.nvim_get_current_win()
@@ -219,7 +253,7 @@ do -- textDocument/documentHighlight
     end)
   })
 
-  api.nvim_create_autocmd({ 'FocusLost', 'WinLeave', 'BufLeave' }, {
+  autocmd({ 'FocusLost', 'WinLeave', 'BufLeave' }, {
     callback = lsp.buf.clear_references
   })
 end

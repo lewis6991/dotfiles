@@ -1,7 +1,6 @@
 local manager = require('lewis6991.package_manager')
 manager.bootstrap()
 
---- @type fun(event: string): function
 local event = require('pckr.loader.event')
 
 manager.setup({
