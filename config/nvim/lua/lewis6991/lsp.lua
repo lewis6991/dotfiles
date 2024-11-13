@@ -117,7 +117,15 @@ end
 config({ -- bashls
   name = 'bashls',
   cmd = { 'bash-language-server', 'start' },
-  filetypes = { 'sh' }
+  filetypes = { 'sh' },
+  settings = {
+    bashIde = {
+      shellcheckArguments = {
+        '-e', 'SC2086', -- Double quote to prevent globbing and word splitting
+        '-e', 'SC2155', -- Declare and assign separately to avoid masking return values
+      },
+    }
+  }
 })
 
 -- install with:
