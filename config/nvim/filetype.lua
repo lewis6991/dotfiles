@@ -7,6 +7,7 @@ vim.filetype.add({
     cpp = 'cpp',
     pipeline = 'Jenkinsfile',
     stage = 'Jenkinsfile',
+    JenkinsFile = 'Jenkinsfile',
   },
   filename = {
     ['gerrit_hooks'] = 'toml',
@@ -19,8 +20,7 @@ vim.filetype.add({
     ['gitconfig'] = 'gitconfig',
   },
   pattern = {
-    ['.*'] = {
-      priority = -math.huge,
+    [''] = {
       function(_, bufnr)
         local content = vim.api.nvim_buf_get_lines(bufnr, 0, 1, true)[1]
         if content:match('^#%%Module') then

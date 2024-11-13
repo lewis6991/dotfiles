@@ -98,7 +98,6 @@ manager.setup({
   {'folke/trouble.nvim', config = function()
     require('trouble').setup()
   end},
-  'dstein64/vim-startuptime',
 
   { 'AndrewRadev/bufferize.vim',
     config = function()
@@ -122,7 +121,7 @@ manager.setup({
 
   { 'j-hui/fidget.nvim',
     config = function()
-      require('fidget').setup()
+      require('fidget').setup({})
     end,
   },
 
@@ -151,11 +150,11 @@ manager.setup({
 
   'inkarkat/vim-visualrepeat',
 
-  { 'scalameta/nvim-metals',
-    config = 'lewis6991.metals',
-    requires = {
-      'hrsh7th/cmp-nvim-lsp',
-    },
+  'scalameta/nvim-metals',
+
+  { 'mfussenegger/nvim-dap',
+    cond = event('LspAttach'),
+    config = 'lewis6991.dap'
   },
 
   { 'rcarriga/nvim-dap-ui',
@@ -243,6 +242,7 @@ manager.setup({
         auto_install = true,
         ignore_install = {
           'verilog',
+          'tcl',
         },
       })
     end,
