@@ -42,6 +42,7 @@ do -- Lua
   config({
     name = 'luals',
     cmd = { 'lua-language-server' },
+    -- cmd = { '/Users/lewis/projects/lua-language-server/bin/lua-language-server' },
     filetypes = { 'lua' },
     markers = {
       '.luarc.json',
@@ -223,7 +224,7 @@ do -- textDocument/codelens
   autocmd('LspAttach', {
     callback = function(args)
       local client = assert(lsp.get_client_by_id(args.data.client_id))
-      if client.supports_method('textDocument/codeLens') then
+      if client:supports_method('textDocument/codeLens') then
         lsp.codelens.refresh({bufnr = args.buf})
         autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
           callback = debounce(200, function(args0)
@@ -247,7 +248,7 @@ do -- textDocument/documentHighlight
       local bufnr = args.buf --- @type integer
       for _, client in ipairs(lsp.get_clients({ bufnr = bufnr, method = method })) do
         local enc = client.offset_encoding
-        client.request(
+        client:request(
           method,
           lsp.util.make_position_params(0, enc),
           function(_, result, ctx)
