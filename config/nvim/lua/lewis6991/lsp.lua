@@ -1,79 +1,50 @@
 local api, lsp = vim.api, vim.lsp
 local autocmd = api.nvim_create_autocmd
 
-local lsp_group = api.nvim_create_augroup('lewis6991.lsp', {})
-
---- @class LspClientConfig : vim.lsp.ClientConfig
---- @field filetypes string[]
---- @field markers? string[]
-
---- @param cfg LspClientConfig
-local function config(cfg)
-  autocmd('FileType', {
-    pattern = cfg.filetypes,
-    group = lsp_group,
-    callback = function(args)
-      local bufnr = args.buf
-      if vim.bo[bufnr].buftype == 'nofile' then
-        return
-      end
-
-      if vim.fn.executable(cfg.cmd[1]) == 0 then
-        return
-      end
-
-      cfg.markers = cfg.markers or {}
-      table.insert(cfg.markers, '.git')
-      cfg.root_dir = vim.fs.root(bufnr, cfg.markers)
-
-      vim.lsp.start(cfg)
-    end,
-  })
+--- @param cfg vim.lsp.Config
+local function add(name, cfg)
+  lsp.config(name, cfg)
+  lsp.enable(name)
 end
 
-config({ -- clangd
-  name = 'clangd',
+add('clangd', { -- clangd
   cmd = { 'clangd', '--clang-tidy' },
-  markers = { '.clangd', 'compile_commands.json' },
+  root_markers = { '.clangd', 'compile_commands.json' },
   filetypes = { 'c', 'cpp' },
 })
 
-do -- Lua
-  config({
-    name = 'luals',
-    cmd = { 'lua-language-server' },
-    -- cmd = { '/Users/lewis/projects/lua-language-server/bin/lua-language-server' },
-    filetypes = { 'lua' },
-    markers = {
-      '.luarc.json',
-      '.luarc.jsonc',
-      '.luacheckrc',
-      '.stylua.toml',
-      'stylua.toml',
-      'selene.toml',
-      'selene.yml',
-    },
-    -- Note this is ignored if the project has a .luarc.json
-    settings = {
-      Lua = {
-        runtime = {
-          version = 'LuaJIT',
-        },
-        workspace = {
-          checkThirdParty = false,
-          library = {
-            vim.env.VIMRUNTIME,
-            '${3rd}/busted/library',
-            '${3rd}/luv/library',
-          },
+add('luals', {
+  cmd = { 'lua-language-server' },
+  filetypes = { 'lua' },
+  root_markers = {
+    '.luarc.json',
+    '.luarc.jsonc',
+    '.luacheckrc',
+    '.stylua.toml',
+    'stylua.toml',
+    'selene.toml',
+    'selene.yml',
+  },
+  -- Note this is ignored if the project has a .luarc.json
+  settings = {
+    Lua = {
+      runtime = {
+        version = 'LuaJIT',
+      },
+      workspace = {
+        checkThirdParty = false,
+        library = {
+          vim.env.VIMRUNTIME,
+          '${3rd}/busted/library',
+          '${3rd}/luv/library',
         },
       },
     },
-    on_attach = function(client, bufnr)
-      require('lewis6991.lsp.auto_lua_require')(client, bufnr)
-    end,
-  })
-end
+  },
+  on_attach = function(client, bufnr)
+    require('lewis6991.lsp.auto_lua_require')(client, bufnr)
+  end,
+})
 
 do -- Python
   local python_markers = {
@@ -88,11 +59,10 @@ do -- Python
   -- pip install basedpyright
   local pyright = vim.fn.executable('basedpyright') == 1 and 'basedpyright' or 'pyright'
 
-  config({
-    name = pyright,
+  add(pyright, {
     cmd = { pyright..'-langserver', '--stdio' },
     filetypes = { 'python' },
-    markers = python_markers,
+    root_markers = python_markers,
     settings = {
       basedpyright = {
         analysis = {
@@ -103,11 +73,10 @@ do -- Python
   })
 
   -- pip install ruff-lsp
-  config({
-    name = 'ruff',
+  add('ruff', {
     cmd = { 'ruff-lsp' },
     filetypes = { 'python' },
-    markers = python_markers,
+    root_markers = python_markers,
   })
 end
 
@@ -115,8 +84,7 @@ end
 --   npm i -g bash-language-server
 -- also uses shellcheck if installed:
 --   brew install shellcheck
-config({ -- bashls
-  name = 'bashls',
+add('bashls', {
   cmd = { 'bash-language-server', 'start' },
   filetypes = { 'sh' },
   settings = {
@@ -131,8 +99,7 @@ config({ -- bashls
 
 -- install with:
 --   npm install -g vscode-langservers-extracted
-config({ -- jsonls
-  name = 'jsonls',
+add('jsonls', {
   cmd = { 'vscode-json-language-server', '--stdio' },
   filetypes = { 'json', 'jsonc' }
 })
@@ -147,7 +114,7 @@ do -- metals
     metals.initialize_or_attach(vim.tbl_deep_extend('force', metals.bare_config(), {
       handlers = {
         ['metals/status'] = function(_, status, ctx)
-          vim.lsp.handlers['$/progress'](_, {
+          lsp.handlers['$/progress'](_, {
             token = 1,
             value = {
               kind = status.show and 'begin' or status.hide and 'end' or 'report',
@@ -187,29 +154,19 @@ local function debounce(ms, fn)
   end
 end
 
-do -- cmp capablities
-  -- commitCharactersSupport = true
-  -- preselectSupport = true
-  -- contextSupport = true
-  -- insertTextMode = 1
-  -- completionList.itemDefaults.commitCharacters
-  -- resolveSupport
-  -- insertReplaceSupport
-  -- insertTextModeSupport
-  -- labelDetailsSupport
-  local mk_cap = lsp.protocol.make_client_capabilities
-  lsp.protocol.make_client_capabilities = function()
-    local has_cmp, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
-    if not has_cmp then
-      return mk_cap()
-    end
-
-    return vim.tbl_deep_extend(
-      'force',
-      mk_cap(),
-      cmp_nvim_lsp.default_capabilities()
-    )
-  end
+-- cmp capablities:
+--   commitCharactersSupport = true
+--   preselectSupport = true
+--   contextSupport = true
+--   insertTextMode = 1
+--   completionList.itemDefaults.commitCharacters
+--   resolveSupport
+--   insertReplaceSupport
+--   insertTextModeSupport
+--   labelDetailsSupport
+local has_cmp, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
+if has_cmp then
+  lsp.config('*', { capablities = cmp_nvim_lsp.default_capabilities() })
 end
 
 do -- trouble
@@ -274,7 +231,7 @@ local function with(f, cfg)
   end
 end
 
-vim.lsp.buf.signature_help = with(vim.lsp.buf.signature_help, {
+lsp.buf.signature_help = with(lsp.buf.signature_help, {
   border = 'rounded',
   title_pos = 'left',
 })
