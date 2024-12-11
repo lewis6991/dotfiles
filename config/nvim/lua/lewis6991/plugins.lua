@@ -171,7 +171,6 @@ manager.setup({
 
   { 'hrsh7th/cmp-nvim-lsp-signature-help', requires = 'hrsh7th/nvim-cmp' },
   { 'hrsh7th/cmp-cmdline', requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-nvim-lsp'  , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
   { 'hrsh7th/cmp-buffer'    , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
   { 'hrsh7th/cmp-emoji'     , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
   { 'hrsh7th/cmp-path'      , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
@@ -193,7 +192,11 @@ manager.setup({
   },
 
   { 'hrsh7th/nvim-cmp',
-    requires = 'zbirenbaum/copilot-cmp',
+    requires = {
+      'zbirenbaum/copilot-cmp',
+      -- TODO(lewis6991): optimize requires in cmp_nvim_lsp/init.lua
+      'hrsh7th/cmp-nvim-lsp',
+    },
     config = 'lewis6991.cmp',
   },
 

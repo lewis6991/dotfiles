@@ -154,21 +154,6 @@ local function debounce(ms, fn)
   end
 end
 
--- cmp capablities:
---   commitCharactersSupport = true
---   preselectSupport = true
---   contextSupport = true
---   insertTextMode = 1
---   completionList.itemDefaults.commitCharacters
---   resolveSupport
---   insertReplaceSupport
---   insertTextModeSupport
---   labelDetailsSupport
-local has_cmp, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
-if has_cmp then
-  lsp.config('*', { capablities = cmp_nvim_lsp.default_capabilities() })
-end
-
 do -- trouble
   autocmd('LspAttach', {
     callback = function(args)
