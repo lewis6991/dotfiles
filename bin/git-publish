@@ -1,9 +1,47 @@
 #! /usr/bin/env bash
 
-remote=origin
+# set -o errexit -o pipefail -o noclobber -o nounset
 
-set -e
-branch=$(git rev-parse --abbrev-ref HEAD)
+MSG_OPT=""
+OPTS=""
+POSITIONAL_ARGS=()
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --wip)
+            OPTS="$OPTS -o wip"
+            ;;
+        --ready)
+            OPTS="$OPTS -o ready"
+            ;;
+        -m|--message)
+            shift
+            printf -v MSG_OPT -- "-o m='%s'" "$1"
+            ;;
+        -*|--*)
+            echo "Unknown option $1"
+            exit 1
+            ;;
+        *)
+            POSITIONAL_ARGS+=("$1") # save positional arg
+            ;;
+    esac
+    shift # past argument
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+remote=origin
+branch=""
+
+if [[ -v POSITIONAL_ARGS[0] ]]; then
+    branch="${POSITIONAL_ARGS[0]}"
+fi
+
+if [[ "$branch" == "" ]]; then
+    branch=$(git rev-parse --abbrev-ref HEAD)
+fi
+
 if [ "$branch" = "HEAD" ]; then
     # check if we are in a rebase
     head_name_file="$(git rev-parse --git-dir)/rebase-merge/head-name"
@@ -18,10 +56,13 @@ fi
 if remoteBranch=$(git config "branch.${1-$branch}.merge"); then
     remoteBranch=${remoteBranch##refs/heads/}
 else
-    remoteBranch=$(git remote show $remote | grep 'HEAD branch' | cut -d' ' -f5)
+    # remoteBranch=$(git remote show $remote | grep 'HEAD branch' | cut -d' ' -f5)
+    remoteBranch=$(git rev-parse --abbrev-ref origin/HEAD | cut -d/ -f2)
 fi
 
-git push $remote "HEAD:refs/for/$remoteBranch"
+echo git push $remote "HEAD:refs/for/$remoteBranch" $MSG_OPT $OPTS
+
+git push $remote "HEAD:refs/for/$remoteBranch" $MSG_OPT $OPTS
 
 if hash jerrit 2>/dev/null; then
     jerrit update

@@ -149,8 +149,6 @@ if 'Mappings' then
   map('n', 'k', [[v:count == 0 ? 'gk' : 'k']], { expr = true })
   map('n', 'j', [[v:count == 0 ? 'gj' : 'j']], { expr = true })
 
-  map('n', 'Y', 'y$')
-
   map('n', 'Q', ':w<cr>')
   map('v', 'Q', '<nop>')
   map('n', 'gQ', '<nop>')
@@ -213,16 +211,10 @@ if 'Mappings' then
       end, { desc = 'lsp.buf.inlay_hint', buffer = bufnr })
 
       map('n', '<leader>cl', lsp.codelens.run, { desc = 'lsp.codelens.run', buffer = bufnr })
-      -- map(bufnr, 'K'         , lsp.buf.hover         , 'lsp.buf.hover'         )
-      -- map(bufnr, 'gK'        , lsp.buf.signature_help, 'lsp.buf.signature_help')
-      map('n', '<C-s>', lsp.buf.signature_help, { desc = 'lsp.buf.signature_help', buffer = bufnr })
-      map('n', '<leader>rn', lsp.buf.rename, { desc = 'lsp.buf.rename', buffer = bufnr })
-      map('n', '<leader>ca', lsp.buf.code_action, { desc = 'lsp.buf.code_action', buffer = bufnr })
 
       -- keymap('n', 'gr' { lsp.buf.references }
       map('n', 'gr', '<cmd>Trouble lsp_references<cr>')
       map('n', 'gd', '<cmd>Trouble diagnostics<cr>')
-      map('n', 'gi', lsp.buf.implementation, { desc = 'lsp.buf.implementation', buffer = bufnr })
     end,
   })
 end
@@ -249,6 +241,7 @@ if 'Abbrev' then
 
   -- auto spell
   map('!a', 'funciton', 'function')
+  map('!a', 'functino', 'function')
 end
 
 autocmd('VimResized', {
@@ -256,21 +249,11 @@ autocmd('VimResized', {
   command = 'wincmd =',
 })
 
-local ns = api.nvim_create_namespace('overlength')
-api.nvim_set_decoration_provider(ns, {
-  on_line = function(_, _winid, bufnr, row)
-    if vim.bo[bufnr].buftype == 'nofile' then
-      return
-    end
-    local line = api.nvim_buf_get_lines(bufnr, row, row + 1, false)[1]
-    local tw = vim.bo[bufnr].textwidth
-    if line and #line > tw then
-      api.nvim_buf_set_extmark(bufnr, ns, row, tw, {
-        end_row = row,
-        end_col = tw + 1,
-        hl_group = 'ColorColumn',
-        ephemeral = true
-      })
+autocmd('BufReadPost', {
+  group = 'vimrc',
+  callback = function()
+    if vim.bo.buftype ~= 'nofile' then
+      vim.fn.matchadd('ColorColumn', '^.\\{'..vim.bo.textwidth..'}\\zs.')
     end
   end
 })
