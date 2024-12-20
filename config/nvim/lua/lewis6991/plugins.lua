@@ -22,6 +22,31 @@ manager.setup({
   'lewis6991/fileline.nvim',
   'lewis6991/satellite.nvim',
 
+  { 'yetone/avante.nvim',
+    run = 'make',
+    config = function()
+      require('avante_lib').load()
+      require('avante').setup({
+        provider = 'copilot',
+      })
+    end,
+    requires = {
+      "stevearc/dressing.nvim",
+      "nvim-lua/plenary.nvim",
+      "MunifTanjim/nui.nvim",
+      --- optional,
+      "zbirenbaum/copilot.lua", -- for providers='copilot'
+    },
+  },
+
+  { 'MeanderingProgrammer/render-markdown.nvim',
+    config = function()
+      require('render-markdown').setup({
+        file_types = { 'markdown', 'Avante' },
+      })
+    end,
+  },
+
   { 'lewis6991/whatthejump.nvim',
     config = function()
       -- <Tab> == <C-i> in tmux so need other mappings for navigating the jump list
@@ -50,7 +75,7 @@ manager.setup({
                 require('hover.providers.gh_user')
                 require('hover.providers.dictionary')
                 require('hover.providers.man')
-                require('hover.providers.diagnostic')
+                -- require('hover.providers.diagnostic')
               end,
             })
             did_setup = true
