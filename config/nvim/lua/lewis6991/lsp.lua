@@ -74,7 +74,7 @@ do -- Python
 
   -- pip install ruff-lsp
   add('ruff', {
-    cmd = { 'ruff-lsp' },
+    cmd = { 'ruff', 'server' },
     filetypes = { 'python' },
     root_markers = python_markers,
   })
