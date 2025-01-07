@@ -21,4 +21,4 @@ zmodule zdharma-continuum/fast-syntax-highlighting
 zmodule hlissner/zsh-autopair
 zmodule lewis6991/fancy-prompt
 zmodule lewis6991/zsh-mouse
-
+zmodule loiccoyle/zsh-github-copilot
