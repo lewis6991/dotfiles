@@ -122,6 +122,13 @@ manager.setup({
   'sindrets/diffview.nvim',
   {'folke/trouble.nvim', config = function()
     require('trouble').setup()
+    vim.api.nvim_create_autocmd('LspAttach', {
+      desc = 'trouble mappings',
+      callback = function(args)
+        vim.keymap.set('n', 'grr', '<cmd>Trouble lsp_references<cr>', { bufnr = args.buf })
+        vim.keymap.set('n', 'gd', '<cmd>Trouble diagnostics<cr>', { bufnr = args.buf })
+      end
+    })
   end},
 
   { 'AndrewRadev/bufferize.vim',

@@ -1,4 +1,4 @@
-local o, api, lsp = vim.opt, vim.api, vim.lsp
+local o, api = vim.opt, vim.api
 
 local autocmd = api.nvim_create_autocmd
 local map = vim.keymap.set
@@ -57,6 +57,7 @@ if 'Options' then
   o.hidden = true
   o.ignorecase = true
   o.inccommand = 'split'
+  o.laststatus = 3 -- For avante.nvim
   o.list = true
   o.listchars = 'tab:▸ ' -- Show tabs as '▸   ▸   '
   o.mouse = 'a'
@@ -194,29 +195,6 @@ if 'Mappings' then
   map('c', '<C-N>', '<down>')
   map('c', '<C-A>', '<Home>')
   map('c', '<C-D>', '<Del>')
-
-  autocmd('LspAttach', {
-    desc = 'lsp mappings',
-    callback = function(args)
-      local bufnr = args.buf --- @type integer
-      map(
-        'n',
-        '<M-]>',
-        lsp.buf.type_definition,
-        { desc = 'lsp.buf.type_definition', buffer = bufnr }
-      )
-
-      map('n', '<M-i>', function()
-        lsp.inlay_hint.enable(not lsp.inlay_hint.is_enabled({bufnr = bufnr}), {bufnr = bufnr})
-      end, { desc = 'lsp.buf.inlay_hint', buffer = bufnr })
-
-      map('n', '<leader>cl', lsp.codelens.run, { desc = 'lsp.codelens.run', buffer = bufnr })
-
-      -- keymap('n', 'gr' { lsp.buf.references }
-      map('n', 'gr', '<cmd>Trouble lsp_references<cr>')
-      map('n', 'gd', '<cmd>Trouble diagnostics<cr>')
-    end,
-  })
 end
 
 if 'Abbrev' then

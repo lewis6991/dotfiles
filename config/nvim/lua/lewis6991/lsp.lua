@@ -7,11 +7,83 @@ local function add(name, cfg)
   lsp.enable(name)
 end
 
+-- local js_filetypes = {
+--   'javascript',
+--   'javascriptreact',
+--   'javascript.jsx',
+--   'typescript',
+--   'typescriptreact',
+--   'typescript.tsx',
+-- }
+--
+-- add('tls', {
+--   cmd = { 'typescript-language-server', '--stdio' },
+--   filetypes = js_filetypes,
+--   root_markers = {'tsconfig.json', 'jsconfig.json', 'package.json', '.git'},
+-- })
+--
+-- add('eslint', {
+--   cmd = { 'vscode-eslint-language-server', '--stdio' },
+--   filetypes = js_filetypes,
+--   root_markers = { 'eslint.config.ts' },
+--   -- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
+--   settings = {
+--     useESLintClass = false,
+--     experimental = {
+--       useFlatConfig = true,
+--     },
+--     -- format = true,
+--     quiet = false,
+--     run = 'onType',
+--     -- nodePath configures the directory in which the eslint server should start its node_modules resolution.
+--     -- This path is relative to the workspace folder (root dir) of the server instance.
+--     nodePath = '.',
+--   },
+--   handlers = {
+--     ['eslint/openDoc'] = function(_, result)
+--       if not result then
+--         return
+--       end
+--       local sysname = vim.uv.os_uname().sysname
+--       if sysname:match 'Windows' then
+--         os.execute(string.format('start %q', result.url))
+--       elseif sysname:match 'Linux' then
+--         os.execute(string.format('xdg-open %q', result.url))
+--       else
+--         os.execute(string.format('open %q', result.url))
+--       end
+--       return {}
+--     end,
+--     ['eslint/confirmESLintExecution'] = function(_, result)
+--       if not result then
+--         return
+--       end
+--       return 4 -- approved
+--     end,
+--     ['eslint/probeFailed'] = function()
+--       vim.notify('[lspconfig] ESLint probe failed.', vim.log.levels.WARN)
+--       return {}
+--     end,
+--     ['eslint/noLibrary'] = function()
+--       vim.notify('[lspconfig] Unable to find ESLint library.', vim.log.levels.WARN)
+--       return {}
+--     end,
+--   }
+-- })
+
 add('clangd', { -- clangd
   cmd = { 'clangd', '--clang-tidy' },
   root_markers = { '.clangd', 'compile_commands.json' },
   filetypes = { 'c', 'cpp' },
 })
+
+-- add('emmylua', {
+--   cmd = { '/Users/lewrus01/emmylua/emmylua_ls' },
+--   filetypes = { 'lua' },
+--   root_markers = {
+--     'emmyrc.json',
+--   }
+-- })
 
 add('luals', {
   cmd = { 'lua-language-server' },
@@ -86,7 +158,7 @@ end
 --   brew install shellcheck
 add('bashls', {
   cmd = { 'bash-language-server', 'start' },
-  filetypes = { 'sh' },
+  filetypes = { 'zsh', 'sh', 'bash' },
   settings = {
     bashIde = {
       shellcheckArguments = {
@@ -101,6 +173,7 @@ add('bashls', {
 --   npm install -g vscode-langservers-extracted
 add('jsonls', {
   cmd = { 'vscode-json-language-server', '--stdio' },
+  -- root_markers = { '.git' },
   filetypes = { 'json', 'jsonc' }
 })
 
@@ -152,14 +225,6 @@ local function debounce(ms, fn)
       end)
     end)
   end
-end
-
-do -- trouble
-  autocmd('LspAttach', {
-    callback = function(args)
-      vim.keymap.set('n', '<C-]>', "<cmd>Trouble lsp_definitions<cr>", { buffer = args.buf })
-    end
-  })
 end
 
 do -- textDocument/codelens
@@ -219,4 +284,23 @@ end
 lsp.buf.signature_help = with(lsp.buf.signature_help, {
   border = 'rounded',
   title_pos = 'left',
+})
+
+autocmd('LspAttach', {
+  desc = 'lsp mappings',
+  callback = function(args)
+    local bufnr = args.buf --- @type integer
+    vim.keymap.set(
+      'n',
+      '<M-]>',
+      lsp.buf.type_definition,
+      { desc = 'lsp.buf.type_definition', buffer = bufnr }
+    )
+
+    vim.keymap.set('n', '<M-i>', function()
+      lsp.inlay_hint.enable(not lsp.inlay_hint.is_enabled({bufnr = bufnr}), {bufnr = bufnr})
+    end, { desc = 'lsp.buf.inlay_hint', buffer = bufnr })
+
+    vim.keymap.set('n', '<leader>cl', lsp.codelens.run, { desc = 'lsp.codelens.run', buffer = bufnr })
+  end,
 })
