@@ -28,6 +28,14 @@ manager.setup({
       require('avante_lib').load()
       require('avante').setup({
         provider = 'copilot',
+        hints = {
+          enabled = false
+        },
+        windows = {
+          ask = {
+            floating = true, -- Open the 'AvanteAsk' prompt in a floating window
+          },
+        }
       })
     end,
     requires = {
@@ -42,7 +50,7 @@ manager.setup({
   { 'MeanderingProgrammer/render-markdown.nvim',
     config = function()
       require('render-markdown').setup({
-        file_types = { 'markdown', 'Avante' },
+        file_types = { 'Avante' },
       })
     end,
   },
@@ -125,8 +133,8 @@ manager.setup({
     vim.api.nvim_create_autocmd('LspAttach', {
       desc = 'trouble mappings',
       callback = function(args)
-        vim.keymap.set('n', 'grr', '<cmd>Trouble lsp_references<cr>', { bufnr = args.buf })
-        vim.keymap.set('n', 'gd', '<cmd>Trouble diagnostics<cr>', { bufnr = args.buf })
+        vim.keymap.set('n', 'grr', '<cmd>Trouble lsp_references<cr>', { buffer = args.buf })
+        vim.keymap.set('n', 'gd', '<cmd>Trouble diagnostics<cr>', { buffer = args.buf })
       end
     })
   end},
@@ -221,6 +229,24 @@ manager.setup({
           require('copilot_cmp').setup()
         end})
     end,
+  },
+
+ { 'rachartier/tiny-inline-diagnostic.nvim',
+    config = function()
+      require('tiny-inline-diagnostic').setup({
+        options = {
+          show_source = true,
+          use_icons_from_diagnostic = true,
+          multiple_diag_under_cursor = true,
+          multilines = {
+            enabled = true
+          },
+          break_line = {
+            enabled = true
+          }
+        },
+      })
+    end
   },
 
   { 'hrsh7th/nvim-cmp',

@@ -1,5 +1,6 @@
 vim.diagnostic.config({
-  virtual_text = { source = true },
+  -- virtual_text = { source = true },
+  virtual_text = false,
   severity_sort = true,
   update_in_insert = true,
   signs = {
