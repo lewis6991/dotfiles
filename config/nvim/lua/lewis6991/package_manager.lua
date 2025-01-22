@@ -16,30 +16,18 @@ end
 
 local HOME = os.getenv('HOME')
 
-local function resolve(x)
+--- @generic T
+--- @param x T
+--- @return T
+local function try_get_local(x)
   if type(x) == 'string' and x:sub(1, 1) ~= '/' then
-    local name = vim.split(x, '/')[2]
-    local loc_install = HOME .. '/projects/' .. name
+    local name = x:match('/(.*)')
+    local loc_install = vim.fs.joinpath(HOME, 'projects', name)
     if name ~= '' and vim.fn.isdirectory(loc_install) == 1 then
       return loc_install
     end
   end
-end
-
-local function try_get_local(spec)
-  if type(spec) == 'string' then
-    return resolve(spec) or spec
-  end
-
-  if not spec or type(spec) == 'string' or type(spec[1]) ~= 'string' then
-    return spec
-  end
-
-  local loc_install = resolve(spec[1])
-  if loc_install then
-    spec[1] = loc_install
-  end
-  return spec
+  return x
 end
 
 function M.bootstrap()
@@ -58,7 +46,9 @@ function M.bootstrap()
   end
 end
 
-local function setup_pckr(init)
+local init = {}
+
+function M.setup()
   local pckr = require('pckr')
 
   pckr.setup({
@@ -72,17 +62,21 @@ local function setup_pckr(init)
     -- log = {
     --   level = 'trace'
     -- }
-  })
+  }, init)
 
-  pckr.add(init)
+  init = {}
 
   vim.keymap.set('n', '<leader>u', '<cmd>Pckr update<CR>', { silent = true })
+  vim.keymap.set('n', '<leader>p', '<cmd>Pckr status<CR>', { silent = true })
 end
 
-function M.setup(init)
-  -- look for local version of plugins in $HOME/projects and use them instead
-  walk_spec({ init }, nil, try_get_local)
-  setup_pckr(init)
+--- @param name string
+--- @param spec? Pckr.UserSpec
+function M.add(name, spec)
+  spec = spec or {}
+  spec[1] = name
+  walk_spec({ spec }, nil, try_get_local)
+  init[#init + 1] = spec
 end
 
 return M
