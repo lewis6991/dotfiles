@@ -1,16 +1,16 @@
 function JsonFolds()
-    local line = vim.fn.getline(vim.v.lnum)
-    -- let l:lline = split(l:line, '\zs')
-    local inc = vim.fn.count(line, '{')
-    local dec = vim.fn.count(line, '}')
-    local level = inc - dec
-    if level == 0 then
-        return '='
-    elseif level > 0 then
-        return 'a'..level
-    elseif level < 0 then
-        return 's'..-level
-    end
+  local line = vim.fn.getline(vim.v.lnum)
+  -- let l:lline = split(l:line, '\zs')
+  local inc = vim.fn.count(line, '{')
+  local dec = vim.fn.count(line, '}')
+  local level = inc - dec
+  if level == 0 then
+    return '='
+  elseif level > 0 then
+    return 'a' .. level
+  elseif level < 0 then
+    return 's' .. -level
+  end
 end
 
 vim.opt_local.conceallevel = 0

@@ -191,7 +191,7 @@ function M.bufname()
   elseif vim.startswith(buf_name, 'gitsigns://') then
     local _, _, revision, relpath = buf_name:find([[^gitsigns://.*/%.git.*/(.*)[:/](.*)]])
     if revision then
-      return relpath .. '@' ..  (tonumber(revision, 16) and revision:sub(1, 8) or revision)
+      return relpath .. '@' .. (tonumber(revision, 16) and revision:sub(1, 8) or revision)
     end
   end
 
@@ -302,12 +302,12 @@ end)
 api.nvim_create_autocmd('User', {
   pattern = 'GitSignsUpdate',
   group = group,
-  callback = redrawstatus
+  callback = redrawstatus,
 })
 
 api.nvim_create_autocmd('DiagnosticChanged', {
   group = group,
-  callback = redrawstatus
+  callback = redrawstatus,
 })
 
 _G.statusline = M

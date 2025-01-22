@@ -14,17 +14,17 @@ local function on_attach(bufnr)
 
   map('n', ']c', function()
     if vim.wo.diff then
-      vim.cmd.normal({']c', bang = true})
+      vim.cmd.normal({ ']c', bang = true })
     else
-      gitsigns.nav_hunk('next', {target = 'all'})
+      gitsigns.nav_hunk('next', { target = 'all' })
     end
   end)
 
   map('n', '[c', function()
     if vim.wo.diff then
-      vim.cmd.normal({'[c', bang = true})
+      vim.cmd.normal({ '[c', bang = true })
     else
-      gitsigns.nav_hunk('prev', {target = 'all'})
+      gitsigns.nav_hunk('prev', { target = 'all' })
     end
   end)
 
@@ -40,12 +40,11 @@ local function on_attach(bufnr)
   end)
 
   map('n', '<leader>hS', gitsigns.stage_buffer)
-  map('n', '<leader>hu', gitsigns.undo_stage_hunk)
   map('n', '<leader>hR', gitsigns.reset_buffer)
   map('n', '<leader>hp', gitsigns.preview_hunk)
 
   map('n', '<leader>hb', function()
-    gitsigns.blame_line({full=true})
+    gitsigns.blame_line({ full = true })
   end)
 
   map('n', '<leader>hg', function()
@@ -57,7 +56,7 @@ local function on_attach(bufnr)
   map('n', '<leader>hD', ':Gitsigns diffthis ~')
 
   map('n', '<leader>hld', function()
-    gitsigns.diffthis(vim.b.gitsigns_blame_line_dict.sha..'~1')
+    gitsigns.diffthis(vim.b.gitsigns_blame_line_dict.sha .. '~1')
   end)
 
   map('n', '<leader>hB', ':Gitsigns change_base ~')
@@ -67,9 +66,12 @@ local function on_attach(bufnr)
   map('n', '<leader>td', gitsigns.toggle_deleted)
   map('n', '<leader>tw', gitsigns.toggle_word_diff)
 
-  map('n', '<leader>hQ', function() gitsigns.setqflist('all') end)
+  map('n', '<leader>hQ', function()
+    gitsigns.setqflist('all')
+  end)
   map('n', '<leader>hq', gitsigns.setqflist)
 
+  -- Text object
   map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
 end
 

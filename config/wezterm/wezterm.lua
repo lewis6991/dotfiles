@@ -23,7 +23,7 @@ local color = {
   [6] = '#8b949e',
   [7] = '#b1bac4',
   [8] = '#c9d1d9',
-  [9] = '#f0f6fc'
+  [9] = '#f0f6fc',
 }
 
 local select = '#29384b'
@@ -36,15 +36,15 @@ config.colors = {
 
   tab_bar = {
     inactive_tab_edge = color[3],
-    inactive_tab       = { bg_color = color[0], fg_color = color[8] },
-    active_tab         = { bg_color = color[2], fg_color = color[7] },
+    inactive_tab = { bg_color = color[0], fg_color = color[8] },
+    active_tab = { bg_color = color[2], fg_color = color[7] },
     inactive_tab_hover = { bg_color = color[3], fg_color = color[7] },
-    new_tab            = { bg_color = color[0], fg_color = color[6] },
-    new_tab_hover      = { bg_color = color[3], fg_color = color[7] }
-  }
+    new_tab = { bg_color = color[0], fg_color = color[6] },
+    new_tab_hover = { bg_color = color[3], fg_color = color[7] },
+  },
 }
 
-config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
+config.window_decorations = 'INTEGRATED_BUTTONS|RESIZE'
 
 config.window_frame = {
   font_size = 13,
@@ -57,7 +57,7 @@ config.mouse_bindings = {
     event = { Up = { streak = 1, button = 'Left' } },
     mods = 'CTRL',
     action = wezterm.action.OpenLinkAtMouseCursor,
-  }
+  },
 }
 
 config.term = 'wezterm'

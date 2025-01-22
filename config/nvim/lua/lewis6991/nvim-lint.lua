@@ -5,11 +5,14 @@ if env.JENKINS_CLI and env.JENKINS_URL and env.JENKINS_USER and env.JENKINS_AUTH
   jenkins_lint = {
     cmd = 'java',
     args = {
-      '-jar', env.JENKINS_CLI,
-      '-s', env.JENKINS_URL,
+      '-jar',
+      env.JENKINS_CLI,
+      '-s',
+      env.JENKINS_URL,
       '-noCertificateCheck',
-      '-auth', env.JENKINS_USER .. ':' .. env.JENKINS_AUTH_TOKEN,
-      'declarative-linter'
+      '-auth',
+      env.JENKINS_USER .. ':' .. env.JENKINS_AUTH_TOKEN,
+      'declarative-linter',
     },
     stdin = true,
     ignore_exitcode = true,
@@ -71,7 +74,7 @@ local function do_setup()
 
   nvimlint.linters_by_ft = {
     tcl = { 'tcl_lint' },
-    Jenkinsfile = jenkins_lint and {'jenkins_lint'} or nil,
+    Jenkinsfile = jenkins_lint and { 'jenkins_lint' } or nil,
     python = { 'pylint' },
   }
 end

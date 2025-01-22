@@ -49,9 +49,9 @@ end
 local function setup()
   local cmp = require('cmp')
   cmp.setup({
-     expand = function(args)
-       vim.snippet.expand(args.body)
-     end,
+    expand = function(args)
+      vim.snippet.expand(args.body)
+    end,
     formatting = {
       fields = { 'kind', 'abbr', 'menu' },
       format = function(entry, vim_item)
@@ -96,7 +96,7 @@ local function setup()
     sorting = {
       priority_weight = 2,
       comparators = {
-        require("copilot_cmp.comparators").prioritize,
+        require('copilot_cmp.comparators').prioritize,
 
         -- Below is the default comparitor list and order for nvim-cmp
         cmp.config.compare.offset,
@@ -136,7 +136,7 @@ end
 --   labelDetailsSupport
 vim.lsp.config('*', { capablities = require('cmp_nvim_lsp').default_capabilities() })
 
-vim.api.nvim_create_autocmd({'InsertEnter', 'CmdLineEnter'}, {
+vim.api.nvim_create_autocmd({ 'InsertEnter', 'CmdLineEnter' }, {
   once = true,
-  callback = setup
+  callback = setup,
 })

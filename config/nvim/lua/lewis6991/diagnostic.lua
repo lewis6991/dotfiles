@@ -12,8 +12,8 @@ vim.diagnostic.config({
     },
   },
   jump = {
-    float = true
-  }
+    float = true,
+  },
 })
 
 vim.api.nvim_set_hl(0, 'LspCodeLens', { link = 'WarningMsg' })

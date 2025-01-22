@@ -3,6 +3,8 @@ manager.bootstrap()
 
 local event = require('pckr.loader.event')
 
+-- stylua: ignore start
+
 manager.setup({
 
   --- Filetype plugins ---
@@ -10,7 +12,7 @@ manager.setup({
   'lewis6991/vc.nvim',
   'lewis6991/tree-sitter-tcl',
 
-  { 'lewis6991/github_dark.nvim',
+  {'lewis6991/github_dark.nvim',
     config = function()
       vim.cmd.color('github_dark')
     end,
@@ -22,32 +24,32 @@ manager.setup({
   'lewis6991/fileline.nvim',
   'lewis6991/satellite.nvim',
 
-  { 'yetone/avante.nvim',
+  {'yetone/avante.nvim',
     run = 'make',
     config = function()
       require('avante_lib').load()
       require('avante').setup({
         provider = 'copilot',
         hints = {
-          enabled = false
+          enabled = false,
         },
         windows = {
           ask = {
             floating = true, -- Open the 'AvanteAsk' prompt in a floating window
           },
-        }
+        },
       })
     end,
     requires = {
-      "stevearc/dressing.nvim",
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
+      'stevearc/dressing.nvim',
+      'nvim-lua/plenary.nvim',
+      'MunifTanjim/nui.nvim',
       --- optional,
-      "zbirenbaum/copilot.lua", -- for providers='copilot'
+      'zbirenbaum/copilot.lua', -- for providers='copilot'
     },
   },
 
-  { 'MeanderingProgrammer/render-markdown.nvim',
+  {'MeanderingProgrammer/render-markdown.nvim',
     config = function()
       require('render-markdown').setup({
         file_types = { 'Avante' },
@@ -55,7 +57,7 @@ manager.setup({
     end,
   },
 
-  { 'lewis6991/whatthejump.nvim',
+  {'lewis6991/whatthejump.nvim',
     config = function()
       -- <Tab> == <C-i> in tmux so need other mappings for navigating the jump list
       vim.keymap.set('n', '<M-k>', function()
@@ -70,7 +72,7 @@ manager.setup({
     end,
   },
 
-  { 'lewis6991/hover.nvim',
+  {'lewis6991/hover.nvim',
     config = function()
       local did_setup = false
       local function hover_action(action)
@@ -92,14 +94,16 @@ manager.setup({
         end
       end
 
-      vim.keymap.set('n', 'K',
-        hover_action('hover'), { desc = 'hover.nvim' })
+      vim.keymap.set('n', 'K', hover_action('hover'), { desc = 'hover.nvim' })
 
-      vim.keymap.set('n', 'gK',
-        hover_action('hover_select'), { desc = 'hover.nvim (select)' })
+      vim.keymap.set('n', 'gK', hover_action('hover_select'), { desc = 'hover.nvim (select)' })
 
-      vim.keymap.set( 'n', '<MouseMove>',
-        hover_action('hover_mouse'), { desc = 'hover.nvim (mouse)' })
+      vim.keymap.set(
+        'n',
+        '<MouseMove>',
+        hover_action('hover_mouse'),
+        { desc = 'hover.nvim (mouse)' }
+      )
 
       vim.o.mousemoveevent = true
     end,
@@ -109,7 +113,7 @@ manager.setup({
 
   'lewis6991/nvim-colorizer.lua',
 
-  { 'lewis6991/tmux.nvim',
+  {'lewis6991/tmux.nvim',
     config = function()
       require('tmux').setup({
         navigation = { enable_default_keybindings = true },
@@ -128,18 +132,20 @@ manager.setup({
 
   'wellle/targets.vim',
   'sindrets/diffview.nvim',
-  {'folke/trouble.nvim', config = function()
-    require('trouble').setup()
-    vim.api.nvim_create_autocmd('LspAttach', {
-      desc = 'trouble mappings',
-      callback = function(args)
-        vim.keymap.set('n', 'grr', '<cmd>Trouble lsp_references<cr>', { buffer = args.buf })
-        vim.keymap.set('n', 'gd', '<cmd>Trouble diagnostics<cr>', { buffer = args.buf })
-      end
-    })
-  end},
+  {'folke/trouble.nvim',
+    config = function()
+      require('trouble').setup()
+      vim.api.nvim_create_autocmd('LspAttach', {
+        desc = 'trouble mappings',
+        callback = function(args)
+          vim.keymap.set('n', 'grr', '<cmd>Trouble lsp_references<cr>', { buffer = args.buf })
+          vim.keymap.set('n', 'gd', '<cmd>Trouble diagnostics<cr>', { buffer = args.buf })
+        end,
+      })
+    end,
+  },
 
-  { 'AndrewRadev/bufferize.vim',
+  {'AndrewRadev/bufferize.vim',
     config = function()
       vim.g.bufferize_command = 'enew'
       vim.api.nvim_create_autocmd('FileType', {
@@ -149,7 +155,7 @@ manager.setup({
     end,
   },
 
-  { 'rcarriga/nvim-notify',
+  {'rcarriga/nvim-notify',
     config = function()
       --- @diagnostic disable-next-line
       vim.notify = function(...)
@@ -159,13 +165,13 @@ manager.setup({
     end,
   },
 
-  { 'j-hui/fidget.nvim',
+  {'j-hui/fidget.nvim',
     config = function()
       require('fidget').setup({})
     end,
   },
 
-  { 'junegunn/vim-easy-align',
+  {'junegunn/vim-easy-align',
     config = function()
       vim.keymap.set({ 'x', 'n' }, 'ga', '<Plug>(EasyAlign)')
       vim.g.easy_align_delimiters = {
@@ -192,15 +198,12 @@ manager.setup({
 
   'scalameta/nvim-metals',
 
-  { 'mfussenegger/nvim-dap',
-    cond = event('LspAttach'),
-    config = 'lewis6991.dap'
-  },
+  { 'mfussenegger/nvim-dap', cond = event('LspAttach'), config = 'lewis6991.dap' },
 
-  { 'rcarriga/nvim-dap-ui',
+  {'rcarriga/nvim-dap-ui',
     requires = {
       'mfussenegger/nvim-dap',
-      'nvim-neotest/nvim-nio'
+      'nvim-neotest/nvim-nio',
     },
   },
 
@@ -211,27 +214,28 @@ manager.setup({
 
   { 'hrsh7th/cmp-nvim-lsp-signature-help', requires = 'hrsh7th/nvim-cmp' },
   { 'hrsh7th/cmp-cmdline', requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-buffer'    , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-emoji'     , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-path'      , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
-  { 'hrsh7th/cmp-nvim-lua'  , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
-  { 'lukas-reineke/cmp-rg'  , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
-  { 'f3fora/cmp-spell'      , cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-buffer', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-emoji', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-path', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'hrsh7th/cmp-nvim-lua', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'lukas-reineke/cmp-rg', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
+  { 'f3fora/cmp-spell', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
   { 'andersevenrud/cmp-tmux', cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' },
 
-  { 'zbirenbaum/copilot-cmp',
+  {'zbirenbaum/copilot-cmp',
     requires = 'zbirenbaum/copilot.lua',
-    config = function ()
+    config = function()
       vim.api.nvim_create_autocmd('InsertEnter', {
         once = true,
         callback = function()
           require('copilot').setup()
           require('copilot_cmp').setup()
-        end})
+        end,
+      })
     end,
   },
 
- { 'rachartier/tiny-inline-diagnostic.nvim',
+  {'rachartier/tiny-inline-diagnostic.nvim',
     config = function()
       require('tiny-inline-diagnostic').setup({
         options = {
@@ -239,17 +243,17 @@ manager.setup({
           use_icons_from_diagnostic = true,
           multiple_diag_under_cursor = true,
           multilines = {
-            enabled = true
+            enabled = true,
           },
           break_line = {
-            enabled = true
-          }
+            enabled = true,
+          },
         },
       })
-    end
+    end,
   },
 
-  { 'hrsh7th/nvim-cmp',
+  {'hrsh7th/nvim-cmp',
     requires = {
       'zbirenbaum/copilot-cmp',
       -- TODO(lewis6991): optimize requires in cmp_nvim_lsp/init.lua
@@ -258,7 +262,7 @@ manager.setup({
     config = 'lewis6991.cmp',
   },
 
-  { 'stevearc/dressing.nvim',
+  {'stevearc/dressing.nvim',
     config = function()
       require('dressing').setup({
         input = {
@@ -274,7 +278,7 @@ manager.setup({
     end,
   },
 
-  { 'nvim-lua/telescope.nvim',
+  {'nvim-lua/telescope.nvim',
     requires = {
       { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
       'nvim-lua/plenary.nvim',
@@ -282,20 +286,20 @@ manager.setup({
     config = 'lewis6991.telescope',
   },
 
-  { 'neovim/nvimdev.nvim',
+  {'neovim/nvimdev.nvim',
     config = function()
       vim.g.nvimdev_auto_init = 0
     end,
   },
 
-  { 'nvim-treesitter/nvim-treesitter',
+  {'nvim-treesitter/nvim-treesitter',
     branch = 'main',
     config_pre = function()
       vim.g.loaded_nvim_treesitter = 1
-    end
+    end,
   },
 
-  { 'lewis6991/ts-install.nvim',
+  {'lewis6991/ts-install.nvim',
     requires = 'nvim-treesitter/nvim-treesitter',
     run = ':TS update',
     config = function()
@@ -310,9 +314,9 @@ manager.setup({
   },
 
   -- TODO(lewis6991): optimize this plugin
-  { 'uga-rosa/translate.nvim', cond = event('CmdlineEnter') },
+  -- { 'uga-rosa/translate.nvim', cond = event('CmdlineEnter') },
 
-  { 'nvim-treesitter/nvim-treesitter-context',
+  {'nvim-treesitter/nvim-treesitter-context',
     requires = 'nvim-treesitter/nvim-treesitter',
     config = function()
       require('treesitter-context').setup({
@@ -321,5 +325,6 @@ manager.setup({
       })
     end,
   },
-
 })
+
+-- stylua: ignore end

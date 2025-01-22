@@ -3,12 +3,13 @@ local api = vim.api
 --- @param x string
 --- @return string?
 local function match_require(x)
-  return x:match('require') and (
-    x:match("require%s*%(%s*'([^.']+).*'%)") or
-    x:match('require%s*%(%s*"([^."]+).*"%)') or
-    x:match("require%s*'([^.']+).*'%)") or
-    x:match('require%s*"([^."]+).*"%)')
-  )
+  return x:match('require')
+    and (
+      x:match("require%s*%(%s*'([^.']+).*'%)")
+      or x:match('require%s*%(%s*"([^."]+).*"%)')
+      or x:match("require%s*'([^.']+).*'%)")
+      or x:match('require%s*"([^."]+).*"%)')
+    )
 end
 
 --- @param client vim.lsp.Client
@@ -23,7 +24,7 @@ return function(client, bufnr)
   end
 
   client.settings = vim.tbl_deep_extend('keep', client.settings, {
-    Lua = { workspace = { library = {} } }
+    Lua = { workspace = { library = {} } },
   })
 
   --- @param first? integer

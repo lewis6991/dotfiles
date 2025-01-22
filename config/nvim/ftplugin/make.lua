@@ -6,4 +6,4 @@ vim.keymap.set('n', 'J', function()
   else
     return 'J'
   end
-end, { expr = true})
+end, { expr = true })

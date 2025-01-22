@@ -44,11 +44,10 @@ end, {
 do -- LspLog
   local path = vim.lsp.get_log_path()
   vim.fn.delete(path)
-  vim.lsp.log.set_level(vim.lsp.log.levels.DEBUG)
-  vim.lsp.log.set_format_func(vim.inspect)
+  vim.lsp.set_log_level(vim.lsp.log.levels.TRACE)
+  -- vim.lsp.log.set_format_func(vim.inspect)
 
   api.nvim_create_user_command('LspLog', function()
     vim.cmd.split(path)
   end, {})
 end
-

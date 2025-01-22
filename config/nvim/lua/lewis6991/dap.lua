@@ -1,22 +1,22 @@
-local dap = require("dap")
+local dap = require('dap')
 
 -- Debug settings if you're using nvim-dap
 dap.configurations.scala = {
   {
-    type = "scala",
-    request = "launch",
-    name = "RunOrTest",
+    type = 'scala',
+    request = 'launch',
+    name = 'RunOrTest',
     metals = {
-      runType = "runOrTestFile",
+      runType = 'runOrTestFile',
       --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
     },
   },
   {
-    type = "scala",
-    request = "launch",
-    name = "Test Target",
+    type = 'scala',
+    request = 'launch',
+    name = 'Test Target',
     metals = {
-      runType = "testTarget",
+      runType = 'testTarget',
     },
   },
 }
@@ -26,15 +26,15 @@ dap.configurations.lua = {
   {
     type = 'nlua',
     request = 'attach',
-    name = "Attach to running Neovim instance",
-  }
+    name = 'Attach to running Neovim instance',
+  },
 }
 
 dap.adapters.nlua = function(callback, config)
   callback({
     type = 'server',
-    host = config.host or "127.0.0.1",
-    port = config.port or 8086
+    host = config.host or '127.0.0.1',
+    port = config.port or 8086,
   })
 end
 
@@ -63,17 +63,17 @@ end
 --     npm install
 --     npm run build
 dap.adapters['local-lua'] = {
-  type = "executable",
-  command = "node",
+  type = 'executable',
+  command = 'node',
   args = {
-    "/absolute/path/to/local-lua-debugger-vscode/extension/debugAdapter.js",
+    '/absolute/path/to/local-lua-debugger-vscode/extension/debugAdapter.js',
   },
   enrich_config = function(config, on_config)
-    if not config["extensionPath"] then
+    if not config['extensionPath'] then
       config = vim.deepcopy(config)
       -- 💀 If this is missing or wrong you'll see
       -- "module 'lldebugger' not found" errors in the dap-repl when trying to launch a debug session
-      config.extensionPath = "/absolute/path/to/local-lua-debugger-vscode/"
+      config.extensionPath = '/absolute/path/to/local-lua-debugger-vscode/'
     end
     on_config(config)
   end,
@@ -81,18 +81,18 @@ dap.adapters['local-lua'] = {
 
 local function make_luals_debug_config(args)
   local config = {
-    name = "Debug LuaLS test",
-    type = "lua-local",
-    request = "launch",
+    name = 'Debug LuaLS test',
+    type = 'lua-local',
+    request = 'launch',
     program = {
-      command = "lua-language-server",
+      command = 'lua-language-server',
     },
     args = args,
-    cwd = "${workspaceFolder}",
+    cwd = '${workspaceFolder}',
   }
   return config
 end
 
-vim.api.nvim_create_user_command("LaunchDebuggerLuaLs", function()
-  require("dap").run(make_luals_debug_config({"test.lua"}))
+vim.api.nvim_create_user_command('LaunchDebuggerLuaLs', function()
+  require('dap').run(make_luals_debug_config({ 'test.lua' }))
 end, {})

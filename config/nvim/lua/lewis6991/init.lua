@@ -167,7 +167,7 @@ if 'Mappings' then
   api.nvim_create_autocmd('InsertEnter', {
     callback = vim.schedule_wrap(function()
       vim.cmd.nohlsearch()
-    end)
+    end),
   })
 
   map('n', '<Tab>', function()
@@ -231,7 +231,7 @@ autocmd('BufReadPost', {
   group = 'vimrc',
   callback = function()
     if vim.bo.buftype ~= 'nofile' then
-      vim.fn.matchadd('ColorColumn', '^.\\{'..vim.bo.textwidth..'}\\zs.')
+      vim.fn.matchadd('ColorColumn', '^.\\{' .. vim.bo.textwidth .. '}\\zs.')
     end
-  end
+  end,
 })
