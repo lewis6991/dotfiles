@@ -35,6 +35,5 @@ vim.keymap.set('n', '<leader>ts', function()
   end
 end)
 
-vim.treesitter.language.register('bash', 'zsh')
 vim.treesitter.language.register('verilog', 'systemverilog')
 -- vim.g.__ts_debug = 1
