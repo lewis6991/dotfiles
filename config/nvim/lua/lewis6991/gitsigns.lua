@@ -63,7 +63,6 @@ local function on_attach(bufnr)
 
   -- Toggles
   map('n', '<leader>tb', gitsigns.toggle_current_line_blame)
-  map('n', '<leader>td', gitsigns.toggle_deleted)
   map('n', '<leader>tw', gitsigns.toggle_word_diff)
 
   map('n', '<leader>hQ', function()
@@ -120,4 +119,5 @@ gitsigns.setup({
   update_debounce = 50,
   word_diff = true,
   trouble = true,
+  _new_sign_calc = true,
 })
