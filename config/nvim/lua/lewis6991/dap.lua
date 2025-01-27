@@ -30,6 +30,13 @@ dap.configurations.lua = {
   },
 }
 
+-- Quickstart:
+-- - Launch the server in the debuggee using <leader>dl
+-- - Open another Neovim instance with the source file
+-- - Place breakpoint with <leader>db
+-- - Connect using the DAP client with <leader>dc
+-- - Run your script/plugin in the debuggee
+
 dap.adapters.nlua = function(callback, config)
   callback({
     type = 'server',
@@ -38,22 +45,24 @@ dap.adapters.nlua = function(callback, config)
   })
 end
 
--- local function keymap(lhs, f, opts)
---   vim.keymap.set('n', lhs, function()
---     f()
---   end, opts)
--- end
+local function keymap(lhs, f, opts)
+  vim.keymap.set('n', lhs, function()
+    f()
+  end, opts)
+end
 
--- keymap('<F8>', dap.toggle_breakpoint)
--- keymap('<F9>', dap.continue)
--- keymap('<F10>', dap.step_over)
--- keymap('<S-F10>', dap.step_into)
--- keymap('<F12>', require('dap.ui.widgets').hover)
+keymap('<leader>db', dap.toggle_breakpoint, { noremap = true })
+keymap('<leader>dc', dap.continue, { noremap = true })
+keymap('<leader>do', dap.step_over, { noremap = true })
+keymap('<leader>di', dap.step_into, { noremap = true })
 
--- requires: https://github.com/jbyuki/one-small-step-for-vimkind
--- keymap('<F5>', function()
---   require('osv').launch({port = 8086})
--- end)
+keymap('<leader>dl', function()
+  require('osv').launch({ port = 8086 })
+end, { noremap = true })
+
+keymap('<leader>dw', function()
+  require('dapui').open()
+end)
 
 -- Install local-lua-debugger-vscode, either via:
 -- - Your package manager

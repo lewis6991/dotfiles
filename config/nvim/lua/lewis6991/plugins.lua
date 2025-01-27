@@ -193,14 +193,16 @@ p('inkarkat/vim-visualrepeat')
 
 p('scalameta/nvim-metals')
 
-p('mfussenegger/nvim-dap', { cond = event('LspAttach'), config = 'lewis6991.dap' })
-
-p('rcarriga/nvim-dap-ui', {
+p('mfussenegger/nvim-dap', {
   requires = {
-    'mfussenegger/nvim-dap',
-    'nvim-neotest/nvim-nio',
+    'jbyuki/one-small-step-for-vimkind',
+    'rcarriga/nvim-dap-ui',
   },
+  cond = event('LspAttach'),
+  config = 'lewis6991.dap'
 })
+
+p('rcarriga/nvim-dap-ui', { requires = { 'nvim-neotest/nvim-nio' } })
 
 p('mfussenegger/nvim-lint', { config = 'lewis6991.nvim-lint' })
 
@@ -303,6 +305,15 @@ p('lewis6991/ts-install.nvim', {
       ignore_install = {
         'verilog',
         'tcl',
+        'tmux',
+      },
+      parsers = {
+        zsh = {
+          install_info = {
+            url = 'https://github.com/tree-sitter-grammars/tree-sitter-zsh',
+            branch = 'master',
+          }
+        }
       },
     })
   end,
