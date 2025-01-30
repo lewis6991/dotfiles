@@ -227,8 +227,7 @@ local function parse_sections(sections)
     end
     result[#result + 1] = table.concat(sub_result)
   end
-  -- Leading '%=' reeded for first highlight to work
-  return '%=' .. table.concat(result, '%=')
+  return table.concat(result, '%=')
 end
 
 --- @param active 0|1
@@ -237,6 +236,8 @@ local function set(active, global)
   local scope = global and 'o' or 'wo'
   vim[scope].statusline = parse_sections({
     {
+      -- Unused leading highlight is to avoid neovim/neovim#32259
+      highlight(1, active),
       highlight(1, active),
       recording(),
       pad(F.hunks()),
