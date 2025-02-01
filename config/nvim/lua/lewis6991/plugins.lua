@@ -199,7 +199,7 @@ p('mfussenegger/nvim-dap', {
     'rcarriga/nvim-dap-ui',
   },
   cond = event('LspAttach'),
-  config = 'lewis6991.dap'
+  config = 'lewis6991.dap',
 })
 
 p('rcarriga/nvim-dap-ui', { requires = { 'nvim-neotest/nvim-nio' } })
@@ -312,8 +312,8 @@ p('lewis6991/ts-install.nvim', {
           install_info = {
             url = 'https://github.com/tree-sitter-grammars/tree-sitter-zsh',
             branch = 'master',
-          }
-        }
+          },
+        },
       },
     })
   end,
