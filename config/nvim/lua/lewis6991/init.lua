@@ -28,7 +28,7 @@ if 'Modules' then
   --- Same as require() but don't abort on error
   --- @param mod string
   local function safe_require(mod)
-    local ok, r = pcall(require, mod)
+    local ok, r = xpcall(require, debug.traceback, mod)
     if not ok then
       vim.schedule(function()
         error(r)
