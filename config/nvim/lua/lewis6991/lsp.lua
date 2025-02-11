@@ -77,15 +77,20 @@ add('clangd', { -- clangd
   filetypes = { 'c', 'cpp' },
 })
 
--- add('emmylua', {
---   cmd = { '/Users/lewrus01/emmylua/emmylua_ls' },
---   filetypes = { 'lua' },
---   root_markers = {
---     'emmyrc.json',
---   }
--- })
+lsp.config('emmylua', {
+  cmd = { 'emmylua_ls' },
+  -- cmd = {
+  --   '/Users/lewrus01/projects/emmylua-analyzer-rust/target/release/emmylua_ls',
+  --    -- '--log-level', 'debug',
+  -- },
+  filetypes = { 'lua' },
+  root_markers = {
+    '.luarc.json',
+    '.emmyrc.json',
+  }
+})
 
-add('luals', {
+lsp.config('luals', {
   cmd = { 'lua-language-server' },
   filetypes = { 'lua' },
   root_markers = {
@@ -117,6 +122,8 @@ add('luals', {
     require('lewis6991.lsp.auto_lua_require')(client, bufnr)
   end,
 })
+
+lsp.enable(vim.env.EMMY and 'emmylua' or 'luals')
 
 do -- Python
   local python_markers = {

@@ -28,8 +28,8 @@ bindkey -e
 bindkey '^P' history-substring-search-up
 bindkey '^N' history-substring-search-down
 
-bindkey '^[' zsh_gh_copilot_explain  # bind Option+shift+\ to explain
-bindkey '^]' zsh_gh_copilot_suggest  # bind Option+\ to suggest
+# bindkey '^[' zsh_gh_copilot_explain  # bind Option+shift+\ to explain
+# bindkey '^]' zsh_gh_copilot_suggest  # bind Option+\ to suggest
 
 export HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND='bg=8,bold,fg=white'
 export HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND='bg=8,fg=red'
@@ -127,19 +127,14 @@ export LESS="\
     --quit-if-one-screen \
     --chop-long-lines"
 
-# Stop tmux clobbering TERM
-if [[ -n "$TMUX" ]]; then
-    if [[ -n "$TERM_BACK" ]]; then
-        export TERM=$TERM_BACK
-    fi
-else
-    export TERM_BACK=$TERM
-fi
-
 ulimit -c unlimited
 
-if have_cmd jenv; then
-    eval "$(jenv init -)"
-fi
+java() {
+    unfunction java
+    if ! hash jenv 2>/dev/null; then
+        eval "$(jenv init -)"
+    fi
+    command java "$@"
+}
 
 unfunction have_cmd
