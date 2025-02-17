@@ -235,6 +235,7 @@ p('zbirenbaum/copilot-cmp', {
 })
 
 p('rachartier/tiny-inline-diagnostic.nvim', {
+  cond = event({'LspAttach', 'CursorMoved', 'BufWrite'}),
   config = function()
     require('tiny-inline-diagnostic').setup({
       options = {
