@@ -51,6 +51,7 @@ p('yetone/avante.nvim', {
 })
 
 p('MeanderingProgrammer/render-markdown.nvim', {
+  cond = event('Filetype', 'Avante'),
   config = function()
     require('render-markdown').setup({
       file_types = { 'Avante' },
