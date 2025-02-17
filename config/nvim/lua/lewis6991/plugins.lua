@@ -26,6 +26,7 @@ p('lewis6991/satellite.nvim')
 
 p('yetone/avante.nvim', {
   run = 'make',
+  cond = event('CursorMoved'),
   config = function()
     require('avante_lib').load()
     require('avante').setup({
