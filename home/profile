@@ -1,8 +1,6 @@
 #! /bin/usr/env bash
 
-if [ -f "$HOME/.profile_local" ]; then
-    source "$HOME/.profile_local"
-fi
+[ -f "$HOME/.profile_local" ] && source "$HOME/.profile_local"
 
 export EDITOR=nvim
 
@@ -33,25 +31,17 @@ export XDG_RUNTIME_DIR="$XDG_BASE/.runtime"
 [ -d "$XDG_CACHE_HOME"  ] || mkdir "$XDG_CACHE_HOME"
 [ -d "$XDG_DATA_HOME"   ] || mkdir "$XDG_DATA_HOME"
 
-if [ -d "$XDG_CACHE_HOME" ]; then
-    export PYLINTHOME="$XDG_CACHE_HOME/pylint"
-    export PYTHON_EGG_CACHE="$XDG_CACHE_HOME/python-eggs"
-fi
+export PYLINTHOME="$XDG_CACHE_HOME/pylint"
+export PYTHON_EGG_CACHE="$XDG_CACHE_HOME/python-eggs"
 
-if [ -d "$XDG_RUNTIME_DIR" ]; then
-    export TMUX_TMPDIR="$XDG_RUNTIME_DIR/tmux"
-fi
+export TMUX_TMPDIR="$XDG_RUNTIME_DIR/tmux"
 
-if [ -d "$XDG_CONFIG_HOME" ]; then
-    export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
-    export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
-    export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgreprc
-fi
+export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
+export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
+export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgreprc
 
-if [ -d "$XDG_DATA_HOME" ]; then
-    export CARGO_HOME="$XDG_DATA_HOME/cargo"
-    export RLWRAP_HOME="$XDG_DATA_HOME/rlwrap"
-fi
+export CARGO_HOME="$XDG_DATA_HOME/cargo"
+export RLWRAP_HOME="$XDG_DATA_HOME/rlwrap"
 
 # ------------------------------------------------------------------------------
 # Homebrew
