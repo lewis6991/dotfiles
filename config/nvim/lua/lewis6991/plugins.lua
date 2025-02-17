@@ -211,8 +211,8 @@ p('mfussenegger/nvim-lint', { config = 'lewis6991.nvim-lint' })
 -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
 -- files
 
-p('hrsh7th/cmp-nvim-lsp-signature-help', { requires = 'hrsh7th/nvim-cmp' })
-p('hrsh7th/cmp-cmdline', { requires = 'hrsh7th/nvim-cmp' })
+p('hrsh7th/cmp-nvim-lsp-signature-help', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
+p('hrsh7th/cmp-cmdline', { cond = event('CmdlineEnter'), requires = 'hrsh7th/nvim-cmp' })
 p('hrsh7th/cmp-buffer', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
 p('hrsh7th/cmp-emoji', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
 p('hrsh7th/cmp-path', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
