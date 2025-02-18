@@ -142,6 +142,10 @@ if 'Whitespace' then
 end
 
 if 'Mappings' then
+  -- Terminal
+  map('n', [[<C-\>]], '<cmd>vsplit | term<cr>')
+  map('n', [[<C-->]], '<cmd>split | term<cr>')
+
   map('n', '<leader>ev', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/init.lua<CR>')
   map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>')
   map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>')

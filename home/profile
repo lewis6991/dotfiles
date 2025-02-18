@@ -25,9 +25,9 @@ fi
 
 export XDG_CACHE_HOME="$XDG_BASE/.cache"
 export XDG_DATA_HOME="$XDG_BASE/.data"
-export XDG_RUNTIME_DIR="$XDG_BASE/.runtime"
+# export XDG_RUNTIME_DIR="$XDG_BASE/.runtime"
 
-[ -d "$XDG_RUNTIME_DIR" ] || mkdir "$XDG_RUNTIME_DIR"
+# [ -d "$XDG_RUNTIME_DIR" ] || mkdir "$XDG_RUNTIME_DIR"
 [ -d "$XDG_CACHE_HOME"  ] || mkdir "$XDG_CACHE_HOME"
 [ -d "$XDG_DATA_HOME"   ] || mkdir "$XDG_DATA_HOME"
 
