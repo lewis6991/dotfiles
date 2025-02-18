@@ -128,7 +128,7 @@ p('tpope/vim-sleuth')
 p('nvim-tree/nvim-web-devicons')
 
 p('wellle/targets.vim')
-p('sindrets/diffview.nvim')
+p('sindrets/diffview.nvim', { cond = event('CmdlineEnter') })
 p('folke/trouble.nvim', {
   config = function()
     require('trouble').setup()
