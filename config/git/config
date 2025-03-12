@@ -5,7 +5,9 @@
 [diff]
 	tool = vimdiff
 	colorMoved = default
-	pager = delta --side-by-side
+
+[delta]
+	side-by-side = true
 
 [merge]
 	conflictstyle = zdiff3
@@ -30,6 +32,7 @@
 	cam  = commit --amend
 	cap  = !git ca && git publish
 	ci   = commit
+	fixup = commit -m 'fixup!'
 	cij  = !sh -c 'export GIT_ADD_JIRA=1 && git commit $@'
 	ca   = commit --amend --no-edit
 	caj  = !sh -c 'export GIT_ADD_JIRA=1 && git commit --amend --no-edit $@'
@@ -75,7 +78,7 @@
 
 [core]
 	# -R needed to track lines properly
-	pager        = less -R
+	pager        = delta
 	commitGraph  = true
 	editor       = nvim
 	excludesfile = ~/.gitignore

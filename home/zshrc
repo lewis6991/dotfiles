@@ -84,9 +84,6 @@ export MANPAGER='nvim +Man!'
 
 # Other ----------------------------------------------------------------------
 
-# fpath=($HOME/zsh_completions $fpath)
-# autoload -U +X bashcompinit && bashcompinit
-
 # setopt NO_BEEP
 
 # Stop ctrl-d from closing the shell

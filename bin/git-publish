@@ -60,9 +60,8 @@ else
     remoteBranch=$(git rev-parse --abbrev-ref origin/HEAD | cut -d/ -f2)
 fi
 
-echo git push $remote "HEAD:refs/for/$remoteBranch" $MSG_OPT $OPTS
-
-git push $remote "HEAD:refs/for/$remoteBranch" $MSG_OPT $OPTS
+echo "git push $remote HEAD:refs/for/$remoteBranch $MSG_OPT $OPTS"
+eval "git push $remote HEAD:refs/for/$remoteBranch $MSG_OPT $OPTS"
 
 if hash jerrit 2>/dev/null; then
     jerrit update

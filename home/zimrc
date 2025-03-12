@@ -3,9 +3,10 @@
 # Sets sane Zsh built-in environment options.
 zmodule environment
 
-# Load before environment to prevent startup from lagging sometimes.
-# This happens because compinit needs to re-initialise
+# Additional completion definitions for Zsh.
 zmodule zsh-users/zsh-completions --fpath src
+# Enables and configures smart and extensive tab completion.
+# completion must be sourced after all modules that add completion definitions.
 zmodule completion
 
 # Applies correct bindkeys for input events.
@@ -17,7 +18,8 @@ zmodule utility
 zmodule zsh-users/zsh-autosuggestions
 zmodule zsh-users/zsh-history-substring-search
 zmodule mafredri/zsh-async --name async
-zmodule zdharma-continuum/fast-syntax-highlighting
+# zmodule zdharma-continuum/fast-syntax-highlighting
+zmodule zsh-users/zsh-syntax-highlighting
 zmodule hlissner/zsh-autopair
 zmodule lewis6991/fancy-prompt
 zmodule lewis6991/zsh-mouse
