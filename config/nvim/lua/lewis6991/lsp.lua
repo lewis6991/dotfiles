@@ -1,171 +1,17 @@
 local api, lsp = vim.api, vim.lsp
 local autocmd = api.nvim_create_autocmd
 
---- @param cfg vim.lsp.Config
-local function add(name, cfg)
-  lsp.config(name, cfg)
-  lsp.enable(name)
-end
-
--- local js_filetypes = {
---   'javascript',
---   'javascriptreact',
---   'javascript.jsx',
---   'typescript',
---   'typescriptreact',
---   'typescript.tsx',
--- }
---
--- add('tls', {
---   cmd = { 'typescript-language-server', '--stdio' },
---   filetypes = js_filetypes,
---   root_markers = {'tsconfig.json', 'jsconfig.json', 'package.json', '.git'},
--- })
---
--- add('eslint', {
---   cmd = { 'vscode-eslint-language-server', '--stdio' },
---   filetypes = js_filetypes,
---   root_markers = { 'eslint.config.ts' },
---   -- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
---   settings = {
---     useESLintClass = false,
---     experimental = {
---       useFlatConfig = true,
---     },
---     -- format = true,
---     quiet = false,
---     run = 'onType',
---     -- nodePath configures the directory in which the eslint server should start its node_modules resolution.
---     -- This path is relative to the workspace folder (root dir) of the server instance.
---     nodePath = '.',
---   },
---   handlers = {
---     ['eslint/openDoc'] = function(_, result)
---       if not result then
---         return
---       end
---       local sysname = vim.uv.os_uname().sysname
---       if sysname:match 'Windows' then
---         os.execute(string.format('start %q', result.url))
---       elseif sysname:match 'Linux' then
---         os.execute(string.format('xdg-open %q', result.url))
---       else
---         os.execute(string.format('open %q', result.url))
---       end
---       return {}
---     end,
---     ['eslint/confirmESLintExecution'] = function(_, result)
---       if not result then
---         return
---       end
---       return 4 -- approved
---     end,
---     ['eslint/probeFailed'] = function()
---       vim.notify('[lspconfig] ESLint probe failed.', vim.log.levels.WARN)
---       return {}
---     end,
---     ['eslint/noLibrary'] = function()
---       vim.notify('[lspconfig] Unable to find ESLint library.', vim.log.levels.WARN)
---       return {}
---     end,
---   }
--- })
-
-add('clangd', { -- clangd
-  cmd = { 'clangd', '--clang-tidy' },
-  root_markers = { '.clangd', 'compile_commands.json' },
-  filetypes = { 'c', 'cpp' },
-})
-
-lsp.config('emmylua', {
-  cmd = { 'emmylua_ls' },
-  -- cmd = {
-  --   '/Users/lewrus01/projects/emmylua-analyzer-rust/target/release/emmylua_ls',
-  --    -- '--log-level', 'debug',
-  -- },
-  filetypes = { 'lua' },
-  root_markers = {
-    '.luarc.json',
-    '.emmyrc.json',
-  }
-})
-
-lsp.config('luals', {
-  cmd = { 'lua-language-server' },
-  filetypes = { 'lua' },
-  root_markers = {
-    '.luarc.json',
-    '.luarc.jsonc',
-    '.luacheckrc',
-    '.stylua.toml',
-    'stylua.toml',
-    'selene.toml',
-    'selene.yml',
-  },
-  -- Note this is ignored if the project has a .luarc.json
+lsp.config('basedpyright', {
   settings = {
-    Lua = {
-      runtime = {
-        version = 'LuaJIT',
-      },
-      workspace = {
-        checkThirdParty = false,
-        library = {
-          vim.env.VIMRUNTIME,
-          '${3rd}/busted/library',
-          '${3rd}/luv/library',
-        },
+    basedpyright = {
+      analysis = {
+        typeCheckingMode = 'strict',
       },
     },
   },
-  on_attach = function(client, bufnr)
-    require('lewis6991.lsp.auto_lua_require')(client, bufnr)
-  end,
 })
 
-lsp.enable(vim.env.EMMY and 'emmylua' or 'luals')
-
-do -- Python
-  local python_markers = {
-    'pyproject.toml',
-    'setup.py',
-    'setup.cfg',
-    'requirements.txt',
-    'Pipfile',
-    'pyrightconfig.json',
-  }
-
-  -- pip install basedpyright
-  local pyright = vim.fn.executable('basedpyright') == 1 and 'basedpyright' or 'pyright'
-
-  add(pyright, {
-    cmd = { pyright .. '-langserver', '--stdio' },
-    filetypes = { 'python' },
-    root_markers = python_markers,
-    settings = {
-      basedpyright = {
-        analysis = {
-          typeCheckingMode = 'strict',
-        },
-      },
-    },
-  })
-
-  -- pip install ruff-lsp
-  add('ruff', {
-    cmd = { 'ruff', 'server' },
-    filetypes = { 'python' },
-    root_markers = python_markers,
-  })
-end
-
--- install with:
---   npm i -g bash-language-server
--- also uses shellcheck if installed:
---   brew install shellcheck
-add('bashls', {
-  cmd = { 'bash-language-server', 'start' },
-  filetypes = { 'zsh', 'sh', 'bash' },
+lsp.config('bashls', {
   settings = {
     bashIde = {
       shellcheckArguments = {
@@ -178,12 +24,15 @@ add('bashls', {
   },
 })
 
--- install with:
---   npm install -g vscode-langservers-extracted
-add('jsonls', {
-  cmd = { 'vscode-json-language-server', '--stdio' },
-  -- root_markers = { '.git' },
-  filetypes = { 'json', 'jsonc' },
+local pyright = vim.fn.executable('basedpyright') == 1 and 'basedpyright' or 'pyright'
+
+lsp.enable({
+  'clangd',
+  pyright,
+  vim.env.EMMY and 'emmylua' or 'luals',
+  'ruff',
+  'bashls',
+  'jsonls'
 })
 
 do -- metals
@@ -288,6 +137,16 @@ end
 lsp.buf.signature_help = with(lsp.buf.signature_help, {
   border = 'rounded',
   title_pos = 'left',
+})
+
+autocmd('LspAttach', {
+  desc = 'lua auto require',
+  callback = function(args)
+    local client = assert(lsp.get_client_by_id(args.data.client_id))
+    if client.name == 'luals' then
+      require('lewis6991.lsp.auto_lua_require')(client, args.buf)
+    end
+  end
 })
 
 autocmd('LspAttach', {
