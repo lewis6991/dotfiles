@@ -32,7 +32,8 @@ lsp.enable({
   vim.env.EMMY and 'emmylua' or 'luals',
   'ruff',
   'bashls',
-  'jsonls'
+  'jsonls',
+  'rust_analyzer',
 })
 
 do -- metals
@@ -146,7 +147,7 @@ autocmd('LspAttach', {
     if client.name == 'luals' then
       require('lewis6991.lsp.auto_lua_require')(client, args.buf)
     end
-  end
+  end,
 })
 
 autocmd('LspAttach', {

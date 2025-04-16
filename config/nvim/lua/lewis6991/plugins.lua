@@ -335,4 +335,18 @@ p('nvim-treesitter/nvim-treesitter-context', {
   end,
 })
 
+p('stevearc/conform.nvim', {
+  config = function()
+    require('conform').setup({
+      default_format_opts = {
+        lsp_format = 'first',
+      },
+      formatters_by_ft = {
+        lua = { 'stylua' },
+      },
+    })
+    vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+  end,
+})
+
 manager.setup()

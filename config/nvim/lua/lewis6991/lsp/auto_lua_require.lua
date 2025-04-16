@@ -5,12 +5,12 @@ local api = vim.api
 local function match_require(x)
   return x:match('require')
     and (
-      x:match("require%s*%(%s*'([^.']+).*'%)") -- require('<module>')
-      or x:match('require%s*%(%s*"([^."]+).*"%)') -- require("<module>")
-      or x:match("require%s*'([^.']+).*'%)") -- require '<module>'
-      or x:match('require%s*"([^."]+).*"%)') -- require "<module>"
-      or x:match("pcall(require,%s*'([^.']+).*'%)") -- pcall(require, "<module>")
-      or x:match('pcall(require,%s*"([^."]+).*"%)') -- pcall(require, "<module>")
+      x:match("require%s*%(%s*'([^.']+).*'%s*%)") -- require('<module>')
+      or x:match('require%s*%(%s*"([^."]+).*"%s*%)') -- require("<module>")
+      or x:match("require%s*'([^.']+).*'%s*%)") -- require '<module>'
+      or x:match('require%s*"([^."]+).*"%s*%)') -- require "<module>"
+      or x:match("pcall%s*%(%s*require%s*,%s*'([^.']+).*'%s*%)") -- pcall(require, "<module>")
+      or x:match('pcall%s*%(%s*require%s*,%s*"([^."]+).*"%s*%)') -- pcall(require, "<module>")
     )
 end
 
@@ -35,6 +35,7 @@ return function(client, bufnr)
   --- @param last? integer
   local function on_lines(_, _, _, first, _, last)
     local did_change = false
+    local settings = client.settings
 
     local lines = api.nvim_buf_get_lines(bufnr, first or 0, last or -1, false)
     for _, line in ipairs(lines) do
@@ -42,8 +43,10 @@ return function(client, bufnr)
       if m then
         for _, mod in ipairs(vim.loader.find(m, { patterns = { '', '.lua' } })) do
           local lib = vim.fs.dirname(mod.modpath)
-          local libs = client.settings.Lua.workspace.library
-          if not lib == local_ws and not vim.tbl_contains(libs, lib) then
+          --- @type string[]
+          --- @diagnostic disable-next-line: undefined-field
+          local libs = settings.Lua.workspace.library
+          if lib ~= local_ws and not vim.tbl_contains(libs, lib) then
             libs[#libs + 1] = lib
             did_change = true
           end
@@ -52,7 +55,7 @@ return function(client, bufnr)
     end
 
     if did_change then
-      client:notify('workspace/didChangeConfiguration', { settings = client.settings })
+      client:notify('workspace/didChangeConfiguration', { settings = settings })
     end
   end
 

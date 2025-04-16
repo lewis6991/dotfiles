@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+set -e
+gh pr edit \
+	--title "$(git show -s --format=%s)" \
+	--body "$(git show -s --format=%b)"

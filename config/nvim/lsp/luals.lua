@@ -4,6 +4,7 @@ return {
   root_markers = {
     '.luarc.json',
     '.luarc.jsonc',
+    '.git',
   },
   -- Note this is ignored if the project has a .luarc.json
   settings = {
