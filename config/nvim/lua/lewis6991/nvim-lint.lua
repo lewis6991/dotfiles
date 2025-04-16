@@ -184,6 +184,9 @@ vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrit
       do_setup()
       did_setup = true
     end
-    require('lint').try_lint()
+    local cwd = vim.fs.dirname(vim.api.nvim_buf_get_name(0))
+    if vim.uv.fs_stat(cwd) then
+      require('lint').try_lint(nil, { cwd = cwd })
+    end
   end, 1000),
 })

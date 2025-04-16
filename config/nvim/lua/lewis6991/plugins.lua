@@ -211,7 +211,10 @@ p('mfussenegger/nvim-lint', { config = 'lewis6991.nvim-lint' })
 -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
 -- files
 
-p('hrsh7th/cmp-nvim-lsp-signature-help', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
+p('hrsh7th/cmp-nvim-lsp-signature-help', {
+  cond = event('InsertEnter'),
+  requires = 'hrsh7th/nvim-cmp',
+})
 p('hrsh7th/cmp-cmdline', { cond = event('CmdlineEnter'), requires = 'hrsh7th/nvim-cmp' })
 p('hrsh7th/cmp-buffer', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
 p('hrsh7th/cmp-emoji', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
@@ -235,7 +238,7 @@ p('zbirenbaum/copilot-cmp', {
 })
 
 p('rachartier/tiny-inline-diagnostic.nvim', {
-  cond = event({'LspAttach', 'CursorMoved', 'BufWrite'}),
+  cond = event({ 'LspAttach', 'CursorMoved', 'BufWrite' }),
   config = function()
     require('tiny-inline-diagnostic').setup({
       options = {

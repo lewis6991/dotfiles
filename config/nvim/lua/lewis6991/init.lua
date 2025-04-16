@@ -28,6 +28,7 @@ if 'Modules' then
   --- Same as require() but don't abort on error
   --- @param mod string
   local function safe_require(mod)
+    --- @diagnostic disable-next-line: no-unknown
     local ok, r = xpcall(require, debug.traceback, mod)
     if not ok then
       vim.schedule(function()
@@ -242,9 +243,10 @@ autocmd('BufReadPost', {
 })
 
 if vim.g.neovide then
-  vim.o.guifont = "Monaco:h12"
+  vim.o.guifont = 'Monaco:h12'
   vim.g.neovide_scroll_animation_length = 0.1
   vim.g.neovide_refresh_rate = 120
   vim.g.neovide_cursor_trail_size = 0
   vim.g.neovide_cursor_animation_length = 0
+  vim.g.neovide_input_macos_option_key_is_meta = 'only_left'
 end
