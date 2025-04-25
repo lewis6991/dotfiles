@@ -38,7 +38,6 @@ export TMUX_TMPDIR="$XDG_RUNTIME_DIR/tmux"
 
 export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
-export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/ripgreprc
 
 export CARGO_HOME="$XDG_DATA_HOME/cargo"
 export RLWRAP_HOME="$XDG_DATA_HOME/rlwrap"
