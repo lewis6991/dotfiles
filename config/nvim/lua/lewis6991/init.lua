@@ -46,6 +46,7 @@ if 'Modules' then
   safe_require('lewis6991.lsp')
   safe_require('lewis6991.lsp_cmds')
   safe_require('lewis6991.marksigns')
+  safe_require('lewis6991.linters')
 end
 
 if 'Options' then

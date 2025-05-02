@@ -3,8 +3,8 @@ local env = vim.env
 local jenkins_lint --- @type table<string,any>
 if env.JENKINS_CLI and env.JENKINS_URL and env.JENKINS_USER and env.JENKINS_AUTH_TOKEN then
   jenkins_lint = {
-    cmd = 'java',
-    args = {
+    cmd = {
+      'java',
       '-jar',
       env.JENKINS_CLI,
       '-s',
@@ -16,7 +16,7 @@ if env.JENKINS_CLI and env.JENKINS_URL and env.JENKINS_USER and env.JENKINS_AUTH
     },
     stdin = true,
     ignore_exitcode = true,
-    parser = function(output)
+    parser = function(_bufnr, output)
       local diags = {} --- @type vim.Diagnostic[]
       for _, line in ipairs(vim.split(output, '\n')) do
         local ok, _, msg, lnum, col =
@@ -27,7 +27,6 @@ if env.JENKINS_CLI and env.JENKINS_URL and env.JENKINS_USER and env.JENKINS_AUTH
             col = col - 1,
             message = msg,
             severity = 1,
-            source = 'Jenkins',
           }
         end
       end
@@ -68,17 +67,17 @@ local function narrow_diff(original, expected)
 end
 
 local stylua_lint = {
-  cmd = 'stylua',
-  args = {
+  cmd = {
+    'stylua',
     '--check',
     '--search-parent-directories',
     '--output-format=json',
+    '--stdin-filepath=<FILE>',
     '-',
   },
   stdin = true,
   ignore_exitcode = true,
-  stream = 'stdout',
-  parser = function(output)
+  parser = function(_bufnr, output)
     local diags = {} --- @type vim.Diagnostic[]
     --- @class stylua.result.mismatches
     --- @field expected string
@@ -93,26 +92,34 @@ local stylua_lint = {
     --- @field mismatches stylua.result.mismatches[]
     local res = vim.json.decode(output)
     for _, mismatch in ipairs(res.mismatches) do
-      local original = mismatch.original:gsub('\n$', '')
-      local expected = mismatch.expected:gsub('\n$', '')
+      local original = mismatch.original
+      local expected = mismatch.expected
 
       local msg --- @type string
       if expected == '' and original:match('^\n+$') then
         msg = 'remove newline(s)'
       else
-        msg = '-' .. original:gsub('\n', '\n-') .. '\n+' .. expected:gsub('\n', '\n+')
+        local original_stripped = original:gsub('%s+$', '')
+        local expected_stripped = expected:gsub('%s+$', '')
+        if expected_stripped == original_stripped then
+          msg = 'remove trailing whitespace'
+        elseif expected_stripped:gsub(',$', '') == original_stripped then
+          msg = 'missing comma'
+        else
+          msg = '-' .. original:gsub('\n', '\n-') .. '\n+' .. expected:gsub('\n', '\n+')
+        end
       end
 
-      local col, end_col = narrow_diff(original, expected)
+      local col, _end_col = narrow_diff(original, expected)
 
       diags[#diags + 1] = {
         lnum = mismatch.original_start_line,
         end_lnum = mismatch.original_end_line,
         col = col,
-        end_col = end_col,
+        end_col = col,
+        -- end_col = end_col,
         message = msg,
-        severity = vim.diagnostic.severity.WARN,
-        source = 'Stylua',
+        severity = vim.diagnostic.severity.HINT,
       }
     end
     return diags
@@ -120,13 +127,9 @@ local stylua_lint = {
 }
 
 local tcl_lint = {
-  cmd = 'make',
-  stdin = false,
-  append_fname = false,
-  args = { 'tcl_lint' },
-  stream = 'stdout',
-  ignore_exitcode = true, -- set this to true if the linter exits with a code != 0 and that's considered normal.
-  parser = function(output, bufnr)
+  cmd = { 'make', 'tcl_lint' },
+  ignore_exitcode = true,
+  parser = function(bufnr, output)
     local diags = {} --- @type vim.Diagnostic[]
     local bufname = vim.api.nvim_buf_get_name(bufnr)
     for _, line in ipairs(vim.split(output, '\n')) do
@@ -137,7 +140,6 @@ local tcl_lint = {
           col = 0,
           message = msg,
           severity = sev,
-          source = 'TCL',
         }
       end
     end
@@ -146,19 +148,69 @@ local tcl_lint = {
   end,
 }
 
+local pylint_severities = {
+  error = vim.diagnostic.severity.ERROR,
+  fatal = vim.diagnostic.severity.ERROR,
+  warning = vim.diagnostic.severity.WARN,
+  refactor = vim.diagnostic.severity.INFO,
+  info = vim.diagnostic.severity.INFO,
+  convention = vim.diagnostic.severity.HINT,
+}
+
+local pylint = {
+  stdin = true,
+  cmd = { 'pylint', '-f', 'json', '--from-stdin', '<FILE>' },
+  ignore_exitcode = true,
+  parser = function(_bufnr, output)
+    local diagnostics = {} --- @type vim.Diagnostic[]
+
+    --- @class pylint.result
+    --- @field path? string
+    --- @field column integer
+    --- @field endColumn integer
+    --- @field line integer
+    --- @field type string
+    --- @field message string
+    --- @field symbol string
+    --- @field ['message-id'] string
+
+    --- @type pylint.result[]
+    local res = vim.json.decode(output)
+
+    for _, item in ipairs(res) do
+      local column = item.column > 0 and item.column or 0
+      local end_column = item.endColumn ~= vim.NIL and item.endColumn or column
+      diagnostics[#diagnostics + 1] = {
+        lnum = item.line - 1,
+        col = column,
+        end_lnum = item.line - 1,
+        end_col = end_column,
+        severity = pylint_severities[item.type],
+        message = ('%s(%s)'):format(item.message, item.symbol),
+        code = item['message-id'],
+        user_data = {
+          lsp = {
+            code = item['message-id'],
+          },
+        },
+      }
+    end
+    return diagnostics
+  end,
+}
+
 local function do_setup()
-  local nvimlint = require('lint')
+  local llint = require('lewis6991.lint')
+  llint.linters = {
+    jenkins_lint = jenkins_lint,
+    tcl_lint = tcl_lint,
+    stylua_lint = stylua_lint,
+    pylint = pylint,
+  }
 
-  local linters = nvimlint.linters
-
-  linters.jenkins_lint = jenkins_lint
-  linters.tcl_lint = tcl_lint
-  linters.stylua_lint = stylua_lint
-
-  nvimlint.linters_by_ft = {
-    tcl = { 'tcl_lint' },
+  llint.linters_by_ft = {
     Jenkinsfile = jenkins_lint and { 'jenkins_lint' } or nil,
-    python = { 'pylint' },
+    tcl = { 'tcl_lint' },
     lua = { 'stylua_lint' },
   }
 end
@@ -184,9 +236,6 @@ vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrit
       do_setup()
       did_setup = true
     end
-    local cwd = vim.fs.dirname(vim.api.nvim_buf_get_name(0))
-    if vim.uv.fs_stat(cwd) then
-      require('lint').try_lint(nil, { cwd = cwd })
-    end
+    require('lewis6991.lint').lint()
   end, 1000),
 })

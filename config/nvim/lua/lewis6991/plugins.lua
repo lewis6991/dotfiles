@@ -206,8 +206,6 @@ p('mfussenegger/nvim-dap', {
 
 p('rcarriga/nvim-dap-ui', { requires = { 'nvim-neotest/nvim-nio' } })
 
-p('mfussenegger/nvim-lint', { config = 'lewis6991.nvim-lint' })
-
 -- nvim-cmp sources require nvim-cmp since they depend on it in there plugin/
 -- files
 
