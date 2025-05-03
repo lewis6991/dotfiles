@@ -191,8 +191,6 @@ p('junegunn/vim-easy-align', {
   end,
 })
 
-p('inkarkat/vim-visualrepeat')
-
 p('scalameta/nvim-metals')
 
 p('mfussenegger/nvim-dap', {
