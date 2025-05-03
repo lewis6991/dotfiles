@@ -36,6 +36,14 @@ lsp.enable({
   'rust_analyzer',
 })
 
+-- install with:
+--   pip install tclint
+lsp.config('tclsp', {
+  cmd = { 'tclsp' },
+  filetypes = { 'tcl' },
+  root_markers = { 'tclint.toml' },
+})
+
 do -- metals
   local function setup_metals()
     local ok, metals = pcall(require, 'metals')
