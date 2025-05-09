@@ -16,6 +16,14 @@ Note: Some are experimental/WIP.
 | [`marksigns.lua`]            | Highlight `:mark`'s |
 | [`ts_matchparen.lua`]        | Treessitter powered matchparen |
 
+Maintained as separate plugins
+
+| Plugin | Description |
+|--------|-------------|
+| [fileline.nvim] | When you open a [FILE]:[LINE], open file FILE at line LINE |
+| [spaceless.nvim] | Strip trailing whitespace as you are editing |
+| [whatthejump.nvim] | Show jump locations in a floating window |
+
 # Requirements
 
 Latest release of Neovim
@@ -30,3 +38,7 @@ Latest release of Neovim
 [`lsp_lua_auto_require.lua`]: doc/lsp_lua_auto_require.md
 [`marksigns.lua`]: doc/marksigns.md
 [`ts_matchparen.lua`]: doc/ts_matchparen.md
+
+[fileline.nvim]: https://github.com/lewis6991/fileline.nvim
+[spaceless.nvim]: https://github.com/lewis6991/spaceless.nvim
+[whatthejump.nvim]: https://github.com/lewis6991/whatthejump.nvim
