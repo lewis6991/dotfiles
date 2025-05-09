@@ -38,98 +38,6 @@ if env.JENKINS_CLI and env.JENKINS_URL and env.JENKINS_USER and env.JENKINS_AUTH
   }
 end
 
---- @param expected string
---- @param original string
---- @return integer col
---- @return integer end_col
-local function narrow_diff(original, expected)
-  local col = 0
-  local end_col = math.huge
-
-  for i = 1, math.min(#original, #expected) do
-    if original:sub(i, i) ~= expected:sub(i, i) then
-      col = i - 1
-      break
-    end
-  end
-
-  local original_last_line = expected:match('[^\n]*$')
-  local expected_last_line = original:match('[^\n]*$')
-
-  if expected_last_line and original_last_line then
-    for i = 1, math.min(#expected_last_line, #original_last_line) do
-      if original:sub(-i, -i) ~= expected:sub(-i, -i) then
-        end_col = #original_last_line - (i - 1)
-        break
-      end
-    end
-  end
-
-  return col, end_col
-end
-
---- @type gizmos.lint.Linter
-local stylua_lint = {
-  name = 'stylua_lint',
-  cmd = {
-    'stylua',
-    '--check',
-    '--search-parent-directories',
-    '--output-format=json',
-    '--stdin-filepath=<FILE>',
-    '-',
-  },
-  stdin = true,
-  ignore_exitcode = true,
-  parser = function(_bufnr, output)
-    local diags = {} --- @type vim.Diagnostic[]
-    --- @class stylua.result.mismatches
-    --- @field expected string
-    --- @field expected_start_line integer
-    --- @field expected_end_line integer
-    --- @field original string
-    --- @field original_start_line integer
-    --- @field original_end_line integer
-
-    --- @class stylua.result
-    --- @field file string
-    --- @field mismatches stylua.result.mismatches[]
-    local res = vim.json.decode(output)
-    for _, mismatch in ipairs(res.mismatches) do
-      local original = mismatch.original
-      local expected = mismatch.expected
-
-      local msg --- @type string
-      if expected == '' and original:match('^\n+$') then
-        msg = 'remove newline(s)'
-      else
-        local original_stripped = original:gsub('%s+$', '')
-        local expected_stripped = expected:gsub('%s+$', '')
-        if expected_stripped == original_stripped then
-          msg = 'remove trailing whitespace'
-        elseif expected_stripped:gsub(',$', '') == original_stripped then
-          msg = 'missing comma'
-        else
-          msg = '-' .. original:gsub('\n', '\n-') .. '\n+' .. expected:gsub('\n', '\n+')
-        end
-      end
-
-      local col, _end_col = narrow_diff(original, expected)
-
-      diags[#diags + 1] = {
-        lnum = mismatch.original_start_line,
-        end_lnum = mismatch.original_end_line,
-        col = col,
-        end_col = col,
-        -- end_col = end_col,
-        message = msg,
-        severity = vim.diagnostic.severity.HINT,
-      }
-    end
-    return diags
-  end,
-}
-
 --- @type gizmos.lint.Linter
 local tcl_lint = {
   name = 'tcl_lint',
@@ -154,59 +62,6 @@ local tcl_lint = {
   end,
 }
 
-local pylint_severities = {
-  error = vim.diagnostic.severity.ERROR,
-  fatal = vim.diagnostic.severity.ERROR,
-  warning = vim.diagnostic.severity.WARN,
-  refactor = vim.diagnostic.severity.INFO,
-  info = vim.diagnostic.severity.INFO,
-  convention = vim.diagnostic.severity.HINT,
-}
-
---- @type gizmos.lint.Linter
-local pylint = {
-  name = 'pylint',
-  stdin = true,
-  cmd = { 'pylint', '-f', 'json', '--from-stdin', '<FILE>' },
-  ignore_exitcode = true,
-  parser = function(_bufnr, output)
-    local diagnostics = {} --- @type vim.Diagnostic[]
-
-    --- @class pylint.result
-    --- @field path? string
-    --- @field column integer
-    --- @field endColumn integer
-    --- @field line integer
-    --- @field type string
-    --- @field message string
-    --- @field symbol string
-    --- @field ['message-id'] string
-
-    --- @type pylint.result[]
-    local res = vim.json.decode(output)
-
-    for _, item in ipairs(res) do
-      local column = item.column > 0 and item.column or 0
-      local end_column = item.endColumn ~= vim.NIL and item.endColumn or column
-      diagnostics[#diagnostics + 1] = {
-        lnum = item.line - 1,
-        col = column,
-        end_lnum = item.line - 1,
-        end_col = end_column,
-        severity = pylint_severities[item.type],
-        message = ('%s(%s)'):format(item.message, item.symbol),
-        code = item['message-id'],
-        user_data = {
-          lsp = {
-            code = item['message-id'],
-          },
-        },
-      }
-    end
-    return diagnostics
-  end,
-}
-
 local did_setup = false
 
 vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrite' }, {
@@ -216,8 +71,8 @@ vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrit
       lint.linters = {
         Jenkinsfile = { jenkins_lint },
         tcl = { tcl_lint },
-        lua = { stylua_lint },
-        python = { pylint },
+        lua = { 'stylua' },
+        python = { 'pylint' },
       }
 
       did_setup = true

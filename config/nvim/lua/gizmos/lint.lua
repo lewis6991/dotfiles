@@ -36,14 +36,27 @@ local M = {}
 --- }
 --- ```
 ---
---- @type table<string, gizmos.lint.Linter[]>
+--- @type table<string, (string|gizmos.lint.Linter)[]>
 M.linters = {}
 
 local unknown_id = 1
 
---- @param linter gizmos.lint.Linter
+--- @param linter string|gizmos.lint.Linter
 --- @param ft string
+--- @return gizmos.lint.Linter? linter
 local function resolve_linter(linter, ft)
+  if type(linter) == 'string' then
+    --- @type boolean, any
+    local ok, r = pcall(require, 'gizmos.lint.linters.' .. linter)
+    if ok then
+      --- @cast r gizmos.lint.Linter
+      linter = r
+    else
+      vim.notify_once(('Linter "%s" not found. Error: %s'):format(linter, r), vim.log.levels.WARN)
+      return
+    end
+  end
+
   if not linter.name then
     linter.name = ('%s%d'):format(ft, unknown_id)
     unknown_id = unknown_id + 1
@@ -56,6 +69,8 @@ local function resolve_linter(linter, ft)
   )
 
   linter._running = linter._running or {}
+
+  return linter
 end
 
 --- @param bufnr integer
@@ -190,24 +205,25 @@ M.lint = debounce(1000, function(bufnr, opts)
   local ft = vim.bo[bufnr].filetype
   local linters = M.linters[ft] or {}
 
-  for _, linter in pairs(linters) do
-    resolve_linter(linter, ft)
+  for _, linter0 in pairs(linters) do
+    local linter = resolve_linter(linter0, ft)
+    if linter then
+      -- Kill any previous process for this linter
+      local proc = linter._running[bufnr]
+      if proc then
+        -- Use sigint so the process can safely close any child processes.
+        -- This is mostly useful for when `cmd` is a script with a shebang.
+        proc:kill('sigint')
+        linter._running[bufnr] = nil
+      end
 
-    -- Kill any previous process for this linter
-    local proc = linter._running[bufnr]
-    if proc then
-      -- Use sigint so the process can safely close any child processes.
-      -- This is mostly useful for when `cmd` is a script with a shebang.
-      proc:kill('sigint')
-      linter._running[bufnr] = nil
-    end
-
-    local ok, lintproc_or_error = pcall(run, bufnr, linter)
-    if ok then
-      --- @cast lintproc_or_error -?
-      linter._running[bufnr] = lintproc_or_error
-    elseif not opts.ignore_errors then
-      vim.notify_once(lintproc_or_error --[[@as string]], vim.log.levels.WARN)
+      local ok, lintproc_or_error = pcall(run, bufnr, linter)
+      if ok then
+        --- @cast lintproc_or_error -?
+        linter._running[bufnr] = lintproc_or_error
+      elseif not opts.ignore_errors then
+        vim.notify_once(lintproc_or_error --[[@as string]], vim.log.levels.WARN)
+      end
     end
   end
 end)

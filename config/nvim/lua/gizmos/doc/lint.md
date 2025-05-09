@@ -25,6 +25,11 @@ vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrit
 })
 ```
 
+### Builtin linters
+
+- `pylint`
+- `stylua`
+
 ### Linter specification
 
 ```lua
