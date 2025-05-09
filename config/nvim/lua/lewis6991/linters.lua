@@ -200,15 +200,15 @@ local pylint = {
 }
 
 local function do_setup()
-  local llint = require('lewis6991.lint')
-  llint.linters = {
+  local lint = require('gizmos.lint')
+  lint.linters = {
     jenkins_lint = jenkins_lint,
     tcl_lint = tcl_lint,
     stylua_lint = stylua_lint,
     pylint = pylint,
   }
 
-  llint.linters_by_ft = {
+  lint.linters_by_ft = {
     Jenkinsfile = jenkins_lint and { 'jenkins_lint' } or nil,
     tcl = { 'tcl_lint' },
     lua = { 'stylua_lint' },
@@ -236,6 +236,6 @@ vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrit
       do_setup()
       did_setup = true
     end
-    require('lewis6991.lint').lint()
+    require('gizmos.lint').lint()
   end, 1000),
 })

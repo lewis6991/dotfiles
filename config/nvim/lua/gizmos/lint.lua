@@ -1,6 +1,6 @@
 local api = vim.api
 
---- @class lewis6991.lint.Linter
+--- @class gizmos.lint.Linter
 --- @field name? string
 --- @field cmd (string|fun(bufnr: integer):string)[]
 ---
@@ -25,33 +25,29 @@ local api = vim.api
 
 local M = {}
 
----Table with the available linters
----@type table<string, lewis6991.lint.Linter>
-M.linters = {}
-
 --- A table listing which linters to run via `lint()`.
---- The key is the filetype. The values are a list of linter names
+--- The key is the filetype. The values are a list of linter objects
 ---
 --- Example:
 ---
 --- ```lua
---- require('lint').linters_by_ft = {
----   python = {'ruff', 'mypy'}
+--- require('lint').linters = {
+---   python = { pylint, flake8 },
 --- }
 --- ```
 ---
---- @type table<string, string[]>
-M.linters_by_ft = {}
+--- @type table<string, gizmos.lint.Linter[]>
+M.linters = {}
 
---- @param name string
---- @return lewis6991.lint.Linter
-local function get_linter(name)
-  local linter = M.linters[name]
-  if not linter then
-    error(("Linter with name '%s' not found"):format(name))
+local unknown_id = 1
+
+--- @param linter gizmos.lint.Linter
+--- @param ft string
+local function resolve_linter(linter, ft)
+  if not linter.name then
+    linter.name = ('%s%d'):format(ft, unknown_id)
+    unknown_id = unknown_id + 1
   end
-
-  linter.name = linter.name or name
   linter.ns = linter.ns or api.nvim_create_namespace('lint.' .. linter.name)
   linter.stream = linter.stream or 'stdout'
   assert(
@@ -60,12 +56,11 @@ local function get_linter(name)
   )
 
   linter._running = linter._running or {}
-  return linter
 end
 
 --- @param bufnr integer
 --- @param cmd string[]
---- @param linter lewis6991.lint.Linter
+--- @param linter gizmos.lint.Linter
 --- @param obj vim.SystemCompleted
 local function on_result(bufnr, cmd, linter, obj)
   local code = obj.code
@@ -141,7 +136,7 @@ end
 --- This is usually not used directly but called via `try_lint`
 ---
 ---@param bufnr integer
----@param linter lewis6991.lint.Linter
+---@param linter gizmos.lint.Linter
 ---@return vim.SystemObj?
 local function run(bufnr, linter)
   assert(linter, 'lint must be called with a linter')
@@ -170,15 +165,33 @@ local function run(bufnr, linter)
   return handle
 end
 
+--- @generic F
+--- @param delay integer
+--- @param fn F
+--- @return F
+local function debounce(delay, fn)
+  local timer = nil --- @type uv.uv_timer_t?
+  return function(...)
+    local args = { ... }
+    if timer then
+      timer:stop()
+    end
+    timer = vim.defer_fn(function()
+      fn(unpack(args))
+    end, delay)
+  end
+end
+
+--- @param bufnr? integer
 --- @param opts? {ignore_errors?: boolean}
-function M.lint(bufnr, opts)
+M.lint = debounce(1000, function(bufnr, opts)
   opts = opts or {}
   bufnr = bufnr or api.nvim_get_current_buf()
   local ft = vim.bo[bufnr].filetype
-  local names = M.linters_by_ft[ft] or {}
+  local linters = M.linters[ft] or {}
 
-  for _, name in pairs(names) do
-    local linter = get_linter(name)
+  for _, linter in pairs(linters) do
+    resolve_linter(linter, ft)
 
     -- Kill any previous process for this linter
     local proc = linter._running[bufnr]
@@ -197,7 +210,7 @@ function M.lint(bufnr, opts)
       vim.notify_once(lintproc_or_error --[[@as string]], vim.log.levels.WARN)
     end
   end
-end
+end)
 
 --- kill any running processes when leaving
 api.nvim_create_autocmd('VimLeavePre', {
