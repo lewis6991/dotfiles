@@ -1,8 +1,10 @@
 local env = vim.env
 
-local jenkins_lint --- @type table<string,any>
+--- @type gizmos.lint.Linter?
+local jenkins_lint
 if env.JENKINS_CLI and env.JENKINS_URL and env.JENKINS_USER and env.JENKINS_AUTH_TOKEN then
   jenkins_lint = {
+    name = 'jenkins_lint',
     cmd = {
       'java',
       '-jar',
@@ -66,7 +68,9 @@ local function narrow_diff(original, expected)
   return col, end_col
 end
 
+--- @type gizmos.lint.Linter
 local stylua_lint = {
+  name = 'stylua_lint',
   cmd = {
     'stylua',
     '--check',
@@ -126,7 +130,9 @@ local stylua_lint = {
   end,
 }
 
+--- @type gizmos.lint.Linter
 local tcl_lint = {
+  name = 'tcl_lint',
   cmd = { 'make', 'tcl_lint' },
   ignore_exitcode = true,
   parser = function(bufnr, output)
@@ -157,7 +163,9 @@ local pylint_severities = {
   convention = vim.diagnostic.severity.HINT,
 }
 
+--- @type gizmos.lint.Linter
 local pylint = {
+  name = 'pylint',
   stdin = true,
   cmd = { 'pylint', '-f', 'json', '--from-stdin', '<FILE>' },
   ignore_exitcode = true,
@@ -199,43 +207,21 @@ local pylint = {
   end,
 }
 
-local function do_setup()
-  local lint = require('gizmos.lint')
-  lint.linters = {
-    jenkins_lint = jenkins_lint,
-    tcl_lint = tcl_lint,
-    stylua_lint = stylua_lint,
-    pylint = pylint,
-  }
-
-  lint.linters_by_ft = {
-    Jenkinsfile = jenkins_lint and { 'jenkins_lint' } or nil,
-    tcl = { 'tcl_lint' },
-    lua = { 'stylua_lint' },
-  }
-end
-
-local function debounce(fn, delay)
-  local timer = nil --- @type uv.uv_timer_t?
-  return function(...)
-    local args = { ... }
-    if timer then
-      timer:stop()
-    end
-    timer = vim.defer_fn(function()
-      fn(unpack(args))
-    end, delay)
-  end
-end
-
 local did_setup = false
 
 vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrite' }, {
-  callback = debounce(function()
+  callback = function()
+    local lint = require('gizmos.lint')
     if not did_setup then
-      do_setup()
+      lint.linters = {
+        Jenkinsfile = { jenkins_lint },
+        tcl = { tcl_lint },
+        lua = { stylua_lint },
+        python = { pylint },
+      }
+
       did_setup = true
     end
-    require('gizmos.lint').lint()
-  end, 1000),
+    lint.lint()
+  end,
 })

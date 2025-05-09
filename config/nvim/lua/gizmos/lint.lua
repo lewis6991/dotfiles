@@ -1,7 +1,7 @@
 local api = vim.api
 
 --- @class gizmos.lint.Linter
---- @field name? string
+--- @field name string
 --- @field cmd (string|fun(bufnr: integer):string)[]
 ---
 --- Send content via stdin. Defaults to false
@@ -21,7 +21,7 @@ local api = vim.api
 --- @field ns? integer
 ---
 --- bufnr -> vim.SystemObj
---- @field package _running table<integer, vim.SystemObj>
+--- @field package _running? table<integer, vim.SystemObj>
 
 local M = {}
 
