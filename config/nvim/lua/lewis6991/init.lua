@@ -41,12 +41,20 @@ if 'Modules' then
   safe_require('lewis6991.status')
   safe_require('lewis6991.tabline')
   safe_require('lewis6991.diagnostic')
-  -- safe_require 'lewis6991.ts_matchparen'
   safe_require('lewis6991.treesitter')
   safe_require('lewis6991.lsp')
-  safe_require('lewis6991.lsp_cmds')
-  safe_require('lewis6991.marksigns')
   safe_require('lewis6991.linters')
+
+  -- safe_require 'gizmos.ts_matchparen'
+  safe_require('gizmos.lsp_cmds')
+  safe_require('gizmos.marksigns')
+
+  vim.cmd.packadd('cfilter')
+end
+
+--- @diagnostic disable-next-line: duplicate-set-field
+vim.ui.input = function(...)
+  require('gizmos.input')(...)
 end
 
 if 'Options' then
@@ -220,7 +228,7 @@ if 'Abbrev' then
       map('!a', '--P', '--- @param', { buffer = true })
       map('!a', '--R', '--- @return', { buffer = true })
       map('!a', '--F', '--- @field', { buffer = true })
-      map('!a', '--A', '--[[@as', { buffer = true })
+      map('!a', '--A', '--' .. '[[@as', { buffer = true })
     end,
   })
 

@@ -21,6 +21,13 @@ local function setup()
   })
 
   telescope.load_extension('fzf')
+  telescope.load_extension('ui-select')
+end
+
+---@diagnostic disable-next-line: duplicate-set-field
+vim.ui.select = function(...)
+  setup()
+  return vim.ui.select(...)
 end
 
 local function nmap(key, fun, opts)

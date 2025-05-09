@@ -9,5 +9,5 @@ return {
     '.luarc.json',
     '.luarc.jsonc',
     '.emmyrc.json',
-  }
+  },
 }

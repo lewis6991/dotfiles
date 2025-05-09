@@ -1,8 +1,8 @@
 local api = vim.api
 
-api.nvim_set_hl(0, 'MarkSign', { link = 'ErrorMsg', default = true })
-api.nvim_set_hl(0, 'MarkSignNum', { default = true })
-api.nvim_set_hl(0, 'MarkSignPos', { default = true })
+api.nvim_set_hl(0, 'Gizmos.MarkSign', { link = 'ErrorMsg', default = true })
+api.nvim_set_hl(0, 'Gizmos.MarkSignNum', { default = true })
+api.nvim_set_hl(0, 'Gizmos.MarkSignPos', { default = true })
 
 local ns = api.nvim_create_namespace('marksigns.nvim')
 
@@ -15,13 +15,13 @@ local function decor_mark(bufnr, mark)
 
   api.nvim_buf_set_extmark(bufnr, ns, row, 0, {
     sign_text = "'" .. mark.mark:sub(2),
-    sign_hl_group = 'MarkSign',
-    number_hl_group = 'MarkSignNum',
+    sign_hl_group = 'Gizmos.MarkSign',
+    number_hl_group = 'Gizmos.MarkSignNum',
   })
   -- Pcall in case the line length is zero
   pcall(api.nvim_buf_set_extmark, bufnr, ns, row, col, {
     end_col = col + off + 1,
-    hl_group = 'MarkSignPos'
+    hl_group = 'Gizmos.MarkSignPos',
   })
 end
 

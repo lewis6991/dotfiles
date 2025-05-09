@@ -20,7 +20,7 @@ p('lewis6991/github_dark.nvim', {
 
 p('lewis6991/nvim-treesitter-pairs')
 p('lewis6991/spaceless.nvim')
-p('lewis6991/brodir.nvim')
+-- p('lewis6991/brodir.nvim')
 p('lewis6991/fileline.nvim')
 p('lewis6991/satellite.nvim')
 
@@ -42,7 +42,6 @@ p('yetone/avante.nvim', {
     })
   end,
   requires = {
-    'stevearc/dressing.nvim',
     'nvim-lua/plenary.nvim',
     'MunifTanjim/nui.nvim',
     --- optional,
@@ -163,6 +162,7 @@ p('rcarriga/nvim-notify', {
 })
 
 p('j-hui/fidget.nvim', {
+  cond = event('LspAttach'),
   config = function()
     require('fidget').setup({})
   end,
@@ -261,19 +261,42 @@ p('hrsh7th/nvim-cmp', {
   config = 'lewis6991.cmp',
 })
 
-p('stevearc/dressing.nvim', {
+p('stevearc/oil.nvim', {
   config = function()
-    require('dressing').setup({
-      input = {
-        mappings = {
-          i = {
-            ['<C-a>'] = '<HOME>',
-            ['<C-e>'] = '<END>',
-            ['<C-d>'] = '<DEL>',
+    local done_setup = false
+    vim.keymap.set('n', '-', function()
+      if not done_setup then
+        require('oil').setup({
+          win_options = {
+            number = false,
+            relativenumber = false,
           },
-        },
-      },
-    })
+          keymaps = {
+            q = { 'actions.close', mode = 'n' },
+            ['<C-v>'] = { 'actions.select', opts = { vertical = true } },
+            ['<C-x>'] = { 'actions.select', opts = { horizontal = true } },
+            ['<C-t>'] = { 'actions.select', opts = { tab = true } },
+          },
+          float = {
+            padding = 0,
+            max_width = 0.3,
+            win_options = {
+              winblend = 20,
+            },
+            preview_split = 'below',
+            override = function(conf)
+              conf.col = 1000000
+              return conf
+            end,
+          },
+          view_options = {
+            show_hidden = true,
+          },
+        })
+      end
+      done_setup = true
+      require('oil').open_float()
+    end)
   end,
 })
 
@@ -281,6 +304,7 @@ p('nvim-lua/telescope.nvim', {
   requires = {
     { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
     'nvim-lua/plenary.nvim',
+    'nvim-telescope/telescope-ui-select.nvim',
   },
   config = 'lewis6991.telescope',
 })

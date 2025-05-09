@@ -153,7 +153,7 @@ autocmd('LspAttach', {
   callback = function(args)
     local client = assert(lsp.get_client_by_id(args.data.client_id))
     if client.name == 'luals' then
-      require('lewis6991.lsp.auto_lua_require')(client, args.buf)
+      require('gizmos.lsp_lua_auto_require')(client, args.buf)
     end
   end,
 })

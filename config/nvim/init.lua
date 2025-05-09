@@ -21,14 +21,14 @@ vim.api.nvim_create_autocmd('VimEnter', {
         avg = 0,
         high = 0,
         low = math.huge,
-        cnt = 0
+        cnt = 0,
       },
       disabled = {
         avg = 0,
         high = 0,
         low = math.huge,
-        cnt = 0
-      }
+        cnt = 0,
+      },
     }
 
     local enabled_time = 0
@@ -64,15 +64,17 @@ vim.api.nvim_create_autocmd('VimEnter', {
     end
 
     -- update log
-    assert(io.open(logpath, 'a+')):write(('%s: %s, %sms, avg: %sms\n'):format(
-      os.date(),
-      enable_loader and 'Loader enabled' or 'Loader disabled',
-      startuptime,
-      enable_loader and enabled_avg or disabled_avg
-    ))
+    assert(io.open(logpath, 'a+')):write(
+      ('%s: %s, %sms, avg: %sms\n'):format(
+        os.date(),
+        enable_loader and 'Loader enabled' or 'Loader disabled',
+        startuptime,
+        enable_loader and enabled_avg or disabled_avg
+      )
+    )
 
     vim.g.loader_stats = stats
-  end
+  end,
 })
 
 -- Do all init in lewis6991/init.lua so it can be cached
