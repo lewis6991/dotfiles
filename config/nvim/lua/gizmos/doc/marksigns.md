@@ -8,6 +8,8 @@ Show marks in the statuscolumn.
 require('gizmos.marksigns')
 ```
 
+![image](https://github.com/user-attachments/assets/7afc54c8-d63f-4acf-accd-a370b8dfde66)
+
 ### Highlights
 
 - `Gizmos.MarkSign`: Highlight the sign column.
