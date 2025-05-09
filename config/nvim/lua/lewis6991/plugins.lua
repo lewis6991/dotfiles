@@ -273,6 +273,7 @@ p('stevearc/oil.nvim', {
           },
           keymaps = {
             q = { 'actions.close', mode = 'n' },
+            ['<Esc>'] = { 'actions.close', mode = 'n' },
             ['<C-v>'] = { 'actions.select', opts = { vertical = true } },
             ['<C-x>'] = { 'actions.select', opts = { horizontal = true } },
             ['<C-t>'] = { 'actions.select', opts = { tab = true } },

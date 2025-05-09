@@ -68,6 +68,3 @@ vim.on_key(function(_, typed)
     end
   end)
 end, ns)
-
--- https://github.com/kshenoy/vim-signature
--- https://github.com/chentoast/marks.nvim

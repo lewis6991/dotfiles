@@ -232,9 +232,14 @@ end)
 api.nvim_create_autocmd('VimLeavePre', {
   group = api.nvim_create_augroup('lint', { clear = true }),
   callback = function()
-    for _, linter in pairs(M.linters) do
-      for _, proc in pairs(linter._running or {}) do
-        proc:kill('sigint')
+    for ft, linters in pairs(M.linters) do
+      for _, linter0 in pairs(linters) do
+        local linter = resolve_linter(linter0, ft)
+        if linter then
+          for _, proc in pairs(linter._running or {}) do
+            proc:kill('sigint')
+          end
+        end
       end
     end
   end,
