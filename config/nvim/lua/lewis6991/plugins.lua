@@ -24,28 +24,47 @@ p('lewis6991/spaceless.nvim')
 p('lewis6991/fileline.nvim')
 p('lewis6991/satellite.nvim')
 
-p('yetone/avante.nvim', {
-  run = 'make',
-  cond = event('CursorMoved'),
+-- p('yetone/avante.nvim', {
+--   run = 'make',
+--   cond = event('CursorMoved'),
+--   config = function()
+--     require('avante_lib').load()
+--     require('avante').setup({
+--       provider = 'copilot',
+--       hints = {
+--         enabled = false,
+--       },
+--       windows = {
+--         ask = {
+--           floating = true, -- Open the 'AvanteAsk' prompt in a floating window
+--         },
+--       },
+--     })
+--   end,
+--   requires = {
+--     'nvim-lua/plenary.nvim',
+--     'MunifTanjim/nui.nvim',
+--     --- optional,
+--     'zbirenbaum/copilot.lua', -- for providers='copilot'
+--   },
+-- })
+
+p('olimorris/codecompanion.nvim', {
+  cond = event('CmdlineEnter'),
   config = function()
-    require('avante_lib').load()
-    require('avante').setup({
-      provider = 'copilot',
-      hints = {
-        enabled = false,
-      },
-      windows = {
-        ask = {
-          floating = true, -- Open the 'AvanteAsk' prompt in a floating window
+    require('codecompanion').setup({
+      strategies = {
+        chat = {
+          adapter = 'copilot',
+        },
+        inline = {
+          adapter = 'copilot',
         },
       },
     })
   end,
   requires = {
     'nvim-lua/plenary.nvim',
-    'MunifTanjim/nui.nvim',
-    --- optional,
-    'zbirenbaum/copilot.lua', -- for providers='copilot'
   },
 })
 
