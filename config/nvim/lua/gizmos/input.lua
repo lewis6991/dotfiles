@@ -235,6 +235,12 @@ end
 api.nvim_create_autocmd('FileType', {
   pattern = 'GizmosInput',
   callback = function(args)
+    -- Configure nvim-cmp if installed
+    local has_cmp, cmp = pcall(require, 'cmp')
+    if has_cmp then
+      cmp.setup.buffer({ enabled = false })
+    end
+
     local function map(mode, lhs, rhs)
       vim.keymap.set(mode, lhs, rhs, { buffer = args.buf, nowait = true })
     end

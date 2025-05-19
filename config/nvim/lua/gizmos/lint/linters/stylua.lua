@@ -39,6 +39,11 @@ return {
     '--stdin-filepath=<FILE>',
     '-',
   },
+  predicate = function(bufnr)
+    local bufname = vim.api.nvim_buf_get_name(bufnr)
+    return vim.fs.root(bufname, { '.stylua.toml' }) ~= nil
+  end,
+  root_markers = { '.stylua.toml' },
   stdin = true,
   ignore_exitcode = true,
   parser = function(_bufnr, output)

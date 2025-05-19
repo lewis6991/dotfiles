@@ -16,6 +16,8 @@ local api = vim.api
 --- Defaults to buffer directory if it exists
 --- @field cwd? string
 ---
+--- @field predicate? fun(bufnr: integer): boolean?
+---
 --- @field parser fun(bufnr: integer, output: string): vim.Diagnostic[]
 ---
 --- @field ns? integer
@@ -207,7 +209,7 @@ M.lint = debounce(1000, function(bufnr, opts)
 
   for _, linter0 in pairs(linters) do
     local linter = resolve_linter(linter0, ft)
-    if linter then
+    if linter and (not linter.predicate or linter.predicate(bufnr)) then
       -- Kill any previous process for this linter
       local proc = linter._running[bufnr]
       if proc then
