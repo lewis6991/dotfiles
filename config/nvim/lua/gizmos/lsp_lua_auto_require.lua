@@ -2,16 +2,21 @@ local api = vim.api
 
 --- @param x string
 --- @return string?
-local function match_require(x)
+local function get_module(x)
   return x:match('require')
-    and (
-      x:match("require%s*%(%s*'([^.']+).*'%s*%)") -- require('<module>')
-      or x:match('require%s*%(%s*"([^."]+).*"%s*%)') -- require("<module>")
-      or x:match("require%s*'([^.']+).*'%s*%)") -- require '<module>'
-      or x:match('require%s*"([^."]+).*"%s*%)') -- require "<module>"
-      or x:match("pcall%s*%(%s*require%s*,%s*'([^.']+).*'%s*%)") -- pcall(require, "<module>")
-      or x:match('pcall%s*%(%s*require%s*,%s*"([^."]+).*"%s*%)') -- pcall(require, "<module>")
-    )
+      and (
+        x:match("require%s*%(%s*'([^./']+).*'%s*%)") -- require('<module>')
+        or x:match('require%s*%(%s*"([^./"]+).*"%s*%)') -- require("<module>")
+        or x:match("require%s*'([^./']+).*'%s*%)") -- require '<module>'
+        or x:match('require%s*"([^./"]+).*"%s*%)') -- require "<module>"
+        or x:match("pcall%s*%(%s*require%s*,%s*'([^./']+).*'%s*%)") -- pcall(require, "<module>")
+        or x:match('pcall%s*%(%s*require%s*,%s*"([^./"]+).*"%s*%)') -- pcall(require, "<module>")
+      )
+    or x:match('@module')
+      and (
+        x:match('$-$-$-%s*@module%s*"([^./"]+).*"') -- @module "<module>"
+        or x:match("$-$-$-%s*@module%s*'([^./']+).*'") -- @module '<module>'
+      )
 end
 
 --- @param client vim.lsp.Client
@@ -28,7 +33,15 @@ return function(client, bufnr)
   end
 
   client.settings = vim.tbl_deep_extend('keep', client.settings, {
-    Lua = { workspace = { library = {} } },
+    Lua = {
+      runtime = {
+        path = { 'lua/?.lua', 'lua/?/init.lua' },
+        pathStrict = true,
+      },
+      workspace = {
+        library = {},
+      },
+    },
   })
 
   --- @param first? integer
@@ -39,7 +52,7 @@ return function(client, bufnr)
 
     local lines = api.nvim_buf_get_lines(bufnr, first or 0, last or -1, false)
     for _, line in ipairs(lines) do
-      local m = match_require(line)
+      local m = get_module(line)
       if m then
         for _, mod in ipairs(vim.loader.find(m, { patterns = { '', '.lua' } })) do
           local lib = vim.fs.dirname(mod.modpath)
