@@ -32,6 +32,7 @@ lsp.enable({
   vim.env.EMMY and 'emmylua' or 'luals',
   'ruff',
   'bashls',
+  'tls',
   'jsonls',
   'rust_analyzer',
 })
