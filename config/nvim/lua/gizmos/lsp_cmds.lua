@@ -1,6 +1,8 @@
 local api, lsp = vim.api, vim.lsp
 local get_clients = vim.lsp.get_clients
 
+-- vim.lsp.log.set_level(vim.lsp.log.levels.DEBUG)
+
 local function client_complete()
   --- @param c vim.lsp.Client
   --- @return string
@@ -14,15 +16,20 @@ api.nvim_create_user_command('LspRestart', function(kwargs)
   local name = kwargs.fargs[1] --- @type string
   for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
     local bufs = vim.deepcopy(client.attached_buffers)
-    client:stop()
+    client:stop(true)
+
     vim.wait(30000, function()
       return lsp.get_client_by_id(client.id) == nil
     end)
+
     local client_id = lsp.start(client.config)
-    if client_id then
-      for buf in pairs(bufs) do
-        lsp.buf_attach_client(buf, client_id)
-      end
+    if not client_id then
+      vim.notify('Failed to restart ' .. client.name)
+      return
+    end
+
+    for buf in pairs(bufs) do
+      lsp.buf_attach_client(buf, client_id)
     end
   end
 end, {

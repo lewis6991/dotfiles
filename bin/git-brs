@@ -139,7 +139,7 @@ def _gerrit_info(host: str, branch: str):
     ).splitlines()[0]
     obj: GerritQueryResult = json.loads(result)
     url = obj['url']
-    approvals = obj['currentPatchSet']['approvals']
+    approvals = obj['currentPatchSet'].get('approvals', [])
     approvals1: dict[str,dict[str,str]] = {}
     for approval in approvals:
         value = approval['value']
