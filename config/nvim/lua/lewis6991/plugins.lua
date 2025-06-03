@@ -20,102 +20,11 @@ p('lewis6991/github_dark.nvim', {
 
 p('lewis6991/nvim-treesitter-pairs')
 p('lewis6991/spaceless.nvim')
--- p('lewis6991/brodir.nvim')
 p('lewis6991/fileline.nvim')
 p('lewis6991/satellite.nvim')
 
--- p('yetone/avante.nvim', {
---   run = 'make',
---   cond = event('CursorMoved'),
---   config = function()
---     require('avante_lib').load()
---     require('avante').setup({
---       provider = 'copilot',
---       hints = {
---         enabled = false,
---       },
---       windows = {
---         ask = {
---           floating = true, -- Open the 'AvanteAsk' prompt in a floating window
---         },
---       },
---     })
---   end,
---   requires = {
---     'nvim-lua/plenary.nvim',
---     'MunifTanjim/nui.nvim',
---     --- optional,
---     'zbirenbaum/copilot.lua', -- for providers='copilot'
---   },
--- })
-
 p('olimorris/codecompanion.nvim', {
-  cond = event('CmdlineEnter'),
-  config = function()
-    require('codecompanion').setup({
-      strategies = {
-        chat = {
-          adapter = 'copilot',
-        },
-        inline = {
-          adapter = 'copilot',
-        },
-      },
-    })
-
-    local Spinner = { handles = {} }
-
-    local function llm_role_title(adapter)
-      local parts = {}
-      table.insert(parts, adapter.formatted_name)
-      if adapter.model and adapter.model ~= '' then
-        table.insert(parts, '(' .. adapter.model .. ')')
-      end
-      return table.concat(parts, ' ')
-    end
-
-    local group = vim.api.nvim_create_augroup('CodeCompanionFidgetHooks', {})
-
-    vim.api.nvim_create_autocmd({ 'User' }, {
-      pattern = 'CodeCompanionRequestStarted',
-      group = group,
-      callback = function(request)
-        local id = request.data.id
-        local handle = require('fidget.progress').handle.create({
-          title = (' Requesting assistance (%s)'):format(request.data.strategy),
-          message = 'In progress...',
-          lsp_client = {
-            name = llm_role_title(request.data.adapter),
-          },
-        })
-        Spinner.handles[id] = handle
-      end,
-    })
-
-    vim.api.nvim_create_autocmd({ 'User' }, {
-      pattern = 'CodeCompanionRequestFinished',
-      group = group,
-      callback = function(request)
-        local id = request.data.id
-        local handle = Spinner.handles[id]
-        Spinner.handles[id] = nil
-        if not handle then
-          if request.data.status == 'success' then
-            handle.message = 'Completed'
-          elseif request.data.status == 'error' then
-            handle.message = ' Error'
-          else
-            handle.message = '󰜺 Cancelled'
-          end
-          handle:finish()
-        end
-      end,
-    })
-
-    vim.keymap.set('n', '<leader>ae', function()
-      vim.cmd.CodeCompanion()
-    end, { desc = 'Code Companion' })
-  end,
+  config = 'lewis6991.codecompanion',
   requires = {
     'j-hui/fidget.nvim',
     'nvim-lua/plenary.nvim',
@@ -440,6 +349,7 @@ p('stevearc/conform.nvim', {
       },
       formatters_by_ft = {
         lua = { 'stylua' },
+        python = { 'ruff_format' }, -- black
       },
     })
     vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
