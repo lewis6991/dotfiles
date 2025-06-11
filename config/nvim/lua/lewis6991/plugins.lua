@@ -337,6 +337,7 @@ p('nvim-treesitter/nvim-treesitter-context', {
     require('treesitter-context').setup({
       max_lines = 5,
       trim_scope = 'outer',
+      multiwindow = true,
     })
   end,
 })
@@ -350,6 +351,7 @@ p('stevearc/conform.nvim', {
       formatters_by_ft = {
         lua = { 'stylua' },
         python = { 'ruff_format' }, -- black
+        rust = { 'rustfmt' },
       },
     })
     vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"

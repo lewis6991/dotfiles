@@ -42,6 +42,7 @@
 	d    = diff --ignore-submodules
 	ciff = diff --cached
 	drop = !sh -c 'git stash && git reset --hard HEAD~${1-1}' -
+	squash = !sh -c 'git reset --soft HEAD~1 && git commit --amend --no-edit' -
 	r    = rebase
 	ra   = rebase --abort
 	rc   = rebase --continue
@@ -115,3 +116,6 @@
 
 [init]
 	defaultBranch = main
+
+[advice]
+	skippedCherryPicks = false

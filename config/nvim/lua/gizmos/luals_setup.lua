@@ -1,5 +1,35 @@
 local api = vim.api
 
+local function default_settings()
+  return {
+    Lua = {
+      runtime = {
+        version = 'LuaJIT',
+        path = { 'lua/?.lua', 'lua/?/init.lua' },
+        pathStrict = true,
+      },
+      workspace = {
+        checkThirdParty = false,
+        library = {
+          vim.env.VIMRUNTIME,
+          '${3rd}/busted/library',
+        },
+      },
+      diagnostics = {
+        groupFileStatus = {
+          strict = 'Opened',
+          strong = 'Opened',
+        },
+        groupSeverity = {
+          strong = 'Warning',
+          strict = 'Warning',
+        },
+        unusedLocalExclude = { '_*' },
+      },
+    },
+  }
+end
+
 --- @param x string
 --- @return string?
 local function get_module(x)
@@ -21,7 +51,7 @@ end
 
 --- @param client vim.lsp.Client
 --- @param bufnr integer
-return function(client, bufnr)
+local function attach(client, bufnr)
   local local_ws = nil
   if client.workspace_folders then
     local path = client.workspace_folders[1].name
@@ -32,17 +62,9 @@ return function(client, bufnr)
     end
   end
 
-  client.settings = vim.tbl_deep_extend('keep', client.settings, {
-    Lua = {
-      runtime = {
-        path = { 'lua/?.lua', 'lua/?/init.lua' },
-        pathStrict = true,
-      },
-      workspace = {
-        library = {},
-      },
-    },
-  })
+  -- Setup default settings
+  client.settings = vim.tbl_deep_extend('keep', client.settings, default_settings())
+  client:notify('workspace/didChangeConfiguration', { settings = client.settings })
 
   --- @param first? integer
   --- @param last? integer
@@ -60,6 +82,7 @@ return function(client, bufnr)
           --- @diagnostic disable-next-line: undefined-field
           local libs = settings.Lua.workspace.library
           if lib ~= local_ws and not vim.tbl_contains(libs, lib) then
+            -- print('ADDING ', lib)
             libs[#libs + 1] = lib
             did_change = true
           end
@@ -79,4 +102,18 @@ return function(client, bufnr)
 
   -- Initial scan
   on_lines()
+end
+
+--- @param luals_name? string
+return function(luals_name)
+  luals_name = luals_name or 'luals'
+  api.nvim_create_autocmd('LspAttach', {
+    desc = 'Lsp: luals setup',
+    callback = function(args)
+      local client = assert(vim.lsp.get_client_by_id(args.data.client_id))
+      if client.name == luals_name then
+        attach(client, args.buf)
+      end
+    end,
+  })
 end

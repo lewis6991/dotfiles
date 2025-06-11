@@ -95,32 +95,31 @@ local function debounce(ms, fn)
   end
 end
 
-do -- textDocument/codelens
-  autocmd('LspAttach', {
-    callback = function(args)
-      local client = assert(lsp.get_client_by_id(args.data.client_id))
-      if client:supports_method('textDocument/codeLens') then
-        lsp.codelens.refresh({ bufnr = args.buf })
-        autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
-          callback = debounce(200, function(args0)
-            lsp.codelens.refresh({ bufnr = args0.buf })
-          end),
-        })
-        -- Code lens setup, don't call again
-        return true
-      end
-    end,
-  })
-end
+autocmd('LspAttach', {
+  desc = 'Lsp codelens',
+  callback = function(args)
+    local client = assert(lsp.get_client_by_id(args.data.client_id))
+    if client:supports_method('textDocument/codeLens') then
+      lsp.codelens.refresh({ bufnr = args.buf })
+      autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
+        callback = debounce(200, function(args0)
+          lsp.codelens.refresh({ bufnr = args0.buf })
+        end),
+      })
+      -- Code lens setup, don't call again
+      return true
+    end
+  end,
+})
 
 do -- textDocument/documentHighlight
-  local method = 'textDocument/documentHighlight'
-
   autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
+    desc = 'Lsp: highlight references',
     callback = debounce(200, function(args)
       lsp.buf.clear_references()
       local win = api.nvim_get_current_win()
       local bufnr = args.buf --- @type integer
+      local method = 'textDocument/documentHighlight'
       for _, client in ipairs(lsp.get_clients({ bufnr = bufnr, method = method })) do
         local enc = client.offset_encoding
         client:request(method, lsp.util.make_position_params(0, enc), function(_, result, ctx)
@@ -149,18 +148,10 @@ lsp.buf.signature_help = with(lsp.buf.signature_help, {
   title_pos = 'left',
 })
 
-autocmd('LspAttach', {
-  desc = 'lua auto require',
-  callback = function(args)
-    local client = assert(lsp.get_client_by_id(args.data.client_id))
-    if client.name == 'luals' then
-      require('gizmos.lsp_lua_auto_require')(client, args.buf)
-    end
-  end,
-})
+require('gizmos.luals_setup')()
 
 autocmd('LspAttach', {
-  desc = 'lsp mappings',
+  desc = 'Lsp: custom mappings',
   callback = function(args)
     local bufnr = args.buf --- @type integer
     vim.keymap.set(

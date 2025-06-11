@@ -1,5 +1,6 @@
 -- install with:
 --   npm i -g bash-language-server
+--   brew install bash-language-server
 -- also uses shellcheck if installed:
 --   brew install shellcheck
 return {
