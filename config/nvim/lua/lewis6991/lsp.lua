@@ -29,7 +29,8 @@ local pyright = vim.fn.executable('basedpyright') == 1 and 'basedpyright' or 'py
 lsp.enable({
   'clangd',
   pyright,
-  vim.env.EMMY and 'emmylua' or 'luals',
+  'emmylua',
+  'luals',
   'ruff',
   'bashls',
   'tls',

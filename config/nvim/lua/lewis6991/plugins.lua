@@ -7,6 +7,8 @@ local p = manager.add
 
 local event = require('pckr.loader.event')
 
+p('neovim/nvim-lspconfig')
+
 --- Filetype plugins ---
 p('martinda/Jenkinsfile-vim-syntax')
 p('lewis6991/vc.nvim')
@@ -226,9 +228,10 @@ p('rachartier/tiny-inline-diagnostic.nvim', {
         multilines = {
           enabled = true,
         },
-        break_line = {
-          enabled = true,
-        },
+        -- break_line = {
+        --   enabled = true,
+        --   after = 60,
+        -- },
       },
     })
   end,

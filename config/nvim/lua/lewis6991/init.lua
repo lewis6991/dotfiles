@@ -46,7 +46,7 @@ if 'Modules' then
   safe_require('lewis6991.linters')
 
   -- safe_require 'gizmos.ts_matchparen'
-  safe_require('gizmos.lsp_cmds')
+  -- safe_require('gizmos.lsp_cmds')
   safe_require('gizmos.lastplace')
   safe_require('gizmos.marksigns')
   safe_require('gizmos.hashbang')

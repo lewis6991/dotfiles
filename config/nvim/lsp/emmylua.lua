@@ -6,8 +6,7 @@ return {
   -- },
   filetypes = { 'lua' },
   root_markers = {
-    '.luarc.json',
-    '.luarc.jsonc',
     '.emmyrc.json',
   },
+  workspace_required = true,
 }
