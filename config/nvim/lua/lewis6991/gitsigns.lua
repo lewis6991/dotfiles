@@ -59,6 +59,12 @@ local function on_attach(bufnr)
     gitsigns.diffthis(vim.b.gitsigns_blame_line_dict.sha .. '~1')
   end)
 
+  map('n', '<leader>hls', function()
+    if vim.b.gitsigns_blame_line_dict then
+      gitsigns.show_commit(vim.b.gitsigns_blame_line_dict.sha)
+    end
+  end)
+
   map('n', '<leader>hB', ':Gitsigns change_base ~')
 
   -- Toggles
@@ -119,5 +125,6 @@ gitsigns.setup({
   update_debounce = 50,
   word_diff = true,
   trouble = true,
+  gh = true,
   _new_sign_calc = true,
 })
