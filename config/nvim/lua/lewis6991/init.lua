@@ -52,6 +52,7 @@ if 'Modules' then
   safe_require('gizmos.hashbang')
   safe_require('gizmos.lastplace')
   safe_require('gizmos.http_file_viewer')
+  safe_require('gizmos.gh_issue_hl')
 
   vim.cmd.packadd('cfilter')
 end
