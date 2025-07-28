@@ -35,24 +35,6 @@ function changes() {
   return 0
 }
 
-function install() {
-  local install_msg
-  if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
-    # Get sudo
-    install_msg="Installing (with sudo)"
-    SUDO_OPT=sudo
-  else
-    install_msg="Installing"
-    SUDO_OPT=""
-  fi
-
-  info "$install_msg"
-  run $SUDO_OPT make \
-    CMAKE_BUILD_TYPE=RelWithDebInfo \
-    "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
-    install
-}
-
 function main() {
   ASAN=0
   FORCE=0
@@ -94,15 +76,35 @@ function main() {
 
   if ((ASAN)); then
     info "Building (ASAN enabled)"
-    run make CMAKE_EXTRA_FLAGS="-DCMAKE_C_COMPILER=clang -DENABLE_ASAN_UBSAN=1"
+    run make \
+      CMAKE_EXTRA_FLAGS="-DCMAKE_C_COMPILER=clang -DENABLE_ASAN_UBSAN=1" \
+      "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX"
     # ASAN_OPTIONS=detect_leaks=1:check_initialization_order=1:handle_abort=1:handle_sigill=1:log_path=nvim_asan:intercept_tls_get_addr=0
     # UBSAN_OPTIONS=print_stacktrace=1 log_path=nvim_ubsan
   else
     info "Building"
-    run make CMAKE_BUILD_TYPE=RelWithDebInfo
+    run make \
+      CMAKE_BUILD_TYPE=RelWithDebInfo \
+      "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX"
   fi
 
-  install
+  { # install
+    local install_msg
+    if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
+      # Get sudo
+      install_msg="Installing (with sudo)"
+      SUDO_OPT=sudo
+    else
+      install_msg="Installing"
+      SUDO_OPT=""
+    fi
+
+    info "$install_msg"
+    run $SUDO_OPT make \
+      CMAKE_BUILD_TYPE=RelWithDebInfo \
+      "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
+      install
+  }
 
   info "Done!"
 }
