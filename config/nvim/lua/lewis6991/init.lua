@@ -264,3 +264,20 @@ if vim.g.neovide then
   vim.g.neovide_cursor_animation_length = 0
   vim.g.neovide_input_macos_option_key_is_meta = 'only_left'
 end
+
+local session = '/tmp/_session_restart.vim'
+
+api.nvim_create_user_command('Restart', function()
+  vim.cmd.mksession({ session, bang = true })
+  vim.cmd.restart()
+end, {})
+
+api.nvim_create_autocmd('VimEnter', {
+  group = 'vimrc',
+  callback = vim.schedule_wrap(function()
+    if vim.uv.fs_stat(session) then
+      vim.cmd.source(session)
+      vim.fs.rm(session)
+    end
+  end),
+})
