@@ -68,14 +68,15 @@ def _get_pr(branch: str, prs: str) -> str:
 
 def _process_branch(branch: str, prs: str, gerrit_host: str | None):
     upstream = _run(f'git branch --list {branch} --format=%(upstream:short)')
-    upstream_track = _run(f'git branch --list {branch} --format=%(upstream:track)')
+    upstream_track = (
+        _run(f"git branch --list {branch} --format=%(upstream:track)")
+        .replace("ahead ", "↑")
+        .replace("behind ", "↓")
+        .replace(", ", "")[1:-1]
+    )
+
     prline = _get_pr(branch, prs)
     date = _run(f'git log -1 --format=%cd --date=relative {branch}')
-    track_short = _run(f'git branch --list {branch} --format=%(upstream:trackshort)')
-
-    track_color = 'cyan'
-    if track_short in ['', '<>', '<']:
-        track_color = 'red' if track_short in ['', '<>'] else 'white'
 
     branch_info = _run([
         'git',
@@ -85,8 +86,8 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
         '--format',
          f'%(color: bold green)%(if)%(HEAD)%(then){THIS} %(else)  %(end)'
          + f'%(color:yellow)%(refname:short)%(color:reset) {ARROW} '
-         + f'%(color:blue)%(upstream:short) '
-         + f'%(color:{track_color}){upstream_track} '
+         + '%(color:blue)%(upstream:short) '
+         + f'%(color:white){upstream_track} '
          + f'%(color:magenta)({date}){prline}',
          branch
     ])
