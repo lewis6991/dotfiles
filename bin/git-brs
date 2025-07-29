@@ -97,7 +97,7 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
     if gerrit_host:
         _gerrit_info(gerrit_host, branch)
 
-    if upstream and upstream_track != '[gone]':
+    if upstream and upstream_track != 'gone':
         commits = _run(f'git --no-pager log --format=%s {upstream}..{branch}').splitlines()
         for commit in commits:
             print(f'    {commit}')
