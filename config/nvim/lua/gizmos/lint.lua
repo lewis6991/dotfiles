@@ -24,6 +24,7 @@ local api = vim.api
 ---
 --- bufnr -> vim.SystemObj
 --- @field package _running? table<integer, vim.SystemObj>
+--- @field package _disabled? boolean
 
 local M = {}
 
@@ -161,6 +162,15 @@ local function run(bufnr, linter)
 
   local cmd = resolve_cmd(bufnr, linter.cmd)
 
+  if vim.fn.executable(cmd[1]) == 0 then
+    linter._disabled = true
+    vim.notify(
+      ('Linter "%s" is not executable. Command: %s'):format(linter.name, cmd[1]),
+      vim.log.levels.WARN
+    )
+    return
+  end
+
   local ok, handle = pcall(vim.system, cmd, {
     stdin = linter.stdin and api.nvim_buf_get_lines(bufnr, 0, -1, true) or nil,
     cwd = resolve_cwd(bufnr),
@@ -176,7 +186,7 @@ local function run(bufnr, linter)
   end)
 
   if not ok then
-    error('Error running ' .. cmd .. ': ' .. handle, vim.log.levels.ERROR)
+    error(('Error running %s: %s'):format(vim.inspect(cmd), handle), vim.log.levels.ERROR)
   end
 
   return handle
@@ -209,7 +219,7 @@ M.lint = debounce(1000, function(bufnr, opts)
 
   for _, linter0 in pairs(linters) do
     local linter = resolve_linter(linter0, ft)
-    if linter and (not linter.predicate or linter.predicate(bufnr)) then
+    if linter and not linter._disabled and (not linter.predicate or linter.predicate(bufnr)) then
       -- Kill any previous process for this linter
       local proc = linter._running[bufnr]
       if proc then

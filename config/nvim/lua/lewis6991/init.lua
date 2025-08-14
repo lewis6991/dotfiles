@@ -53,6 +53,7 @@ if 'Modules' then
   safe_require('gizmos.lastplace')
   safe_require('gizmos.http_file_viewer')
   safe_require('gizmos.gh_issue_hl')
+  safe_require('gizmos.conflict')
 
   vim.cmd.packadd('cfilter')
 end
@@ -220,10 +221,10 @@ end
 if 'Abbrev' then
   map(
     '!a',
-    ':rev:',
+    'rev::',
     [[<c-r>=printf(&commentstring, 'REVISIT '.$USER.' ('.strftime("%d/%m/%y").'):')<CR>]]
   )
-  map('!a', ':todo:', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
+  map('!a', 'todo::', [[<c-r>=printf(&commentstring, 'TODO(lewis6991):')<CR>]])
   map('ca', 'Q', 'q')
 
   autocmd('FileType', {
@@ -233,7 +234,7 @@ if 'Abbrev' then
       map('!a', '--P', '--- @param', { buffer = true })
       map('!a', '--R', '--- @return', { buffer = true })
       map('!a', '--F', '--- @field', { buffer = true })
-      map('!a', '--A', '--' .. '[[@as', { buffer = true })
+      map('!a', '--A', '--' .. '[[@as]]<c-r>=execute("normal! hh")<CR>', { buffer = true })
     end,
   })
 

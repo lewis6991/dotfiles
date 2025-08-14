@@ -355,6 +355,7 @@ p('stevearc/conform.nvim', {
         lua = { 'stylua' },
         python = { 'ruff_format' }, -- black
         rust = { 'rustfmt' },
+        sh = { 'shfmt' },
       },
     })
     vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"

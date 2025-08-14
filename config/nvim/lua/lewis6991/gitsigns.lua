@@ -126,5 +126,4 @@ gitsigns.setup({
   word_diff = true,
   trouble = true,
   gh = true,
-  _new_sign_calc = true,
 })

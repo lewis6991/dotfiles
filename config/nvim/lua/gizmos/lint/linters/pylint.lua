@@ -1,4 +1,3 @@
-
 local pylint_severities = {
   error = vim.diagnostic.severity.ERROR,
   fatal = vim.diagnostic.severity.ERROR,
@@ -14,7 +13,7 @@ return {
   stdin = true,
   cmd = { 'pylint', '-f', 'json', '--from-stdin', '<FILE>' },
   ignore_exitcode = true,
-  parser = function(_bufnr, output)
+  parser = function(bufnr, output)
     local diagnostics = {} --- @type vim.Diagnostic[]
 
     --- @class pylint.result
@@ -35,6 +34,7 @@ return {
       local end_column = item.endColumn ~= vim.NIL and item.endColumn or column
       diagnostics[#diagnostics + 1] = {
         lnum = item.line - 1,
+        bufnr = bufnr,
         col = column,
         end_lnum = item.line - 1,
         end_col = end_column,

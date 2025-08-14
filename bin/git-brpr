@@ -1,0 +1,89 @@
+#!/bin/bash
+
+set -e
+
+# This script creates a new Git branch based on the HEAD commit message,
+# following the conventional commit specification (e.g., "type(scope): description").
+# The branch name will be formatted as "type/scope/description_in_slug_format"
+# or "type/description_in_slug_format" if no scope is present.
+
+# Get the subject line of the HEAD commit message.
+# We use '%s' to get just the subject, as conventional commits define the type,
+# optional scope, and a brief description there.
+COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+
+# Check if the commit message is empty or if git log failed
+if [ -z "$COMMIT_MESSAGE" ]; then
+  echo "Error: Could not retrieve the HEAD commit message. Is there any commit history?"
+  exit 1
+fi
+
+echo "HEAD commit message: \"$COMMIT_MESSAGE\""
+
+# Use a regular expression to parse the commit message.
+# It looks for:
+# 1. Commit Type (e.g., 'feat', 'fix') - captured in BASH_REMATCH[1]
+# 2. Optional Scope in parentheses (e.g., '(auth)') - captured in BASH_REMATCH[2] (includes parens)
+# 3. Colon and a space
+# 4. Main Description - captured in BASH_REMATCH[3]
+if ! [[ $COMMIT_MESSAGE =~ ^([a-z]+)(\(([a-zA-Z0-9_-]+)\))?:[[:space:]](.+) ]]; then
+  echo "Error: The HEAD commit message does not follow the expected conventional commit format."
+  echo "Expected format: 'type: description' or 'type(scope): description'"
+  echo "Actual message: '$COMMIT_MESSAGE'"
+  echo "No branch was created."
+  exit 1
+fi
+COMMIT_TYPE="${BASH_REMATCH[1]}"
+# Extract the scope without parentheses if it exists, otherwise leave empty
+RAW_SCOPE="${BASH_REMATCH[3]}"          # This now captures the content inside the parens
+COMMIT_DESCRIPTION="${BASH_REMATCH[4]}" # This now captures the description
+
+# Format the description for a valid branch name:
+# 1. Convert all characters to lowercase.
+# 2. Replace spaces with underscores.
+# 3. Remove any characters that are not lowercase letters, numbers, or underscores.
+#    This cleans up special characters (e.g., !, @, #).
+# 4. Collapse multiple consecutive underscores into a single underscore.
+# 5. Remove any leading or trailing underscores that might result from the previous steps.
+FORMATTED_DESCRIPTION=$(
+  echo "$COMMIT_DESCRIPTION" |
+    tr '[:upper:]' '[:lower:]' |
+    sed 's/[[:space:]]/_/g' |
+    sed 's/[^a-z0-9_]//g' |
+    sed 's/__\+/_/g' |
+    sed 's/^_//;s/_$//' |
+    cut -c1-20
+)
+
+# Ensure the formatted description is not empty after sanitization
+if [ -z "$FORMATTED_DESCRIPTION" ]; then
+  echo "Error: The commit description resulted in an empty string after formatting."
+  echo "Cannot create a meaningful branch name. Please ensure your description has valid characters."
+  exit 1
+fi
+
+# Construct the full branch name, including scope if present
+BRANCH_NAME="${COMMIT_TYPE}"
+if [ -n "$RAW_SCOPE" ]; then
+  # Scope is already clean from the regex, just convert to lowercase
+  FORMATTED_SCOPE=$(echo "$RAW_SCOPE" | tr '[:upper:]' '[:lower:]')
+  BRANCH_NAME="${BRANCH_NAME}/${FORMATTED_SCOPE}"
+fi
+BRANCH_NAME="${BRANCH_NAME}/${FORMATTED_DESCRIPTION}"
+
+echo "Generated branch name: \"$BRANCH_NAME\""
+
+if [[ "$*" =~ "-d" ]]; then
+  exit 0
+fi
+
+
+# Check if a branch with this name already exists
+if git rev-parse --verify "$BRANCH_NAME" &>/dev/null; then
+  echo "Branch '$BRANCH_NAME' already exists. Switching to it."
+  git checkout "$BRANCH_NAME"
+else
+  # Create and switch to the new branch from the current HEAD
+  echo "Creating and switching to new branch: '$BRANCH_NAME'"
+  git checkout -b "$BRANCH_NAME"
+fi
