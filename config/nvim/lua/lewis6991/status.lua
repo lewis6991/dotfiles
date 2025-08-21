@@ -102,6 +102,17 @@ function M.lsp_status(active)
   return table.concat(status, ' ')
 end
 
+--- @param active 0|1
+--- @return string
+function M.dap_status(active)
+  local ok, dap = pcall(require, 'dap')
+  if not ok or not dap.session() then
+    return ''
+  end
+
+  return hl('Debug', active) .. dap.status()
+end
+
 function M.hunks()
   if vim.b.gitsigns_status then
     local status = vim.b.gitsigns_head
@@ -243,6 +254,7 @@ local function set(active, global)
       pad(F.hunks()),
       highlight(2, active),
       pad(F.lsp_status(active)),
+      pad(F.dap_status(active)),
       highlight(2, active),
     },
     {
@@ -307,6 +319,12 @@ api.nvim_create_autocmd('User', {
 })
 
 api.nvim_create_autocmd('DiagnosticChanged', {
+  group = group,
+  callback = redrawstatus,
+})
+
+api.nvim_create_autocmd('User', {
+  pattern = 'DapProgressUpdate',
   group = group,
   callback = redrawstatus,
 })

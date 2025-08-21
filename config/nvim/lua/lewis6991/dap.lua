@@ -1,25 +1,21 @@
 local dap = require('dap')
 
 do -- keymaps
-  local function keymap(lhs, f, opts)
+  local function keymap(lhs, f)
     vim.keymap.set('n', lhs, function()
       f()
-    end, opts)
+    end)
   end
 
-  keymap('<leader>db', dap.toggle_breakpoint, { noremap = true })
-  keymap('<leader>dc', dap.continue, { noremap = true })
-  keymap('<leader>do', dap.step_over, { noremap = true })
-  keymap('<leader>di', dap.step_into, { noremap = true })
-  keymap('<leader>dd', dap.disconnect, { noremap = true })
-  keymap('<leader>dq', dap.close, { noremap = true })
+  keymap('<leader>db', dap.toggle_breakpoint)
+  keymap('<leader>dc', dap.continue)
+  keymap('<leader>do', dap.step_over)
+  keymap('<leader>di', dap.step_into)
+  keymap('<leader>dd', dap.disconnect)
+  keymap('<leader>dq', dap.close)
 
   keymap('<leader>dl', function()
     require('osv').launch({ port = 8086 })
-  end, { noremap = true })
-
-  keymap('<leader>dw', function()
-    require('dapui').toggle()
   end)
 end
 
@@ -170,14 +166,16 @@ do -- python
 
   setup_python()
 
+  --- @type dap.Configuration[]
   dap.configurations.python = {
     {
       type = 'python',
       request = 'launch',
       name = 'file',
       module = 'unittest',
-      args = { '${file}' },
+      args = { '--verbose', '${file}' },
       justMyCode = false,
+      console = 'integratedTerminal',
     },
     {
       type = 'python',

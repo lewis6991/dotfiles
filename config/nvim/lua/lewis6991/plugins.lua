@@ -181,35 +181,46 @@ p('scalameta/nvim-metals')
 p('mfussenegger/nvim-dap', {
   requires = {
     'jbyuki/one-small-step-for-vimkind',
-    'rcarriga/nvim-dap-ui',
-    'mfussenegger/nvim-dap-python',
   },
   cond = event('LspAttach'),
   config = 'lewis6991.dap',
 })
 
-p('rcarriga/nvim-dap-ui', {
-  requires = {
-    'mfussenegger/nvim-dap',
-    'nvim-neotest/nvim-nio',
-  },
+p('igorlfs/nvim-dap-view', {
+  requires = 'mfussenegger/nvim-dap',
   config = function()
-    local dapui = require('dapui')
-    dapui.setup()
+    local dap_view = require('dap-view')
+    dap_view.setup({
+      winbar = {
+        sections = {
+          'watches',
+          'scopes',
+          'exceptions',
+          'breakpoints',
+          'threads',
+          'repl',
+        },
+        default_section = 'scopes',
+        controls = {
+          enabled = true,
+        },
+      },
+      windows = {
+        height = 0.4,
+      },
+      auto_toggle = true,
+    })
 
-    local dap = require('dap')
-    dap.listeners.before.attach.dapui_config = function()
-      dapui.open()
-    end
-    dap.listeners.before.launch.dapui_config = function()
-      dapui.open()
-    end
-    dap.listeners.before.event_terminated.dapui_config = function()
-      dapui.close()
-    end
-    dap.listeners.before.event_exited.dapui_config = function()
-      dapui.close()
-    end
+    vim.keymap.set('n', '<leader>dw', function()
+      dap_view.toggle()
+    end)
+
+    vim.api.nvim_create_autocmd('FileType', {
+      pattern = { 'dap-view', 'dap-view-term' },
+      callback = function()
+        vim.wo.spell = false
+      end,
+    })
   end,
 })
 
@@ -311,13 +322,35 @@ p('stevearc/oil.nvim', {
   end,
 })
 
-p('nvim-lua/telescope.nvim', {
-  requires = {
-    { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' },
-    'nvim-lua/plenary.nvim',
-    'nvim-telescope/telescope-ui-select.nvim',
-  },
-  config = 'lewis6991.telescope',
+p('folke/snacks.nvim', {
+  config = function()
+    require('snacks').setup({
+      picker = { enabled = true },
+    })
+
+    vim.keymap.set('n', '<C-b>', function()
+      require('snacks').picker.buffers()
+    end, { desc = 'Snacks picker: buffers' })
+
+    vim.keymap.set('n', '<C-p>', function()
+      require('snacks').picker.git_files({
+        layout = { hidden = { 'preview' } },
+        untracked = true,
+      })
+    end, { desc = 'Snacks picker: dotfiles' })
+
+    vim.keymap.set('n', '<C- >', function()
+      require('snacks').picker.git_files({
+        layout = { hidden = { 'preview' } },
+        cwd = vim.env.HOME .. '/projects/dotfiles',
+        untracked = true,
+      })
+    end, { desc = 'Snacks picker: git files' })
+
+    vim.keymap.set('n', '<leader>g', function()
+      require('snacks').picker.grep()
+    end, { desc = 'Snacks picker: grep' })
+  end,
 })
 
 p('neovim/nvimdev.nvim', {

@@ -168,20 +168,20 @@ if 'Mappings' then
   map('n', '<leader>eV', ':edit $XDG_CONFIG_HOME/nvim/init.lua<CR>')
   map('n', '<leader>el', ':edit $XDG_CONFIG_HOME/nvim/lua/lewis6991/plugins.lua<CR>')
   map('n', '<leader>s', ':%s/\\<<C-R><C-W>\\>\\C//g<left><left>')
+  map('n', '<leader>R', ':Restart<CR>')
 
   map('n', 'k', [[v:count == 0 ? 'gk' : 'k']], { expr = true })
   map('n', 'j', [[v:count == 0 ? 'gj' : 'j']], { expr = true })
 
   map('n', 'Q', ':w<cr>')
   map('v', 'Q', '<nop>')
-  map('n', 'gQ', '<nop>')
-  map('v', 'gQ', '<nop>')
+  map({ 'n', 'v' }, 'gQ', '<nop>')
 
   -- delete the current buffer without deleting the window
   map('n', '<leader>b', ':b#|bd#<CR>')
 
   -- I never use macros and more often mis-hit this key
-  map('n', 'q', '<nop>')
+  map({ 'n', 'v' }, 'q', '<nop>')
 
   map('n', '<leader>z', '<cmd>Inspect<cr>')
 
@@ -278,7 +278,7 @@ api.nvim_create_autocmd('User', {
   pattern = 'RestartPre',
   callback = function()
     pcall(function()
-      require('dapui').close()
+      require('dap-view').close(true)
     end)
   end,
 })
