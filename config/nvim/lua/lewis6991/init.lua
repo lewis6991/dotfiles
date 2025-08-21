@@ -54,6 +54,7 @@ if 'Modules' then
   safe_require('gizmos.http_file_viewer')
   safe_require('gizmos.gh_issue_hl')
   safe_require('gizmos.conflict')
+  safe_require('gizmos.restart')
 
   vim.cmd.packadd('cfilter')
 end
@@ -273,12 +274,11 @@ api.nvim_create_user_command('Restart', function()
   vim.cmd.restart()
 end, {})
 
-api.nvim_create_autocmd('VimEnter', {
-  group = 'vimrc',
-  callback = vim.schedule_wrap(function()
-    if vim.uv.fs_stat(session) then
-      vim.cmd.source(session)
-      vim.fs.rm(session)
-    end
-  end),
+api.nvim_create_autocmd('User', {
+  pattern = 'RestartPre',
+  callback = function()
+    pcall(function()
+      require('dapui').close()
+    end)
+  end,
 })

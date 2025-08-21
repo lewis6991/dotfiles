@@ -1,107 +1,197 @@
 local dap = require('dap')
 
--- Debug settings if you're using nvim-dap
-dap.configurations.scala = {
-  {
-    type = 'scala',
-    request = 'launch',
-    name = 'RunOrTest',
-    metals = {
-      runType = 'runOrTestFile',
-      --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
-    },
-  },
-  {
-    type = 'scala',
-    request = 'launch',
-    name = 'Test Target',
-    metals = {
-      runType = 'testTarget',
-    },
-  },
-}
+do -- keymaps
+  local function keymap(lhs, f, opts)
+    vim.keymap.set('n', lhs, function()
+      f()
+    end, opts)
+  end
 
--- nlua
-dap.configurations.lua = {
-  {
-    type = 'nlua',
-    request = 'attach',
-    name = 'Attach to running Neovim instance',
-  },
-}
+  keymap('<leader>db', dap.toggle_breakpoint, { noremap = true })
+  keymap('<leader>dc', dap.continue, { noremap = true })
+  keymap('<leader>do', dap.step_over, { noremap = true })
+  keymap('<leader>di', dap.step_into, { noremap = true })
+  keymap('<leader>dd', dap.disconnect, { noremap = true })
+  keymap('<leader>dq', dap.close, { noremap = true })
 
--- Quickstart:
--- - Launch the server in the debuggee using <leader>dl
--- - Open another Neovim instance with the source file
--- - Place breakpoint with <leader>db
--- - Connect using the DAP client with <leader>dc
--- - Run your script/plugin in the debuggee
+  keymap('<leader>dl', function()
+    require('osv').launch({ port = 8086 })
+  end, { noremap = true })
 
-dap.adapters.nlua = function(callback, config)
-  callback({
-    type = 'server',
-    host = config.host or '127.0.0.1',
-    port = config.port or 8086,
-  })
+  keymap('<leader>dw', function()
+    require('dapui').toggle()
+  end)
 end
 
-local function keymap(lhs, f, opts)
-  vim.keymap.set('n', lhs, function()
-    f()
-  end, opts)
+do -- scala
+  -- Debug settings if you're using nvim-dap
+  dap.configurations.scala = {
+    {
+      type = 'scala',
+      request = 'launch',
+      name = 'RunOrTest',
+      metals = {
+        runType = 'runOrTestFile',
+        --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
+      },
+    },
+    {
+      type = 'scala',
+      request = 'launch',
+      name = 'Test Target',
+      metals = {
+        runType = 'testTarget',
+      },
+    },
+  }
 end
 
-keymap('<leader>db', dap.toggle_breakpoint, { noremap = true })
-keymap('<leader>dc', dap.continue, { noremap = true })
-keymap('<leader>do', dap.step_over, { noremap = true })
-keymap('<leader>di', dap.step_into, { noremap = true })
+do -- lua
+  -- nlua
+  dap.configurations.lua = {
+    {
+      type = 'nlua',
+      request = 'attach',
+      name = 'Attach to running Neovim instance',
+    },
+  }
 
-keymap('<leader>dl', function()
-  require('osv').launch({ port = 8086 })
-end, { noremap = true })
+  -- Quickstart:
+  -- - Launch the server in the debuggee using <leader>dl
+  -- - Open another Neovim instance with the source file
+  -- - Place breakpoint with <leader>db
+  -- - Connect using the DAP client with <leader>dc
+  -- - Run your script/plugin in the debuggee
 
-keymap('<leader>dw', function()
-  require('dapui').open()
-end)
+  dap.adapters.nlua = function(callback, config)
+    callback({
+      type = 'server',
+      host = config.host or '127.0.0.1',
+      port = config.port or 8086,
+    })
+  end
 
--- Install local-lua-debugger-vscode, either via:
--- - Your package manager
--- - From source:
---     git clone https://github.com/tomblind/local-lua-debugger-vscode
---     cd local-lua-debugger-vscode
---     npm install
---     npm run build
-dap.adapters['local-lua'] = {
-  type = 'executable',
-  command = 'node',
-  args = {
-    '/absolute/path/to/local-lua-debugger-vscode/extension/debugAdapter.js',
-  },
-  enrich_config = function(config, on_config)
-    if not config['extensionPath'] then
-      config = vim.deepcopy(config)
-      -- 💀 If this is missing or wrong you'll see
-      -- "module 'lldebugger' not found" errors in the dap-repl when trying to launch a debug session
-      config.extensionPath = '/absolute/path/to/local-lua-debugger-vscode/'
+  -- Install local-lua-debugger-vscode, either via:
+  -- - Your package manager
+  -- - From source:
+  --     git clone https://github.com/tomblind/local-lua-debugger-vscode
+  --     cd local-lua-debugger-vscode
+  --     npm install
+  --     npm run build
+  dap.adapters['local-lua'] = {
+    type = 'executable',
+    command = 'node',
+    args = {
+      '/absolute/path/to/local-lua-debugger-vscode/extension/debugAdapter.js',
+    },
+    enrich_config = function(config, on_config)
+      if not config['extensionPath'] then
+        config = vim.deepcopy(config)
+        -- 💀 If this is missing or wrong you'll see
+        -- "module 'lldebugger' not found" errors in the dap-repl when trying to launch a debug session
+        config.extensionPath = '/absolute/path/to/local-lua-debugger-vscode/'
+      end
+      on_config(config)
+    end,
+  }
+end
+
+do -- python
+  --- @return string?
+  local function get_python_path()
+    local venv_path = os.getenv('VIRTUAL_ENV')
+    if venv_path then
+      return vim.fs.joinpath(venv_path, 'bin', 'python3')
+    end
+
+    local cwd = assert(vim.uv.cwd())
+    local venv_dir = vim.fs.root(cwd, '.venv')
+    if venv_dir then
+      local venv = vim.fs.joinpath(venv_dir, '.venv')
+      local venv_bin = vim.fs.joinpath(venv, 'bin', 'python3')
+      if vim.uv.fs_stat(venv_bin) then
+        return venv_bin
+      end
+      for sub, ty in vim.fs.dir(venv) do
+        local path = vim.fs.joinpath(venv, sub, 'bin', 'python3')
+        if ty == 'directory' and vim.uv.fs_stat(path) then
+          return path
+        end
+      end
+    end
+    return 'python3'
+  end
+
+  --- @param config dap.Configuration
+  --- @param on_config fun(config: dap.Configuration)
+  local function enrich_config(config, on_config)
+    if not config.pythonPath and not config.python then
+      config.pythonPath = get_python_path()
     end
     on_config(config)
-  end,
-}
+  end
 
-local function make_luals_debug_config(args)
-  local config = {
-    name = 'Debug LuaLS test',
-    type = 'lua-local',
-    request = 'launch',
-    program = {
-      command = 'lua-language-server',
+  local function setup_python()
+    dap.adapters.python = function(cb, config)
+      if config.request == 'attach' then
+        --- @type dap.ServerAdapter
+        local adapter = {
+          type = 'server',
+          port = assert(
+            (config.connect or config).port,
+            '`connect.port` is required for a python `attach` configuration'
+          ),
+          host = (config.connect or config).host or '127.0.0.1',
+          enrich_config = enrich_config,
+          options = {
+            source_filetype = 'python',
+          },
+        }
+        cb(adapter)
+      else
+        --- @type dap.ExecutableAdapter
+        local adapter = {
+          type = 'executable',
+          command = 'python3',
+          args = { '-m', 'debugpy.adapter' },
+          enrich_config = enrich_config,
+          options = {
+            source_filetype = 'python',
+          },
+        }
+        cb(adapter)
+      end
+    end
+
+    -- nvim-dap logs warnings for unhandled custom events
+    -- Mute it
+    dap.listeners.before['event_debugpySockets']['dap-python'] = function() end
+  end
+
+  setup_python()
+
+  dap.configurations.python = {
+    {
+      type = 'python',
+      request = 'launch',
+      name = 'file',
+      module = 'unittest',
+      args = { '${file}' },
+      justMyCode = false,
     },
-    args = args,
-    cwd = '${workspaceFolder}',
+    {
+      type = 'python',
+      request = 'launch',
+      name = 'unittest',
+      module = 'unittest',
+      justMyCode = false,
+    },
+    {
+      type = 'python',
+      request = 'attach',
+      name = 'attach',
+      connect = { host = '127.0.0.1', port = 5678 },
+      justMyCode = false,
+    },
   }
-  return config
 end
-
-vim.api.nvim_create_user_command('LaunchDebuggerLuaLs', function()
-  require('dap').run(make_luals_debug_config({ 'test.lua' }))
-end, {})
