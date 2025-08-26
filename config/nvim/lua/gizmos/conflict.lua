@@ -81,6 +81,6 @@ function M.select_git_conflict()
   end
 end
 
-vim.keymap.set('n', 'hsn', M.select_git_conflict, { desc = 'Select git conflict region' })
+vim.keymap.set('n', '<leader>hsn', M.select_git_conflict, { desc = 'Select git conflict region' })
 
 return M
