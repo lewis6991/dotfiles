@@ -1,4 +1,11 @@
 #! /usr/bin/env python3
+"""
+This module provides utilities for displaying information about Git branches,
+pull requests (PRs), and Gerrit code reviews in a formatted and colorized manner.
+It integrates with GitHub CLI (`gh`) and Gerrit via SSH to fetch metadata about
+branches, PRs, and code review approvals, and prints them with enhanced formatting
+for terminal output, including hyperlinks and color codes.
+"""
 
 import re
 import shlex
@@ -41,7 +48,7 @@ def _get_prs() -> str:
             '--limit', '300',
             '--author', '@me'
         ])
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError:
         return ''
 
 def _get_pr(branch: str, prs: str) -> str:
@@ -92,10 +99,12 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
          branch
     ])
 
+    head = _run(['git', 'rev-parse', 'HEAD'])
+
     print(branch_info)
 
     if gerrit_host:
-        _gerrit_info(gerrit_host, branch)
+        _gerrit_info(gerrit_host, branch, head)
 
     if upstream and upstream_track != 'gone':
         commits = _run(f'git --no-pager log --format=%s {upstream}..{branch}').splitlines()
@@ -104,11 +113,9 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
 
 def _get_change_id(branch: str) -> str | None:
     for line in _run(f'git log --format=%B -n 1 {branch}').splitlines():
-        m = re.search('Change-Id: (.*)', line)
-        if m:
+        if m := re.search('Change-Id: (.*)', line):
             return m.group(1)
-    else:
-        return None
+    return None
 
 class GerritApprovalBy(TypedDict):
     name: str
@@ -122,17 +129,19 @@ class GerritApproval(TypedDict):
 
 class GerritCurrentPatchSet(TypedDict):
     approvals: list[GerritApproval]
+    revision: str
 
 class GerritQueryResult(TypedDict):
     url: str
     currentPatchSet: GerritCurrentPatchSet
     number: int
     project: str
+    status: str
 
 def _link(text: str, url: str) -> str:
     return f'{UNDERLINE}{OSC8_1}{url}{OSC8_2}{text}{OSC8_3}'
 
-def _gerrit_info(host: str, branch: str):
+def _gerrit_info(host: str, branch: str, head: str):
     changeid = _get_change_id(branch)
 
     result = _run(
@@ -144,11 +153,11 @@ def _gerrit_info(host: str, branch: str):
     approvals1: dict[str,dict[str,str]] = {}
     for approval in approvals:
         value = approval['value']
-        type = approval['type']
+        atype = approval['type']
         name = approval['by']['name']
-        if type not in approvals1:
-            approvals1[type] = {}
-        approvals1[type][name] = value
+        if atype not in approvals1:
+            approvals1[atype] = {}
+        approvals1[atype][name] = value
 
     def fmt_approval(name: str, value: str):
         pos = int(value) > 0
@@ -158,7 +167,7 @@ def _gerrit_info(host: str, branch: str):
 
     def fmt_label(label: str, approvals: dict[str,str]):
         abbreviated_label = ''.join(word[0] for word in label.split('-'))
-        values = f', '.join(fmt_approval(name, value) for name, value in approvals.items())
+        values = ', '.join(fmt_approval(name, value) for name, value in approvals.items())
 
         fail = False
         for _, value in approvals.items():
@@ -170,10 +179,21 @@ def _gerrit_info(host: str, branch: str):
             return f'{RED}{abbreviated_label}: [{values}]{ENDC}'
         return f'{GREEN}{abbreviated_label}{ENDC}'
 
-    id = obj['number']
-    ln = _link(f'{host}/{id}', url)
-    print(f'      {BLUE}GERRIT: {ENDC}{ln}{ENDC} ', end ='')
-    print(f'{BLUE},{ENDC} '.join(fmt_label(label, approvals) for label, approvals in approvals1.items()))
+    is_merged = obj['status'] == 'MERGED'
+    is_merged_str = f'{GREEN}[MERGED]{ENDC}' if is_merged else ''
+
+    is_current = obj['currentPatchSet']['revision'] == head
+    is_current_str = f'{RED}[NOT CURRENT]{ENDC}' if not is_current else ''
+
+    change_id = obj['number']
+    ln = _link(f'{host}/{change_id}', url)
+
+    print(f'      {BLUE}GERRIT: {is_current_str}{is_merged_str} {ENDC}{ln}{ENDC} ', end ='')
+    print(
+        f"{BLUE},{ENDC} ".join(
+            fmt_label(label, approvals) for label, approvals in approvals1.items()
+        )
+    )
 
 def _get_gerrit_host() -> str | None:
     host = _run('git config --get remote.origin.url').split(':')[0]
@@ -199,4 +219,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

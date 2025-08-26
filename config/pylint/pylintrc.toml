@@ -1,0 +1,18 @@
+[tool.pylint.basic]
+
+good-names = ["i", "j", "k", "ex", "Run", "_"]
+module-naming-style = "any"
+
+[tool.pylint.format]
+
+max-line-length = 100
+max-module-lines = 1000
+
+[tool.pylint."messages control"]
+
+disable = [
+  "missing-class-docstring",
+  "missing-function-docstring",
+  "too-many-locals",
+  "inconsistent-return-statements"
+]

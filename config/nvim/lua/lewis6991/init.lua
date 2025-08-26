@@ -267,12 +267,17 @@ if vim.g.neovide then
   vim.g.neovide_input_macos_option_key_is_meta = 'only_left'
 end
 
-local session = '/tmp/_session_restart.vim'
-
-api.nvim_create_user_command('Restart', function()
-  vim.cmd.mksession({ session, bang = true })
-  vim.cmd.restart()
-end, {})
+-- api.nvim_create_user_command('Term', function()
+--   -- local buf = api.nvim_get_current_buf()
+--   -- local b = api.nvim_create_buf(false, true)
+--   -- local chan = api.nvim_open_term(b, {})
+--   -- api.nvim_chan_send(chan, table.concat(api.nvim_buf_get_lines(buf, 0, -1, false), '\n'))
+--   -- api.nvim_win_set_buf(0, b)
+--
+--   api.nvim_open_term(0, {})
+--
+--   vim.cmd.stopinsert()
+-- end, {})
 
 api.nvim_create_autocmd('User', {
   pattern = 'RestartPre',
@@ -281,4 +286,31 @@ api.nvim_create_autocmd('User', {
       require('dap-view').close(true)
     end)
   end,
+})
+
+local function auto_create_dirs()
+  local dir_path = vim.fn.expand('%:p:h')
+
+  if vim.fn.isdirectory(dir_path) == 1 then
+    return
+  end
+
+  local choice =
+    vim.fn.confirm("Directory '" .. dir_path .. "' does not exist. Create it?", '&Yes\n&No', 1)
+
+  if choice == 0 then
+    vim.notify(
+      'Directory creation cancelled. File not saved.',
+      vim.log.levels.WARN,
+      { title = 'Neovim' }
+    )
+    return
+  end
+
+  vim.fn.mkdir(dir_path, 'p')
+end
+
+vim.api.nvim_create_autocmd('BufWritePre', {
+  pattern = '*',
+  callback = auto_create_dirs,
 })

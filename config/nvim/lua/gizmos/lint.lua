@@ -22,6 +22,8 @@ local api = vim.api
 ---
 --- @field ns? integer
 ---
+--- @field env? fun(bufnr: integer): table<string, string>?
+---
 --- bufnr -> vim.SystemObj
 --- @field package _running? table<integer, vim.SystemObj>
 --- @field package _disabled? boolean
@@ -171,9 +173,21 @@ local function run(bufnr, linter)
     return
   end
 
+  local env = nil
+  if linter.env then
+    if type(linter.env) == 'function' then
+      local ok, env0 = pcall(linter.env, bufnr)
+      if not ok then
+        error(('Error calling env function for linter %s: %s'):format(linter.name, env))
+      end
+      env = env0
+    end
+  end
+
   local ok, handle = pcall(vim.system, cmd, {
     stdin = linter.stdin and api.nvim_buf_get_lines(bufnr, 0, -1, true) or nil,
     cwd = resolve_cwd(bufnr),
+    env = env,
     -- Linter may launch child processes so set this as a group leader and
     -- manually track and kill processes as we need to.
     -- Don't detach on windows since that may cause shells to

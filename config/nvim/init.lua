@@ -13,9 +13,6 @@ vim.api.nvim_create_autocmd('VimEnter', {
 
     local logpath = vim.fs.joinpath(vim.env.HOME, '.nvim_startuptime.log')
 
-    local enabled_avg = 0
-    local disabled_avg = 0
-
     local stats = {
       enabled = {
         avg = 0,
@@ -69,7 +66,7 @@ vim.api.nvim_create_autocmd('VimEnter', {
         os.date(),
         enable_loader and 'Loader enabled' or 'Loader disabled',
         startuptime,
-        enable_loader and enabled_avg or disabled_avg
+        enable_loader and stats.enabled.avg or stats.disabled.avg
       )
     )
 
