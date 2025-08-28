@@ -15,10 +15,20 @@ local handles = {}
 
 local group = vim.api.nvim_create_augroup('CodeCompanionFidgetHooks', {})
 
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'codecompanion',
+  callback = vim.schedule_wrap(function()
+    vim.wo.number = false
+    vim.wo.relativenumber = false
+    vim.wo.showbreak = ''
+  end),
+})
+
 vim.api.nvim_create_autocmd('User', {
   pattern = 'CodeCompanionRequestStarted',
   group = group,
   callback = function(request)
+    --- @type CodeCompanion.Adapter
     local adapter = request.data.adapter
 
     handles[request.data.id] = require('fidget.progress').handle.create({

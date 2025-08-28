@@ -34,10 +34,33 @@ p('olimorris/codecompanion.nvim', {
 })
 
 p('MeanderingProgrammer/render-markdown.nvim', {
-  cond = event('Filetype', 'Avante'),
   config = function()
     require('render-markdown').setup({
-      file_types = { 'Avante' },
+      render_modes = true,
+      file_types = { 'codecompanion' },
+      heading = {
+        backgrounds = { 'CursorLineNr' },
+      },
+      sign = { enabled = false },
+      overrides = {
+        filetype = {
+          codecompanion = {
+            html = {
+              tag = {
+                prompt = { icon = '> ' },
+                buf = { icon = ' ', highlight = 'CodeCompanionChatIcon' },
+                file = { icon = ' ', highlight = 'CodeCompanionChatIcon' },
+                group = { icon = ' ', highlight = 'CodeCompanionChatIcon' },
+                help = { icon = '󰘥 ', highlight = 'CodeCompanionChatIcon' },
+                image = { icon = ' ', highlight = 'CodeCompanionChatIcon' },
+                symbols = { icon = ' ', highlight = 'CodeCompanionChatIcon' },
+                tool = { icon = '󰯠 ', highlight = 'CodeCompanionChatIcon' },
+                url = { icon = '󰌹 ', highlight = 'CodeCompanionChatIcon' },
+              },
+            },
+          },
+        },
+      },
     })
   end,
 })
@@ -389,9 +412,6 @@ p('lewis6991/ts-install.nvim', {
     })
   end,
 })
-
--- TODO(lewis6991): optimize this plugin
--- { 'uga-rosa/translate.nvim', cond = event('CmdlineEnter') },
 
 p('nvim-treesitter/nvim-treesitter-context', {
   requires = 'nvim-treesitter/nvim-treesitter',
