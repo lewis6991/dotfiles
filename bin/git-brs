@@ -99,7 +99,7 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
          branch
     ])
 
-    head = _run(['git', 'rev-parse', 'HEAD'])
+    head = _run(['git', 'rev-parse', branch])
 
     print(branch_info)
 
@@ -145,7 +145,7 @@ def _gerrit_info(host: str, branch: str, head: str):
     changeid = _get_change_id(branch)
 
     result = _run(
-        f'ssh {host} gerrit query {changeid} --current-patch-set --format=JSON'
+        f'ssh {host} -p 29418 gerrit query {changeid} --current-patch-set --format=JSON'
     ).splitlines()[0]
     obj: GerritQueryResult = json.loads(result)
     url = obj['url']
@@ -196,14 +196,18 @@ def _gerrit_info(host: str, branch: str, head: str):
     )
 
 def _get_gerrit_host() -> str | None:
-    host = _run('git config --get remote.origin.url').split(':')[0]
+    url = _run('git config --get remote.origin.url').strip()
+    if match := re.match(r'(?:ssh://)?(?:[^@]+@)?([^:/]+)', url):
+        host = match.group(1)
+    else:
+        host = url.split(':')[0]
 
     # Test if gerrit_host points to a Gerrit server via SSH
     if 'gerrit' not in host:
         return
 
     try:
-        _run(f'ssh {host} gerrit version')
+        _run(f'ssh {host} -p 29418 gerrit version')
         return host
     except subprocess.CalledProcessError:
         pass
