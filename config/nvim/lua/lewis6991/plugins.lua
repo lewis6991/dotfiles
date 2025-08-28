@@ -332,10 +332,11 @@ p('folke/snacks.nvim', {
       require('snacks').picker.buffers()
     end, { desc = 'Snacks picker: buffers' })
 
+    vim.api.nvim_set_hl(0, 'SnacksPickerDir', { link = 'LineNr' })
+
     vim.keymap.set('n', '<C-p>', function()
-      require('snacks').picker.git_files({
+      require('snacks').picker.files({
         layout = { hidden = { 'preview' } },
-        untracked = true,
       })
     end, { desc = 'Snacks picker: dotfiles' })
 
