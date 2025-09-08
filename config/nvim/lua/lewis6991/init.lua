@@ -314,3 +314,7 @@ vim.api.nvim_create_autocmd('BufWritePre', {
   pattern = '*',
   callback = auto_create_dirs,
 })
+
+-- Emmylua highlights `nil` as keyword+readonly, change this to constant.builtin
+-- to match treesitter
+vim.api.nvim_set_hl(0, '@lsp.typemod.keyword.readonly', { link = '@constant.builtin' })

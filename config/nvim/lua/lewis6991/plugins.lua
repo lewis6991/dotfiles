@@ -82,32 +82,29 @@ p('lewis6991/whatthejump.nvim', {
 
 p('lewis6991/hover.nvim', {
   config = function()
-    local did_setup = false
-    local function hover_action(action)
-      return function()
-        if not did_setup then
-          require('hover').setup({
-            init = function()
-              require('hover.providers.dap')
-              require('hover.providers.lsp')
-              require('hover.providers.gh')
-              require('hover.providers.gh_user')
-              require('hover.providers.dictionary')
-              require('hover.providers.man')
-              -- require('hover.providers.diagnostic')
-            end,
-          })
-          did_setup = true
-        end
-        require('hover')[action]()
-      end
-    end
+    require('hover').config({
+      providers = {
+        'hover.providers.diagnostic',
+        'hover.providers.dap',
+        'hover.providers.lsp',
+        'hover.providers.gh',
+        'hover.providers.gh_user',
+        'hover.providers.dictionary',
+        'hover.providers.man',
+      },
+    })
 
-    vim.keymap.set('n', 'K', hover_action('hover'), { desc = 'hover.nvim' })
+    vim.keymap.set('n', 'K', function()
+      require('hover').open()
+    end, { desc = 'hover.nvim (open)' })
 
-    vim.keymap.set('n', 'gK', hover_action('hover_select'), { desc = 'hover.nvim (select)' })
+    vim.keymap.set('n', 'gK', function()
+      require('hover').enter()
+    end, { desc = 'hover.nvim (enter)' })
 
-    vim.keymap.set('n', '<MouseMove>', hover_action('hover_mouse'), { desc = 'hover.nvim (mouse)' })
+    vim.keymap.set('n', '<MouseMove>', function()
+      require('hover').mouse()
+    end, { desc = 'hover.nvim (mouse)' })
 
     vim.o.mousemoveevent = true
   end,
