@@ -14,42 +14,97 @@ import json
 import subprocess
 
 from typing import TypedDict
+from enum import StrEnum
 
 ARROW = '\uf553'
 THIS = '\uf111'
 
-BLUE = '\033[94m'
-CYAN = '\033[96m'
-GREEN = '\033[92m'
-WARNING = '\033[93m'
-RED = '\033[91m'
-ENDC = '\033[0m'
-BOLD = '\033[1m'
-UNDERLINE = '\033[4m'
-GREY = '\033[90m'
+GERRIT_PORT = 29418  # Gerrit SSH port
 
-# hyperlinks
-OSC8_1 = '\033]8;;'
-OSC8_2 = '\033\\'
-OSC8_3 = '\033]8;;\033\\'
 
-def _run(cmd: str|list[str]) -> str:
+class Ansi(StrEnum):
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    WARN = '\033[93m'
+    RED = '\033[91m'
+    END = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    GREY = '\033[90m'
+
+    # hyperlinks
+    OSC8_1 = '\033]8;;'
+    OSC8_2 = '\033\\'
+    OSC8_3 = '\033]8;;\033\\'
+
+
+class GerritUser(TypedDict):
+    name: str
+    email: str
+    username: str
+
+
+class GerritApproval(TypedDict):
+    type: str
+    value: str
+    by: GerritUser
+
+
+class GerritPatchSet(TypedDict):
+    number: int
+    revision: str
+    parent: list[str]
+    ref: str
+    uploader: GerritUser
+    author: GerritUser
+    createdOn: int
+    kind: str
+    sizeInsertions: int
+    sizeDeletions: int
+
+
+class GerritCurrentPatchSet(GerritPatchSet):
+    approvals: list[GerritApproval]
+
+
+class GerritQueryResult(TypedDict):
+    url: str
+    currentPatchSet: GerritCurrentPatchSet
+    patchSets: list[GerritPatchSet]
+    number: int
+    project: str
+    status: str
+
+
+def _run(cmd: str | list[str]) -> str:
     if isinstance(cmd, str):
         cmd = shlex.split(cmd)
     return subprocess.run(cmd, capture_output=True, text=True, check=True).stdout.strip()
 
+
 def _get_prs() -> str:
     try:
-        return _run([
-            'gh', 'pr', 'list',
-            '--json', 'headRefName,url,isDraft,state',
-            '--template', '{{range .}}{{.headRefName}} {{.url}} {{.isDraft}} {{.state}}{{"\\n"}}{{end}}',
-            '--state', 'all',
-            '--limit', '300',
-            '--author', '@me'
-        ])
+        return _run(
+            [
+                'gh',
+                'pr',
+                'list',
+                '--json',
+                'headRefName,url,isDraft,state',
+                '--template',
+                '{{range .}}{{.headRefName}} {{.url}} {{.isDraft}} {{.state}}{{"\\n"}}{{end}}',
+                '--state',
+                'all',
+                '--limit',
+                '300',
+                '--author',
+                '@me',
+            ]
+        )
     except subprocess.CalledProcessError:
         return ''
+
 
 def _get_pr(branch: str, prs: str) -> str:
     prinfo = next((line for line in prs.splitlines() if line.startswith(branch)), None)
@@ -65,7 +120,7 @@ def _get_pr(branch: str, prs: str) -> str:
     state_color = {
         'MERGED': 'green',
         'OPEN': 'blue',
-        'CLOSED': 'red'
+        'CLOSED': 'red',
     }.get(state, 'white')
 
     if branch in ['master', 'main'] and state != 'OPEN':
@@ -73,84 +128,62 @@ def _get_pr(branch: str, prs: str) -> str:
 
     return f'\n      %(color:{state_color}){state}{draft}: %(color:cyan){url}'
 
+
 def _process_branch(branch: str, prs: str, gerrit_host: str | None):
     upstream = _run(f'git branch --list {branch} --format=%(upstream:short)')
     upstream_track = (
-        _run(f"git branch --list {branch} --format=%(upstream:track)")
-        .replace("ahead ", "↑")
-        .replace("behind ", "↓")
-        .replace(", ", "")[1:-1]
+        _run(f'git branch --list {branch} --format=%(upstream:track)')
+        .replace('ahead ', '↑')
+        .replace('behind ', '↓')
+        .replace(', ', '')[1:-1]
     )
 
     prline = _get_pr(branch, prs)
     date = _run(f'git log -1 --format=%cd --date=relative {branch}')
 
-    branch_info = _run([
-        'git',
-        'branch',
-        '--color=always',
-        '--list',
-        '--format',
-         f'%(color: bold green)%(if)%(HEAD)%(then){THIS} %(else)  %(end)'
-         + f'%(color:yellow)%(refname:short)%(color:reset) {ARROW} '
-         + '%(color:blue)%(upstream:short) '
-         + f'%(color:white){upstream_track} '
-         + f'%(color:magenta)({date}){prline}',
-         branch
-    ])
-
-    head = _run(['git', 'rev-parse', branch])
+    branch_info = _run(
+        [
+            'git',
+            'branch',
+            '--color=always',
+            '--list',
+            '--format',
+            f'%(color: bold green)%(if)%(HEAD)%(then){THIS} %(else)  %(end)'
+            + f'%(color:yellow)%(refname:short)%(color:reset) {ARROW} '
+            + '%(color:blue)%(upstream:short) '
+            + f'%(color:white){upstream_track} '
+            + f'%(color:magenta)({date}){prline}',
+            branch,
+        ]
+    )
 
     print(branch_info)
 
-    if gerrit_host:
-        _gerrit_info(gerrit_host, branch, head)
+    if not upstream or upstream_track == 'gone':
+        return
 
-    if upstream and upstream_track != 'gone':
-        commits = _run(f'git --no-pager log --format=%s {upstream}..{branch}').splitlines()
-        for commit in commits:
-            print(f'    {commit}')
+    output = _run(f'git --no-pager log --format====%H%n%s%n%b {upstream}..{branch}')
 
-def _get_change_id(branch: str) -> str | None:
-    for line in _run(f'git log --format=%B -n 1 {branch}').splitlines():
+    for commit in output.split('===')[1:]:
+        sha, summary, *body = commit.strip().splitlines()
+        print(f'    - {summary}')
+        if gerrit_host:
+            _gerrit_info(gerrit_host, body, sha)
+
+
+def _get_change_id(commit_body: list[str]) -> str | None:
+    for line in commit_body:
         if m := re.search('Change-Id: (.*)', line):
             return m.group(1)
     return None
 
-class GerritApprovalBy(TypedDict):
-    name: str
-    email: str
-    username: str
-
-class GerritApproval(TypedDict):
-    type: str
-    value: str
-    by: GerritApprovalBy
-
-class GerritCurrentPatchSet(TypedDict):
-    approvals: list[GerritApproval]
-    revision: str
-
-class GerritQueryResult(TypedDict):
-    url: str
-    currentPatchSet: GerritCurrentPatchSet
-    number: int
-    project: str
-    status: str
 
 def _link(text: str, url: str) -> str:
-    return f'{UNDERLINE}{OSC8_1}{url}{OSC8_2}{text}{OSC8_3}'
+    return f'{Ansi.UNDERLINE}{Ansi.OSC8_1}{url}{Ansi.OSC8_2}{text}{Ansi.OSC8_3}{Ansi.END}'
 
-def _gerrit_info(host: str, branch: str, head: str):
-    changeid = _get_change_id(branch)
-
-    result = _run(
-        f'ssh {host} -p 29418 gerrit query {changeid} --current-patch-set --format=JSON'
-    ).splitlines()[0]
-    obj: GerritQueryResult = json.loads(result)
-    url = obj['url']
+def _get_approvals(obj: GerritQueryResult) -> dict[str, dict[str, str]]:
     approvals = obj['currentPatchSet'].get('approvals', [])
-    approvals1: dict[str,dict[str,str]] = {}
+    approvals1: dict[str, dict[str, str]] = {}
     for approval in approvals:
         value = approval['value']
         atype = approval['type']
@@ -158,14 +191,33 @@ def _gerrit_info(host: str, branch: str, head: str):
         if atype not in approvals1:
             approvals1[atype] = {}
         approvals1[atype][name] = value
+    return approvals1
+
+def _gerrit_info(host: str, commit_body: list[str], sha: str):
+    changeid = _get_change_id(commit_body)
+    if not changeid:
+        return
+
+    result = _run(
+        f'ssh {host} -p {GERRIT_PORT} gerrit query {changeid} --current-patch-set --patch-sets --format=JSON'
+    ).splitlines()[0]
+    obj: GerritQueryResult = json.loads(result)
+    url = obj['url']
+
+    currentps = obj['currentPatchSet']['number']
+    patchset = '?'
+    for ps in obj['patchSets']:
+        if ps['revision'] == sha:
+            patchset = ps['number']
+            break
 
     def fmt_approval(name: str, value: str):
         pos = int(value) > 0
-        color = GREEN if pos else RED
+        color = Ansi.GREEN if pos else Ansi.RED
         v = f'+{value}' if pos else f'{value} ({name})'
         return f'{color}{v}'
 
-    def fmt_label(label: str, approvals: dict[str,str]):
+    def fmt_label(label: str, approvals: dict[str, str]):
         abbreviated_label = ''.join(word[0] for word in label.split('-'))
         values = ', '.join(fmt_approval(name, value) for name, value in approvals.items())
 
@@ -176,24 +228,33 @@ def _gerrit_info(host: str, branch: str, head: str):
                 break
 
         if fail:
-            return f'{RED}{abbreviated_label}: [{values}]{ENDC}'
-        return f'{GREEN}{abbreviated_label}{ENDC}'
+            return f'{Ansi.RED}{abbreviated_label}[{values}{Ansi.RED}]{Ansi.END}'
+        return f'{Ansi.GREEN}{abbreviated_label}{Ansi.END}'
 
     is_merged = obj['status'] == 'MERGED'
-    is_merged_str = f'{GREEN}[MERGED]{ENDC}' if is_merged else ''
+    is_merged_str = f'{Ansi.GREEN}merged{Ansi.END}' if is_merged else ''
 
-    is_current = obj['currentPatchSet']['revision'] == head
-    is_current_str = f'{RED}[NOT CURRENT]{ENDC}' if not is_current else ''
+    is_current = obj['currentPatchSet']['revision'] == sha
+
 
     change_id = obj['number']
     ln = _link(f'{host}/{change_id}', url)
 
-    print(f'      {BLUE}GERRIT: {is_current_str}{is_merged_str} {ENDC}{ln}{ENDC} ', end ='')
-    print(
-        f"{BLUE},{ENDC} ".join(
-            fmt_label(label, approvals) for label, approvals in approvals1.items()
-        )
+    print(f'      └ {ln} ', end='')
+
+    if is_current:
+        print(f'{Ansi.GREEN}ps {patchset}/{currentps}{Ansi.END}', end='')
+    else:
+        print(f'{Ansi.RED}ps {patchset}/{currentps}{Ansi.END}', end='')
+
+    if is_merged_str:
+        print(f'{is_merged_str}, ', end='')
+
+    labels = ', '.join(
+        fmt_label(label, approvals) for label, approvals in _get_approvals(obj).items()
     )
+    print(f'{labels})')
+
 
 def _get_gerrit_host() -> str | None:
     url = _run('git config --get remote.origin.url').strip()
@@ -207,10 +268,11 @@ def _get_gerrit_host() -> str | None:
         return
 
     try:
-        _run(f'ssh {host} -p 29418 gerrit version')
+        _run(f'ssh {host} -p {GERRIT_PORT} gerrit version')
         return host
     except subprocess.CalledProcessError:
         pass
+
 
 def main():
     prs = _get_prs()
@@ -220,6 +282,7 @@ def main():
     gerrit_host = _get_gerrit_host()
     for branch in branches:
         _process_branch(branch, prs, gerrit_host)
+
 
 if __name__ == '__main__':
     main()
