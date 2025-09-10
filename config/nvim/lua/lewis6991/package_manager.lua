@@ -35,7 +35,7 @@ function M.bootstrap()
   -- local pckr_path = vim.fn.stdpath("data") .. "/pckr/pckr.nvim"
   vim.opt.rtp:prepend(pckr_path)
 
-  if not vim.loop.fs_stat(pckr_path) then
+  if not vim.uv.fs_stat(pckr_path) then
     vim.fn.system({
       'git',
       'clone',

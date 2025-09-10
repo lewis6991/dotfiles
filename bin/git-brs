@@ -200,8 +200,13 @@ def _gerrit_info(host: str, commit_body: list[str], sha: str):
 
     result = _run(
         f'ssh {host} -p {GERRIT_PORT} gerrit query {changeid} --current-patch-set --patch-sets --format=JSON'
-    ).splitlines()[0]
-    obj: GerritQueryResult = json.loads(result)
+    ).splitlines()
+
+    # Query should give 2 json results
+    if len(result) < 2:
+        return
+
+    obj: GerritQueryResult = json.loads(result[0])
     url = obj['url']
 
     currentps = obj['currentPatchSet']['number']

@@ -38,22 +38,29 @@ function changes() {
 function main() {
   ASAN=0
   FORCE=0
+  CLEAN=0
 
   while [[ $# -gt 0 ]]; do
     case $1 in
-      -a) ASAN=1 ;;
-      -f) FORCE=1 ;;
+      -a|--asan) ASAN=1 ;;
+      -f|--force) FORCE=1 ;;
+      -c|--clean) CLEAN=1 ;;
     esac
     shift
   done
 
   run rm -f "$BUILD_DIR.log"
 
+  if ((CLEAN)); then
+    info "Cleaning"
+    run rm -rf "$BUILD_DIR"
+  fi
+
   if [[ ! -d "$BUILD_DIR/.git" ]]; then
     run rm -rf "$BUILD_DIR"
     info "Cloning neovim"
     run git clone https://github.com/neovim/neovim \
-      --depth 1 \
+      --filter=blob:none \
       --quiet \
       "$BUILD_DIR"
   fi
@@ -64,7 +71,7 @@ function main() {
   run git fetch
 
   if ((!FORCE)) && ! changes; then
-    info "Done!"
+    info "Done! (No changes)"
     exit
   fi
 
@@ -74,37 +81,34 @@ function main() {
   info "Cleaning workspace"
   run make distclean
 
+  local cmake_opts=()
+  if [ -n "$NVIM_INSTALL_PREFIX" ]; then
+    cmake_opts+=("CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX")
+  fi
+
   if ((ASAN)); then
+    cmake_opts+=("CMAKE_BUILD_TYPE=Debug")
+
     info "Building (ASAN enabled)"
     run make \
       CMAKE_EXTRA_FLAGS="-DCMAKE_C_COMPILER=clang -DENABLE_ASAN_UBSAN=1" \
+      "${cmake_opts[@]}"
       "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX"
     # ASAN_OPTIONS=detect_leaks=1:check_initialization_order=1:handle_abort=1:handle_sigill=1:log_path=nvim_asan:intercept_tls_get_addr=0
     # UBSAN_OPTIONS=print_stacktrace=1 log_path=nvim_ubsan
   else
+    cmake_opts+=("CMAKE_BUILD_TYPE=RelWithDebInfo")
     info "Building"
-    run make \
-      CMAKE_BUILD_TYPE=RelWithDebInfo \
-      "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX"
+    run make "${cmake_opts[@]}"
   fi
 
-  { # install
-    local install_msg
-    if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
-      # Get sudo
-      install_msg="Installing (with sudo)"
-      SUDO_OPT=sudo
-    else
-      install_msg="Installing"
-      SUDO_OPT=""
-    fi
-
-    info "$install_msg"
-    run $SUDO_OPT make \
-      CMAKE_BUILD_TYPE=RelWithDebInfo \
-      "CMAKE_INSTALL_PREFIX=$NVIM_INSTALL_PREFIX" \
-      install
-  }
+  if [[ -z "$NVIM_INSTALL_PREFIX" ]] || [[ ! -w "$NVIM_INSTALL_PREFIX" ]]; then
+    info "Installing (with sudo)"
+    run sudo make install
+  else
+    info "Installing"
+    run make install
+  fi
 
   info "Done!"
 }
