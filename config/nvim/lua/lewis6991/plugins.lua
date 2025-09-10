@@ -358,7 +358,13 @@ p('folke/snacks.nvim', {
       require('snacks').picker.files({
         layout = { hidden = { 'preview' } },
       })
-    end, { desc = 'Snacks picker: dotfiles' })
+    end, { desc = 'Snacks picker: files' })
+
+    vim.keymap.set('n', '<C-g>', function()
+      require('snacks').picker.git_files({
+        layout = { hidden = { 'preview' } },
+      })
+    end, { desc = 'Snacks picker: git files' })
 
     vim.keymap.set('n', '<C- >', function()
       require('snacks').picker.git_files({

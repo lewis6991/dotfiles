@@ -2,7 +2,7 @@ local api = vim.api
 
 --- @class gizmos.lint.Linter
 --- @field name string
---- @field cmd (string|fun(bufnr: integer):string)[]
+--- @field cmd string[]|fun(bufnr: integer):string[]
 ---
 --- Send content via stdin. Defaults to false
 --- @field stdin? boolean
@@ -126,21 +126,21 @@ local function on_result(bufnr, cmd, linter, obj)
 end
 
 --- @param bufnr integer
---- @param cmd (string|fun(bufnr: integer):string)[]
+--- @param cmd string[]|fun(bufnr: integer):string[]
 --- @return string[]
 local function resolve_cmd(bufnr, cmd)
   local bufname = api.nvim_buf_get_name(bufnr)
-  return vim.tbl_map(
-    --- @param x string|fun(bufnr: integer):string
-    --- @return string
-    function(x)
-      if type(x) == 'function' then
-        return x(bufnr)
-      end
-      return (x:gsub('<FILE>', bufname))
-    end,
-    cmd
-  )
+  if type(cmd) == 'function' then
+    cmd = cmd(bufnr)
+  end
+
+  for i, x in ipairs(cmd) do
+    if x == '<FILE>' then
+      cmd[i] = x:gsub('<FILE>', bufname)
+    end
+  end
+
+  return cmd
 end
 
 --- @param bufnr integer

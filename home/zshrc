@@ -134,4 +134,10 @@ java() {
     command java "$@"
 }
 
+thist() {
+    rm -rf /tmp/thist
+    tmux capture-pane -epS - > /tmp/tmuxhist
+    vim -c 'term cat /tmp/tmuxhist' -c stopinsert
+}
+
 unfunction have_cmd

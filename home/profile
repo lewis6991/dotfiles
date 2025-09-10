@@ -72,7 +72,8 @@ for i in \
     "$HOME/.luarocks" \
     "$HOME/.local" \
     "$XDG_DATA_HOME/npm" \
-    "$XDG_DATA_HOME/cargo"
+    "$XDG_DATA_HOME/cargo" \
+    "$XDG_DATA_HOME/.."
 do
     [ -d "$i/bin"       ] && PATH="$i/bin:$PATH"
     [ -d "$i/man"       ] && MANPATH="$i/man:$MANPATH"

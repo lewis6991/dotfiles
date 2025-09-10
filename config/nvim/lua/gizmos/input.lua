@@ -189,6 +189,7 @@ local function input(opts, on_confirm)
   vim.bo[bufnr].swapfile = false
   vim.bo[bufnr].bufhidden = 'wipe'
   vim.bo[bufnr].filetype = 'GizmosInput'
+  vim.bo[bufnr].formatoptions = ''
 
   local function map(mode, lhs, rhs)
     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, nowait = true })

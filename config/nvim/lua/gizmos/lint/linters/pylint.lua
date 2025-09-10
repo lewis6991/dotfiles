@@ -27,7 +27,13 @@ local pylint_severities = {
 return {
   name = 'pylint',
   stdin = true,
-  cmd = { 'pylint', '--output-format', 'json2', '--from-stdin', '<FILE>' },
+  cmd = function()
+    local cmd = {}
+    if vim.fn.executable('uv') == 1 then
+      vim.list_extend(cmd, { 'uv', 'run', '--' })
+    end
+    return vim.list_extend(cmd, { 'pylint', '--output-format', 'json2', '--from-stdin', '<FILE>' })
+  end,
   env = function()
     return {
       PYLINTRC = vim.env.PYLINTRC or vim.fn.expand('$XDG_CONFIG_HOME/pylint/pylintrc.toml'),

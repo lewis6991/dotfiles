@@ -18,8 +18,6 @@ alias lssize="du -h -d 1 --exclude .snapshot"
 
 alias gitconfig='vim $XDG_CONFIG_HOME/git/config'
 
-alias thist="tmux capture-pane -epS - > /tmp/tmuxhist && vim -c 'te cat /tmp/tmuxhist' -c stopinsert"
-
 alias vim="nvim"
 
 alias utop='top -u $USER'
