@@ -181,6 +181,7 @@ def _get_change_id(commit_body: list[str]) -> str | None:
 def _link(text: str, url: str) -> str:
     return f'{Ansi.UNDERLINE}{Ansi.OSC8_1}{url}{Ansi.OSC8_2}{text}{Ansi.OSC8_3}{Ansi.END}'
 
+
 def _get_approvals(obj: GerritQueryResult) -> dict[str, dict[str, str]]:
     approvals = obj['currentPatchSet'].get('approvals', [])
     approvals1: dict[str, dict[str, str]] = {}
@@ -192,6 +193,7 @@ def _get_approvals(obj: GerritQueryResult) -> dict[str, dict[str, str]]:
             approvals1[atype] = {}
         approvals1[atype][name] = value
     return approvals1
+
 
 def _gerrit_info(host: str, commit_body: list[str], sha: str):
     changeid = _get_change_id(commit_body)
@@ -241,7 +243,6 @@ def _gerrit_info(host: str, commit_body: list[str], sha: str):
 
     is_current = obj['currentPatchSet']['revision'] == sha
 
-
     change_id = obj['number']
     ln = _link(f'{host}/{change_id}', url)
 
@@ -253,12 +254,13 @@ def _gerrit_info(host: str, commit_body: list[str], sha: str):
         print(f'{Ansi.RED}ps {patchset}/{currentps}{Ansi.END}', end='')
 
     if is_merged_str:
-        print(f'{is_merged_str}, ', end='')
+        print(f', {is_merged_str}', end='')
 
     labels = ', '.join(
         fmt_label(label, approvals) for label, approvals in _get_approvals(obj).items()
     )
-    print(f'{labels})')
+    if labels:
+        print(f', {labels})')
 
 
 def _get_gerrit_host() -> str | None:
