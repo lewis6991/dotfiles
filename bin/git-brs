@@ -10,6 +10,7 @@ for terminal output, including hyperlinks and color codes.
 import re
 import shlex
 import json
+import argparse
 
 import subprocess
 
@@ -26,7 +27,7 @@ class Ansi(StrEnum):
     BLUE = '\033[94m'
     CYAN = '\033[96m'
     GREEN = '\033[92m'
-    WARN = '\033[93m'
+    YELLOW = '\033[93m'
     RED = '\033[91m'
     END = '\033[0m'
     BOLD = '\033[1m'
@@ -74,6 +75,7 @@ class GerritQueryResult(TypedDict):
     patchSets: list[GerritPatchSet]
     number: int
     project: str
+    subject: str
     status: str
 
 
@@ -168,7 +170,8 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
         sha, summary, *body = commit.strip().splitlines()
         print(f'    - {summary}')
         if gerrit_host:
-            _gerrit_info(gerrit_host, body, sha)
+            if changeid := _get_change_id(body):
+                _gerrit_info(changeid, gerrit_host, sha)
 
 
 def _get_change_id(commit_body: list[str]) -> str | None:
@@ -192,29 +195,20 @@ def _get_approvals(obj: GerritQueryResult) -> dict[str, dict[str, str]]:
         approvals1.setdefault(atype, {})[name] = value
     return approvals1
 
-
-def _gerrit_info(host: str, commit_body: list[str], sha: str):
-    changeid = _get_change_id(commit_body)
-    if not changeid:
-        return
-
-    result = _run(
-        f'ssh {host} -p {GERRIT_PORT} gerrit query {changeid} --current-patch-set --patch-sets --format=JSON'
-    ).splitlines()
-
-    # Query should give 2 json results
-    if len(result) < 2:
-        return
-
-    obj: GerritQueryResult = json.loads(result[0])
+def _gerrit_info_for_result(line: str, host: str, sha: str | None = None):
+    obj: GerritQueryResult = json.loads(line)
     url = obj['url']
 
     currentps = obj['currentPatchSet']['number']
     patchset = '?'
-    for ps in obj['patchSets']:
-        if ps['revision'] == sha:
-            patchset = ps['number']
-            break
+    if sha is not None:
+        for ps in obj['patchSets']:
+            if ps['revision'] == sha:
+                patchset = ps['number']
+                break
+    else:
+        print(f'{Ansi.YELLOW}{obj['project']}:{Ansi.END}')
+        print(f'      {Ansi.BLUE}{obj['subject']}{Ansi.END}')
 
     def fmt_approval(name: str, value: str):
         pos = int(value) > 0
@@ -238,29 +232,36 @@ def _gerrit_info(host: str, commit_body: list[str], sha: str):
         n = len(approvals)
         return f'{Ansi.GREEN}{abbreviated_label}[{n}]{Ansi.END}'
 
-    is_merged = obj['status'] == 'MERGED'
-    is_merged_str = f'{Ansi.GREEN}merged{Ansi.END}' if is_merged else ''
-
-    is_current = obj['currentPatchSet']['revision'] == sha
-
-    change_id = obj['number']
-    ln = _link(f'{host}/{change_id}', url)
+    ln = _link(f'{host}/{obj['number']}', url)
 
     print(f'      └ {ln} ', end='')
 
-    if is_current:
-        print(f'{Ansi.GREEN}ps {patchset}/{currentps}{Ansi.END}', end='')
+    if sha is not None:
+        color = Ansi.GREEN if obj['currentPatchSet']['revision'] == sha else Ansi.RED
+        print(f'{color}ps {patchset}/{currentps}{Ansi.END}', end='')
     else:
-        print(f'{Ansi.RED}ps {patchset}/{currentps}{Ansi.END}', end='')
+        print(f'{Ansi.BLUE}ps {currentps}{Ansi.END}', end='')
 
-    if is_merged_str:
-        print(f', {is_merged_str}', end='')
+    match obj['status']:
+        case 'NEW':
+            pass
+        case x:
+            print(f', {Ansi.BLUE}{x.lower()}{Ansi.END}', end='')
 
     labels = ', '.join(
         fmt_label(label, approvals) for label, approvals in _get_approvals(obj).items()
     )
     if labels:
         print(f', {labels})')
+
+
+def _gerrit_info(query: str, host: str, sha: str | None = None):
+    result = _run(
+        f'ssh {host} -p {GERRIT_PORT} gerrit query {query} --current-patch-set --patch-sets --format=JSON'
+    ).splitlines()
+
+    for line in result[:-1]:
+        _gerrit_info_for_result(line, host, sha)
 
 
 def _get_gerrit_host() -> str | None:
@@ -282,6 +283,15 @@ def _get_gerrit_host() -> str | None:
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Display Git branches with PR and Gerrit info')
+    parser.add_argument('--remote', action='store_true', help='Include remote branches')
+    args = parser.parse_args()
+
+    if args.remote:
+        if gerrit_host := _get_gerrit_host():
+            _gerrit_info('owner:me is:open', gerrit_host)
+        return
+
     prs = _get_prs()
     result = _run('git for-each-ref --shell --format=%(refname:short) refs/heads').splitlines()
     branches = [re.sub(r'^\'|\'$', '', entry.strip()) for entry in result]
