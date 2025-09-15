@@ -195,6 +195,7 @@ def _get_approvals(obj: GerritQueryResult) -> dict[str, dict[str, str]]:
         approvals1.setdefault(atype, {})[name] = value
     return approvals1
 
+
 def _gerrit_info_for_result(line: str, host: str, sha: str | None = None):
     obj: GerritQueryResult = json.loads(line)
     url = obj['url']
@@ -207,8 +208,8 @@ def _gerrit_info_for_result(line: str, host: str, sha: str | None = None):
                 patchset = ps['number']
                 break
     else:
-        print(f'{Ansi.YELLOW}{obj['project']}:{Ansi.END}')
-        print(f'      {Ansi.BLUE}{obj['subject']}{Ansi.END}')
+        print(f'{Ansi.YELLOW}{obj["project"]}:{Ansi.END}')
+        print(f'      {Ansi.BLUE}{obj["subject"]}{Ansi.END}')
 
     def fmt_approval(name: str, value: str):
         pos = int(value) > 0
@@ -232,7 +233,7 @@ def _gerrit_info_for_result(line: str, host: str, sha: str | None = None):
         n = len(approvals)
         return f'{Ansi.GREEN}{abbreviated_label}[{n}]{Ansi.END}'
 
-    ln = _link(f'{host}/{obj['number']}', url)
+    ln = _link(f'{host}/{obj["number"]}', url)
 
     print(f'      └ {ln} ', end='')
 
@@ -252,7 +253,8 @@ def _gerrit_info_for_result(line: str, host: str, sha: str | None = None):
         fmt_label(label, approvals) for label, approvals in _get_approvals(obj).items()
     )
     if labels:
-        print(f', {labels})')
+        print(f', {labels}', end='')
+    print()
 
 
 def _gerrit_info(query: str, host: str, sha: str | None = None):
