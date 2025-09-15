@@ -189,9 +189,7 @@ def _get_approvals(obj: GerritQueryResult) -> dict[str, dict[str, str]]:
         value = approval['value']
         atype = approval['type']
         name = approval['by']['name']
-        if atype not in approvals1:
-            approvals1[atype] = {}
-        approvals1[atype][name] = value
+        approvals1.setdefault(atype, {})[name] = value
     return approvals1
 
 
@@ -236,7 +234,9 @@ def _gerrit_info(host: str, commit_body: list[str], sha: str):
 
         if fail:
             return f'{Ansi.RED}{abbreviated_label}[{values}{Ansi.RED}]{Ansi.END}'
-        return f'{Ansi.GREEN}{abbreviated_label}{Ansi.END}'
+
+        n = len(approvals)
+        return f'{Ansi.GREEN}{abbreviated_label}[{n}]{Ansi.END}'
 
     is_merged = obj['status'] == 'MERGED'
     is_merged_str = f'{Ansi.GREEN}merged{Ansi.END}' if is_merged else ''
