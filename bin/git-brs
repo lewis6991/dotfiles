@@ -85,53 +85,60 @@ def _run(cmd: str | list[str]) -> str:
     return subprocess.run(cmd, capture_output=True, text=True, check=True).stdout.strip()
 
 
-def _get_prs() -> str:
+class PRInfo(TypedDict):
+    headRefName: str
+    isDraft: bool
+    url: str
+    state: str
+    number: int
+
+
+def _get_gh_info() -> tuple[str | None, list[PRInfo]]:
     try:
-        return _run(
+        owner = json.loads(_run(['gh', 'repo', 'view', '--json=nameWithOwner']))['nameWithOwner']
+        prs = json.loads(_run(
             [
                 'gh',
                 'pr',
                 'list',
-                '--json',
-                'headRefName,url,isDraft,state',
-                '--template',
-                '{{range .}}{{.headRefName}} {{.url}} {{.isDraft}} {{.state}}{{"\\n"}}{{end}}',
-                '--state',
-                'all',
-                '--limit',
-                '300',
-                '--author',
-                '@me',
+                '--json=headRefName,url,isDraft,state,number,headRepository',
+                '--state=all',
+                '--limit=300',
+                '--author=@me',
             ]
-        )
+        ))
+        return owner, prs
     except subprocess.CalledProcessError:
+        return None, []
+
+
+def _get_pr(branch: str, prj: str | None, prs: list[PRInfo]) -> str:
+    if not prj:
         return ''
 
-
-def _get_pr(branch: str, prs: str) -> str:
-    prinfo = next((line for line in prs.splitlines() if line.startswith(branch)), None)
-    if not prinfo:
+    pr = next((pr for pr in prs if pr['headRefName'].startswith(branch)), None)
+    if not pr:
         return ''
 
-    parts = prinfo.split()
-    url = parts[1]
-    isdraft = parts[2] == 'true'
-    state = parts[3]
-
-    draft = '[DRAFT]' if isdraft else ''
-    state_color = {
-        'MERGED': 'green',
-        'OPEN': 'blue',
-        'CLOSED': 'red',
-    }.get(state, 'white')
+    state = pr['state']
 
     if branch in ['master', 'main'] and state != 'OPEN':
         return ''
 
-    return f'\n      %(color:{state_color}){state}{draft}: %(color:cyan){url}'
+    ret: list[str] = []
+    ln = _link(f'{prj}#{pr["number"]}', pr['url'])
+
+    if state != 'OPEN':
+        state_color = Ansi.RED if state == 'CLOSED' else Ansi.GREEN
+        ret.append(f'{state_color}{state.lower}{Ansi.END}')
+
+    if draft := 'draft' if pr['isDraft'] else '':
+        ret.append(f'{Ansi.BLUE}{draft}{Ansi.END}')
+
+    return f'    {ln} ' + ', '.join(ret)
 
 
-def _process_branch(branch: str, prs: str, gerrit_host: str | None):
+def _branch_info(branch: str, gh_prj: str | None, prs: list[PRInfo], gerrit_host: str | None):
     upstream = _run(f'git branch --list {branch} --format=%(upstream:short)')
     upstream_track = (
         _run(f'git branch --list {branch} --format=%(upstream:track)')
@@ -140,10 +147,9 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
         .replace(', ', '')[1:-1]
     )
 
-    prline = _get_pr(branch, prs)
     date = _run(f'git log -1 --format=%cd --date=relative {branch}')
 
-    branch_info = _run(
+    print(_run(
         [
             'git',
             'branch',
@@ -154,12 +160,13 @@ def _process_branch(branch: str, prs: str, gerrit_host: str | None):
             + f'%(color:yellow)%(refname:short)%(color:reset) {ARROW} '
             + '%(color:blue)%(upstream:short) '
             + f'%(color:white){upstream_track} '
-            + f'%(color:magenta)({date}){prline}',
+            + f'%(color:magenta)({date})',
             branch,
         ]
-    )
+    ))
 
-    print(branch_info)
+    if prline := _get_pr(branch, gh_prj, prs):
+        print(prline)
 
     if not upstream or upstream_track == 'gone':
         return
@@ -182,7 +189,9 @@ def _get_change_id(commit_body: list[str]) -> str | None:
 
 
 def _link(text: str, url: str) -> str:
-    return f'{Ansi.UNDERLINE}{Ansi.OSC8_1}{url}{Ansi.OSC8_2}{text}{Ansi.OSC8_3}{Ansi.END}'
+    return (
+        Ansi.BLUE + Ansi.UNDERLINE + Ansi.OSC8_1 + url + Ansi.OSC8_2 + text + Ansi.OSC8_3 + Ansi.END
+    )
 
 
 def _get_approvals(obj: GerritQueryResult) -> dict[str, dict[str, str]]:
@@ -235,7 +244,7 @@ def _gerrit_info_for_result(line: str, host: str, sha: str | None = None):
 
     ln = _link(f'{host}/{obj["number"]}', url)
 
-    print(f'      └ {ln} ', end='')
+    print(f'        {ln} ', end='')
 
     if sha is not None:
         color = Ansi.GREEN if obj['currentPatchSet']['revision'] == sha else Ansi.RED
@@ -289,18 +298,17 @@ def main():
     parser.add_argument('--remote', action='store_true', help='Include remote branches')
     args = parser.parse_args()
 
+    gerrit_host = _get_gerrit_host()
+
     if args.remote:
-        if gerrit_host := _get_gerrit_host():
+        if gerrit_host:
             _gerrit_info('owner:me is:open', gerrit_host)
         return
 
-    prs = _get_prs()
-    result = _run('git for-each-ref --shell --format=%(refname:short) refs/heads').splitlines()
-    branches = [re.sub(r'^\'|\'$', '', entry.strip()) for entry in result]
+    gh_prj, prs = _get_gh_info()
 
-    gerrit_host = _get_gerrit_host()
-    for branch in branches:
-        _process_branch(branch, prs, gerrit_host)
+    for branch in _run(['git', 'branch', '--format=%(refname:short)']).splitlines():
+        _branch_info(branch, gh_prj, prs, gerrit_host)
 
 
 if __name__ == '__main__':
