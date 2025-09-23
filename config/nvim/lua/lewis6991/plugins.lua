@@ -7,6 +7,12 @@ local p = manager.add
 
 local event = require('pckr.loader.event')
 
+local function delayed(loader)
+  vim.defer_fn(function()
+    loader()
+  end, 1000)
+end
+
 p('neovim/nvim-lspconfig')
 
 --- Filetype plugins ---
@@ -26,6 +32,7 @@ p('lewis6991/fileline.nvim')
 p('lewis6991/satellite.nvim')
 
 p('olimorris/codecompanion.nvim', {
+  cond = delayed,
   config = 'lewis6991.codecompanion',
   requires = {
     'j-hui/fidget.nvim',
@@ -34,6 +41,7 @@ p('olimorris/codecompanion.nvim', {
 })
 
 p('MeanderingProgrammer/render-markdown.nvim', {
+  cond = delayed,
   config = function()
     require('render-markdown').setup({
       render_modes = true,
@@ -135,37 +143,10 @@ p('wellle/targets.vim')
 p('sindrets/diffview.nvim', { cond = event('CmdlineEnter') })
 p('folke/trouble.nvim', {
   config = function()
-    -- folke/trouble.nvim#655
-    package.preload['trouble.view.treesitter'] = function()
-      local M = {}
-      function M.setup(_) end
-      function M.is_enabled()
-        return false
-      end
-      function M.enable()
-        return false
-      end
-      function M.attach(_) end
-      function M.detach(_) end
-      -- Neovim decoration provider callbacks (no-op)
-      function M.on_start(_) end
-      function M.on_buf(_) end
-      function M.on_win(_) end
-      function M.on_line(_) end
-      function M.on_end(_) end
-      function M.on_reload(_) end
-      function M.on_lines(_) end
-      return M
-    end
     require('trouble').setup()
-    vim.api.nvim_create_autocmd('LspAttach', {
-      desc = 'trouble mappings',
-      callback = function(args)
-        vim.keymap.set('n', 'grr', '<cmd>Trouble lsp_references<cr>', { buffer = args.buf })
-        vim.keymap.set('n', 'gd', '<cmd>Trouble diagnostics<cr>', { buffer = args.buf })
-        vim.keymap.set('n', 'C-]', '<cmd>Trouble lsp_definitions<cr>', { buffer = args.buf })
-      end,
-    })
+    vim.keymap.set('n', 'grr', '<cmd>Trouble lsp_references<cr>')
+    vim.keymap.set('n', 'gd', '<cmd>Trouble diagnostics<cr>')
+    vim.keymap.set('n', 'C-]', '<cmd>Trouble lsp_definitions<cr>')
   end,
 })
 
@@ -179,20 +160,38 @@ p('AndrewRadev/bufferize.vim', {
   end,
 })
 
-p('rcarriga/nvim-notify', {
+-- p('rcarriga/nvim-notify', {
+--   config = function()
+--     --- @diagnostic disable-next-line
+--     vim.notify = function(...)
+--       vim.notify = require('notify')
+--       return vim.notify(...)
+--     end
+--   end,
+-- })
+
+p('j-hui/fidget.nvim', {
   config = function()
+    local done_setup = false
+    local auid = vim.api.nvim_create_autocmd('LspAttach', {
+      once = true,
+      callback = function()
+        require('fidget').setup({})
+        done_setup = true
+      end,
+    })
+
     --- @diagnostic disable-next-line
     vim.notify = function(...)
+      local fidget = require('fidget')
+      if not done_setup then
+        vim.api.nvim_del_autocmd(auid)
+        fidget.setup({})
+        done_setup = true
+      end
       vim.notify = require('notify')
       return vim.notify(...)
     end
-  end,
-})
-
-p('j-hui/fidget.nvim', {
-  cond = event('LspAttach'),
-  config = function()
-    require('fidget').setup({})
   end,
 })
 
@@ -230,6 +229,7 @@ p('mfussenegger/nvim-dap', {
 })
 
 p('igorlfs/nvim-dap-view', {
+  cond = event('LspAttach'),
   requires = 'mfussenegger/nvim-dap',
   config = function()
     local dap_view = require('dap-view')
