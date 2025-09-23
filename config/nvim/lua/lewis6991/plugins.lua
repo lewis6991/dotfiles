@@ -189,7 +189,7 @@ p('j-hui/fidget.nvim', {
         fidget.setup({})
         done_setup = true
       end
-      vim.notify = require('notify')
+      vim.notify = fidget.notify
       return vim.notify(...)
     end
   end,
