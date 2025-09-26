@@ -123,6 +123,7 @@ if 'Options' then
 
   o.foldcolumn = '0'
   o.foldnestmax = 3
+  o.foldminlines = 4
   o.foldopen:append('jump')
   o.foldtext = ''
   o.fillchars:append({ fold = ' ' })
