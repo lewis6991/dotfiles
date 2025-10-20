@@ -365,41 +365,44 @@ p('stevearc/oil.nvim', {
   end,
 })
 
-p('folke/snacks.nvim', {
+p('ibhagwan/fzf-lua', {
   config = function()
-    require('snacks').setup({
-      picker = { enabled = true },
+    require('fzf-lua').setup({
+      winopts = {
+        height = 0.9,
+        width = 0.9,
+        preview = {
+          horizontal = 'right:40%',
+        },
+      },
+      git = {
+        files = {
+          git_icons = false,
+        },
+      },
+      fzf_colors = { true },
     })
-
     vim.keymap.set('n', '<C-b>', function()
-      require('snacks').picker.buffers()
-    end, { desc = 'Snacks picker: buffers' })
+      require('fzf-lua').buffers()
+    end, { desc = 'buffers' })
 
     vim.api.nvim_set_hl(0, 'SnacksPickerDir', { link = 'LineNr' })
 
     vim.keymap.set('n', '<C-p>', function()
-      require('snacks').picker.files({
-        layout = { hidden = { 'preview' } },
-      })
-    end, { desc = 'Snacks picker: files' })
+      require('fzf-lua').files()
+    end, { desc = 'files' })
 
     vim.keymap.set('n', '<C-g>', function()
-      require('snacks').picker.git_files({
-        layout = { hidden = { 'preview' } },
-      })
-    end, { desc = 'Snacks picker: git files' })
+      require('fzf-lua').git_files()
+    end, { desc = 'git files' })
 
     vim.keymap.set('n', '<C- >', function()
-      require('snacks').picker.git_files({
-        layout = { hidden = { 'preview' } },
-        cwd = vim.env.HOME .. '/projects/dotfiles',
-        untracked = true,
-      })
-    end, { desc = 'Snacks picker: git files' })
+      require('fzf-lua').git_files({ cwd = '~/projects/dotfiles' })
+    end, { desc = 'git files' })
 
     vim.keymap.set('n', '<leader>g', function()
-      require('snacks').picker.grep()
-    end, { desc = 'Snacks picker: grep' })
+      require('fzf-lua').live_grep()
+    end, { desc = 'grep' })
   end,
 })
 
