@@ -5,7 +5,6 @@ Gitsigns
 HOMEBREW
 LHS
 LSP
-Linuxbrew
 LuaJIT
 Neovim
 Neovim
@@ -75,7 +74,6 @@ refspec
 regex
 regexes
 reparsing
-s
 scm
 src
 stdlib
@@ -106,3 +104,4 @@ NUL
 ABI
 userdata
 Artifactory
+synthesizable

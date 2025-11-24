@@ -103,6 +103,7 @@ if 'Options' then
   o.undolevels = 10000
   o.virtualedit = 'block' -- allow cursor to exist where there is no character
   o.winblend = 10
+  o.winborder = 'rounded'
   o.wrap = false
 
   -- Avoid showing message extra message when using completion
@@ -140,6 +141,8 @@ if 'Options' then
     t = true, -- Do not auto wrap text
     n = true, -- Recognise lists
   })
+
+  o.jumpoptions:append('stack')
 end
 
 if 'Whitespace' then

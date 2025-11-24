@@ -91,9 +91,6 @@ gitsigns.setup({
     changedelete = { show_count = true },
   },
   on_attach = on_attach,
-  preview_config = {
-    border = 'rounded',
-  },
   current_line_blame = true,
   current_line_blame_opts = {
     delay = 50,
@@ -126,4 +123,5 @@ gitsigns.setup({
   word_diff = true,
   trouble = true,
   gh = true,
+  _commit_maps = true,
 })

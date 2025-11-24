@@ -93,8 +93,8 @@ do -- lua
 end
 
 do -- python
-  --- @return string?
-  local function get_python_path()
+  --- @return string
+  local function get_python_exe_path()
     local venv_path = os.getenv('VIRTUAL_ENV')
     if venv_path then
       return vim.fs.joinpath(venv_path, 'bin', 'python3')
@@ -108,13 +108,8 @@ do -- python
       if vim.uv.fs_stat(venv_bin) then
         return venv_bin
       end
-      for sub, ty in vim.fs.dir(venv) do
-        local path = vim.fs.joinpath(venv, sub, 'bin', 'python3')
-        if ty == 'directory' and vim.uv.fs_stat(path) then
-          return path
-        end
-      end
     end
+
     return 'python3'
   end
 
@@ -122,7 +117,7 @@ do -- python
   --- @param on_config fun(config: dap.Configuration)
   local function enrich_config(config, on_config)
     if not config.pythonPath and not config.python then
-      config.pythonPath = get_python_path()
+      config.pythonPath = get_python_exe_path()
     end
     on_config(config)
   end
@@ -148,7 +143,7 @@ do -- python
         --- @type dap.ExecutableAdapter
         local adapter = {
           type = 'executable',
-          command = 'python3',
+          command = get_python_exe_path(),
           args = { '-m', 'debugpy.adapter' },
           enrich_config = enrich_config,
           options = {

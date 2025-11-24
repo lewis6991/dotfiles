@@ -36,6 +36,7 @@ lsp.enable({
   'tls',
   'jsonls',
   'rust_analyzer',
+  'ts_query_ls',
 })
 
 -- install with:
