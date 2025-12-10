@@ -7,6 +7,21 @@ if enable_loader then
   vim.loader.enable()
 end
 
+--- @param t number[]
+--- @return number?
+local function median(t)
+  table.sort(t)
+  local n = #t
+  if n == 0 then
+    return
+  end
+  if n % 2 == 1 then
+    return t[math.ceil(n / 2)]
+  else
+    return (t[n / 2] + t[n / 2 + 1]) / 2
+  end
+end
+
 vim.api.nvim_create_autocmd('VimEnter', {
   callback = function()
     local startuptime = (vim.uv.hrtime() - start) / 1e6
@@ -39,25 +54,33 @@ vim.api.nvim_create_autocmd('VimEnter', {
 
     -- Read log
     if vim.uv.fs_stat(logpath) then
+      local enabled_times = {} --- @type integer[]
+      local disabled_times = {} --- @type integer[]
       for line in io.lines(logpath) do
-        local state, time = line:match('%w+: Loader (.+), ([^ ]+)ms')
-        time = tonumber(time) --[[@as integer]]
+        --- @type string, string
+        local state, time_str = line:match('%w+: Loader (.+), ([^ ]+)ms')
+        local time = tonumber(time_str) --[[@as number]]
         if state == 'enabled' then
           stats.enabled.cnt = stats.enabled.cnt + 1
           stats.enabled.high = math.max(stats.enabled.high, time)
           stats.enabled.low = math.min(stats.enabled.low, time)
           enabled_time = enabled_time + time
+          enabled_times[#enabled_times + 1] = time
         elseif state == 'disabled' then
           stats.disabled.cnt = stats.disabled.cnt + 1
           stats.disabled.high = math.max(stats.disabled.high, time)
           stats.disabled.low = math.min(stats.disabled.low, time)
           disabled_time = disabled_time + time
+          disabled_times[#disabled_times + 1] = time
         else
           error('invalid: ' .. line)
         end
       end
       stats.enabled.avg = enabled_time / stats.enabled.cnt
       stats.disabled.avg = disabled_time / stats.disabled.cnt
+
+      stats.enabled.median = median(enabled_times)
+      stats.disabled.median = median(disabled_times)
     end
 
     -- update log
