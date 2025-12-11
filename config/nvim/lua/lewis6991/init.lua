@@ -98,6 +98,7 @@ if 'Options' then
   o.startofline = false
   o.swapfile = false
   o.tabstop = 4
+  o.termguicolors = true
   o.textwidth = 80
   o.undofile = true
   o.undolevels = 10000

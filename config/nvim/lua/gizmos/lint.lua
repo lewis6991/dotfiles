@@ -14,7 +14,7 @@ local api = vim.api
 --- @field ignore_exitcode? boolean
 ---
 --- Defaults to buffer directory if it exists
---- @field cwd? string
+--- @field cwd? string|fun(bufnr: integer):string?
 ---
 --- @field predicate? fun(bufnr: integer): boolean?
 ---
@@ -143,9 +143,26 @@ local function resolve_cmd(bufnr, cmd)
   return cmd
 end
 
+--- @param cwd? string|fun(bufnr: integer):string?
 --- @param bufnr integer
 --- @return string?
-local function resolve_cwd(bufnr)
+local function resolve_cwd(cwd, bufnr)
+  if type(cwd) == 'function' then
+    local ok
+    ok, cwd = pcall(cwd, bufnr)
+    if not ok then
+      vim.notify(
+        ('Error calling cwd function for linter on buffer %d: %s'):format(bufnr, cwd),
+        vim.log.levels.WARN
+      )
+    end
+    if cwd then
+      return cwd
+    end
+  elseif type(cwd) == 'string' then
+    return cwd
+  end
+
   local bufcwd = vim.fs.dirname(api.nvim_buf_get_name(bufnr))
   if vim.uv.fs_stat(bufcwd) then
     return bufcwd
@@ -186,7 +203,7 @@ local function run(bufnr, linter)
 
   local ok, handle = pcall(vim.system, cmd, {
     stdin = linter.stdin and api.nvim_buf_get_lines(bufnr, 0, -1, true) or nil,
-    cwd = resolve_cwd(bufnr),
+    cwd = resolve_cwd(linter.cwd, bufnr),
     env = env,
     -- Linter may launch child processes so set this as a group leader and
     -- manually track and kill processes as we need to.

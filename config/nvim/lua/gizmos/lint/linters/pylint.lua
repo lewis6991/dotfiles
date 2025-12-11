@@ -34,6 +34,9 @@ return {
     end
     return vim.list_extend(cmd, { 'pylint', '--output-format', 'json2', '--from-stdin', '<FILE>' })
   end,
+  cwd = function(bufnr)
+    return vim.fs.root(bufnr, { '.pylintrc', 'pyproject.toml', 'setup.cfg' })
+  end,
   env = function()
     return {
       PYLINTRC = vim.env.PYLINTRC or vim.fn.expand('$XDG_CONFIG_HOME/pylint/pylintrc.toml'),

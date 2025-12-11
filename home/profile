@@ -26,19 +26,20 @@ fi
 export XDG_CACHE_HOME="$XDG_BASE/.cache"
 export XDG_DATA_HOME="$XDG_BASE/.data"
 # export XDG_RUNTIME_DIR="$XDG_BASE/.runtime"
+export XDG_STATE_HOME="$XDG_BASE/.state"
 
-# [ -d "$XDG_RUNTIME_DIR" ] || mkdir "$XDG_RUNTIME_DIR"
 [ -d "$XDG_CACHE_HOME"  ] || mkdir "$XDG_CACHE_HOME"
 [ -d "$XDG_DATA_HOME"   ] || mkdir "$XDG_DATA_HOME"
+# [ -d "$XDG_RUNTIME_DIR" ] || mkdir "$XDG_RUNTIME_DIR"
+[ -d "$XDG_STATE_HOME"  ] || mkdir "$XDG_STATE_HOME"
+
+
+# export TMUX_TMPDIR="$XDG_RUNTIME_DIR/tmux"
 
 export PYLINTHOME="$XDG_CACHE_HOME/pylint"
 export PYTHON_EGG_CACHE="$XDG_CACHE_HOME/python-eggs"
-
-export TMUX_TMPDIR="$XDG_RUNTIME_DIR/tmux"
-
 export INPUTRC="$XDG_CONFIG_HOME/readline/inputrc"
 export NPM_CONFIG_USERCONFIG=$XDG_CONFIG_HOME/npm/npmrc
-
 export CARGO_HOME="$XDG_DATA_HOME/cargo"
 export RLWRAP_HOME="$XDG_DATA_HOME/rlwrap"
 
@@ -48,12 +49,12 @@ export RLWRAP_HOME="$XDG_DATA_HOME/rlwrap"
 
 export HOMEBREW_CACHE="$XDG_CACHE_HOME"
 
-# ------------------------------------------------------------------------------
-# Misc
-# ------------------------------------------------------------------------------
-
-if [ -z "$BREW_PREFIX" ] && [ -d /opt/homebrew ]; then
-    BREW_PREFIX=/opt/homebrew
+if [ -z "$BREW_PREFIX" ]; then
+    if [ -d /opt/homebrew ]; then
+        BREW_PREFIX=/opt/homebrew
+    elif [ -d $XDG_BASE/homebrew ]; then
+        BREW_PREFIX="$XDG_BASE/homebrew"
+    fi
 fi
 
 if [ -n "$BREW_PREFIX" ]; then
@@ -63,17 +64,24 @@ if [ -n "$BREW_PREFIX" ]; then
 
   MAKE_PATH="$BREW_PREFIX/opt/make/libexec/gnubin"
   [ -d "$MAKE_PATH" ] && PATH="$MAKE_PATH:$PATH"
+
+  if [ -f "$BREW_PREFIX/bin/brew" ]; then
+    eval "$($BREW_PREFIX/bin/brew shellenv)"
+  fi
 fi
+
+# ------------------------------------------------------------------------------
+# Misc
+# ------------------------------------------------------------------------------
 
 for i in \
     "$HOME" \
     "$DOTFILES" \
-    "/opt/homebrew" \
     "$HOME/.luarocks" \
     "$HOME/.local" \
     "$XDG_DATA_HOME/npm" \
     "$XDG_DATA_HOME/cargo" \
-    "$XDG_DATA_HOME/.."
+    "$XDG_BASE"
 do
     [ -d "$i/bin"       ] && PATH="$i/bin:$PATH"
     [ -d "$i/man"       ] && MANPATH="$i/man:$MANPATH"
