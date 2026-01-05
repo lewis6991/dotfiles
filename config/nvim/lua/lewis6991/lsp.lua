@@ -105,7 +105,10 @@ autocmd('LspAttach', {
       lsp.codelens.refresh({ bufnr = args.buf })
       autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
         callback = debounce(200, function(args0)
-          lsp.codelens.refresh({ bufnr = args0.buf })
+          local buf = args0.buf
+          if api.nvim_buf_is_valid(buf) then
+            lsp.codelens.refresh({ bufnr = buf })
+          end
         end),
       })
       -- Code lens setup, don't call again

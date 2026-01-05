@@ -46,7 +46,7 @@ if 'Modules' then
   safe_require('lewis6991.linters')
 
   -- safe_require 'gizmos.ts_matchparen'
-  -- safe_require('gizmos.lsp_cmds')
+  safe_require('gizmos.lsp_cmds')
   safe_require('gizmos.lastplace')
   safe_require('gizmos.marksigns')
   safe_require('gizmos.hashbang')
@@ -61,6 +61,7 @@ end
 
 --- @diagnostic disable-next-line: duplicate-set-field
 vim.ui.input = function(...)
+  --- @diagnostic disable-next-line: param-type-mismatch
   require('gizmos.input')(...)
 end
 
@@ -191,7 +192,7 @@ if 'Mappings' then
   map('n', '<leader>z', '<cmd>Inspect<cr>')
 
   map('n', '<C-C>', ':nohlsearch<CR>')
-  api.nvim_create_autocmd('InsertEnter', {
+  autocmd('InsertEnter', {
     callback = vim.schedule_wrap(function()
       vim.cmd.nohlsearch()
     end),
@@ -284,7 +285,7 @@ end
 --   vim.cmd.stopinsert()
 -- end, {})
 
-api.nvim_create_autocmd('User', {
+autocmd('User', {
   pattern = 'RestartPre',
   callback = function()
     pcall(function()
@@ -315,11 +316,11 @@ local function auto_create_dirs()
   vim.fn.mkdir(dir_path, 'p')
 end
 
-vim.api.nvim_create_autocmd('BufWritePre', {
+autocmd('BufWritePre', {
   pattern = '*',
   callback = auto_create_dirs,
 })
 
 -- Emmylua highlights `nil` as keyword+readonly, change this to constant.builtin
 -- to match treesitter
-vim.api.nvim_set_hl(0, '@lsp.typemod.keyword.readonly', { link = '@constant.builtin' })
+api.nvim_set_hl(0, '@lsp.typemod.keyword.readonly', { link = '@constant.builtin' })

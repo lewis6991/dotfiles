@@ -14,14 +14,14 @@ local function walk_spec(spec, field, fn)
   spec[field] = fn(spec[field])
 end
 
-local HOME = os.getenv('HOME')
+local HOME = assert(os.getenv('HOME'))
 
 --- @generic T
 --- @param x T
 --- @return T
 local function try_get_local(x)
   if type(x) == 'string' and x:sub(1, 1) ~= '/' then
-    local name = x:match('/(.*)')
+    local name = assert(x:match('/(.*)'))
     local loc_install = vim.fs.joinpath(HOME, 'projects', name)
     if name ~= '' and vim.fn.isdirectory(loc_install) == 1 then
       return loc_install
@@ -70,8 +70,21 @@ function M.setup()
   vim.keymap.set('n', '<leader>p', '<cmd>Pckr status<CR>', { silent = true })
 end
 
+--- @class (exact) lewis6991.PluginSpec
+--- @field branch?     string
+--- @field rev?        string
+--- @field tag?        string
+--- @field commit?     string
+--- @field start?      boolean
+--- @field cond?       boolean|Pckr.PluginLoader|Pckr.PluginLoader[]
+--- @field run?        fun()|string
+--- @field config_pre? fun()|string
+--- @field config?     fun()|string
+--- @field lock?       boolean
+--- @field requires?   string|Pckr.UserSpec|(string|Pckr.UserSpec)[]
+
 --- @param name string
---- @param spec? Pckr.UserSpec
+--- @param spec? lewis6991.PluginSpec
 function M.add(name, spec)
   spec = spec or {}
   spec[1] = name

@@ -1,60 +1,66 @@
 local api, lsp = vim.api, vim.lsp
-local get_clients = vim.lsp.get_clients
 
--- vim.lsp.log.set_level(vim.lsp.log.levels.DEBUG)
+-- lsp.log.set_level(lsp.log.levels.DEBUG)
+-- lsp.log.set_level(lsp.log.levels.TRACE)
 
-local function client_complete()
-  --- @param c vim.lsp.Client
-  --- @return string
-  return vim.tbl_map(function(c)
-    return c.name
-  end, get_clients())
-end
+do -- lsp log format
+  local log_date_format = '%F %H:%M:%S'
 
-api.nvim_create_user_command('LspRestart', function(kwargs)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local name = kwargs.fargs[1] --- @type string
-  for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
-    local bufs = vim.deepcopy(client.attached_buffers)
-    client:stop(true)
+  local vimruntime = vim.pesc(vim.env.VIMRUNTIME)
 
-    vim.wait(30000, function()
-      return lsp.get_client_by_id(client.id) == nil
-    end)
-
-    local client_id = lsp.start(client.config)
-    if not client_id then
-      vim.notify('Failed to restart ' .. client.name)
+  --- Default formatting function.
+  --- @param level? string
+  --- @return string?
+  local function format_func(level, ...)
+    if lsp.log.levels[level] < lsp.log.get_level() then
       return
     end
 
-    for buf in pairs(bufs) do
-      lsp.buf_attach_client(buf, client_id)
-    end
-  end
-end, {
-  nargs = '*',
-  complete = client_complete,
-})
+    local info = debug.getinfo(3, 'Sl')
+    local header = string.format(
+      '[%s][%s] %s:%s',
+      level,
+      os.date(log_date_format),
+      info.source:gsub(vimruntime, '<VIMRUNTIME>'),
+      info.currentline
+    )
 
-api.nvim_create_user_command('LspStop', function(kwargs)
-  local bufnr = vim.api.nvim_get_current_buf()
-  local name = kwargs.fargs[1] --- @type string
-  for _, client in ipairs(get_clients({ bufnr = bufnr, name = name })) do
-    client:stop()
+    local parts = {} --- @type string[]
+    for i = 1, select('#', ...) do
+      local arg = select(i, ...)
+      if type(arg) == 'string' then
+        table.insert(parts, arg)
+      elseif type(arg) == 'table' then
+        table.insert(parts, vim.json.encode(arg, { indent = '  ' }))
+      else
+        table.insert(parts, arg == nil and 'nil' or vim.inspect(arg))
+      end
+    end
+
+    local msg = table.concat(parts, '\t')
+    local msg1 = '\t' .. vim.trim(msg:gsub('\n', '\n\t')) .. '\n'
+    return header .. '\n' .. msg1
   end
-end, {
-  nargs = '*',
-  complete = client_complete,
-})
+
+  lsp.log.set_format_func(format_func)
+end
 
 do -- LspLog
-  local path = vim.lsp.get_log_path()
+  local path = lsp.log.get_filename()
   vim.fn.delete(path)
-  vim.lsp.set_log_level(vim.lsp.log.levels.TRACE)
-  -- vim.lsp.log.set_format_func(vim.inspect)
 
   api.nvim_create_user_command('LspLog', function()
-    vim.cmd.split(path)
+    vim.cmd.tabnew(path)
+    local buf = api.nvim_get_current_buf()
+    local win = api.nvim_get_current_win()
+    vim.bo[buf].filetype = 'log'
+    vim.bo[buf].bufhidden = 'wipe'
+    vim.wo.foldmethod = 'indent'
+    api.nvim_create_autocmd('User', {
+      pattern = 'RestartPre',
+      callback = function()
+        api.nvim_win_close(win, true)
+      end,
+    })
   end, {})
 end

@@ -1,7 +1,7 @@
 local start = vim.uv.hrtime()
 
 -- Random boolean
-local enable_loader = vim.uv.random(1):byte(1) % 2 == 1
+local enable_loader = assert(vim.uv.random(1)):byte(1) % 2 == 1
 
 if enable_loader then
   vim.loader.enable()
@@ -30,21 +30,21 @@ vim.api.nvim_create_autocmd('VimEnter', {
 
     local stats = {
       enabled = {
-        avg = 0,
-        high = 0,
+        avg = 0.0,
+        high = 0.0,
         low = math.huge,
         cnt = 0,
       },
       disabled = {
-        avg = 0,
-        high = 0,
+        avg = 0.0,
+        high = 0.0,
         low = math.huge,
         cnt = 0,
       },
     }
 
-    local enabled_time = 0
-    local disabled_time = 0
+    local enabled_time = 0.0
+    local disabled_time = 0.0
 
     if enable_loader then
       enabled_time = enabled_time + startuptime
@@ -54,8 +54,8 @@ vim.api.nvim_create_autocmd('VimEnter', {
 
     -- Read log
     if vim.uv.fs_stat(logpath) then
-      local enabled_times = {} --- @type integer[]
-      local disabled_times = {} --- @type integer[]
+      local enabled_times = {} --- @type number[]
+      local disabled_times = {} --- @type number[]
       for line in io.lines(logpath) do
         --- @type string, string
         local state, time_str = line:match('%w+: Loader (.+), ([^ ]+)ms')

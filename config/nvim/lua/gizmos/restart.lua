@@ -1,13 +1,20 @@
+local api = vim.api
+
 local session = '/tmp/_session_restart.vim'
 
-vim.api.nvim_create_user_command('Restart', function()
-  vim.api.nvim_exec_autocmds('User', { pattern = 'RestartPre' })
+local group = api.nvim_create_augroup('gizmos.restart', {})
+
+api.nvim_create_user_command('Restart', function()
+  api.nvim_exec_autocmds('User', { pattern = 'RestartPre' })
   vim.cmd.mksession({ session, bang = true })
-  vim.cmd.restart()
+  local ok, err = pcall(vim.cmd.restart)
+  if not ok then
+    vim.notify('Restart failed: ' .. err, vim.log.levels.ERROR)
+  end
 end, {})
 
-vim.api.nvim_create_autocmd('VimEnter', {
-  group = 'vimrc',
+api.nvim_create_autocmd('VimEnter', {
+  group = group,
   callback = vim.schedule_wrap(function()
     if vim.uv.fs_stat(session) then
       vim.cmd.source(session)

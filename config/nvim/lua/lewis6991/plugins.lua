@@ -189,6 +189,7 @@ p('j-hui/fidget.nvim', {
         fidget.setup({})
         done_setup = true
       end
+      --- @diagnostic disable-next-line: assign-type-mismatch
       vim.notify = fidget.notify
       return vim.notify(...)
     end
@@ -342,6 +343,7 @@ p('stevearc/oil.nvim', {
             ['<C-x>'] = { 'actions.select', opts = { horizontal = true } },
             ['<C-t>'] = { 'actions.select', opts = { tab = true } },
           },
+          --- @type oil.SetupFloatWindowConfig
           float = {
             padding = 0,
             max_width = 0.3,
@@ -457,8 +459,10 @@ p('stevearc/conform.nvim', {
   config = function()
     require('conform').setup({
       default_format_opts = {
+        --- @type conform.LspFormatOpts
         lsp_format = 'first',
       },
+      --- @type table<string, conform.FiletypeFormatter>
       formatters_by_ft = {
         lua = { 'stylua' },
         python = { 'ruff_format' }, -- black

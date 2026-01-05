@@ -22,7 +22,7 @@ api.nvim_create_autocmd('FileType', {
       return
     end
 
-    vim.api.nvim_exec_autocmds('User', { pattern = 'ts_attach' })
+    api.nvim_exec_autocmds('User', { pattern = 'ts_attach' })
     enable_foldexpr(args.buf)
   end,
 })
