@@ -248,9 +248,6 @@ p('igorlfs/nvim-dap-view', {
           enabled = true,
         },
       },
-      windows = {
-        height = 0.4,
-      },
       auto_toggle = true,
     })
 

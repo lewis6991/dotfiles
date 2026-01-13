@@ -122,44 +122,40 @@ do -- python
     on_config(config)
   end
 
-  local function setup_python()
-    dap.adapters.python = function(cb, config)
-      if config.request == 'attach' then
-        --- @type dap.ServerAdapter
-        local adapter = {
-          type = 'server',
-          port = assert(
-            (config.connect or config).port,
-            '`connect.port` is required for a python `attach` configuration'
-          ),
-          host = (config.connect or config).host or '127.0.0.1',
-          enrich_config = enrich_config,
-          options = {
-            source_filetype = 'python',
-          },
-        }
-        cb(adapter)
-      else
-        --- @type dap.ExecutableAdapter
-        local adapter = {
-          type = 'executable',
-          command = get_python_exe_path(),
-          args = { '-m', 'debugpy.adapter' },
-          enrich_config = enrich_config,
-          options = {
-            source_filetype = 'python',
-          },
-        }
-        cb(adapter)
-      end
+  dap.adapters.python = function(cb, config)
+    if config.request == 'attach' then
+      --- @type dap.ServerAdapter
+      local adapter = {
+        type = 'server',
+        port = assert(
+          (config.connect or config).port,
+          '`connect.port` is required for a python `attach` configuration'
+        ),
+        host = (config.connect or config).host or '127.0.0.1',
+        enrich_config = enrich_config,
+        options = {
+          source_filetype = 'python',
+        },
+      }
+      cb(adapter)
+    else
+      --- @type dap.ExecutableAdapter
+      local adapter = {
+        type = 'executable',
+        command = get_python_exe_path(),
+        args = { '-m', 'debugpy.adapter' },
+        enrich_config = enrich_config,
+        options = {
+          source_filetype = 'python',
+        },
+      }
+      cb(adapter)
     end
-
-    -- nvim-dap logs warnings for unhandled custom events
-    -- Mute it
-    dap.listeners.before['event_debugpySockets']['dap-python'] = function() end
   end
 
-  setup_python()
+  -- nvim-dap logs warnings for unhandled custom events
+  -- Mute it
+  dap.listeners.before['event_debugpySockets']['dap-python'] = function() end
 
   --- @type dap.Configuration[]
   dap.configurations.python = {
@@ -187,4 +183,8 @@ do -- python
       justMyCode = false,
     },
   }
+
+  vim.api.nvim_create_user_command('DapPythonTestMethod', function()
+    require('lewis6991.dap_python').test_method()
+  end, {})
 end

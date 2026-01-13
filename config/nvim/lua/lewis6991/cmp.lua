@@ -124,18 +124,6 @@ local function setup()
   })
 end
 
--- cmp capablities:
---   commitCharactersSupport = true
---   preselectSupport = true
---   contextSupport = true
---   insertTextMode = 1
---   completionList.itemDefaults.commitCharacters
---   resolveSupport
---   insertReplaceSupport
---   insertTextModeSupport
---   labelDetailsSupport
-vim.lsp.config('*', { capablities = require('cmp_nvim_lsp').default_capabilities() })
-
 vim.api.nvim_create_autocmd({ 'InsertEnter', 'CmdLineEnter' }, {
   once = true,
   callback = setup,

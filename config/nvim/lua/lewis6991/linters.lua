@@ -72,7 +72,7 @@ vim.api.nvim_create_autocmd({ 'InsertLeave', 'FileType', 'TextChanged', 'BufWrit
         Jenkinsfile = { jenkins_lint },
         tcl = { tcl_lint },
         lua = { 'stylua' },
-        python = { 'pylint' },
+        -- python = { 'pylint' },
       }
 
       did_setup = true
