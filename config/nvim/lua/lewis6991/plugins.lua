@@ -32,7 +32,6 @@ p('lewis6991/fileline.nvim')
 p('lewis6991/satellite.nvim')
 
 p('olimorris/codecompanion.nvim', {
-  cond = delayed,
   config = 'lewis6991.codecompanion',
   requires = {
     'j-hui/fidget.nvim',

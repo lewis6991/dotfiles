@@ -1,4 +1,11 @@
-local function setup()
+local done_setup = false
+
+local function try_setup()
+  if done_setup then
+    return
+  end
+  done_setup = true
+
   require('codecompanion').setup({
     strategies = {
       chat = {
@@ -11,62 +18,62 @@ local function setup()
   })
 end
 
-local handles = {}
+vim.defer_fn(try_setup, vim.o.updatetime)
 
-local group = vim.api.nvim_create_augroup('CodeCompanionFidgetHooks', {})
+do -- fidget integration
+  --- @type table<any, ProgressHandle>
+  local handles = {}
 
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'codecompanion',
-  callback = vim.schedule_wrap(function()
-    vim.wo.number = false
-    vim.wo.relativenumber = false
-    vim.wo.showbreak = ''
-  end),
-})
+  local group = vim.api.nvim_create_augroup('CodeCompanionFidgetHooks', {})
 
-vim.api.nvim_create_autocmd('User', {
-  pattern = 'CodeCompanionRequestStarted',
-  group = group,
-  callback = function(request)
-    --- @type CodeCompanion.Adapter
-    local adapter = request.data.adapter
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = 'codecompanion',
+    callback = vim.schedule_wrap(function()
+      vim.wo.number = false
+      vim.wo.relativenumber = false
+      vim.wo.showbreak = ''
+    end),
+  })
 
-    handles[request.data.id] = require('fidget.progress').handle.create({
-      title = (' Requesting assistance (%s)'):format(request.data.strategy),
-      message = 'In progress...',
-      lsp_client = {
-        name = ('%s (%s)'):format(adapter.formatted_name, adapter.model),
-      },
-    })
-  end,
-})
+  vim.api.nvim_create_autocmd('User', {
+    pattern = 'CodeCompanionRequestStarted',
+    group = group,
+    callback = function(request)
+      --- @type CodeCompanion.HTTPAdapter|CodeCompanion.ACPAdapter
+      local adapter = request.data.adapter
 
-vim.api.nvim_create_autocmd('User', {
-  pattern = 'CodeCompanionRequestFinished',
-  group = group,
-  callback = function(request)
-    local id = request.data.id
-    local handle = handles[id]
-    handles[id] = nil
-    if not handle then
-      if request.data.status == 'success' then
-        handle.message = 'Completed'
-      elseif request.data.status == 'error' then
-        handle.message = ' Error'
-      else
-        handle.message = '󰜺 Cancelled'
+      -- print(vim.inspect(request.data))
+      handles[request.data.id] = require('fidget.progress').handle.create({
+        title = (' Requesting assistance (%s)'):format(request.data.interaction),
+        message = 'In progress...',
+        lsp_client = {
+          name = ('%s (%s)'):format(adapter.formatted_name, adapter.model),
+        },
+      })
+    end,
+  })
+
+  vim.api.nvim_create_autocmd('User', {
+    pattern = 'CodeCompanionRequestFinished',
+    group = group,
+    callback = function(request)
+      local id = request.data.id
+      local handle = handles[id]
+      handles[id] = nil
+      if handle then
+        handle.message = (
+          request.data.status == 'success' and 'Completed'
+          or request.data.status == 'error' and ' Error'
+          or '󰜺 Cancelled'
+        )
+        handle:finish()
       end
-      handle:finish()
-    end
-  end,
-})
+    end,
+  })
+end
 
-local done_setup = false
 vim.keymap.set({ 'v', 'n' }, '<leader>ae', function()
-  if not done_setup then
-    setup()
-    done_setup = true
-  end
+  try_setup()
 
   vim.ui.input({ prompt = 'CodeCompanion' }, function(input)
     if #vim.trim(input or '') ~= 0 then
