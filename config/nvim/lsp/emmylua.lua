@@ -6,7 +6,8 @@ return {
   -- },
   filetypes = { 'lua' },
   root_markers = {
-    '.emmyrc.json',
+    { '.emmyrc.lua', '.emmyrc.json' },
+    '.git',
   },
   workspace_required = true,
 }

@@ -240,7 +240,7 @@ class _Github:
             return []
 
     def get_pr(self, branch: str) -> str | None:
-        pr = next((pr for pr in self._prs if pr['headRefName'].startswith(branch)), None)
+        pr = next((pr for pr in self._prs if pr['headRefName'] == branch), None)
         if not pr:
             return None
 
@@ -269,6 +269,7 @@ class _Github:
 
 
 def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | None):
+    branch_ref = f'refs/heads/{branch}'
     upstream = _run(f'git branch --list {branch} --format=%(upstream:short)')
     upstream_track = (
         _run(f'git branch --list {branch} --format=%(upstream:track)')
@@ -277,7 +278,7 @@ def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | No
         .replace(', ', '')[1:-1]
     )
 
-    date = _run(['git', 'log', '-1', '--format=%cd', '--date=relative', branch])
+    date = _run(['git', 'log', '-1', '--format=%cd', '--date=relative', branch_ref])
 
     branch_info = _run(
         [
@@ -302,7 +303,7 @@ def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | No
     if not upstream or upstream_track == 'gone':
         return
 
-    output = _run(['git', '--no-pager', 'log', '--format====%H%n%s%n%b', f'{upstream}..{branch}'])
+    output = _run(['git', '--no-pager', 'log', '--format====%H%n%s%n%b', f'{upstream}..{branch_ref}'])
 
     for commit in output.split('===')[1:]:
         sha, summary, *body = commit.strip().splitlines()

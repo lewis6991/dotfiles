@@ -24,3 +24,5 @@ alias utop='top -u $USER'
 
 alias .nv='cd ~/projects/neovim'
 alias .dot='cd ~/projects/dotfiles'
+
+alias tree='tree --gitignore --prune --dirsfirst --opt-toggle'

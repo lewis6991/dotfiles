@@ -140,4 +140,11 @@ thist() {
     vim -c 'term cat /tmp/tmuxhist' -c stopinsert
 }
 
+clear() {
+    command clear
+    if command -v tmux >/dev/null && [ -n "$TMUX" ]; then
+        tmux clear-history
+    fi
+}
+
 unfunction have_cmd

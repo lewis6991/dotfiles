@@ -98,25 +98,7 @@ local function debounce(ms, fn)
   end
 end
 
-autocmd('LspAttach', {
-  desc = 'Lsp codelens',
-  callback = function(args)
-    local client = assert(lsp.get_client_by_id(args.data.client_id))
-    if client:supports_method('textDocument/codeLens') then
-      lsp.codelens.refresh({ bufnr = args.buf })
-      autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
-        callback = debounce(200, function(args0)
-          local buf = args0.buf
-          if api.nvim_buf_is_valid(buf) then
-            lsp.codelens.refresh({ bufnr = buf })
-          end
-        end),
-      })
-      -- Code lens setup, don't call again
-      return true
-    end
-  end,
-})
+vim.lsp.codelens.enable()
 
 do -- textDocument/documentHighlight
   autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {

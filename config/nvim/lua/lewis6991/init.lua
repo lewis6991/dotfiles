@@ -84,6 +84,7 @@ if 'Options' then
   o.number = true
   o.pumblend = 10
   o.relativenumber = true
+  o.scrollback = 100000
   o.scrolloff = 6
   o.shiftwidth = 4
   o.showbreak = '↳ '
@@ -223,6 +224,8 @@ if 'Mappings' then
   map('c', '<C-N>', '<down>')
   map('c', '<C-A>', '<Home>')
   map('c', '<C-D>', '<Del>')
+
+  map('n', 'grl', vim.lsp.codelens.run)
 end
 
 if 'Abbrev' then
