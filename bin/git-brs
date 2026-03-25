@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cached_property
+from pathlib import Path
 import re
 import shlex
 import json
@@ -267,8 +268,24 @@ class _Github:
         except subprocess.CalledProcessError:
             return None
 
+def _to_root_relative(path_str: str, root: str) -> str:
+    p = Path(path_str).resolve()
+    root_path = Path(root).resolve()
 
-def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | None):
+    # Find the common path prefix
+    common_length = next(
+        (i for i, (a, b) in enumerate(zip(p.parts, root_path.parts)) if a != b),
+        min(len(p.parts), len(root_path.parts)),
+    )
+
+    # Compute the relative path using '..' notation
+    rel_parts = ['..'] * (len(root_path.parts) - common_length) + list(p.parts[common_length:])
+    rel_str = str(Path(*rel_parts)) if rel_parts else '.'
+
+    return rel_str
+
+
+def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | None, worktree_dir: str | None):
     branch_ref = f'refs/heads/{branch}'
     upstream = _run(f'git branch --list {branch} --format=%(upstream:short)')
     upstream_track = (
@@ -279,6 +296,7 @@ def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | No
     )
 
     date = _run(['git', 'log', '-1', '--format=%cd', '--date=relative', branch_ref])
+    root = str(Path(_run('git rev-parse --git-common-dir')).parent) if worktree_dir else None
 
     branch_info = _run(
         [
@@ -290,6 +308,11 @@ def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | No
             f'%(color: bold green)%(if)%(HEAD)%(then){_THIS} %(else)  %(end)'
             + f'%(color:yellow)%(refname:short)%(color:reset) {_ARROW} '
             + '%(color:blue)%(upstream:short) '
+            + (
+                f'%(color:yellow)(worktree:{_to_root_relative(worktree_dir, root)}) '
+                if worktree_dir and root
+                else ''
+            )
             + f'%(color:white){upstream_track} '
             + f'%(color:magenta)({date})',
             branch,
@@ -312,6 +335,26 @@ def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | No
             gerrit.info(changeid, sha)
 
 
+def _get_worktree_dirs() -> dict[str, str]:
+    # Also handle git worktrees
+    worktree_dirs: dict[str, str] = {}
+    current_branch = None
+    current_dir = None
+    for line in _run(['git', 'worktree', 'list', '--porcelain']).splitlines():
+        if line.startswith('worktree '):
+            current_dir = line.split(' ', 1)[1]
+        elif line.startswith('branch '):
+            current_branch = line.split(' ', 1)[1]
+            # Remove refs/heads/ prefix if present
+            if current_branch.startswith('refs/heads/'):
+                current_branch = current_branch[len('refs/heads/'):]
+            if current_dir is not None:
+                worktree_dirs[current_branch] = current_dir
+                current_dir = None
+
+    return worktree_dirs
+
+
 def main():
     parser = argparse.ArgumentParser(description='Display Git branches with PR and Gerrit info')
     parser.add_argument('--remote', action='store_true', help='Include remote branches')
@@ -325,8 +368,10 @@ def main():
 
     github = _Github.init()
 
+    worktree_dirs = _get_worktree_dirs()
+
     for branch in _run(['git', 'branch', '--format=%(refname:short)']).splitlines():
-        _print_branch_info(branch, github, gerrit)
+        _print_branch_info(branch, github, gerrit, worktree_dirs.get(branch))
 
 
 if __name__ == '__main__':
