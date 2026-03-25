@@ -9,20 +9,25 @@ for terminal output, including hyperlinks and color codes.
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from dataclasses import field
 from functools import cached_property
+from os.path import relpath
 from pathlib import Path
 import re
 import shlex
 import json
 import argparse
+import sys
 
 import subprocess
 
+from typing import ClassVar
 from typing import TypedDict
+from typing import cast
 from enum import StrEnum
 
-_ARROW = '\uf553'
 _THIS = '\uf111'
 
 
@@ -31,6 +36,7 @@ class _Ansi(StrEnum):
     CYAN = '\033[96m'
     GREEN = '\033[92m'
     YELLOW = '\033[93m'
+    MAGENTA = '\033[95m'
     RED = '\033[91m'
     END = '\033[0m'
     BOLD = '\033[1m'
@@ -43,10 +49,13 @@ class _Ansi(StrEnum):
     OSC8_3 = '\033]8;;\033\\'
 
 
+_MERGED_STYLE = f'{_Ansi.BOLD}{_Ansi.CYAN}'
+
+
 def _run(cmd: str | list[str]) -> str:
     if isinstance(cmd, str):
         cmd = shlex.split(cmd)
-    return subprocess.run(cmd, capture_output=True, text=True, check=True).stdout.strip()
+    return subprocess.run(cmd, capture_output=True, text=True, check=True).stdout.rstrip('\n')
 
 
 def _link(text: str, url: str) -> str:
@@ -56,7 +65,11 @@ def _link(text: str, url: str) -> str:
 @dataclass
 class _Gerrit:
     _host: str
-    _port = 29418
+    _port: ClassVar[int] = 29418
+    _query_cache: dict[str, list[_Gerrit.QueryResult]] = field(default_factory=dict, init=False)
+    _change_cache: dict[str, list[_Gerrit.QueryResult]] = field(default_factory=dict, init=False)
+    _change_id_re: ClassVar[re.Pattern[str]] = re.compile(r'^I[a-f0-9]{40}$', re.IGNORECASE)
+    _batch_size: ClassVar[int] = 16
 
     class User(TypedDict):
         name: str
@@ -84,6 +97,7 @@ class _Gerrit:
         approvals: list[_Gerrit.Approval]
 
     class QueryResult(TypedDict):
+        id: str
         url: str
         currentPatchSet: _Gerrit.CurrentPatchSet
         patchSets: list[_Gerrit.PatchSet]
@@ -100,38 +114,65 @@ class _Gerrit:
         return None
 
     @staticmethod
-    def _get_approvals(obj: _Gerrit.QueryResult) -> dict[str, dict[str, str]]:
-        approvals = obj['currentPatchSet'].get('approvals', [])
-        approvals1: dict[str, dict[str, str]] = {}
-        for approval in approvals:
-            value = approval['value']
-            atype = approval['type']
-            name = approval['by']['name']
-            approvals1.setdefault(atype, {})[name] = value
-        return approvals1
+    def _origin_host() -> str | None:
+        try:
+            url = _run('git config --get remote.origin.url').strip()
+        except subprocess.CalledProcessError:
+            return None
+        if match := re.match(r'(?:ssh://)?(?:[^@]+@)?([^:/]+)', url):
+            host = match.group(1)
+        else:
+            host = url.split(':')[0]
+        if 'gerrit' not in host:
+            return None
+        return host
 
     @staticmethod
-    def _fmt_approval(approval: _Gerrit.Approval) -> str:
-        value = approval['value']
-        name = approval['by']['name']
-        pos = int(value) > 0
-        color = _Ansi.GREEN if pos else _Ansi.RED
-        v = f'+{value}' if pos else f'{value} ({name})'
-        return color + v
+    def origin_base_url() -> str | None:
+        if host := _Gerrit._origin_host():
+            return f'https://{host}'
+        return None
 
     @staticmethod
     def _fmt_label(label: str, approvals: list[_Gerrit.Approval]) -> str:
-        label_abbr = ''.join(word[0].lower() for word in label.split('-'))
-        values = ', '.join(_Gerrit._fmt_approval(a) for a in approvals)
-
-        fail = any(int(a['value']) < 0 for a in approvals)
+        label_abbr = _Gerrit._label_token(label)
+        values = ', '.join(_Gerrit._approval_summary(approval) for approval in approvals)
+        fail = any(int(approval['value']) < 0 for approval in approvals)
         if fail:
             return f'{_Ansi.RED}{label_abbr}[{values}{_Ansi.RED}]{_Ansi.END}'
 
-        n = len(approvals)
-        return f'{_Ansi.GREEN}{label_abbr}[{n}]{_Ansi.END}'
+        return f'{_Ansi.GREEN}{label_abbr}[{len(approvals)}]{_Ansi.END}'
 
-    def _info_for_result(self, result: _Gerrit.QueryResult, sha: str | None = None):
+    @staticmethod
+    def _approval_name(approval: _Gerrit.Approval) -> str:
+        username = approval['by'].get('username', '')
+        if username:
+            return username
+        return approval['by']['name'].split()[0].lower()
+
+    @staticmethod
+    def _approval_summary(approval: _Gerrit.Approval) -> str:
+        value = int(approval['value'])
+        name = approval['by']['name']
+        color = _Ansi.GREEN if value > 0 else _Ansi.RED
+        summary = f'{value:+d}' if value > 0 else f'{value} ({name})'
+        return f'{color}{summary}'
+
+    @staticmethod
+    def _label_token(label: str) -> str:
+        return ''.join(part[0].lower() for part in label.split('-') if part)
+
+    @staticmethod
+    def _approval_token(label: str, approval: _Gerrit.Approval) -> str:
+        value = int(approval['value'])
+        token = f'{_Gerrit._label_token(label)}{value:+d}'
+        if value < 0:
+            token += f'({_Gerrit._approval_name(approval)})'
+        color = _Ansi.GREEN if value > 0 else _Ansi.RED
+        return f'{color}{token}{_Ansi.END}'
+
+    def _line_for_result(self, result: _Gerrit.QueryResult, sha: str | None = None) -> list[str]:
+        lines: list[str] = []
         currentps = result['currentPatchSet']['number']
         patchset = '?'
         if sha is not None:
@@ -140,37 +181,76 @@ class _Gerrit:
                     patchset = ps['number']
                     break
         else:
-            print(f'{_Ansi.YELLOW}{result["project"]}:{_Ansi.END}')
-            print(f'      {_Ansi.BLUE}{result["subject"]}{_Ansi.END}')
+            lines.append(f'{_Ansi.YELLOW}{result["project"]}:{_Ansi.END}')
+            lines.append(f'      {_Ansi.BLUE}{result["subject"]}{_Ansi.END}')
 
-        ln = _link(f'{self._host}/{result["number"]}', result['url'])
-
-        print(f'      └ {ln} ', end='')
+        ln = _link(str(result['number']), result['url'])
+        if sha is not None:
+            line = f'      {_Ansi.CYAN}{_Ansi.BOLD}gr{_Ansi.END} {ln} '
+        else:
+            line = f'      └ {ln} '
 
         if sha is not None:
             color = _Ansi.GREEN if result['currentPatchSet']['revision'] == sha else _Ansi.RED
-            print(f'{color}{patchset}/{currentps}{_Ansi.END}', end='')
+            line += f'{color}{patchset}/{currentps}{_Ansi.END}'
         else:
-            print(f'{_Ansi.BLUE}ps {currentps}{_Ansi.END}', end='')
+            line += f'{_Ansi.BLUE}ps {currentps}{_Ansi.END}'
 
         match result['status']:
             case 'NEW':
                 pass
             case x:
-                print(f', {_Ansi.BLUE}{x.lower()}{_Ansi.END}', end='')
+                status_color = _MERGED_STYLE if x == 'MERGED' else _Ansi.BLUE
+                sep = ' ' if sha is not None else ', '
+                line += f'{sep}{status_color}{x.lower()}{_Ansi.END}'
 
         approvals_by_label: dict[str, list[_Gerrit.Approval]] = {}
         for approval in result['currentPatchSet'].get('approvals', []):
             approvals_by_label.setdefault(approval['type'], []).append(approval)
 
-        labels = ', '.join(
-            _Gerrit._fmt_label(label, approvals) for label, approvals in approvals_by_label.items()
-        )
-        if labels:
-            print(f', {labels}', end='')
-        print()
+        if sha is not None:
+            approval_tokens: list[str] = []
+            for label in sorted(approvals_by_label):
+                approvals = sorted(
+                    approvals_by_label[label],
+                    key=lambda approval: (
+                        -int(approval['value']),
+                        _Gerrit._approval_name(approval),
+                    ),
+                )
+                positive_counts: dict[int, int] = {}
+                negative_approvals: list[_Gerrit.Approval] = []
+                for approval in approvals:
+                    value = int(approval['value'])
+                    if value > 0:
+                        positive_counts[value] = positive_counts.get(value, 0) + 1
+                    else:
+                        negative_approvals.append(approval)
+                for value in sorted(positive_counts, reverse=True):
+                    count = positive_counts[value]
+                    token = f'{_Gerrit._label_token(label)}{value:+d}'
+                    if count > 1:
+                        token += f'x{count}'
+                    approval_tokens.append(f'{_Ansi.GREEN}{token}{_Ansi.END}')
+                approval_tokens.extend(
+                    _Gerrit._approval_token(label, approval) for approval in negative_approvals
+                )
+            if approval_tokens:
+                line += ' ' + ' '.join(approval_tokens)
+        else:
+            labels = ', '.join(
+                _Gerrit._fmt_label(label, approvals)
+                for label, approvals in approvals_by_label.items()
+            )
+            if labels:
+                line += f', {labels}'
+        lines.append(line)
+        return lines
 
     def _query(self, query: str) -> list[_Gerrit.QueryResult]:
+        if query in self._query_cache:
+            return self._query_cache[query]
+
         lines = _run(
             [
                 'ssh',
@@ -185,35 +265,67 @@ class _Gerrit:
                 '--format=JSON',
             ]
         ).splitlines()
-        return [json.loads(line) for line in lines]
+        results: list[_Gerrit.QueryResult] = []
+        for line in lines:
+            obj = cast(dict[str, object], json.loads(line))
+            if obj.get('type') == 'stats':
+                continue
+            results.append(cast(_Gerrit.QueryResult, cast(object, obj)))
+        self._query_cache[query] = results
+        return results
+
+    def _query_change_id(self, change_id: str) -> list[_Gerrit.QueryResult]:
+        if change_id not in self._change_cache:
+            self._change_cache[change_id] = self._query(f'change:{change_id}')
+        return self._change_cache[change_id]
+
+    def prefetch_change_ids(self, change_ids: list[str]) -> None:
+        pending = [
+            change_id
+            for change_id in dict.fromkeys(change_ids)
+            if change_id not in self._change_cache
+        ]
+        for i in range(0, len(pending), self._batch_size):
+            chunk = pending[i : i + self._batch_size]
+            query = ' OR '.join(f'change:{change_id}' for change_id in chunk)
+            results_by_change_id: dict[str, list[_Gerrit.QueryResult]] = {
+                change_id: [] for change_id in chunk
+            }
+            for result in self._query(query):
+                if change_id := result.get('id'):
+                    results_by_change_id.setdefault(change_id, []).append(result)
+            for change_id in chunk:
+                self._change_cache[change_id] = results_by_change_id.get(change_id, [])
+
+    def info_lines(self, query: str, sha: str | None = None) -> list[str]:
+        lines: list[str] = []
+        results = (
+            self._query_change_id(query)
+            if self._change_id_re.fullmatch(query)
+            else self._query(query)
+        )
+        for result in results:
+            lines.extend(self._line_for_result(result, sha))
+        return lines
 
     def info(self, query: str, sha: str | None = None):
-        for result in self._query(query)[:-1]:
-            self._info_for_result(result, sha)
+        for line in self.info_lines(query, sha):
+            print(line)
 
     @staticmethod
     def init() -> _Gerrit | None:
-        url = _run('git config --get remote.origin.url').strip()
-        if match := re.match(r'(?:ssh://)?(?:[^@]+@)?([^:/]+)', url):
-            host = match.group(1)
-        else:
-            host = url.split(':')[0]
-
-        # Test if gerrit_host points to a Gerrit server via SSH
-        if 'gerrit' not in host:
+        host = _Gerrit._origin_host()
+        if not host:
             return
 
         try:
-            _run(f'ssh {host} -p {_Gerrit._port} gerrit version')
+            _ = _run(f'ssh {host} -p {_Gerrit._port} gerrit version')
             return _Gerrit(host)
         except subprocess.CalledProcessError:
             pass
 
 
-@dataclass
 class _Github:
-    _name_with_owner: str
-
     class PR(TypedDict):
         headRefName: str
         url: str
@@ -235,104 +347,246 @@ class _Github:
                     '--author=@me',
                 ]
             )
-            return json.loads(r)
+            return cast(list[_Github.PR], json.loads(r))
         except subprocess.CalledProcessError as e:
-            print(e.stderr)
+            stderr = cast(str | None, e.stderr)
+            if stderr:
+                print(stderr)
             return []
 
+    @cached_property
+    def _prs_by_branch(self) -> dict[str, _Github.PR]:
+        return {pr['headRefName']: pr for pr in self._prs}
+
     def get_pr(self, branch: str) -> str | None:
-        pr = next((pr for pr in self._prs if pr['headRefName'] == branch), None)
+        pr = self._prs_by_branch.get(branch)
         if not pr:
             return None
 
-        url = pr['url']
         state = pr['state']
-
-        r: list[str] = []
-
+        tokens: list[str] = []
         if pr['isDraft']:
-            r.append(f'{_Ansi.BLUE}draft{_Ansi.END}')
+            tokens.append(f'{_Ansi.BLUE}draft{_Ansi.END}')
+        elif state == 'MERGED':
+            tokens.append(f'{_MERGED_STYLE}merged{_Ansi.END}')
+        elif state != 'OPEN':
+            tokens.append(f'{_Ansi.RED}{state.lower()}{_Ansi.END}')
 
-        if state != 'OPEN':
-            state_color = _Ansi.GREEN if state == 'MERGED' else _Ansi.RED
-            r.append(f'{state_color}{state.lower()}')
-
-        ln = _link(f'{self._name_with_owner}#{pr["number"]}', url)
-        return f'      {ln} ' + ', '.join(r)
+        ln = _link(f'#{pr["number"]}', pr['url'])
+        suffix = f' {" ".join(tokens)}' if tokens else ''
+        return f'  {_Ansi.CYAN}{_Ansi.BOLD}gh{_Ansi.END} {ln}{suffix}'
 
     @staticmethod
     def init() -> _Github | None:
         try:
-            obj = json.loads(_run('gh repo view --json=nameWithOwner'))
-            return _Github(obj['nameWithOwner'])
+            _ = _run('gh repo view --json=nameWithOwner')
+            return _Github()
         except subprocess.CalledProcessError:
             return None
 
+    @staticmethod
+    def load() -> _Github | None:
+        github = _Github.init()
+        if github:
+            _ = github._prs_by_branch
+        return github
+
+
 def _to_root_relative(path_str: str, root: str) -> str:
-    p = Path(path_str).resolve()
-    root_path = Path(root).resolve()
+    return relpath(Path(path_str).resolve(), Path(root).resolve())
 
-    # Find the common path prefix
-    common_length = next(
-        (i for i, (a, b) in enumerate(zip(p.parts, root_path.parts)) if a != b),
-        min(len(p.parts), len(root_path.parts)),
+
+@dataclass
+class _CommitInfo:
+    sha: str
+    summary: str
+    body: list[str]
+
+    @cached_property
+    def change_id(self) -> str | None:
+        return _Gerrit.get_change_id(self.body)
+
+
+@dataclass
+class _BranchInfo:
+    name: str
+    branch_line: str
+    upstream: str
+    upstream_track: str
+    pr_line: str | None = None
+    commits: list[_CommitInfo] = field(default_factory=list)
+    gerrit_lines: dict[str, list[str]] = field(default_factory=dict)
+
+    def render(
+        self, show_gerrit_placeholders: bool = False, gerrit_base_url: str | None = None
+    ) -> list[str]:
+        lines = [self.branch_line]
+        if self.pr_line:
+            lines.append(self.pr_line)
+        for commit in self.commits:
+            lines.append(f'  {_Ansi.GREY}·{_Ansi.END} {commit.summary}')
+            if commit.sha in self.gerrit_lines:
+                lines.extend(self.gerrit_lines[commit.sha])
+            elif show_gerrit_placeholders and commit.change_id and gerrit_base_url:
+                link = _link(
+                    commit.change_id[:8],
+                    f'{gerrit_base_url}/q/{commit.change_id}',
+                )
+                lines.append(
+                    f'      {_Ansi.CYAN}{_Ansi.BOLD}gr{_Ansi.END} {link} {_Ansi.GREY}loading…{_Ansi.END}'
+                )
+        return lines
+
+
+_BRANCH_FORMAT = (
+    '%(HEAD)\t%(refname:short)\t%(upstream:short)\t%(upstream:track)\t%(committerdate:relative)'
+)
+
+
+def _format_upstream_track(track: str) -> str:
+    if track.startswith('[') and track.endswith(']'):
+        track = track[1:-1]
+    return track.replace('ahead ', '↑').replace('behind ', '↓').replace(', ', '')
+
+
+def _format_track_part(track: str) -> str:
+    if not track:
+        return ''
+    parts: list[str] = []
+    for direction, count in cast(list[tuple[str, str]], re.findall(r'([↑↓])(\d+)', track)):
+        parts.append(f'{direction}{count}')
+    rendered = ''.join(parts)
+    if '↑' in rendered and '↓' in rendered:
+        return f'{_Ansi.MAGENTA}{rendered}{_Ansi.END}'
+    return rendered
+
+
+def _format_branch_line(
+    head: str,
+    branch: str,
+    upstream: str,
+    upstream_track: str,
+    date: str,
+    worktree_dir: str | None,
+    root: str | None,
+    name_width: int,
+) -> str:
+    short_date = re.sub(r'(\d+\s+\w+)\s+ago', r'\1', date)
+    head_marker = f'{_Ansi.BOLD}{_Ansi.GREEN}{_THIS}{_Ansi.END} ' if head == '*' else '  '
+    branch_color = f'{_Ansi.BOLD}{_Ansi.YELLOW}' if head == '*' else _Ansi.YELLOW
+    branch_part = f'{branch_color}{branch.ljust(name_width)}{_Ansi.END}'
+    extra_parts: list[str] = []
+    if upstream and upstream != 'origin/main':
+        extra_parts.append(f'{_Ansi.GREY}@{upstream}{_Ansi.END}')
+    worktree_part = (
+        f'{_Ansi.CYAN}wt:{_to_root_relative(worktree_dir, root)}{_Ansi.END}'
+        if worktree_dir and root
+        else ''
     )
+    if worktree_part:
+        extra_parts.append(worktree_part)
+    if track_part := _format_track_part(upstream_track):
+        extra_parts.append(track_part)
+    extra_parts.append(f'{_Ansi.GREY}{short_date}{_Ansi.END}')
+    return head_marker + branch_part + '  ' + '  '.join(extra_parts)
 
-    # Compute the relative path using '..' notation
-    rel_parts = ['..'] * (len(root_path.parts) - common_length) + list(p.parts[common_length:])
-    rel_str = str(Path(*rel_parts)) if rel_parts else '.'
 
-    return rel_str
+def _parse_branch_row(line: str) -> tuple[str, str, str, str, str]:
+    head, branch, upstream, track, date = (line.split('\t') + [''] * 5)[:5]
+    return head, branch, upstream, track, date
 
 
-def _print_branch_info(branch: str, github: _Github | None, gerrit: _Gerrit | None, worktree_dir: str | None):
-    branch_ref = f'refs/heads/{branch}'
-    upstream = _run(f'git branch --list {branch} --format=%(upstream:short)')
-    upstream_track = (
-        _run(f'git branch --list {branch} --format=%(upstream:track)')
-        .replace('ahead ', '↑')
-        .replace('behind ', '↓')
-        .replace(', ', '')[1:-1]
-    )
+def _get_branch_infos(worktree_dirs: dict[str, str]) -> list[_BranchInfo]:
+    root = str(Path(_run('git rev-parse --git-common-dir')).parent) if worktree_dirs else None
+    rows = [
+        _parse_branch_row(line)
+        for line in _run(['git', 'branch', '--format', _BRANCH_FORMAT]).splitlines()
+    ]
 
-    date = _run(['git', 'log', '-1', '--format=%cd', '--date=relative', branch_ref])
-    root = str(Path(_run('git rev-parse --git-common-dir')).parent) if worktree_dir else None
+    name_width = max((len(branch) for _, branch, _, _, _ in rows), default=0)
 
-    branch_info = _run(
-        [
-            'git',
-            'branch',
-            '--color=always',
-            '--list',
-            '--format',
-            f'%(color: bold green)%(if)%(HEAD)%(then){_THIS} %(else)  %(end)'
-            + f'%(color:yellow)%(refname:short)%(color:reset) {_ARROW} '
-            + '%(color:blue)%(upstream:short) '
-            + (
-                f'%(color:yellow)(worktree:{_to_root_relative(worktree_dir, root)}) '
-                if worktree_dir and root
-                else ''
+    branches: list[_BranchInfo] = []
+    for head, branch, upstream, upstream_track_raw, date in rows:
+        upstream_track = _format_upstream_track(upstream_track_raw)
+        branches.append(
+            _BranchInfo(
+                name=branch,
+                branch_line=_format_branch_line(
+                    head,
+                    branch,
+                    upstream,
+                    upstream_track,
+                    date,
+                    worktree_dirs.get(branch),
+                    root,
+                    name_width,
+                ),
+                upstream=upstream,
+                upstream_track=upstream_track,
             )
-            + f'%(color:white){upstream_track} '
-            + f'%(color:magenta)({date})',
-            branch,
-        ]
-    )
+        )
+    return branches
 
-    print(branch_info)
-    if github and (pr := github.get_pr(branch)):
-        print(pr)
 
+def _get_branch_commits(branch: str, upstream: str, upstream_track: str) -> list[_CommitInfo]:
     if not upstream or upstream_track == 'gone':
-        return
+        return []
 
-    output = _run(['git', '--no-pager', 'log', '--format====%H%n%s%n%b', f'{upstream}..{branch_ref}'])
-
+    output = _run(
+        ['git', '--no-pager', 'log', '--format====%H%n%s%n%b', f'{upstream}..refs/heads/{branch}']
+    )
+    commits: list[_CommitInfo] = []
     for commit in output.split('===')[1:]:
         sha, summary, *body = commit.strip().splitlines()
-        print(f'    - {summary}')
-        if gerrit and (changeid := _Gerrit.get_change_id(body)):
-            gerrit.info(changeid, sha)
+        commits.append(_CommitInfo(sha=sha, summary=summary, body=body))
+    return commits
+
+
+def _populate_pr_lines(branches: list[_BranchInfo], github: _Github | None) -> None:
+    if not github:
+        return
+    for branch in branches:
+        if not branch.pr_line and (pr := github.get_pr(branch.name)):
+            branch.pr_line = pr
+
+
+def _populate_gerrit_lines(branches: list[_BranchInfo], gerrit: _Gerrit | None) -> None:
+    if not gerrit:
+        return
+    for branch in branches:
+        for commit in branch.commits:
+            if commit.sha not in branch.gerrit_lines and (changeid := commit.change_id):
+                branch.gerrit_lines[commit.sha] = gerrit.info_lines(changeid, commit.sha)
+
+
+def _render_branches(
+    branches: list[_BranchInfo],
+    show_gerrit_placeholders: bool = False,
+    gerrit_base_url: str | None = None,
+) -> list[str]:
+    lines: list[str] = []
+    for branch in branches:
+        lines.extend(
+            branch.render(
+                show_gerrit_placeholders=show_gerrit_placeholders,
+                gerrit_base_url=gerrit_base_url,
+            )
+        )
+    return lines
+
+
+def _print_lines(lines: list[str]) -> None:
+    if not lines:
+        return
+    _ = sys.stdout.write('\n'.join(lines) + '\n')
+    _ = sys.stdout.flush()
+
+
+def _replace_block(previous_line_count: int, lines: list[str]) -> None:
+    if previous_line_count > 0:
+        _ = sys.stdout.write(f'\033[{previous_line_count}A')
+    _ = sys.stdout.write('\r\033[J')
+    _print_lines(lines)
 
 
 def _get_worktree_dirs() -> dict[str, str]:
@@ -347,7 +601,7 @@ def _get_worktree_dirs() -> dict[str, str]:
             current_branch = line.split(' ', 1)[1]
             # Remove refs/heads/ prefix if present
             if current_branch.startswith('refs/heads/'):
-                current_branch = current_branch[len('refs/heads/'):]
+                current_branch = current_branch[len('refs/heads/') :]
             if current_dir is not None:
                 worktree_dirs[current_branch] = current_dir
                 current_dir = None
@@ -357,21 +611,69 @@ def _get_worktree_dirs() -> dict[str, str]:
 
 def main():
     parser = argparse.ArgumentParser(description='Display Git branches with PR and Gerrit info')
-    parser.add_argument('--remote', action='store_true', help='Include remote branches')
+    _ = parser.add_argument('--remote', action='store_true', help='Include remote branches')
     args = parser.parse_args()
 
-    gerrit = _Gerrit.init()
-    if args.remote:
+    if bool(getattr(args, 'remote', False)):
+        gerrit = _Gerrit.init()
         if gerrit:
             gerrit.info('owner:me is:open')
         return
 
-    github = _Github.init()
-
+    gerrit_base_url = _Gerrit.origin_base_url()
     worktree_dirs = _get_worktree_dirs()
+    branches = _get_branch_infos(worktree_dirs)
 
-    for branch in _run(['git', 'branch', '--format=%(refname:short)']).splitlines():
-        _print_branch_info(branch, github, gerrit, worktree_dirs.get(branch))
+    interactive = sys.stdout.isatty()
+    current_line_count = 0
+
+    if interactive:
+        initial_lines = [branch.branch_line for branch in branches]
+        _print_lines(initial_lines)
+        current_line_count = len(initial_lines)
+
+    try:
+        max_workers = min(16, max(4, len(branches) + 2))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            github_future = executor.submit(_Github.load)
+            gerrit_future = executor.submit(_Gerrit.init)
+            commit_futures = {
+                branch.name: executor.submit(
+                    _get_branch_commits, branch.name, branch.upstream, branch.upstream_track
+                )
+                for branch in branches
+            }
+
+            github: _Github | None = None
+            for branch in branches:
+                branch.commits.extend(commit_futures[branch.name].result())
+                if github is None and github_future.done():
+                    github = github_future.result()
+                _populate_pr_lines([branch], github)
+            if interactive:
+                commit_lines = _render_branches(
+                    branches,
+                    show_gerrit_placeholders=True,
+                    gerrit_base_url=gerrit_base_url,
+                )
+                _replace_block(current_line_count, commit_lines)
+                current_line_count = len(commit_lines)
+
+            if github is None:
+                github = github_future.result()
+            _populate_pr_lines(branches, github)
+
+            gerrit = gerrit_future.result()
+            if gerrit:
+                change_ids = [cid for b in branches for c in b.commits if (cid := c.change_id)]
+                gerrit.prefetch_change_ids(change_ids)
+            _populate_gerrit_lines(branches, gerrit)
+    finally:
+        final_lines = _render_branches(branches)
+        if interactive:
+            _replace_block(current_line_count, final_lines)
+        else:
+            _print_lines(final_lines)
 
 
 if __name__ == '__main__':
