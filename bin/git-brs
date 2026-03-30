@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from dataclasses import field
 from functools import cached_property
+from functools import lru_cache
 from os.path import relpath
 from pathlib import Path
 import re
@@ -61,6 +62,28 @@ def _run(cmd: str | list[str]) -> str:
 
 def _link(text: str, url: str) -> str:
     return f'{_Ansi.UNDERLINE}{_Ansi.OSC8_1}{url}{_Ansi.OSC8_2}{text}{_Ansi.OSC8_3}{_Ansi.END}'
+
+
+@lru_cache(maxsize=None)
+def _resolve_ref_oid(ref: str) -> str | None:
+    if not ref:
+        return None
+    result = subprocess.run(
+        ['git', 'rev-parse', '--verify', ref],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() or None
+
+
+def _branch_oids(branch_name: str, upstream: str) -> set[str]:
+    refs = [f'refs/heads/{branch_name}']
+    if upstream:
+        refs.append(upstream)
+    return {oid for ref in refs if (oid := _resolve_ref_oid(ref))}
 
 
 @dataclass
@@ -330,7 +353,7 @@ class _Github:
     _branch_cache_key_prefix: ClassVar[str] = 'branch.'
     _branch_pr_number_key_suffix: ClassVar[str] = '.pr-number'
     _pr_cache_key_prefix: ClassVar[str] = 'git-brs.pr-'
-    _pr_cache_fields: ClassVar[set[str]] = {'url', 'title', 'state', 'draft', 'base'}
+    _pr_cache_fields: ClassVar[set[str]] = {'url', 'title', 'state', 'draft', 'base', 'oid'}
     _unresolved_comments_query: ClassVar[str] = """
 query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
   repository(owner: $owner, name: $name) {
@@ -371,16 +394,19 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
         isDraft: bool = False
         state: str = 'OPEN'
         baseRefName: str | None = None
+        headRefOid: str | None = None
         title: str = ''
 
     class PR(TypedDict):
         headRefName: str
+        headRefOid: str | None
         url: str
         isDraft: bool
         state: str
         number: int
         baseRefName: str
         title: str
+        updatedAt: str
 
     def __init__(self, repo_name_with_owner: str) -> None:
         self._repo_name_with_owner = repo_name_with_owner
@@ -398,7 +424,7 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
                     'gh',
                     'pr',
                     'list',
-                    '--json=headRefName,url,isDraft,state,number,baseRefName,title',
+                    '--json=headRefName,headRefOid,url,isDraft,state,number,baseRefName,title,updatedAt',
                     '--state=all',
                     '--limit=300',
                     '--author=@me',
@@ -412,8 +438,11 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
             return []
 
     @cached_property
-    def prs_by_branch(self) -> dict[str, _Github.PR]:
-        return {pr['headRefName']: pr for pr in self._prs}
+    def prs_by_head_ref(self) -> dict[str, list[_Github.PR]]:
+        prs: dict[str, list[_Github.PR]] = {}
+        for pr in self._prs:
+            prs.setdefault(pr['headRefName'], []).append(pr)
+        return prs
 
     @staticmethod
     def _remote_repo(url: str) -> str | None:
@@ -438,6 +467,25 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
             if self._remote_repo(url) == self._repo_name_with_owner:
                 return remote
         return None
+
+    @staticmethod
+    def _pr_sort_key(pr: _Github.PR) -> tuple[int, str, int]:
+        state_rank = {'OPEN': 2, 'MERGED': 1, 'CLOSED': 0}.get(pr['state'], 0)
+        return (state_rank, pr['updatedAt'], pr['number'])
+
+    def pr_for_branch(self, branch_name: str, upstream: str) -> _Github.PR | None:
+        candidates = list(self.prs_by_head_ref.get(branch_name, []))
+        if not candidates:
+            return None
+
+        branch_oids = _branch_oids(branch_name, upstream)
+        if not branch_oids:
+            return None
+        candidates = [pr for pr in candidates if pr['headRefOid'] in branch_oids]
+        if not candidates:
+            return None
+
+        return max(candidates, key=self._pr_sort_key)
 
     @staticmethod
     def _summarize_checks(checks: list[_Github.Check]) -> _Github.CheckSummary:
@@ -486,17 +534,13 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
             return _Github.CheckSummary(f'{_Ansi.GREY}-{_Ansi.END}')
         return _Github.CheckSummary(f'{_Ansi.GREY}?{_Ansi.END}')
 
-    def get_pr_checks(self, branch: str) -> _Github.CheckSummary | None:
-        pr = self.prs_by_branch.get(branch)
-        if not pr:
-            return None
-
+    def get_pr_checks(self, number: int) -> _Github.CheckSummary | None:
         result = subprocess.run(
             [
                 'gh',
                 'pr',
                 'checks',
-                str(pr['number']),
+                str(number),
                 '--json=bucket,link,name,state',
                 '--required',
             ],
@@ -605,7 +649,7 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
             r = _run('gh repo view --json=nameWithOwner')
             repo = cast(dict[str, str], json.loads(r))
             github = _Github(repo['nameWithOwner'])
-            _ = github.prs_by_branch
+            _ = github.prs_by_head_ref
             return github
         except subprocess.CalledProcessError:
             return None
@@ -691,12 +735,15 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
                     cached_pr.isDraft = value.strip().lower() in {'true', 'yes', 'on', '1'}
                 case 'base':
                     cached_pr.baseRefName = value.strip() or None
+                case 'oid':
+                    cached_pr.headRefOid = value.strip() or None
                 case _:
                     pass
         return {branch: cached_by_number[number] for branch, number in branch_numbers.items()}
 
     def update_pr_cache(
         self,
+        branch_prs: dict[str, _Github.PR],
         local_branches: set[str],
         cached_prs: dict[str, _Github.CachedPR],
     ) -> dict[str, _Github.CachedPR]:
@@ -707,10 +754,10 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
                 isDraft=pr['isDraft'],
                 state=pr['state'],
                 baseRefName=pr['baseRefName'],
+                headRefOid=pr['headRefOid'],
                 title=pr['title'],
             )
-            for branch, pr in self.prs_by_branch.items()
-            if branch in local_branches
+            for branch, pr in branch_prs.items()
         }
 
         for branch, desired_pr in actual_prs.items():
@@ -721,6 +768,7 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
                 and cached_pr.isDraft == desired_pr.isDraft
                 and cached_pr.state == desired_pr.state
                 and cached_pr.baseRefName == desired_pr.baseRefName
+                and cached_pr.headRefOid == desired_pr.headRefOid
                 and cached_pr.title == desired_pr.title
             ):
                 continue
@@ -744,6 +792,7 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
                 ('state', desired_pr.state),
                 ('draft', 'true' if desired_pr.isDraft else 'false'),
                 ('base', desired_pr.baseRefName or ''),
+                ('oid', desired_pr.headRefOid or ''),
             )
             if all(
                 subprocess.run(
@@ -1066,6 +1115,7 @@ def main():
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             github_future = executor.submit(_Github.init)
             gerrit_future = executor.submit(_Gerrit.init)
+            branch_prs: dict[str, _Github.PR] = {}
             commit_futures: dict[str, Future[list[_CommitInfo]]] = {}
             for branch in branches:
                 cached_compare_refs = (
@@ -1087,8 +1137,13 @@ def main():
 
             github = github_future.result() if github_future.done() else None
             if github:
+                branch_prs = {
+                    branch.name: pr
+                    for branch in branches
+                    if (pr := github.pr_for_branch(branch.name, branch.upstream))
+                }
                 for branch in branches:
-                    pr = github.prs_by_branch.get(branch.name)
+                    pr = branch_prs.get(branch.name)
                     branch.pr_line = (
                         github.format_pr_line(
                             pr['number'],
@@ -1100,12 +1155,17 @@ def main():
                         if pr
                         else None
                     )
-                _ = executor.submit(github.update_pr_cache, local_branch_names, cached_prs)
+                _ = executor.submit(github.update_pr_cache, branch_prs, local_branch_names, cached_prs)
             else:
                 for branch in branches:
                     if not branch.cached_pr:
                         continue
-                    if branch.cached_pr.number is not None and branch.cached_pr.url:
+                    if (
+                        branch.cached_pr.number is not None
+                        and branch.cached_pr.url
+                        and branch.cached_pr.headRefOid
+                        and branch.cached_pr.headRefOid in _branch_oids(branch.name, branch.upstream)
+                    ):
                         branch.pr_line = _Github.format_pr_line(
                             branch.cached_pr.number,
                             branch.cached_pr.url,
@@ -1130,8 +1190,13 @@ def main():
             if github is None:
                 github = github_future.result()
                 if github:
+                    branch_prs = {
+                        branch.name: pr
+                        for branch in branches
+                        if (pr := github.pr_for_branch(branch.name, branch.upstream))
+                    }
                     for branch in branches:
-                        pr = github.prs_by_branch.get(branch.name)
+                        pr = branch_prs.get(branch.name)
                         branch.pr_line = (
                             github.format_pr_line(
                                 pr['number'],
@@ -1143,7 +1208,7 @@ def main():
                             if pr
                             else None
                         )
-                    _ = executor.submit(github.update_pr_cache, local_branch_names, cached_prs)
+                    _ = executor.submit(github.update_pr_cache, branch_prs, local_branch_names, cached_prs)
 
             pr_check_futures: dict[str, Future[_Github.CheckSummary | None]] = {}
             pr_comment_futures: dict[str, Future[int | None]] = {}
@@ -1151,10 +1216,10 @@ def main():
             if github:
                 base_remote = github.base_remote
                 for branch in branches:
-                    pr = github.prs_by_branch.get(branch.name)
+                    pr = branch_prs.get(branch.name)
                     if not pr:
                         continue
-                    pr_check_futures[branch.name] = executor.submit(github.get_pr_checks, branch.name)
+                    pr_check_futures[branch.name] = executor.submit(github.get_pr_checks, pr['number'])
                     if pr['state'] == 'OPEN':
                         pr_comment_futures[branch.name] = executor.submit(
                             github.get_pr_unresolved_comments, pr['number']
@@ -1186,7 +1251,7 @@ def main():
 
             if github:
                 for branch in branches:
-                    pr = github.prs_by_branch.get(branch.name)
+                    pr = branch_prs.get(branch.name)
                     if not pr:
                         branch.pr_line = None
                         continue
