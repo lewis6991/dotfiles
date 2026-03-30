@@ -57,6 +57,11 @@ if 'Modules' then
   safe_require('gizmos.restart')
 
   vim.cmd.packadd('cfilter')
+
+  vim.g.loaded_ruby_provider = 0
+  vim.g.loaded_python3_provider = 0
+  vim.g.loaded_perl_provider = 0
+  vim.g.loaded_node_provider = 0
 end
 
 --- @diagnostic disable-next-line: duplicate-set-field

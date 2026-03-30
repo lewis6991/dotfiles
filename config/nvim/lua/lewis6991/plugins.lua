@@ -281,7 +281,10 @@ p('f3fora/cmp-spell', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cm
 p('andersevenrud/cmp-tmux', { cond = event('InsertEnter'), requires = 'hrsh7th/nvim-cmp' })
 
 p('zbirenbaum/copilot-cmp', {
-  requires = 'zbirenbaum/copilot.lua',
+  requires = {
+    'zbirenbaum/copilot.lua',
+    'copilotlsp-nvim/copilot-lsp',
+  },
   config = function()
     vim.api.nvim_create_autocmd('InsertEnter', {
       once = true,

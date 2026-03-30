@@ -58,12 +58,11 @@ if [ -z "$BREW_PREFIX" ]; then
 fi
 
 if [ -n "$BREW_PREFIX" ]; then
-  COREUTILS_PATH="$BREW_PREFIX/opt/coreutils/libexec"
-  [ -d "$COREUTILS_PATH/gnubin" ] && PATH="$COREUTILS_PATH/gnubin:$PATH"
-  [ -d "$COREUTILS_PATH/gnuman" ] && MANPATH="$COREUTILS_PATH/gnuman:$MANPATH"
-
-  MAKE_PATH="$BREW_PREFIX/opt/make/libexec/gnubin"
-  [ -d "$MAKE_PATH" ] && PATH="$MAKE_PATH:$PATH"
+  for util in coreutils findutils make; do
+    UTIL_PATH="$BREW_PREFIX/opt/$util/libexec"
+    [ -d "$UTIL_PATH/gnubin" ] && PATH="$UTIL_PATH/gnubin:$PATH"
+    [ -d "$UTIL_PATH/gnuman" ] && MANPATH="$UTIL_PATH/gnuman:$MANPATH"
+  done
 
   if [ -f "$BREW_PREFIX/bin/brew" ]; then
     eval "$($BREW_PREFIX/bin/brew shellenv)"
