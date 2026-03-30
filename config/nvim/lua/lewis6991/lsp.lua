@@ -31,7 +31,7 @@ lsp.enable({
   -- 'stylua',
   pyright,
   'emmylua',
-  'luals',
+  -- 'luals',
   'ruff',
   'bashls',
   'tls',
@@ -79,7 +79,7 @@ do -- metals
     }))
   end
 
-  vim.api.nvim_create_autocmd('FileType', {
+  api.nvim_create_autocmd('FileType', {
     pattern = { 'scala', 'sbt' },
     callback = setup_metals,
   })
@@ -98,7 +98,7 @@ local function debounce(ms, fn)
   end
 end
 
-vim.lsp.codelens.enable()
+lsp.codelens.enable()
 
 do -- textDocument/documentHighlight
   autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {

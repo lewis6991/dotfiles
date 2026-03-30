@@ -109,8 +109,8 @@ if 'Options' then
   o.winborder = 'rounded'
   o.wrap = false
 
-  -- Avoid showing message extra message when using completion
-  o.shortmess:append('c')
+  -- Avoid extra completion messages and the native intro screen
+  o.shortmess:append('cI')
   o.completeopt:append({
     'noinsert',
     'menuone',
@@ -327,3 +327,16 @@ autocmd('BufWritePre', {
 -- Emmylua highlights `nil` as keyword+readonly, change this to constant.builtin
 -- to match treesitter
 api.nvim_set_hl(0, '@lsp.typemod.keyword.readonly', { link = '@constant.builtin' })
+
+api.nvim_set_hl(0, '@markup.list.unchecked', { link = 'Normal' })
+-- api.nvim_set_hl(0, '@markup.list.checked', { link = 'MoreMsg' })
+
+require('vim._core.ui2').enable({
+  enable = true, -- Whether to enable or disable the UI.
+  msg = {
+    target = 'cmd',
+    timeout = 4000, -- Time a message is visible in the message window.
+  },
+})
+
+require('lewis6991.intro')
