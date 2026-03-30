@@ -9,6 +9,7 @@ for terminal output, including hyperlinks and color codes.
 
 from __future__ import annotations
 
+from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from dataclasses import field
@@ -326,12 +327,68 @@ class _Gerrit:
 
 
 class _Github:
+    _branch_cache_key_prefix: ClassVar[str] = 'branch.'
+    _branch_pr_number_key_suffix: ClassVar[str] = '.pr-number'
+    _pr_cache_key_prefix: ClassVar[str] = 'git-brs.pr-'
+    _pr_cache_fields: ClassVar[set[str]] = {'url', 'title', 'state', 'draft', 'base'}
+    _unresolved_comments_query: ClassVar[str] = """
+query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequest(number: $pr) {
+      reviewThreads(first: 100, after: $endCursor) {
+        nodes {
+          isResolved
+          comments(first: 1) {
+            totalCount
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+}
+"""
+    _repo_name_with_owner: str
+
+    @dataclass
+    class CheckSummary:
+        token: str
+        detail: str | None = None
+
+    class Check(TypedDict):
+        bucket: str
+        link: str
+        name: str
+        state: str
+
+    @dataclass
+    class CachedPR:
+        number: int | None = None
+        url: str | None = None
+        isDraft: bool = False
+        state: str = 'OPEN'
+        baseRefName: str | None = None
+        title: str = ''
+
     class PR(TypedDict):
         headRefName: str
         url: str
         isDraft: bool
         state: str
         number: int
+        baseRefName: str
+        title: str
+
+    def __init__(self, repo_name_with_owner: str) -> None:
+        self._repo_name_with_owner = repo_name_with_owner
+
+    @cached_property
+    def _repo_owner_name(self) -> tuple[str, str]:
+        owner, _, name = self._repo_name_with_owner.partition('/')
+        return owner, name
 
     @cached_property
     def _prs(self) -> list[_Github.PR]:
@@ -341,7 +398,7 @@ class _Github:
                     'gh',
                     'pr',
                     'list',
-                    '--json=headRefName,url,isDraft,state,number',
+                    '--json=headRefName,url,isDraft,state,number,baseRefName,title',
                     '--state=all',
                     '--limit=300',
                     '--author=@me',
@@ -355,46 +412,369 @@ class _Github:
             return []
 
     @cached_property
-    def _prs_by_branch(self) -> dict[str, _Github.PR]:
+    def prs_by_branch(self) -> dict[str, _Github.PR]:
         return {pr['headRefName']: pr for pr in self._prs}
 
-    def get_pr(self, branch: str) -> str | None:
-        pr = self._prs_by_branch.get(branch)
+    @staticmethod
+    def _remote_repo(url: str) -> str | None:
+        stripped = url.rstrip('/')
+        if stripped.endswith('.git'):
+            stripped = stripped[:-4]
+        if match := re.search(r'github\.com[:/]([^/]+/[^/]+)$', stripped):
+            return match.group(1)
+        return None
+
+    @cached_property
+    def base_remote(self) -> str | None:
+        try:
+            lines = _run(['git', 'remote', '-v']).splitlines()
+        except subprocess.CalledProcessError:
+            return None
+        for line in lines:
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            remote, url = parts[:2]
+            if self._remote_repo(url) == self._repo_name_with_owner:
+                return remote
+        return None
+
+    @staticmethod
+    def _summarize_checks(checks: list[_Github.Check]) -> _Github.CheckSummary:
+        if not checks:
+            return _Github.CheckSummary(f'{_Ansi.GREY}-{_Ansi.END}')
+
+        buckets = {check['bucket'] for check in checks}
+        passed = sum(1 for check in checks if check['bucket'] == 'pass')
+        failures: list[tuple[str, str | None]] = []
+        for check in checks:
+            if check['bucket'] not in {'fail', 'cancel'}:
+                continue
+            text = (
+                f'{check["name"]} ({check["state"].lower()})'
+                if check['bucket'] == 'cancel'
+                else check['name']
+            )
+            failures.append((text, check.get('link')))
+        if 'fail' in buckets or 'cancel' in buckets:
+            if len(failures) == 1:
+                failure_text, failure_url = failures[0]
+                detail = f'{_Ansi.RED}{failure_text}{_Ansi.END}'
+                if failure_url:
+                    detail = _link(detail, failure_url)
+                return _Github.CheckSummary(f'{_Ansi.RED}✗{_Ansi.END}', detail)
+            detail = f'{_Ansi.RED}({passed}/{len(checks)}){_Ansi.END}'
+            summary_url = failures[0][1] if failures else None
+            if summary_url and (
+                match := re.match(
+                    r'^(https://github\.com/[^/]+/[^/]+/actions/runs/\d+)(?:/job/\d+)?$',
+                    summary_url,
+                )
+            ):
+                summary_url = match.group(1)
+            if summary_url:
+                detail = _link(detail, summary_url)
+            return _Github.CheckSummary(
+                f'{_Ansi.RED}✗{_Ansi.END}',
+                detail,
+            )
+        if 'pending' in buckets:
+            return _Github.CheckSummary(f'{_Ansi.YELLOW}…{_Ansi.END}')
+        if 'pass' in buckets:
+            return _Github.CheckSummary(f'{_Ansi.GREEN}✓{_Ansi.END}')
+        if 'skipping' in buckets:
+            return _Github.CheckSummary(f'{_Ansi.GREY}-{_Ansi.END}')
+        return _Github.CheckSummary(f'{_Ansi.GREY}?{_Ansi.END}')
+
+    def get_pr_checks(self, branch: str) -> _Github.CheckSummary | None:
+        pr = self.prs_by_branch.get(branch)
         if not pr:
             return None
 
-        state = pr['state']
+        result = subprocess.run(
+            [
+                'gh',
+                'pr',
+                'checks',
+                str(pr['number']),
+                '--json=bucket,link,name,state',
+                '--required',
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        stderr = cast(str | None, result.stderr)
+        if result.returncode not in (0, 8):
+            if stderr and re.search(r"^no (?:required )?checks reported on the '.*' branch$", stderr.strip()):
+                return None
+            if stderr:
+                print(stderr)
+            return None
+        return self._summarize_checks(cast(list[_Github.Check], json.loads(result.stdout or '[]')))
+
+    def get_pr_unresolved_comments(self, number: int) -> int | None:
+        owner, name = self._repo_owner_name
+        try:
+            pages = cast(
+                list[dict[str, object]],
+                json.loads(
+                    _run(
+                        [
+                            'gh',
+                            'api',
+                            'graphql',
+                            '--paginate',
+                            '--slurp',
+                            '-F',
+                            f'owner={owner}',
+                            '-F',
+                            f'name={name}',
+                            '-F',
+                            f'pr={number}',
+                            '-f',
+                            f'query={self._unresolved_comments_query}',
+                        ]
+                    )
+                    or '[]'
+                ),
+            )
+        except subprocess.CalledProcessError as e:
+            stderr = cast(str | None, e.stderr)
+            if stderr:
+                print(stderr)
+            return None
+
+        unresolved_comments = 0
+        for page in pages:
+            data = cast(dict[str, object], page.get('data') or {})
+            repository = cast(dict[str, object], data.get('repository') or {})
+            pull_request = cast(dict[str, object], repository.get('pullRequest') or {})
+            review_threads = cast(dict[str, object], pull_request.get('reviewThreads') or {})
+            nodes = cast(list[dict[str, object]], review_threads.get('nodes') or [])
+            for node in nodes:
+                if node.get('isResolved'):
+                    continue
+                comments = cast(dict[str, object], node.get('comments') or {})
+                total_count = comments.get('totalCount')
+                if isinstance(total_count, int):
+                    unresolved_comments += total_count
+        return unresolved_comments
+
+    @staticmethod
+    def format_pr_line(
+        number: int,
+        url: str,
+        is_draft: bool,
+        state: str,
+        title: str,
+        unresolved_comments: int | None = None,
+        checks_summary: _Github.CheckSummary | None = None,
+    ) -> str:
         tokens: list[str] = []
-        if pr['isDraft']:
+        if is_draft:
             tokens.append(f'{_Ansi.BLUE}draft{_Ansi.END}')
         elif state == 'MERGED':
             tokens.append(f'{_MERGED_STYLE}merged{_Ansi.END}')
         elif state != 'OPEN':
             tokens.append(f'{_Ansi.RED}{state.lower()}{_Ansi.END}')
+        info_tokens: list[str] = []
+        if unresolved_comments:
+            info_tokens.append(f'{_Ansi.YELLOW}comments:{unresolved_comments}{_Ansi.END}')
+        checks_tokens: list[str] = []
+        if checks_summary:
+            checks_tokens.append(checks_summary.token)
+            if checks_summary.detail:
+                checks_tokens.append(checks_summary.detail)
 
-        ln = _link(f'#{pr["number"]}', pr['url'])
-        suffix = f' {" ".join(tokens)}' if tokens else ''
-        return f'  {_Ansi.CYAN}{_Ansi.BOLD}gh{_Ansi.END} {ln}{suffix}'
+        ln = _link(f'#{number}', url)
+        line = f'  {_Ansi.CYAN}{_Ansi.BOLD}gh{_Ansi.END} {ln}'
+        if tokens:
+            line += f' {" ".join(tokens)}'
+        if title:
+            line += f'  {_Ansi.BLUE}{title}{_Ansi.END}'
+        if info_tokens:
+            line += f' {" ".join(info_tokens)}'
+        if checks_tokens:
+            line += f' {" ".join(checks_tokens)}'
+        return line
 
     @staticmethod
     def init() -> _Github | None:
         try:
-            _ = _run('gh repo view --json=nameWithOwner')
-            return _Github()
+            r = _run('gh repo view --json=nameWithOwner')
+            repo = cast(dict[str, str], json.loads(r))
+            github = _Github(repo['nameWithOwner'])
+            _ = github.prs_by_branch
+            return github
         except subprocess.CalledProcessError:
             return None
 
-    @staticmethod
-    def load() -> _Github | None:
-        github = _Github.init()
-        if github:
-            _ = github._prs_by_branch
-        return github
+    @classmethod
+    def cached_prs(cls, local_branches: set[str]) -> dict[str, _Github.CachedPR]:
+        if not local_branches:
+            return {}
+        result = subprocess.run(
+            [
+                'git',
+                'config',
+                '--local',
+                '--get-regexp',
+                rf'^{re.escape(cls._branch_cache_key_prefix)}.*{re.escape(cls._branch_pr_number_key_suffix)}$',
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode not in (0, 1):
+            return {}
 
+        branch_numbers: dict[str, int] = {}
+        for line in result.stdout.splitlines():
+            key, _, value = line.partition(' ')
+            if not key.startswith(cls._branch_cache_key_prefix):
+                continue
+            if not key.endswith(cls._branch_pr_number_key_suffix):
+                continue
+            branch = key[len(cls._branch_cache_key_prefix) : -len(cls._branch_pr_number_key_suffix)]
+            if branch not in local_branches:
+                continue
+            try:
+                branch_numbers[branch] = int(value.strip())
+            except ValueError:
+                continue
 
-def _to_root_relative(path_str: str, root: str) -> str:
-    return relpath(Path(path_str).resolve(), Path(root).resolve())
+        if not branch_numbers:
+            return {}
 
+        result = subprocess.run(
+            [
+                'git',
+                'config',
+                '--local',
+                '--get-regexp',
+                rf'^{re.escape(cls._pr_cache_key_prefix)}[0-9]+\.',
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode not in (0, 1):
+            return {branch: cls.CachedPR(number=number) for branch, number in branch_numbers.items()}
+
+        cached_by_number = {
+            number: cls.CachedPR(number=number) for number in set(branch_numbers.values())
+        }
+        for line in result.stdout.splitlines():
+            key, _, value = line.partition(' ')
+            if not key.startswith(cls._pr_cache_key_prefix):
+                continue
+            remainder = key[len(cls._pr_cache_key_prefix) :]
+            number_str, sep, field = remainder.partition('.')
+            if not sep or field not in cls._pr_cache_fields:
+                continue
+            try:
+                number = int(number_str)
+            except ValueError:
+                continue
+            cached_pr = cached_by_number.get(number)
+            if not cached_pr:
+                continue
+            match field:
+                case 'url':
+                    cached_pr.url = value.strip() or None
+                case 'title':
+                    cached_pr.title = value
+                case 'state':
+                    cached_pr.state = value.strip() or 'OPEN'
+                case 'draft':
+                    cached_pr.isDraft = value.strip().lower() in {'true', 'yes', 'on', '1'}
+                case 'base':
+                    cached_pr.baseRefName = value.strip() or None
+                case _:
+                    pass
+        return {branch: cached_by_number[number] for branch, number in branch_numbers.items()}
+
+    def update_pr_cache(
+        self,
+        local_branches: set[str],
+        cached_prs: dict[str, _Github.CachedPR],
+    ) -> dict[str, _Github.CachedPR]:
+        actual_prs = {
+            branch: _Github.CachedPR(
+                number=pr['number'],
+                url=pr['url'],
+                isDraft=pr['isDraft'],
+                state=pr['state'],
+                baseRefName=pr['baseRefName'],
+                title=pr['title'],
+            )
+            for branch, pr in self.prs_by_branch.items()
+            if branch in local_branches
+        }
+
+        for branch, desired_pr in actual_prs.items():
+            cached_pr = cached_prs.get(branch)
+            if cached_pr and (
+                cached_pr.number == desired_pr.number
+                and cached_pr.url == desired_pr.url
+                and cached_pr.isDraft == desired_pr.isDraft
+                and cached_pr.state == desired_pr.state
+                and cached_pr.baseRefName == desired_pr.baseRefName
+                and cached_pr.title == desired_pr.title
+            ):
+                continue
+
+            branch_key = f'{self._branch_cache_key_prefix}{branch}{self._branch_pr_number_key_suffix}'
+            if (
+                subprocess.run(
+                    ['git', 'config', '--local', branch_key, str(desired_pr.number)],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                ).returncode
+                != 0
+            ):
+                continue
+
+            pr_key_prefix = f'{self._pr_cache_key_prefix}{desired_pr.number}.'
+            writes = (
+                ('url', desired_pr.url or ''),
+                ('title', desired_pr.title),
+                ('state', desired_pr.state),
+                ('draft', 'true' if desired_pr.isDraft else 'false'),
+                ('base', desired_pr.baseRefName or ''),
+            )
+            if all(
+                subprocess.run(
+                    ['git', 'config', '--local', f'{pr_key_prefix}{field}', value],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                ).returncode
+                == 0
+                for field, value in writes
+            ):
+                cached_prs[branch] = desired_pr
+            else:
+                cached_prs[branch] = _Github.CachedPR(number=desired_pr.number)
+
+        for branch in sorted((set(cached_prs) & local_branches) - set(actual_prs)):
+            _ = subprocess.run(
+                [
+                    'git',
+                    'config',
+                    '--local',
+                    '--unset-all',
+                    f'{self._branch_cache_key_prefix}{branch}{self._branch_pr_number_key_suffix}',
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            _ = cached_prs.pop(branch, None)
+
+        return cached_prs
 
 @dataclass
 class _CommitInfo:
@@ -414,11 +794,14 @@ class _BranchInfo:
     upstream: str
     upstream_track: str
     pr_line: str | None = None
+    cached_pr: _Github.CachedPR | None = None
     commits: list[_CommitInfo] = field(default_factory=list)
     gerrit_lines: dict[str, list[str]] = field(default_factory=dict)
 
     def render(
-        self, show_gerrit_placeholders: bool = False, gerrit_base_url: str | None = None
+        self,
+        show_gerrit_placeholders: bool = False,
+        gerrit_base_url: str | None = None,
     ) -> list[str]:
         lines = [self.branch_line]
         if self.pr_line:
@@ -473,13 +856,16 @@ def _format_branch_line(
 ) -> str:
     short_date = re.sub(r'(\d+\s+\w+)\s+ago', r'\1', date)
     head_marker = f'{_Ansi.BOLD}{_Ansi.GREEN}{_THIS}{_Ansi.END} ' if head == '*' else '  '
-    branch_color = f'{_Ansi.BOLD}{_Ansi.YELLOW}' if head == '*' else _Ansi.YELLOW
+    if worktree_dir:
+        branch_color = f'{_Ansi.BOLD}{_Ansi.CYAN}' if head == '*' else _Ansi.CYAN
+    else:
+        branch_color = f'{_Ansi.BOLD}{_Ansi.YELLOW}' if head == '*' else _Ansi.YELLOW
     branch_part = f'{branch_color}{branch.ljust(name_width)}{_Ansi.END}'
     extra_parts: list[str] = []
     if upstream and upstream != 'origin/main':
         extra_parts.append(f'{_Ansi.GREY}@{upstream}{_Ansi.END}')
     worktree_part = (
-        f'{_Ansi.CYAN}wt:{_to_root_relative(worktree_dir, root)}{_Ansi.END}'
+        f'{_Ansi.CYAN}wt:{relpath(Path(worktree_dir).resolve(), Path(root).resolve())}{_Ansi.END}'
         if worktree_dir and root
         else ''
     )
@@ -491,17 +877,12 @@ def _format_branch_line(
     return head_marker + branch_part + '  ' + '  '.join(extra_parts)
 
 
-def _parse_branch_row(line: str) -> tuple[str, str, str, str, str]:
-    head, branch, upstream, track, date = (line.split('\t') + [''] * 5)[:5]
-    return head, branch, upstream, track, date
-
-
 def _get_branch_infos(worktree_dirs: dict[str, str]) -> list[_BranchInfo]:
     root = str(Path(_run('git rev-parse --git-common-dir')).parent) if worktree_dirs else None
-    rows = [
-        _parse_branch_row(line)
-        for line in _run(['git', 'branch', '--format', _BRANCH_FORMAT]).splitlines()
-    ]
+    rows: list[tuple[str, str, str, str, str]] = []
+    for line in _run(['git', 'branch', '--format', _BRANCH_FORMAT]).splitlines():
+        head, branch, upstream, track, date = (line.split('\t') + [''] * 5)[:5]
+        rows.append((head, branch, upstream, track, date))
 
     name_width = max((len(branch) for _, branch, _, _, _ in rows), default=0)
 
@@ -528,36 +909,80 @@ def _get_branch_infos(worktree_dirs: dict[str, str]) -> list[_BranchInfo]:
     return branches
 
 
-def _get_branch_commits(branch: str, upstream: str, upstream_track: str) -> list[_CommitInfo]:
+def _get_default_compare_refs(remotes: list[str]) -> list[str]:
+    refs: list[str] = []
+    try:
+        refs.extend(
+            ref.strip()
+            for ref in _run(
+                ['git', 'for-each-ref', '--format=%(symref:short)', 'refs/remotes/*/HEAD']
+            ).splitlines()
+            if ref.strip()
+        )
+    except subprocess.CalledProcessError:
+        pass
+
+    for remote in remotes:
+        refs.extend([f'{remote}/main', f'{remote}/master'])
+
+    return list(dict.fromkeys(refs))
+
+def _get_branch_commits_from_refs(
+    branch: str,
+    compare_refs: list[str],
+    max_commits: int | None = None,
+) -> list[_CommitInfo]:
+    for compare_ref in dict.fromkeys(compare_refs):
+        if not compare_ref:
+            continue
+        try:
+            output = _run(
+                [
+                    'git',
+                    '--no-pager',
+                    'log',
+                    '--format====%H%n%s%n%b',
+                    f'{compare_ref}..refs/heads/{branch}',
+                ]
+            )
+        except subprocess.CalledProcessError:
+            continue
+        commits: list[_CommitInfo] = []
+        for commit in output.split('===')[1:]:
+            lines = commit.strip().splitlines()
+            if len(lines) < 2:
+                continue
+            sha, summary, *body = lines
+            commits.append(_CommitInfo(sha=sha, summary=summary, body=body))
+        if commits and (max_commits is None or len(commits) <= max_commits):
+            return commits
+    return []
+
+
+def _get_branch_commits(
+    branch: str,
+    upstream: str,
+    upstream_track: str,
+    default_compare_refs: list[str],
+    cached_compare_refs: list[str] | None = None,
+) -> list[_CommitInfo]:
+    if cached_compare_refs:
+        commits = _get_branch_commits_from_refs(branch, cached_compare_refs, max_commits=32)
+        if commits:
+            return commits
+
     if not upstream or upstream_track == 'gone':
         return []
 
-    output = _run(
-        ['git', '--no-pager', 'log', '--format====%H%n%s%n%b', f'{upstream}..refs/heads/{branch}']
-    )
-    commits: list[_CommitInfo] = []
-    for commit in output.split('===')[1:]:
-        sha, summary, *body = commit.strip().splitlines()
-        commits.append(_CommitInfo(sha=sha, summary=summary, body=body))
-    return commits
+    commits = _get_branch_commits_from_refs(branch, [upstream])
+    if commits:
+        return commits
 
+    _, _, upstream_branch = upstream.partition('/')
+    if upstream_branch != branch:
+        return []
 
-def _populate_pr_lines(branches: list[_BranchInfo], github: _Github | None) -> None:
-    if not github:
-        return
-    for branch in branches:
-        if not branch.pr_line and (pr := github.get_pr(branch.name)):
-            branch.pr_line = pr
-
-
-def _populate_gerrit_lines(branches: list[_BranchInfo], gerrit: _Gerrit | None) -> None:
-    if not gerrit:
-        return
-    for branch in branches:
-        for commit in branch.commits:
-            if commit.sha not in branch.gerrit_lines and (changeid := commit.change_id):
-                branch.gerrit_lines[commit.sha] = gerrit.info_lines(changeid, commit.sha)
-
+    return _get_branch_commits_from_refs(branch, default_compare_refs, max_commits=32)
 
 def _render_branches(
     branches: list[_BranchInfo],
@@ -621,35 +1046,135 @@ def main():
         return
 
     gerrit_base_url = _Gerrit.origin_base_url()
+    try:
+        remotes = [remote.strip() for remote in _run(['git', 'remote']).splitlines() if remote.strip()]
+    except subprocess.CalledProcessError:
+        remotes = []
+    default_compare_refs = _get_default_compare_refs(remotes)
     worktree_dirs = _get_worktree_dirs()
     branches = _get_branch_infos(worktree_dirs)
+    local_branch_names = {branch.name for branch in branches}
+    cached_prs = _Github.cached_prs(local_branch_names)
+    for branch in branches:
+        branch.cached_pr = cached_prs.get(branch.name)
 
     interactive = sys.stdout.isatty()
     current_line_count = 0
 
-    if interactive:
-        initial_lines = [branch.branch_line for branch in branches]
-        _print_lines(initial_lines)
-        current_line_count = len(initial_lines)
-
     try:
         max_workers = min(16, max(4, len(branches) + 2))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            github_future = executor.submit(_Github.load)
+            github_future = executor.submit(_Github.init)
             gerrit_future = executor.submit(_Gerrit.init)
-            commit_futures = {
-                branch.name: executor.submit(
-                    _get_branch_commits, branch.name, branch.upstream, branch.upstream_track
+            commit_futures: dict[str, Future[list[_CommitInfo]]] = {}
+            for branch in branches:
+                cached_compare_refs = (
+                    list(dict.fromkeys(f'{remote}/{branch.cached_pr.baseRefName}' for remote in remotes))
+                    if branch.cached_pr and branch.cached_pr.baseRefName
+                    else []
                 )
-                for branch in branches
-            }
+                commit_futures[branch.name] = executor.submit(
+                    _get_branch_commits,
+                    branch.name,
+                    branch.upstream,
+                    branch.upstream_track,
+                    default_compare_refs,
+                    cached_compare_refs,
+                )
 
-            github: _Github | None = None
             for branch in branches:
                 branch.commits.extend(commit_futures[branch.name].result())
-                if github is None and github_future.done():
-                    github = github_future.result()
-                _populate_pr_lines([branch], github)
+
+            github = github_future.result() if github_future.done() else None
+            if github:
+                for branch in branches:
+                    pr = github.prs_by_branch.get(branch.name)
+                    branch.pr_line = (
+                        github.format_pr_line(
+                            pr['number'],
+                            pr['url'],
+                            pr['isDraft'],
+                            pr['state'],
+                            pr['title'],
+                        )
+                        if pr
+                        else None
+                    )
+                _ = executor.submit(github.update_pr_cache, local_branch_names, cached_prs)
+            else:
+                for branch in branches:
+                    if not branch.cached_pr:
+                        continue
+                    if branch.cached_pr.number is not None and branch.cached_pr.url:
+                        branch.pr_line = _Github.format_pr_line(
+                            branch.cached_pr.number,
+                            branch.cached_pr.url,
+                            branch.cached_pr.isDraft,
+                            branch.cached_pr.state,
+                            branch.cached_pr.title,
+                        )
+                    else:
+                        branch.pr_line = (
+                            f'  {_Ansi.CYAN}{_Ansi.BOLD}gh{_Ansi.END} {_Ansi.GREY}loading…{_Ansi.END}'
+                        )
+
+            if interactive:
+                initial_lines = _render_branches(
+                    branches,
+                    show_gerrit_placeholders=True,
+                    gerrit_base_url=gerrit_base_url,
+                )
+                _print_lines(initial_lines)
+                current_line_count = len(initial_lines)
+
+            if github is None:
+                github = github_future.result()
+                if github:
+                    for branch in branches:
+                        pr = github.prs_by_branch.get(branch.name)
+                        branch.pr_line = (
+                            github.format_pr_line(
+                                pr['number'],
+                                pr['url'],
+                                pr['isDraft'],
+                                pr['state'],
+                                pr['title'],
+                            )
+                            if pr
+                            else None
+                        )
+                    _ = executor.submit(github.update_pr_cache, local_branch_names, cached_prs)
+
+            pr_check_futures: dict[str, Future[_Github.CheckSummary | None]] = {}
+            pr_comment_futures: dict[str, Future[int | None]] = {}
+            pr_commit_futures: dict[str, Future[list[_CommitInfo]]] = {}
+            if github:
+                base_remote = github.base_remote
+                for branch in branches:
+                    pr = github.prs_by_branch.get(branch.name)
+                    if not pr:
+                        continue
+                    pr_check_futures[branch.name] = executor.submit(github.get_pr_checks, branch.name)
+                    if pr['state'] == 'OPEN':
+                        pr_comment_futures[branch.name] = executor.submit(
+                            github.get_pr_unresolved_comments, pr['number']
+                        )
+                    compare_refs: list[str] = []
+                    if base_remote:
+                        compare_refs.append(f'{base_remote}/{pr["baseRefName"]}')
+                    if branch.upstream and branch.upstream_track != 'gone':
+                        compare_refs.append(branch.upstream)
+                    pr_commit_futures[branch.name] = executor.submit(
+                        _get_branch_commits_from_refs,
+                        branch.name,
+                        compare_refs,
+                    )
+
+            for branch in branches:
+                future = pr_commit_futures.get(branch.name)
+                if future is not None:
+                    branch.commits = future.result()
+
             if interactive:
                 commit_lines = _render_branches(
                     branches,
@@ -659,15 +1184,44 @@ def main():
                 _replace_block(current_line_count, commit_lines)
                 current_line_count = len(commit_lines)
 
-            if github is None:
-                github = github_future.result()
-            _populate_pr_lines(branches, github)
+            if github:
+                for branch in branches:
+                    pr = github.prs_by_branch.get(branch.name)
+                    if not pr:
+                        branch.pr_line = None
+                        continue
+                    check_summary = None
+                    if future := pr_check_futures.get(branch.name):
+                        check_summary = future.result()
+                    unresolved_comments = None
+                    if future := pr_comment_futures.get(branch.name):
+                        unresolved_comments = future.result()
+                    branch.pr_line = github.format_pr_line(
+                        pr['number'],
+                        pr['url'],
+                        pr['isDraft'],
+                        pr['state'],
+                        pr['title'],
+                        unresolved_comments,
+                        check_summary,
+                    )
+            if interactive:
+                pr_lines = _render_branches(
+                    branches,
+                    show_gerrit_placeholders=True,
+                    gerrit_base_url=gerrit_base_url,
+                )
+                _replace_block(current_line_count, pr_lines)
+                current_line_count = len(pr_lines)
 
             gerrit = gerrit_future.result()
             if gerrit:
                 change_ids = [cid for b in branches for c in b.commits if (cid := c.change_id)]
                 gerrit.prefetch_change_ids(change_ids)
-            _populate_gerrit_lines(branches, gerrit)
+                for branch in branches:
+                    for commit in branch.commits:
+                        if commit.sha not in branch.gerrit_lines and (changeid := commit.change_id):
+                            branch.gerrit_lines[commit.sha] = gerrit.info_lines(changeid, commit.sha)
     finally:
         final_lines = _render_branches(branches)
         if interactive:
