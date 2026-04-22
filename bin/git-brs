@@ -94,6 +94,16 @@ class _Gerrit:
     _change_cache: dict[str, list[_Gerrit.QueryResult]] = field(default_factory=dict, init=False)
     _change_id_re: ClassVar[re.Pattern[str]] = re.compile(r'^I[a-f0-9]{40}$', re.IGNORECASE)
     _batch_size: ClassVar[int] = 16
+    _url_re: ClassVar[re.Pattern[str]] = re.compile(r'https?://\S+')
+    _patch_set_header_re: ClassVar[re.Pattern[str]] = re.compile(
+        r'^Patch Set (?P<patchset>\d+):(?: (?P<detail>.*))?$'
+    )
+    _label_vote_re: ClassVar[re.Pattern[str]] = re.compile(
+        r'^(?P<label>[A-Za-z0-9][A-Za-z0-9-]*?)(?P<value>[+-]\d+)$'
+    )
+    _label_removed_re: ClassVar[re.Pattern[str]] = re.compile(
+        r'^-(?P<label>[A-Za-z0-9][A-Za-z0-9-]*)$'
+    )
 
     class User(TypedDict):
         name: str
@@ -103,7 +113,13 @@ class _Gerrit:
     class Approval(TypedDict):
         type: str
         value: str
+        grantedOn: int
         by: _Gerrit.User
+
+    class ReviewComment(TypedDict):
+        timestamp: int
+        reviewer: _Gerrit.User
+        message: str
 
     class PatchSet(TypedDict):
         number: int
@@ -125,6 +141,7 @@ class _Gerrit:
         url: str
         currentPatchSet: _Gerrit.CurrentPatchSet
         patchSets: list[_Gerrit.PatchSet]
+        comments: list[_Gerrit.ReviewComment]
         number: int
         project: str
         subject: str
@@ -158,14 +175,93 @@ class _Gerrit:
         return None
 
     @staticmethod
-    def _fmt_label(label: str, approvals: list[_Gerrit.Approval]) -> str:
+    def _approval_key(approval: _Gerrit.Approval) -> tuple[str, str, str, int]:
+        return (
+            approval['type'],
+            approval['value'],
+            _Gerrit._user_key(approval['by']),
+            approval.get('grantedOn', 0),
+        )
+
+    @staticmethod
+    def _approval_url_refs(
+        approval: _Gerrit.Approval,
+        approval_urls: dict[tuple[str, str, str, int], tuple[str, ...]],
+    ) -> tuple[str, ...]:
+        return approval_urls.get(_Gerrit._approval_key(approval), ())
+
+    @staticmethod
+    def _approval_urls(
+        result: _Gerrit.QueryResult,
+    ) -> dict[tuple[str, str, str, int], tuple[str, ...]]:
+        current_patchset = result['currentPatchSet']['number']
+        comments: list[tuple[int, str, set[tuple[str, str | None]], tuple[str, ...]]] = []
+        for comment in result.get('comments', []):
+            patchset, votes = _Gerrit._comment_votes(comment['message'])
+            if patchset != current_patchset:
+                continue
+            urls = _Gerrit._message_urls(comment['message'])
+            if not urls:
+                continue
+            reviewer_key = _Gerrit._user_key(comment['reviewer'])
+            if not reviewer_key:
+                continue
+            comments.append((comment['timestamp'], reviewer_key, votes, urls))
+        comments.sort(key=lambda item: item[0])
+
+        approval_urls: dict[tuple[str, str, str, int], tuple[str, ...]] = {}
+        for approval in result['currentPatchSet'].get('approvals', []):
+            approval_key = _Gerrit._approval_key(approval)
+            approval_vote = (approval['type'], approval['value'])
+            for _, reviewer_key, votes, urls in reversed(comments):
+                if approval_vote not in votes:
+                    continue
+                if approval_key[2] != reviewer_key:
+                    continue
+                approval_urls[approval_key] = urls
+                break
+        return approval_urls
+
+    @staticmethod
+    def _comment_votes(message: str) -> tuple[int | None, set[tuple[str, str | None]]]:
+        header = message.splitlines()[0].strip() if message else ''
+        if not (match := _Gerrit._patch_set_header_re.match(header)):
+            return None, set()
+
+        patchset = int(match.group('patchset'))
+        detail = (match.group('detail') or '').strip()
+        if not detail:
+            return patchset, set()
+
+        votes: list[tuple[str, str | None]] = []
+        for token in detail.split():
+            if vote_match := _Gerrit._label_vote_re.fullmatch(token):
+                votes.append((vote_match.group('label'), str(int(vote_match.group('value')))))
+                continue
+            if removed_match := _Gerrit._label_removed_re.fullmatch(token):
+                votes.append((removed_match.group('label'), None))
+                continue
+            return patchset, set()
+        return patchset, set(votes)
+
+    @staticmethod
+    def _fmt_label(
+        label: str,
+        approvals: list[_Gerrit.Approval],
+        approval_urls: dict[tuple[str, str, str, int], tuple[str, ...]],
+    ) -> str:
         label_abbr = _Gerrit._label_token(label)
         values = ', '.join(_Gerrit._approval_summary(approval) for approval in approvals)
+        urls = _Gerrit._approval_url_refs(approvals[0], approval_urls) if len(approvals) == 1 else ()
         fail = any(int(approval['value']) < 0 for approval in approvals)
         if fail:
-            return f'{_Ansi.RED}{label_abbr}[{values}{_Ansi.RED}]{_Ansi.END}'
+            text = f'{label_abbr}[{values}{_Ansi.RED}]'
+            text = _Gerrit._link_targets(text, urls, _Ansi.RED)
+            return f'{_Ansi.RED}{text}{_Ansi.END}'
 
-        return f'{_Ansi.GREEN}{label_abbr}[{len(approvals)}]{_Ansi.END}'
+        text = f'{label_abbr}[{len(approvals)}]'
+        text = _Gerrit._link_targets(text, urls, _Ansi.GREEN)
+        return f'{_Ansi.GREEN}{text}{_Ansi.END}'
 
     @staticmethod
     def _approval_name(approval: _Gerrit.Approval) -> str:
@@ -173,6 +269,27 @@ class _Gerrit:
         if username:
             return username
         return approval['by']['name'].split()[0].lower()
+
+    @staticmethod
+    def _message_urls(message: str) -> tuple[str, ...]:
+        urls: list[str] = []
+        for match in _Gerrit._url_re.findall(message):
+            url = match.rstrip('.,)')
+            if url and url not in urls:
+                urls.append(url)
+        return tuple(urls)
+
+    @staticmethod
+    def _link_targets(text: str, urls: tuple[str, ...], color: str) -> str:
+        if not urls:
+            return text
+        if len(urls) == 1:
+            return _link(text, urls[0])
+        suffix = ''.join(
+            f'{color}{_link(f"<{index}>", url)}{_Ansi.END}'
+            for index, url in enumerate(urls, start=1)
+        )
+        return f'{text}{suffix}'
 
     @staticmethod
     def _approval_summary(approval: _Gerrit.Approval) -> str:
@@ -187,13 +304,29 @@ class _Gerrit:
         return ''.join(part[0].lower() for part in label.split('-') if part)
 
     @staticmethod
-    def _approval_token(label: str, approval: _Gerrit.Approval) -> str:
+    def _approval_token(
+        label: str,
+        approval: _Gerrit.Approval,
+        approval_urls: dict[tuple[str, str, str, int], tuple[str, ...]],
+    ) -> str:
         value = int(approval['value'])
         token = f'{_Gerrit._label_token(label)}{value:+d}'
         if value < 0:
             token += f'({_Gerrit._approval_name(approval)})'
         color = _Ansi.GREEN if value > 0 else _Ansi.RED
+        token = _Gerrit._link_targets(
+            token,
+            _Gerrit._approval_url_refs(approval, approval_urls),
+            color,
+        )
         return f'{color}{token}{_Ansi.END}'
+
+    @staticmethod
+    def _user_key(user: _Gerrit.User) -> str:
+        for field in ('username', 'email', 'name'):
+            if value := user.get(field, ''):
+                return value.casefold()
+        return ''
 
     def _line_for_result(self, result: _Gerrit.QueryResult, sha: str | None = None) -> list[str]:
         lines: list[str] = []
@@ -231,6 +364,7 @@ class _Gerrit:
         approvals_by_label: dict[str, list[_Gerrit.Approval]] = {}
         for approval in result['currentPatchSet'].get('approvals', []):
             approvals_by_label.setdefault(approval['type'], []).append(approval)
+        approval_urls = _Gerrit._approval_urls(result)
 
         if sha is not None:
             approval_tokens: list[str] = []
@@ -242,28 +376,36 @@ class _Gerrit:
                         _Gerrit._approval_name(approval),
                     ),
                 )
-                positive_counts: dict[int, int] = {}
+                positive_approvals: dict[int, list[_Gerrit.Approval]] = {}
                 negative_approvals: list[_Gerrit.Approval] = []
                 for approval in approvals:
                     value = int(approval['value'])
                     if value > 0:
-                        positive_counts[value] = positive_counts.get(value, 0) + 1
+                        positive_approvals.setdefault(value, []).append(approval)
                     else:
                         negative_approvals.append(approval)
-                for value in sorted(positive_counts, reverse=True):
-                    count = positive_counts[value]
+                for value in sorted(positive_approvals, reverse=True):
+                    approvals_for_value = positive_approvals[value]
+                    count = len(approvals_for_value)
                     token = f'{_Gerrit._label_token(label)}{value:+d}'
                     if count > 1:
                         token += f'x{count}'
+                    if count == 1:
+                        token = _Gerrit._link_targets(
+                            token,
+                            _Gerrit._approval_url_refs(approvals_for_value[0], approval_urls),
+                            _Ansi.GREEN,
+                        )
                     approval_tokens.append(f'{_Ansi.GREEN}{token}{_Ansi.END}')
                 approval_tokens.extend(
-                    _Gerrit._approval_token(label, approval) for approval in negative_approvals
+                    _Gerrit._approval_token(label, approval, approval_urls)
+                    for approval in negative_approvals
                 )
             if approval_tokens:
                 line += ' ' + ' '.join(approval_tokens)
         else:
             labels = ', '.join(
-                _Gerrit._fmt_label(label, approvals)
+                _Gerrit._fmt_label(label, approvals, approval_urls)
                 for label, approvals in approvals_by_label.items()
             )
             if labels:
@@ -286,6 +428,7 @@ class _Gerrit:
                 query,
                 '--current-patch-set',
                 '--patch-sets',
+                '--comments',
                 '--format=JSON',
             ]
         ).splitlines()
