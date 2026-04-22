@@ -1,6 +1,8 @@
 # Remove path separator from WORDCHARS.
 WORDCHARS=${WORDCHARS//[\/]}
 
+fpath=(~/.zsh/completions $fpath)
+
 # -----------------
 # Zim configuration
 # -----------------
@@ -128,16 +130,16 @@ ulimit -c unlimited
 
 java() {
     unfunction java
-    if ! hash jenv 2>/dev/null; then
+    if hash jenv 2>/dev/null; then
         eval "$(jenv init -)"
     fi
     command java "$@"
 }
 
 thist() {
-    rm -rf /tmp/thist
+    rm -rf /tmp/tmuxhist
     tmux capture-pane -epS - > /tmp/tmuxhist
-    vim -c 'term cat /tmp/tmuxhist' -c stopinsert
+    nvim -c 'term cat /tmp/tmuxhist' -c stopinsert
 }
 
 clear() {

@@ -79,7 +79,7 @@ do -- metals
     }))
   end
 
-  api.nvim_create_autocmd('FileType', {
+  autocmd('FileType', {
     pattern = { 'scala', 'sbt' },
     callback = setup_metals,
   })

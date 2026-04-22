@@ -1,3 +1,11 @@
 #! /usr/bin/env bash
 
-rg --json "$@" | delta
+# Check if --color=never or -l/--list is passed
+for arg in "$@"; do
+  if [[ "$arg" == "--color=never" || "$arg" == "-l" || "$arg" == "--list" ]]; then
+    rg "$@"
+    exit $?
+  fi
+done
+
+rg --context=2 --json "$@" | delta

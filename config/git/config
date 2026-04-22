@@ -23,6 +23,9 @@
 
 [alias]
 	a    = add
+	w    = worktree
+	wa   = worktree add
+	wr   = worktree remove
 	f    = fetch
 	ai   = !nvim -c 'Git | wincmd o' .
 	au   = add -u
@@ -83,6 +86,7 @@
 	commitGraph  = true
 	editor       = nvim
 	excludesfile = ~/.gitignore
+	untrackedCache = true
 
 [pull]
 	rebase = true
