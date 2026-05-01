@@ -592,24 +592,13 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
         stripped = url.rstrip('/')
         if stripped.endswith('.git'):
             stripped = stripped[:-4]
-        if match := re.search(r'github\.com[:/]([^/]+/[^/]+)$', stripped):
+        if match := re.search(r'github\.com[:/]([^/]+/[^/]+?)(?:\.git)?(?:/|$)', stripped):
             return match.group(1)
         return None
 
     @cached_property
     def base_remote(self) -> str | None:
-        try:
-            lines = _run(['git', 'remote', '-v']).splitlines()
-        except subprocess.CalledProcessError:
-            return None
-        for line in lines:
-            parts = line.split()
-            if len(parts) < 2:
-                continue
-            remote, url = parts[:2]
-            if self._remote_repo(url) == self._repo_name_with_owner:
-                return remote
-        return None
+        return _remote_for_repo(self._repo_name_with_owner)
 
     @staticmethod
     def _pr_sort_key(pr: _Github.PR) -> tuple[int, str, int]:
@@ -968,6 +957,38 @@ query($owner: String!, $name: String!, $pr: Int!, $endCursor: String) {
 
         return cached_prs
 
+
+def _remote_for_repo(repo_name_with_owner: str) -> str | None:
+    try:
+        lines = _run(['git', 'remote', '-v']).splitlines()
+    except subprocess.CalledProcessError:
+        return None
+    for line in lines:
+        parts = line.split()
+        if len(parts) < 2:
+            continue
+        remote, url = parts[:2]
+        if _Github._remote_repo(url) == repo_name_with_owner:
+            return remote
+    return None
+
+
+def _cached_pr_compare_refs(
+    cached_pr: _Github.CachedPR | None,
+    remotes: list[str],
+) -> list[str]:
+    if not cached_pr or not cached_pr.baseRefName:
+        return []
+
+    refs: list[str] = []
+    if cached_pr.url and (repo := _Github._remote_repo(cached_pr.url)):
+        if remote := _remote_for_repo(repo):
+            refs.append(f'{remote}/{cached_pr.baseRefName}')
+
+    refs.extend(f'{remote}/{cached_pr.baseRefName}' for remote in remotes)
+    return list(dict.fromkeys(refs))
+
+
 @dataclass
 class _CommitInfo:
     sha: str
@@ -1072,7 +1093,7 @@ def _format_branch_line(
 def _get_branch_infos(worktree_dirs: dict[str, str]) -> list[_BranchInfo]:
     root = str(Path(_run('git rev-parse --git-common-dir')).parent) if worktree_dirs else None
     rows: list[tuple[str, str, str, str, str]] = []
-    for line in _run(['git', 'branch', '--format', _BRANCH_FORMAT]).splitlines():
+    for line in _run(['git', 'branch', '--sort=refname', '--format', _BRANCH_FORMAT]).splitlines():
         head, branch, upstream, track, date = (line.split('\t') + [''] * 5)[:5]
         rows.append((head, branch, upstream, track, date))
 
@@ -1261,18 +1282,13 @@ def main():
             branch_prs: dict[str, _Github.PR] = {}
             commit_futures: dict[str, Future[list[_CommitInfo]]] = {}
             for branch in branches:
-                cached_compare_refs = (
-                    list(dict.fromkeys(f'{remote}/{branch.cached_pr.baseRefName}' for remote in remotes))
-                    if branch.cached_pr and branch.cached_pr.baseRefName
-                    else []
-                )
                 commit_futures[branch.name] = executor.submit(
                     _get_branch_commits,
                     branch.name,
                     branch.upstream,
                     branch.upstream_track,
                     default_compare_refs,
-                    cached_compare_refs,
+                    _cached_pr_compare_refs(branch.cached_pr, remotes),
                 )
 
             for branch in branches:
@@ -1320,15 +1336,6 @@ def main():
                         branch.pr_line = (
                             f'  {_Ansi.CYAN}{_Ansi.BOLD}gh{_Ansi.END} {_Ansi.GREY}loading…{_Ansi.END}'
                         )
-
-            if interactive:
-                initial_lines = _render_branches(
-                    branches,
-                    show_gerrit_placeholders=True,
-                    gerrit_base_url=gerrit_base_url,
-                )
-                _print_lines(initial_lines)
-                current_line_count = len(initial_lines)
 
             if github is None:
                 github = github_future.result()
