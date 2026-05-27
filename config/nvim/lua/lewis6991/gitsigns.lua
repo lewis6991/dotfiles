@@ -28,6 +28,22 @@ local function on_attach(bufnr)
     end
   end)
 
+  map('n', ']C', function()
+    if vim.wo.diff then
+      vim.cmd.normal({ ']c', bang = true })
+    else
+      gitsigns.nav_hunk('next', { target = 'unstaged' })
+    end
+  end, { nowait = true })
+
+  map('n', '[C', function()
+    if vim.wo.diff then
+      vim.cmd.normal({ '[c', bang = true })
+    else
+      gitsigns.nav_hunk('prev', { target = 'unstaged' })
+    end
+  end, { nowait = true })
+
   map('n', '<leader>hs', gitsigns.stage_hunk)
   map('n', '<leader>hr', gitsigns.reset_hunk)
 
