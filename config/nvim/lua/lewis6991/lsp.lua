@@ -24,6 +24,16 @@ lsp.config('bashls', {
   },
 })
 
+lsp.config('rust_analyzer', {
+  settings = {
+    ['rust-analyzer'] = {
+      check = {
+        command = 'clippy',
+      },
+    },
+  },
+})
+
 local pyright = vim.fn.executable('basedpyright') == 1 and 'basedpyright' or 'pyright'
 
 lsp.enable({
@@ -99,6 +109,35 @@ local function debounce(ms, fn)
 end
 
 lsp.codelens.enable()
+
+do -- patch to support virt_text in codelens
+  local orig = api.nvim_buf_set_extmark
+  local codelens_ns = {}
+
+  local function is_codelens_ns(ns)
+    if codelens_ns[ns] ~= nil then
+      return codelens_ns[ns]
+    end
+
+    for name, id in pairs(api.nvim_get_namespaces()) do
+      codelens_ns[id] = vim.startswith(name, 'nvim.lsp.codelens:')
+      if id == ns then
+        break
+      end
+    end
+    return codelens_ns[ns] or false
+  end
+
+  api.nvim_buf_set_extmark = function(buf, ns, row, col, opts)
+    if opts and opts.virt_lines and is_codelens_ns(ns) then
+      local line = opts.virt_lines[1] or {}
+      opts.virt_lines = nil
+      opts.virt_text = vim.list_slice(line, 2)
+    end
+
+    return orig(buf, ns, row, col, opts)
+  end
+end
 
 do -- textDocument/documentHighlight
   autocmd({ 'FocusGained', 'WinEnter', 'BufEnter', 'CursorMoved' }, {
