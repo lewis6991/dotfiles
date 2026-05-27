@@ -1,25 +1,5 @@
-[user]
-	name = Lewis Russell
-	email = lewis6991@gmail.com
-
-[diff]
-	tool = vimdiff
-	colorMoved = default
-
-[delta]
-	side-by-side = true
-
-[merge]
-	conflictstyle = zdiff3
-
-[interactive]
-	diffFilter = delta --color-only
-
-[add.interactive]
-	useBuiltin = false # required for git 2.37.0
-
-[difftool]
-	prompt = false
+[advice]
+	skippedCherryPicks = false
 
 [alias]
 	a    = add
@@ -30,15 +10,14 @@
 	ai   = !nvim -c 'Git | wincmd o' .
 	au   = add -u
 	bd   = branch -D
-	; bD   = push origin --delete
 	bdr = !sh -c 'git push origin --delete ${1} && git bd ${1}' -
 	cam  = commit --amend
 	cap  = !git ca && git publish
 	ci   = commit
 	fixup = commit -m 'fixup!'
-	cij  = !sh -c 'export GIT_ADD_JIRA=1 && git commit $@'
+	cij  = !sh -c 'export GIT_ADD_JIRA=1 && git commit "$@"' -
 	ca   = commit --amend --no-edit
-	caj  = !sh -c 'export GIT_ADD_JIRA=1 && git commit --amend --no-edit $@'
+	caj  = !sh -c 'export GIT_ADD_JIRA=1 && git commit --amend --no-edit "$@"' -
 	co   = checkout
 	cp   = cherry-pick
 	cpc  = cherry-pick --continue
@@ -51,12 +30,10 @@
 	rc   = rebase --continue
 	ri   = rebase --interactive
 	rs   = rebase --skip
-	sp   = stash show -p
-	pop  = stash pop
 	lgs = lg origin...
 	sub = submodule
 	reh = reset --hard
-	track = !sh -c 'git branch --set-upstream-to origin/${1-master}' -
+	track = !sh -c 'branch=${1:-$(git branch --show-current)}; git branch --set-upstream-to=origin/$branch' -
 	rtrack = !sh -c 'git branch --set-upstream-to $1' -
 	untrack = branch --unset-upstream
 	who = shortlog --summary --numbered
@@ -80,26 +57,10 @@
 	setup-hooks = !sh -c 'cp -r $HOME/git-templates/* $(git rev-parse --git-dir)/' -
 	; setup-hooks = !sh -c 'scp -p $1:hooks/commit-msg ${2}/.git/hooks/' -
 
-[core]
-	# -R needed to track lines properly
-	pager        = delta
-	commitGraph  = true
-	editor       = nvim
-	excludesfile = ~/.gitignore
-	untrackedCache = true
-
-[pull]
-	rebase = true
-
-[push]
-	default = upstream
-
-[rebase]
-	autoStash = true
-
-[fetch]
-	prune = true
-	all = true
+[commit]
+	; Shows the diff in the commit editor, without including it in the final
+	; message.
+	verbose = true
 
 [color "diff-highlight"]
 	oldNormal    = red   bold
@@ -115,11 +76,57 @@
 	new        = green   bold
 	whitespace = red     reverse
 
+[core]
+	# -R needed to track lines properly
+	pager        = delta
+	commitGraph  = true
+	editor       = nvim
+	excludesfile = ~/.gitignore
+	untrackedCache = true
+	fsmonitor = true
+
+[delta]
+	side-by-side = true
+
+[diff]
+	tool = vimdiff
+	algorithm = histogram
+	renames = copies
+	colorMoved = default
+
+[difftool]
+	prompt = false
+
+[interactive]
+	diffFilter = delta --color-only
+
 [log]
 	date = short
+
+[merge]
+	conflictstyle = zdiff3
+
+[pull]
+	rebase = true
+
+[push]
+	default = current
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
+	all = true
 
 [init]
 	defaultBranch = main
 
-[advice]
-	skippedCherryPicks = false
+[rebase]
+	autoStash = true
+
+[rerere]
+	enabled = true
+	autoupdate = true
+
+[user]
+	name = Lewis Russell
+	email = lewis6991@gmail.com
