@@ -7,6 +7,10 @@ fpath=(~/.zsh/completions $fpath)
 # Zim configuration
 # -----------------
 
+# Keep completion dump caches separate for each zsh version. Otherwise
+# /usr/bin/zsh 5.8 and Homebrew zsh 5.9.1 invalidate each other.
+zstyle ':zim:completion' dumpfile "${ZDOTDIR:-${HOME}}/.zcompdump-${ZSH_VERSION}"
+
 if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   # Download zimfw script if missing.
   command mkdir -p ${ZIM_HOME}

@@ -413,7 +413,7 @@ p('neovim/nvimdev.nvim', {
   end,
 })
 
-p('nvim-treesitter/nvim-treesitter', {
+p('lewis6991/nvim-treesitter', {
   branch = 'main',
   config_pre = function()
     vim.g.loaded_nvim_treesitter = 1
@@ -421,7 +421,7 @@ p('nvim-treesitter/nvim-treesitter', {
 })
 
 p('lewis6991/ts-install.nvim', {
-  requires = 'nvim-treesitter/nvim-treesitter',
+  requires = 'lewis6991/nvim-treesitter',
   run = ':TS update',
   config = function()
     require('ts-install').setup({
@@ -444,7 +444,7 @@ p('lewis6991/ts-install.nvim', {
 })
 
 p('nvim-treesitter/nvim-treesitter-context', {
-  requires = 'nvim-treesitter/nvim-treesitter',
+  requires = 'lewis6991/nvim-treesitter',
   config = function()
     require('treesitter-context').setup({
       max_lines = 5,

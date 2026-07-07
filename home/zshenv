@@ -1,1 +1,9 @@
 : ${ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim}
+
+# PATH and path are tied in zsh. Keep them unique so repeated `exec zsh`
+# runs do not keep prepending the same startup directories.
+typeset -gU path PATH
+
+# fpath is shell-local; exporting FPATH makes child zsh instances inherit stale
+# completion paths from the parent shell.
+typeset +x FPATH

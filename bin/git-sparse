@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+CONFIG_KEY = 'worktree.sparseExclude'
+COLORS = {
+    'bold': '\033[1m',
+    'dim': '\033[2m',
+    'green': '\033[32m',
+    'yellow': '\033[33m',
+    'red': '\033[31m',
+    'reset': '\033[0m',
+}
+
+
+def git(*args: str, ok_codes: tuple[int, ...] = (0,)) -> str:
+    result = subprocess.run(
+        ['git', *args],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode not in ok_codes:
+        raise SystemExit(result.stderr.strip())
+    return result.stdout.strip()
+
+
+def clean_path(path: str) -> str:
+    return path.strip('/')
+
+
+def should_color(mode: str) -> bool:
+    if mode == 'always':
+        return True
+    if mode == 'never':
+        return False
+    return sys.stdout.isatty() and 'NO_COLOR' not in os.environ
+
+
+def color(text: str, name: str, enabled: bool) -> str:
+    if not enabled:
+        return text
+    return f'{COLORS[name]}{text}{COLORS["reset"]}'
+
+
+def require_worktree() -> None:
+    git('rev-parse', '--is-inside-work-tree')
+
+
+def excludes() -> list[str]:
+    require_worktree()
+    output = git('config', '--get-all', CONFIG_KEY, ok_codes=(0, 1))
+    paths: list[str] = []
+    seen: set[str] = set()
+
+    for line in output.splitlines():
+        path = clean_path(line)
+        if path and path not in seen:
+            paths.append(path)
+            seen.add(path)
+
+    return paths
+
+
+def config_sources() -> list[str]:
+    output = git('config', '--show-origin', '--show-scope', '--get-all', CONFIG_KEY, ok_codes=(0, 1))
+    sources: list[str] = []
+    seen: set[str] = set()
+
+    for line in output.splitlines():
+        parts = line.split(maxsplit=2)
+        source = ' '.join(parts[:2])
+        if source and source not in seen:
+            sources.append(source)
+            seen.add(source)
+
+    return sources
+
+
+def add(args: argparse.Namespace) -> None:
+    existing = set(excludes())
+    for path in args.paths:
+        clean = clean_path(path)
+        if clean and clean not in existing:
+            git('config', '--add', CONFIG_KEY, clean)
+            existing.add(clean)
+
+
+def remove(args: argparse.Namespace) -> None:
+    current = excludes()
+    to_remove = {clean_path(p) for p in args.paths}
+
+    git('config', '--unset-all', CONFIG_KEY, ok_codes=(0, 5))
+
+    for path in current:
+        if path not in to_remove:
+            git('config', '--add', CONFIG_KEY, path)
+
+
+def list_excludes(args: argparse.Namespace) -> None:
+    paths = excludes()
+    if args.paths_only:
+        for path in paths:
+            print(path)
+        return
+
+    color_enabled = should_color(args.color)
+    enabled = sparse_enabled()
+    actual = sparse_lines()
+    expected = expected_sparse_lines(paths)
+    matches = actual == expected
+
+    if not enabled:
+        state = color('disabled', 'red', color_enabled)
+        detail = color('not applied in this worktree', 'red', color_enabled)
+    elif matches:
+        state = color('applied', 'green', color_enabled)
+        detail = color('patterns match', 'green', color_enabled)
+    else:
+        state = color('stale', 'yellow', color_enabled)
+        detail = color('patterns differ; run `git sparse apply`', 'yellow', color_enabled)
+
+    print(f'{color("sparse", "bold", color_enabled)}:  {state}  {detail}')
+
+    label = color(f'exclude ({len(paths)})', 'bold', color_enabled)
+    if paths:
+        print(f'{label}: {paths[0]}')
+        for path in paths[1:]:
+            print(f'{" " * (len(f"exclude ({len(paths)})") + 2)}{path}')
+    else:
+        print(f'{label}: {color("none configured", "dim", color_enabled)}')
+
+    if not args.verbose:
+        return
+
+    print(f'{color("file", "dim", color_enabled)}:    {sparse_file()}')
+    print(f'{color("config", "dim", color_enabled)}:  {", ".join(config_sources() or ["none"])}')
+
+    if not matches:
+        print(f'{color("expected", "dim", color_enabled)}:')
+        for line in expected:
+            print(f'  {line}')
+        print(f'{color("actual", "dim", color_enabled)}:')
+        for line in actual or ['<missing>']:
+            print(f'  {line}')
+
+
+def sparse_enabled() -> bool:
+    output = git('config', '--bool', '--get', 'core.sparseCheckout', ok_codes=(0, 1))
+    return output.lower() == 'true'
+
+
+def sparse_file() -> Path:
+    return Path(git('rev-parse', '--git-path', 'info/sparse-checkout'))
+
+
+def sparse_lines() -> list[str]:
+    path = sparse_file()
+    if not path.exists():
+        return []
+    return [line.strip() for line in path.read_text().splitlines() if line.strip()]
+
+
+def expected_sparse_lines(paths: list[str]) -> list[str]:
+    return ['/*', *[f'!/{path}/' for path in paths]]
+
+
+def sparse_status(paths: list[str]) -> str:
+    if not sparse_enabled():
+        return 'not applied in this worktree: core.sparseCheckout is disabled'
+    if sparse_lines() == expected_sparse_lines(paths):
+        return 'applied in this worktree'
+    return 'enabled in this worktree, but sparse-checkout patterns differ; run `git sparse apply`'
+
+
+def status(_: argparse.Namespace) -> None:
+    print(sparse_status(excludes()))
+
+
+def clear(_: argparse.Namespace) -> None:
+    require_worktree()
+    git('config', '--unset-all', CONFIG_KEY, ok_codes=(0, 5))
+
+
+def apply(_: argparse.Namespace) -> None:
+    require_worktree()
+
+    paths = excludes()
+
+    git('sparse-checkout', 'init', '--no-cone')
+
+    sparse_file = Path(git('rev-parse', '--git-path', 'info/sparse-checkout'))
+    sparse_file.parent.mkdir(parents=True, exist_ok=True)
+
+    lines = ['/*', *[f'!/{path}/' for path in paths]]
+    sparse_file.write_text('\n'.join(lines) + '\n')
+
+    git('sparse-checkout', 'reapply')
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(prog='git sparse')
+    sub = parser.add_subparsers(required=True)
+
+    p = sub.add_parser('add')
+    p.add_argument('paths', nargs='+')
+    p.set_defaults(func=add)
+
+    p = sub.add_parser('remove')
+    p.add_argument('paths', nargs='+')
+    p.set_defaults(func=remove)
+
+    p = sub.add_parser('list')
+    p.add_argument('--paths-only', action='store_true')
+    p.add_argument('--verbose', '-v', action='store_true')
+    p.add_argument('--color', choices=('auto', 'always', 'never'), default='auto')
+    p.set_defaults(func=list_excludes)
+
+    p = sub.add_parser('status')
+    p.set_defaults(func=status)
+
+    p = sub.add_parser('clear')
+    p.set_defaults(func=clear)
+
+    p = sub.add_parser('apply')
+    p.set_defaults(func=apply)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()

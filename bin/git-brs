@@ -21,11 +21,13 @@ import re
 import shlex
 import json
 import argparse
+import shutil
 import sys
 
 import subprocess
 
 from typing import ClassVar
+from typing import NotRequired
 from typing import TypedDict
 from typing import cast
 from enum import StrEnum
@@ -52,6 +54,8 @@ class _Ansi(StrEnum):
 
 
 _MERGED_STYLE = f'{_Ansi.BOLD}{_Ansi.CYAN}'
+_OSC_RE = re.compile(r'\033\].*?(?:\a|\033\\)')
+_CSI_RE = re.compile(r'\033\[[0-?]*[ -/]*[@-~]')
 
 
 def _run(cmd: str | list[str]) -> str:
@@ -146,6 +150,7 @@ class _Gerrit:
         project: str
         subject: str
         status: str
+        wip: NotRequired[bool]
 
     @staticmethod
     def get_change_id(commit_body: list[str]) -> str | None:
@@ -173,6 +178,25 @@ class _Gerrit:
         if host := _Gerrit._origin_host():
             return f'https://{host}'
         return None
+
+    @cached_property
+    def remote_name(self) -> str:
+        try:
+            lines = _run(['git', 'remote', '-v']).splitlines()
+        except subprocess.CalledProcessError:
+            return 'origin'
+        for line in lines:
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            remote, url = parts[:2]
+            if match := re.match(r'(?:ssh://)?(?:[^@]+@)?([^:/]+)', url):
+                host = match.group(1)
+            else:
+                host = url.split(':')[0]
+            if host == self._host:
+                return remote
+        return 'origin'
 
     @staticmethod
     def _approval_key(approval: _Gerrit.Approval) -> tuple[str, str, str, int]:
@@ -328,6 +352,19 @@ class _Gerrit:
                 return value.casefold()
         return ''
 
+    @staticmethod
+    def _status_tokens(result: _Gerrit.QueryResult) -> list[str]:
+        tokens: list[str] = []
+        if result.get('wip'):
+            tokens.append(f'{_Ansi.BOLD}{_Ansi.MAGENTA}wip{_Ansi.END}')
+        match result['status']:
+            case 'NEW':
+                pass
+            case x:
+                status_color = _MERGED_STYLE if x == 'MERGED' else _Ansi.BLUE
+                tokens.append(f'{status_color}{x.lower()}{_Ansi.END}')
+        return tokens
+
     def _line_for_result(self, result: _Gerrit.QueryResult, sha: str | None = None) -> list[str]:
         lines: list[str] = []
         currentps = result['currentPatchSet']['number']
@@ -353,13 +390,9 @@ class _Gerrit:
         else:
             line += f'{_Ansi.BLUE}ps {currentps}{_Ansi.END}'
 
-        match result['status']:
-            case 'NEW':
-                pass
-            case x:
-                status_color = _MERGED_STYLE if x == 'MERGED' else _Ansi.BLUE
-                sep = ' ' if sha is not None else ', '
-                line += f'{sep}{status_color}{x.lower()}{_Ansi.END}'
+        if status_tokens := self._status_tokens(result):
+            sep = ' ' if sha is not None else ', '
+            line += sep + ', '.join(status_tokens)
 
         approvals_by_label: dict[str, list[_Gerrit.Approval]] = {}
         for approval in result['currentPatchSet'].get('approvals', []):
@@ -443,8 +476,14 @@ class _Gerrit:
 
     def _query_change_id(self, change_id: str) -> list[_Gerrit.QueryResult]:
         if change_id not in self._change_cache:
-            self._change_cache[change_id] = self._query(f'change:{change_id}')
+            self._cache_change_results(self._query(f'change:{change_id}'))
+            self._change_cache.setdefault(change_id, [])
         return self._change_cache[change_id]
+
+    def _cache_change_results(self, results: list[_Gerrit.QueryResult]) -> None:
+        for result in results:
+            if change_id := result.get('id'):
+                self._change_cache[change_id] = [result]
 
     def prefetch_change_ids(self, change_ids: list[str]) -> None:
         pending = [
@@ -455,14 +494,9 @@ class _Gerrit:
         for i in range(0, len(pending), self._batch_size):
             chunk = pending[i : i + self._batch_size]
             query = ' OR '.join(f'change:{change_id}' for change_id in chunk)
-            results_by_change_id: dict[str, list[_Gerrit.QueryResult]] = {
-                change_id: [] for change_id in chunk
-            }
-            for result in self._query(query):
-                if change_id := result.get('id'):
-                    results_by_change_id.setdefault(change_id, []).append(result)
+            self._cache_change_results(self._query(query))
             for change_id in chunk:
-                self._change_cache[change_id] = results_by_change_id.get(change_id, [])
+                self._change_cache.setdefault(change_id, [])
 
     def info_lines(self, query: str, sha: str | None = None) -> list[str]:
         lines: list[str] = []
@@ -478,6 +512,11 @@ class _Gerrit:
     def info(self, query: str, sha: str | None = None):
         for line in self.info_lines(query, sha):
             print(line)
+
+    def open_change_results(self) -> list[_Gerrit.QueryResult]:
+        results = self._query('owner:me is:open')
+        self._cache_change_results(results)
+        return results
 
     @staticmethod
     def init() -> _Gerrit | None:
@@ -1011,6 +1050,13 @@ class _BranchInfo:
     commits: list[_CommitInfo] = field(default_factory=list)
     gerrit_lines: dict[str, list[str]] = field(default_factory=dict)
 
+    def cached_pr_matches(self) -> bool:
+        return bool(
+            self.cached_pr
+            and self.cached_pr.headRefOid
+            and self.cached_pr.headRefOid in _branch_oids(self.name, self.upstream)
+        )
+
     def render(
         self,
         show_gerrit_placeholders: bool = False,
@@ -1020,22 +1066,108 @@ class _BranchInfo:
         if self.pr_line:
             lines.append(self.pr_line)
         for commit in self.commits:
-            lines.append(f'  {_Ansi.GREY}·{_Ansi.END} {commit.summary}')
+            commit_line = f'  {_Ansi.GREY}·{_Ansi.END} {commit.summary}'
             if commit.sha in self.gerrit_lines:
+                lines.append(commit_line)
                 lines.extend(self.gerrit_lines[commit.sha])
             elif show_gerrit_placeholders and commit.change_id and gerrit_base_url:
                 link = _link(
                     commit.change_id[:8],
                     f'{gerrit_base_url}/q/{commit.change_id}',
                 )
+                lines.append(commit_line)
                 lines.append(
-                    f'      {_Ansi.CYAN}{_Ansi.BOLD}gr{_Ansi.END} {link} {_Ansi.GREY}loading…{_Ansi.END}'
+                    f'      {_Ansi.CYAN}{_Ansi.BOLD}gr{_Ansi.END} {link} '
+                    f'{_Ansi.GREY}loading…{_Ansi.END}'
                 )
+            else:
+                lines.append(commit_line)
         return lines
 
 
+def _format_remote_ref_line(remote: str, ref: str) -> str:
+    remote_part = f'{_Ansi.CYAN}{remote}:{_Ansi.END}'
+    ref_part = f'{_Ansi.BLUE}{ref}{_Ansi.END}'
+    return f'  {remote_part}{ref_part}'
+
+
+def _commit_for_change_result(result: _Gerrit.QueryResult) -> _CommitInfo:
+    change_id = result['id']
+    return _CommitInfo(
+        sha=result['currentPatchSet']['revision'],
+        summary=result['subject'],
+        body=[f'Change-Id: {change_id}'],
+    )
+
+
+def _remote_change_chain(
+    result: _Gerrit.QueryResult,
+    results_by_revision: dict[str, _Gerrit.QueryResult],
+) -> list[_Gerrit.QueryResult]:
+    chain: list[_Gerrit.QueryResult] = []
+    seen_change_ids: set[str] = set()
+    current = result
+    while True:
+        change_id = current['id']
+        if change_id in seen_change_ids:
+            break
+        chain.append(current)
+        seen_change_ids.add(change_id)
+
+        parent_result = None
+        for parent_revision in current['currentPatchSet'].get('parent', []):
+            if parent_revision in results_by_revision:
+                parent_result = results_by_revision[parent_revision]
+                break
+        if parent_result is None:
+            break
+        current = parent_result
+    return chain
+
+
+def _remote_change_branches(
+    gerrit: _Gerrit,
+    excluded_change_ids: set[str] | None = None,
+) -> list[_BranchInfo]:
+    excluded = excluded_change_ids or set()
+    remote_name = gerrit.remote_name
+    results = gerrit.open_change_results()
+    ordered_results = sorted(results, key=lambda result: bool(result.get('wip')))
+    results_by_revision = {
+        result['currentPatchSet']['revision']: result
+        for result in results
+    }
+    gerrit_line_cache: dict[str, list[str]] = {}
+    branches: list[_BranchInfo] = []
+    for result in ordered_results:
+        change_id = result['id']
+        if change_id in excluded:
+            continue
+        commits: list[_CommitInfo] = []
+        gerrit_lines: dict[str, list[str]] = {}
+        for related_result in _remote_change_chain(result, results_by_revision):
+            related_change_id = related_result['id']
+            commit = _commit_for_change_result(related_result)
+            commits.append(commit)
+            if related_change_id not in gerrit_line_cache:
+                gerrit_line_cache[related_change_id] = gerrit.info_lines(related_change_id, commit.sha)
+            gerrit_lines[commit.sha] = gerrit_line_cache[related_change_id]
+        branches.append(
+            _BranchInfo(
+                name=f'{remote_name}:{result["currentPatchSet"]["ref"]}',
+                branch_line=_format_remote_ref_line(remote_name, result['currentPatchSet']['ref']),
+                upstream='',
+                upstream_track='',
+                commits=commits,
+                gerrit_lines=gerrit_lines,
+            )
+        )
+    return branches
+
+
 _BRANCH_FORMAT = (
-    '%(HEAD)\t%(refname:short)\t%(upstream:short)\t%(upstream:track)\t%(committerdate:relative)'
+    '%(HEAD)\t%(refname:short)\t%(upstream:short)\t%(upstream:track)\t'
+    '%(committerdate:relative)\t%(worktreepath)'
 )
 
 
@@ -1053,7 +1185,7 @@ def _format_track_part(track: str) -> str:
         parts.append(f'{direction}{count}')
     rendered = ''.join(parts)
     if '↑' in rendered and '↓' in rendered:
-        return f'{_Ansi.MAGENTA}{rendered}{_Ansi.END}'
+        return f'{_Ansi.RED}{rendered}{_Ansi.END}'
     return rendered
 
 
@@ -1069,16 +1201,13 @@ def _format_branch_line(
 ) -> str:
     short_date = re.sub(r'(\d+\s+\w+)\s+ago', r'\1', date)
     head_marker = f'{_Ansi.BOLD}{_Ansi.GREEN}{_THIS}{_Ansi.END} ' if head == '*' else '  '
-    if worktree_dir:
-        branch_color = f'{_Ansi.BOLD}{_Ansi.CYAN}' if head == '*' else _Ansi.CYAN
-    else:
-        branch_color = f'{_Ansi.BOLD}{_Ansi.YELLOW}' if head == '*' else _Ansi.YELLOW
+    branch_color = f'{_Ansi.BOLD}{_Ansi.YELLOW}' if head == '*' else _Ansi.YELLOW
     branch_part = f'{branch_color}{branch.ljust(name_width)}{_Ansi.END}'
     extra_parts: list[str] = []
     if upstream and upstream != 'origin/main':
         extra_parts.append(f'{_Ansi.GREY}@{upstream}{_Ansi.END}')
     worktree_part = (
-        f'{_Ansi.CYAN}wt:{relpath(Path(worktree_dir).resolve(), Path(root).resolve())}{_Ansi.END}'
+        f'{_Ansi.BLUE}wt:{relpath(Path(worktree_dir).resolve(), Path(root).resolve())}{_Ansi.END}'
         if worktree_dir and root
         else ''
     )
@@ -1090,17 +1219,26 @@ def _format_branch_line(
     return head_marker + branch_part + '  ' + '  '.join(extra_parts)
 
 
-def _get_branch_infos(worktree_dirs: dict[str, str]) -> list[_BranchInfo]:
-    root = str(Path(_run('git rev-parse --git-common-dir')).parent) if worktree_dirs else None
-    rows: list[tuple[str, str, str, str, str]] = []
-    for line in _run(['git', 'branch', '--sort=refname', '--format', _BRANCH_FORMAT]).splitlines():
-        head, branch, upstream, track, date = (line.split('\t') + [''] * 5)[:5]
-        rows.append((head, branch, upstream, track, date))
+def _get_branch_infos() -> list[_BranchInfo]:
+    rows: list[tuple[str, str, str, str, str, str | None]] = []
+    for line in _run(
+        ['git', 'for-each-ref', '--sort=refname', f'--format={_BRANCH_FORMAT}', 'refs/heads']
+    ).splitlines():
+        head, branch, upstream, track, date, worktree_dir = (
+            line.split('\t') + [''] * 6
+        )[:6]
+        rows.append((head, branch, upstream, track, date, worktree_dir or None))
+    rows.sort(key=lambda row: row[5] is None)
+    root = (
+        str(Path(_run('git rev-parse --git-common-dir')).parent)
+        if any(worktree_dir for *_, worktree_dir in rows)
+        else None
+    )
 
-    name_width = max((len(branch) for _, branch, _, _, _ in rows), default=0)
+    name_width = max((len(branch) for _, branch, _, _, _, _ in rows), default=0)
 
     branches: list[_BranchInfo] = []
-    for head, branch, upstream, upstream_track_raw, date in rows:
+    for head, branch, upstream, upstream_track_raw, date, worktree_dir in rows:
         upstream_track = _format_upstream_track(upstream_track_raw)
         branches.append(
             _BranchInfo(
@@ -1111,7 +1249,7 @@ def _get_branch_infos(worktree_dirs: dict[str, str]) -> list[_BranchInfo]:
                     upstream,
                     upstream_track,
                     date,
-                    worktree_dirs.get(branch),
+                    worktree_dir,
                     root,
                     name_width,
                 ),
@@ -1140,6 +1278,7 @@ def _get_default_compare_refs(remotes: list[str]) -> list[str]:
 
     return list(dict.fromkeys(refs))
 
+
 def _get_branch_commits_from_refs(
     branch: str,
     compare_refs: list[str],
@@ -1149,15 +1288,16 @@ def _get_branch_commits_from_refs(
         if not compare_ref:
             continue
         try:
-            output = _run(
-                [
-                    'git',
-                    '--no-pager',
-                    'log',
-                    '--format====%H%n%s%n%b',
-                    f'{compare_ref}..refs/heads/{branch}',
-                ]
-            )
+            cmd = [
+                'git',
+                '--no-pager',
+                'log',
+                '--format====%H%n%s%n%b',
+                f'{compare_ref}..refs/heads/{branch}',
+            ]
+            if max_commits is not None:
+                cmd.insert(3, f'--max-count={max_commits + 1}')
+            output = _run(cmd)
         except subprocess.CalledProcessError:
             continue
         commits: list[_CommitInfo] = []
@@ -1176,7 +1316,7 @@ def _get_branch_commits(
     branch: str,
     upstream: str,
     upstream_track: str,
-    default_compare_refs: list[str],
+    pr_fallback_compare_refs: list[str],
     cached_compare_refs: list[str] | None = None,
 ) -> list[_CommitInfo]:
     if cached_compare_refs:
@@ -1187,15 +1327,18 @@ def _get_branch_commits(
     if not upstream or upstream_track == 'gone':
         return []
 
-    commits = _get_branch_commits_from_refs(branch, [upstream])
-    if commits:
-        return commits
-
     _, _, upstream_branch = upstream.partition('/')
+    if '↑' in upstream_track:
+        commits = _get_branch_commits_from_refs(branch, [upstream])
+        if commits:
+            return commits
+
     if upstream_branch != branch:
         return []
+    if not pr_fallback_compare_refs:
+        return []
 
-    return _get_branch_commits_from_refs(branch, default_compare_refs, max_commits=32)
+    return _get_branch_commits_from_refs(branch, pr_fallback_compare_refs, max_commits=32)
 
 def _render_branches(
     branches: list[_BranchInfo],
@@ -1213,6 +1356,23 @@ def _render_branches(
     return lines
 
 
+def _render_output(
+    branches: list[_BranchInfo],
+    remote_branches: list[_BranchInfo],
+    show_gerrit_placeholders: bool = False,
+    gerrit_base_url: str | None = None,
+) -> list[str]:
+    lines = _render_branches(
+        branches,
+        show_gerrit_placeholders=show_gerrit_placeholders,
+        gerrit_base_url=gerrit_base_url,
+    )
+    if not remote_branches:
+        return lines
+    lines.extend(_render_branches(remote_branches))
+    return lines
+
+
 def _print_lines(lines: list[str]) -> None:
     if not lines:
         return
@@ -1220,43 +1380,99 @@ def _print_lines(lines: list[str]) -> None:
     _ = sys.stdout.flush()
 
 
-def _replace_block(previous_line_count: int, lines: list[str]) -> None:
-    if previous_line_count > 0:
-        _ = sys.stdout.write(f'\033[{previous_line_count}A')
+def _visible_len(line: str) -> int:
+    return len(_CSI_RE.sub('', _OSC_RE.sub('', line)))
+
+
+def _line_height(line: str, columns: int) -> int:
+    columns = max(1, columns)
+    return max(1, (_visible_len(line) + columns - 1) // columns)
+
+
+def _screen_rows(lines: list[str], columns: int) -> int:
+    return sum(_line_height(line, columns) for line in lines)
+
+
+def _overflows_screen(lines: list[str]) -> bool:
+    size = shutil.get_terminal_size(fallback=(80, 24))
+    return _screen_rows(lines, size.columns) > max(1, size.lines - 1)
+
+
+def _fit_to_screen(lines: list[str]) -> list[str]:
+    size = shutil.get_terminal_size(fallback=(80, 24))
+    max_rows = max(1, size.lines - 1)
+    used_rows = 0
+    fitted: list[str] = []
+    for index, line in enumerate(lines):
+        line_rows = _line_height(line, size.columns)
+        if used_rows + line_rows > max_rows:
+            if not fitted:
+                fitted.append(f'  {_Ansi.GREY}... {len(lines) - index} more loading{_Ansi.END}')
+                break
+            while fitted:
+                remaining = len(lines) - len(fitted)
+                marker = f'  {_Ansi.GREY}... {remaining} more loading{_Ansi.END}'
+                if used_rows + _line_height(marker, size.columns) <= max_rows:
+                    fitted.append(marker)
+                    break
+                removed = fitted.pop()
+                used_rows -= _line_height(removed, size.columns)
+            break
+        fitted.append(line)
+        used_rows += line_rows
+    return fitted
+
+
+def _replace_block(previous_rows: int, lines: list[str]) -> int:
+    size = shutil.get_terminal_size(fallback=(80, 24))
+    if previous_rows > 0:
+        _ = sys.stdout.write(f'\033[{previous_rows}A')
     _ = sys.stdout.write('\r\033[J')
-    _print_lines(lines)
+    if lines:
+        _print_lines(lines)
+    else:
+        _ = sys.stdout.flush()
+    return _screen_rows(lines, size.columns)
 
 
-def _get_worktree_dirs() -> dict[str, str]:
-    # Also handle git worktrees
-    worktree_dirs: dict[str, str] = {}
-    current_branch = None
-    current_dir = None
-    for line in _run(['git', 'worktree', 'list', '--porcelain']).splitlines():
-        if line.startswith('worktree '):
-            current_dir = line.split(' ', 1)[1]
-        elif line.startswith('branch '):
-            current_branch = line.split(' ', 1)[1]
-            # Remove refs/heads/ prefix if present
-            if current_branch.startswith('refs/heads/'):
-                current_branch = current_branch[len('refs/heads/') :]
-            if current_dir is not None:
-                worktree_dirs[current_branch] = current_dir
-                current_dir = None
+def _enter_alternate_screen() -> None:
+    _ = sys.stdout.write('\033[?1049h\033[H\033[J')
+    _ = sys.stdout.flush()
 
-    return worktree_dirs
+
+def _exit_alternate_screen() -> None:
+    _ = sys.stdout.write('\033[?1049l')
+    _ = sys.stdout.flush()
+
+
+def _redraw_progress(
+    current_rows: int,
+    current_lines: list[str],
+    lines: list[str],
+    use_alternate_screen: bool,
+) -> tuple[int, list[str], bool]:
+    if not use_alternate_screen and _overflows_screen(lines):
+        current_rows = _replace_block(current_rows, [])
+        _enter_alternate_screen()
+        use_alternate_screen = True
+
+    next_lines = _fit_to_screen(lines)
+    if next_lines == current_lines:
+        return current_rows, current_lines, use_alternate_screen
+
+    current_rows = _replace_block(current_rows, next_lines)
+    return current_rows, next_lines, use_alternate_screen
 
 
 def main():
     parser = argparse.ArgumentParser(description='Display Git branches with PR and Gerrit info')
-    _ = parser.add_argument('--remote', action='store_true', help='Include remote branches')
+    _ = parser.add_argument(
+        '-r',
+        '--remote',
+        action='store_true',
+        help='Also include other open Gerrit changes from the remote',
+    )
     args = parser.parse_args()
-
-    if bool(getattr(args, 'remote', False)):
-        gerrit = _Gerrit.init()
-        if gerrit:
-            gerrit.info('owner:me is:open')
-        return
 
     gerrit_base_url = _Gerrit.origin_base_url()
     try:
@@ -1264,15 +1480,17 @@ def main():
     except subprocess.CalledProcessError:
         remotes = []
     default_compare_refs = _get_default_compare_refs(remotes)
-    worktree_dirs = _get_worktree_dirs()
-    branches = _get_branch_infos(worktree_dirs)
+    branches = _get_branch_infos()
     local_branch_names = {branch.name for branch in branches}
     cached_prs = _Github.cached_prs(local_branch_names)
     for branch in branches:
         branch.cached_pr = cached_prs.get(branch.name)
 
     interactive = sys.stdout.isatty()
-    current_line_count = 0
+    current_rows = 0
+    current_lines: list[str] = []
+    use_alternate_screen = False
+    remote_branches: list[_BranchInfo] = []
 
     try:
         max_workers = min(16, max(4, len(branches) + 2))
@@ -1282,13 +1500,20 @@ def main():
             branch_prs: dict[str, _Github.PR] = {}
             commit_futures: dict[str, Future[list[_CommitInfo]]] = {}
             for branch in branches:
+                cached_pr_matches = branch.cached_pr_matches()
+                cached_compare_refs = (
+                    _cached_pr_compare_refs(branch.cached_pr, remotes)
+                    if cached_pr_matches
+                    else []
+                )
+                pr_fallback_compare_refs = default_compare_refs if cached_pr_matches else []
                 commit_futures[branch.name] = executor.submit(
                     _get_branch_commits,
                     branch.name,
                     branch.upstream,
                     branch.upstream_track,
-                    default_compare_refs,
-                    _cached_pr_compare_refs(branch.cached_pr, remotes),
+                    pr_fallback_compare_refs,
+                    cached_compare_refs,
                 )
 
             for branch in branches:
@@ -1322,8 +1547,7 @@ def main():
                     if (
                         branch.cached_pr.number is not None
                         and branch.cached_pr.url
-                        and branch.cached_pr.headRefOid
-                        and branch.cached_pr.headRefOid in _branch_oids(branch.name, branch.upstream)
+                        and branch.cached_pr_matches()
                     ):
                         branch.pr_line = _Github.format_pr_line(
                             branch.cached_pr.number,
@@ -1336,6 +1560,19 @@ def main():
                         branch.pr_line = (
                             f'  {_Ansi.CYAN}{_Ansi.BOLD}gh{_Ansi.END} {_Ansi.GREY}loading…{_Ansi.END}'
                         )
+
+            if interactive:
+                current_rows, current_lines, use_alternate_screen = _redraw_progress(
+                    current_rows,
+                    current_lines,
+                    _render_output(
+                        branches,
+                        remote_branches,
+                        show_gerrit_placeholders=True,
+                        gerrit_base_url=gerrit_base_url,
+                    ),
+                    use_alternate_screen,
+                )
 
             if github is None:
                 github = github_future.result()
@@ -1391,13 +1628,17 @@ def main():
                     branch.commits = future.result()
 
             if interactive:
-                commit_lines = _render_branches(
-                    branches,
-                    show_gerrit_placeholders=True,
-                    gerrit_base_url=gerrit_base_url,
+                current_rows, current_lines, use_alternate_screen = _redraw_progress(
+                    current_rows,
+                    current_lines,
+                    _render_output(
+                        branches,
+                        remote_branches,
+                        show_gerrit_placeholders=True,
+                        gerrit_base_url=gerrit_base_url,
+                    ),
+                    use_alternate_screen,
                 )
-                _replace_block(current_line_count, commit_lines)
-                current_line_count = len(commit_lines)
 
             if github:
                 for branch in branches:
@@ -1420,14 +1661,19 @@ def main():
                         unresolved_comments,
                         check_summary,
                     )
+
             if interactive:
-                pr_lines = _render_branches(
-                    branches,
-                    show_gerrit_placeholders=True,
-                    gerrit_base_url=gerrit_base_url,
+                current_rows, current_lines, use_alternate_screen = _redraw_progress(
+                    current_rows,
+                    current_lines,
+                    _render_output(
+                        branches,
+                        remote_branches,
+                        show_gerrit_placeholders=True,
+                        gerrit_base_url=gerrit_base_url,
+                    ),
+                    use_alternate_screen,
                 )
-                _replace_block(current_line_count, pr_lines)
-                current_line_count = len(pr_lines)
 
             gerrit = gerrit_future.result()
             if gerrit:
@@ -1437,10 +1683,16 @@ def main():
                     for commit in branch.commits:
                         if commit.sha not in branch.gerrit_lines and (changeid := commit.change_id):
                             branch.gerrit_lines[commit.sha] = gerrit.info_lines(changeid, commit.sha)
+                if bool(getattr(args, 'remote', False)):
+                    remote_branches = _remote_change_branches(gerrit, set(change_ids))
     finally:
-        final_lines = _render_branches(branches)
+        final_lines = _render_output(branches, remote_branches)
         if interactive:
-            _replace_block(current_line_count, final_lines)
+            if use_alternate_screen:
+                _exit_alternate_screen()
+                _print_lines(final_lines)
+            else:
+                _ = _replace_block(current_rows, final_lines)
         else:
             _print_lines(final_lines)
 
