@@ -1,6 +1,13 @@
 #! /usr/bin/env bash
 set -e
 
-remoteBranch=${2-$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}')}
+remoteBranch=${2-}
+if [[ -z "$remoteBranch" ]]; then
+    remoteBranch=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || true
+fi
+
 git checkout -B "${1-master}"
-git branch --set-upstream-to "$remoteBranch"
+
+if [[ -n "$remoteBranch" ]]; then
+    git branch --set-upstream-to "$remoteBranch"
+fi
