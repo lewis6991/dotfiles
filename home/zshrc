@@ -153,4 +153,20 @@ clear() {
     fi
 }
 
+_tmux_workspaces_precmd() {
+    [[ -n $TMUX && -n $TMUX_PANE ]] || return
+    command tmux-workspaces --pane "$TMUX_PANE" &!
+}
+
+_tmux_workspaces_preexec() {
+    local cmd=${1%% *}
+    [[ $cmd == codex || $cmd == omp ]] || return
+    # Let tmux observe the child before reading pane_current_command.
+    (sleep 0.1; command tmux-workspaces --pane "$TMUX_PANE") &!
+}
+
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _tmux_workspaces_precmd
+add-zsh-hook preexec _tmux_workspaces_preexec
+
 unfunction have_cmd

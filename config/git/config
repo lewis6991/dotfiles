@@ -9,7 +9,7 @@
 	f    = fetch
 	ai   = !nvim -c 'Git | wincmd o' .
 	au   = add -u
-	bd   = branch -D
+	bd   = !git-bd
 	bdr = !sh -c 'git push origin --delete ${1} && git bd ${1}' -
 	cam  = commit --amend
 	cap  = !git ca && git publish
@@ -33,8 +33,8 @@
 	lgs = lg origin...
 	sub = submodule
 	reh = reset --hard
-	track = !sh -c 'branch=${1:-$(git branch --show-current)}; git branch --set-upstream-to=origin/$branch' -
-	rtrack = !sh -c 'git branch --set-upstream-to $1' -
+	track = "!sh -c 'branch=${1:-$(git branch --show-current)}; git branch --set-upstream-to=origin/$branch' -"
+	rtrack = "!sh -c 'git branch --set-upstream-to $1' -"
 	untrack = branch --unset-upstream
 	who = shortlog --summary --numbered
 	who2 = shortlog --summary --numbered --since=2year

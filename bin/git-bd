@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+
+force=false
+case ${1-} in
+    -f|--force)
+        force=true
+        shift
+        ;;
+esac
+
+if (($# == 0)); then
+    echo "usage: git bd [-f|--force] <branch>..." >&2
+    exit 2
+fi
+
+for branch; do
+    worktree=$(git branch --list "$branch" --format='%(worktreepath)')
+    if [[ -n $worktree ]]; then
+        if ! $force; then
+            read -r -p "Warning: branch '$branch' is attached to worktree '$worktree'. Delete both? [y/N] " reply
+            [[ $reply =~ ^[Yy]([Ee][Ss])?$ ]] || continue
+        fi
+        git worktree remove --force "$worktree"
+    fi
+
+    git branch -D -- "$branch"
+done
