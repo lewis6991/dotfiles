@@ -172,6 +172,31 @@ if 'Whitespace' then
 end
 
 if 'Mappings' then
+  --- @param absolute boolean
+  local function copy_context(absolute)
+    return function()
+      local first = api.nvim_win_get_cursor(0)[1]
+      local last = first
+
+      if vim.fn.mode():match('[vV\22]') then
+        first, last = vim.fn.line('v'), vim.fn.line('.')
+        first, last = math.min(first, last), math.max(first, last)
+      end
+
+      local path = vim.fn.expand(absolute and '%:p' or '%:.')
+      local context = ('%s:%d'):format(path, first)
+      if first ~= last then
+        context = context .. '-' .. last
+      end
+
+      vim.fn.setreg('+', context)
+      vim.notify('Copied ' .. context)
+    end
+  end
+
+  map({ 'n', 'v' }, '<leader>yc', copy_context(false), { desc = 'Yank file context' })
+  map({ 'n', 'v' }, '<leader>yC', copy_context(true), { desc = 'Yank absolute file context' })
+
   -- Terminal
   map('n', [[<C-\>]], '<cmd>vsplit | term<cr>')
   map('n', [[<C-->]], '<cmd>split | term<cr>')

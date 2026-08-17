@@ -1196,7 +1196,9 @@ def _format_branch_line(row: _BranchRow, root: str | None, name_width: int) -> s
     branch_color = f'{_Ansi.BOLD}{_Ansi.YELLOW}' if row.head == '*' else _Ansi.YELLOW
     branch_part = f'{branch_color}{row.branch.ljust(name_width)}{_Ansi.END}'
     extra_parts: list[str] = []
-    if row.upstream and row.upstream != 'origin/main':
+    if not row.upstream:
+        extra_parts.append(f'{_Ansi.RED}no upstream{_Ansi.END}')
+    elif row.upstream != 'origin/main':
         extra_parts.append(f'{_Ansi.GREY}@{row.upstream}{_Ansi.END}')
     if row.worktree_dir and root:
         worktree = relpath(Path(row.worktree_dir).resolve(), Path(root).resolve())

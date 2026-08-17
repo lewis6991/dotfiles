@@ -18,7 +18,6 @@ p('neovim/nvim-lspconfig')
 --- Filetype plugins ---
 p('martinda/Jenkinsfile-vim-syntax')
 p('lewis6991/vc.nvim')
-p('lewis6991/tree-sitter-tcl')
 
 p('lewis6991/github_dark.nvim', {
   config = function()
@@ -105,6 +104,10 @@ p('lewis6991/hover.nvim', {
       require('hover').open()
     end, { desc = 'hover.nvim (open)' })
 
+    vim.keymap.set('n', ']j', function()
+      require('hover').switch('next')
+    end)
+
     vim.keymap.set('n', 'gK', function()
       require('hover').enter()
     end, { desc = 'hover.nvim (enter)' })
@@ -121,11 +124,51 @@ p('lewis6991/gitsigns.nvim', { config = 'lewis6991.gitsigns' })
 
 p('lewis6991/nvim-colorizer.lua')
 
-p('lewis6991/tmux.nvim', {
+p('mrjones2014/smart-splits.nvim', {
   config = function()
-    require('tmux').setup({
-      navigation = { enable_default_keybindings = true },
-    })
+    local splits = require('smart-splits')
+
+    if vim.env.HERDR_ENV then
+      ---@diagnostic disable-next-line: param-type-mismatch
+      splits.setup({
+        at_edge = function(ctx)
+          local opposite = { left = 'right', right = 'left', up = 'down', down = 'up' }
+          local moved = false
+
+          -- smart-splits wraps Herdr by one reverse step, which lands on the
+          -- adjacent pane in layouts with three or more panes.
+          while true do
+            local result = vim
+              .system({
+                vim.env.HERDR_BIN_PATH or 'herdr',
+                'pane',
+                'focus',
+                '--direction',
+                opposite[ctx.direction],
+              }, { text = true })
+              :wait()
+            local ok, response = pcall(vim.json.decode, result.stdout)
+            local changed = ok
+              and response.result
+              and response.result.focus
+              and response.result.focus.changed
+            if result.code ~= 0 or not changed then
+              break
+            end
+            moved = true
+          end
+
+          if not moved then
+            ctx.wrap()
+          end
+        end,
+      })
+    end
+
+    vim.keymap.set('n', '<C-h>', splits.move_cursor_left)
+    vim.keymap.set('n', '<C-j>', splits.move_cursor_down)
+    vim.keymap.set('n', '<C-k>', splits.move_cursor_up)
+    vim.keymap.set('n', '<C-l>', splits.move_cursor_right)
   end,
 })
 
@@ -428,8 +471,6 @@ p('lewis6991/ts-install.nvim', {
       auto_install = true,
       ignore_install = {
         'verilog',
-        'tcl',
-        'tmux',
       },
       parsers = {
         zsh = {

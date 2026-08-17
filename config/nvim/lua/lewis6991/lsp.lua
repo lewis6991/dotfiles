@@ -44,18 +44,25 @@ lsp.enable({
   -- 'luals',
   'ruff',
   'bashls',
-  'tls',
   'jsonls',
   'rust_analyzer',
   'ts_query_ls',
+  'tcl-ls',
+  'make-ls',
 })
 
 -- install with:
 --   pip install tclint
-lsp.config('tclsp', {
-  cmd = { 'tclsp' },
+lsp.config('tcl-ls', {
+  cmd = { 'tcl-ls' },
   filetypes = { 'tcl' },
-  root_markers = { 'tclint.toml' },
+  root_markers = { '.git' },
+})
+
+lsp.config('make-ls', {
+  cmd = { 'make-ls' },
+  filetypes = { 'make' },
+  root_markers = { 'Makefile', '.git' },
 })
 
 do -- metals

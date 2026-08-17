@@ -22,7 +22,12 @@ for branch; do
             read -r -p "Warning: branch '$branch' is attached to worktree '$worktree'. Delete both? [y/N] " reply
             [[ $reply =~ ^[Yy]([Ee][Ss])?$ ]] || continue
         fi
-        git worktree remove --force "$worktree"
+        if [[ -e $worktree/.git ]]; then
+            git worktree remove --force "$worktree"
+        else
+            # Git cannot remove a registration after the worktree's .git file is gone.
+            git worktree prune --expire now
+        fi
     fi
 
     git branch -D -- "$branch"

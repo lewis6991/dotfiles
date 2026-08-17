@@ -67,6 +67,19 @@ setopt HIST_REDUCE_BLANKS
 # Completion -------------------------------------------------------------------
 zmodload zsh/complist
 
+# Homebrew's Git completion maps custom commands to `_git_<command>`, but
+# cannot infer their arguments.
+_git_bd() {
+    case "$cur" in
+        -*) __gitcomp '-f --force' ;;
+        *) __git_complete_refs --mode=heads ;;
+    esac
+}
+
+_git_lg() {
+    _git_log
+}
+
 # Enable shift-tab to cycle back completions
 bindkey -M menuselect '^[[Z' reverse-menu-complete
 setopt menu_complete

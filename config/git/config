@@ -10,6 +10,7 @@
 	ai   = !nvim -c 'Git | wincmd o' .
 	au   = add -u
 	bd   = !git-bd
+	br   = branch
 	bdr = !sh -c 'git push origin --delete ${1} && git bd ${1}' -
 	cam  = commit --amend
 	cap  = !git ca && git publish
