@@ -1,0 +1,59 @@
+[keys]
+prefix = "alt+v"
+copy_mode = ["prefix+[", "alt+u"]
+
+previous_tab = "alt+h"
+next_tab = "alt+l"
+previous_workspace = "ctrl+alt+k"
+next_workspace = "ctrl+alt+j"
+new_worktree = ["prefix+shift+g", "alt+g"]
+remove_worktree = "alt+shift+g"
+new_tab = "alt+shift+n"
+
+# Herdr only creates splits to the right or down, so the reverse tmux chords
+# are aliases rather than placing the new pane before the current one.
+split_vertical = ["alt+backslash", "alt+shift+backslash"]
+split_horizontal = ["alt+minus", "alt+shift+minus"]
+
+[[keys.command]]
+key = "alt+shift+h"
+command = "herdr pane resize --direction left --current"
+
+[[keys.command]]
+key = "alt+shift+j"
+command = "herdr pane resize --direction down --current"
+
+[[keys.command]]
+key = "alt+shift+k"
+command = "herdr pane resize --direction up --current"
+
+[[keys.command]]
+key = "alt+shift+l"
+command = "herdr pane resize --direction right --current"
+
+[[keys.command]]
+key = "ctrl+h"
+type = "plugin_action"
+command = "smart-splits.nvim.left"
+
+[[keys.command]]
+key = "ctrl+j"
+type = "plugin_action"
+command = "smart-splits.nvim.down"
+
+[[keys.command]]
+key = "ctrl+k"
+type = "plugin_action"
+command = "smart-splits.nvim.up"
+
+[[keys.command]]
+key = "ctrl+l"
+type = "plugin_action"
+command = "smart-splits.nvim.right"
+
+[ui]
+agent_panel_sort = "spaces"
+
+show_agent_labels_on_pane_borders = false
+[ui.toast]
+delivery = "herdr"
