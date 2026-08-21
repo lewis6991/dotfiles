@@ -1038,7 +1038,6 @@ def _format_remote_ref_line(remote: str, ref: str) -> str:
 def _get_detached_worktree_infos() -> list[_BranchInfo]:
     try:
         output = _run(['git', 'worktree', 'list', '--porcelain', '-z'])
-        root = Path(_run('git rev-parse --git-common-dir')).resolve().parent
         current = Path(_run('git rev-parse --show-toplevel')).resolve()
     except subprocess.CalledProcessError:
         return []
@@ -1072,7 +1071,7 @@ def _get_detached_worktree_infos() -> list[_BranchInfo]:
         line = (
             f'{head_marker}{_Ansi.MAGENTA}(detached){_Ansi.END} '
             f'{_Ansi.GREY}{head[:8]}{_Ansi.END}  '
-            f'{_Ansi.BLUE}wt:{relpath(worktree_path, root)}{_Ansi.END}'
+            f'{_Ansi.BLUE}wt:{relpath(worktree_path, Path.cwd())}{_Ansi.END}'
         )
         if annotations:
             line += '  ' + '  '.join(annotations)
@@ -1190,7 +1189,7 @@ def _format_track_part(track: str) -> str:
     return rendered
 
 
-def _format_branch_line(row: _BranchRow, root: str | None, name_width: int) -> str:
+def _format_branch_line(row: _BranchRow, name_width: int) -> str:
     short_date = re.sub(r'(\d+\s+\w+)\s+ago', r'\1', row.date)
     head_marker = f'{_Ansi.BOLD}{_Ansi.GREEN}{_THIS}{_Ansi.END} ' if row.head == '*' else '  '
     branch_color = f'{_Ansi.BOLD}{_Ansi.YELLOW}' if row.head == '*' else _Ansi.YELLOW
@@ -1200,8 +1199,8 @@ def _format_branch_line(row: _BranchRow, root: str | None, name_width: int) -> s
         extra_parts.append(f'{_Ansi.RED}no upstream{_Ansi.END}')
     elif row.upstream != 'origin/main':
         extra_parts.append(f'{_Ansi.GREY}@{row.upstream}{_Ansi.END}')
-    if row.worktree_dir and root:
-        worktree = relpath(Path(row.worktree_dir).resolve(), Path(root).resolve())
+    if row.worktree_dir:
+        worktree = relpath(Path(row.worktree_dir).resolve(), Path.cwd())
         extra_parts.append(f'{_Ansi.BLUE}wt:{worktree}{_Ansi.END}')
     if track_part := _format_track_part(row.upstream_track):
         extra_parts.append(track_part)
@@ -1226,11 +1225,6 @@ def _get_branch_infos() -> list[_BranchInfo]:
             )
         )
     rows.sort(key=lambda row: row.worktree_dir is None)
-    root = (
-        str(Path(_run('git rev-parse --git-common-dir')).parent)
-        if any(row.worktree_dir for row in rows)
-        else None
-    )
     name_width = max((len(row.branch) for row in rows), default=0)
 
     branches: list[_BranchInfo] = []
@@ -1238,7 +1232,7 @@ def _get_branch_infos() -> list[_BranchInfo]:
         branches.append(
             _BranchInfo(
                 name=row.branch,
-                branch_line=_format_branch_line(row, root, name_width),
+                branch_line=_format_branch_line(row, name_width),
                 upstream=row.upstream,
                 upstream_track=row.upstream_track,
             )
